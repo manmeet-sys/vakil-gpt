@@ -1,5 +1,5 @@
-
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ChatInterface from '@/components/ChatInterface';
@@ -95,29 +95,31 @@ const Index = () => {
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-2">
               Intelligent Legal Assistance
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-legal-slate leading-tight text-balance">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-legal-slate dark:text-white leading-tight text-balance">
               AI-Powered Legal <span className="text-legal-accent">Intelligence</span> at Your Fingertips
             </h1>
-            <p className="text-lg text-legal-muted max-w-lg">
+            <p className="text-lg text-legal-muted dark:text-gray-300 max-w-lg">
               Transform your legal research and document analysis with advanced AI. Get instant answers, insights, and guidance on legal matters.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white text-base px-6 py-6">
-                Start Free Trial
-              </Button>
-              <Button variant="outline" className="border-legal-border hover:bg-legal-light text-legal-slate text-base px-6 py-6">
+              <Link to="/chat">
+                <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white text-base px-6 py-6 w-full sm:w-auto">
+                  Try PrecedentAI Chat
+                </Button>
+              </Link>
+              <Button variant="outline" className="border-legal-border hover:bg-legal-light dark:hover:bg-legal-slate/20 text-legal-slate dark:text-white/90 text-base px-6 py-6">
                 Watch Demo
               </Button>
             </div>
-            <div className="pt-4 flex items-center space-x-4 text-sm text-legal-muted">
+            <div className="pt-4 flex items-center space-x-4 text-sm text-legal-muted dark:text-gray-400">
               <div className="flex -space-x-2">
                 {[1, 2, 3, 4].map((n) => (
-                  <div key={n} className="w-8 h-8 rounded-full border-2 border-white bg-legal-light overflow-hidden">
+                  <div key={n} className="w-8 h-8 rounded-full border-2 border-white dark:border-legal-slate/20 bg-legal-light dark:bg-legal-slate/40 overflow-hidden">
                     <div className={`w-full h-full bg-legal-accent/[0.${n*2}]`}></div>
                   </div>
                 ))}
               </div>
-              <span>Join over <strong className="text-legal-slate">10,000+</strong> legal professionals</span>
+              <span>Join over <strong className="text-legal-slate dark:text-white/90">10,000+</strong> legal professionals</span>
             </div>
           </div>
           
@@ -146,7 +148,7 @@ const Index = () => {
       </section>
       
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 bg-white dark:bg-legal-slate/5">
+      <section id="features" className="py-20 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
         <div className="container mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16 fade-up-element">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
@@ -175,7 +177,7 @@ const Index = () => {
       </section>
       
       {/* Benefits Section */}
-      <section id="benefits" className="py-20 px-4 bg-legal-light dark:bg-legal-slate/10">
+      <section id="benefits" className="py-20 px-4 bg-legal-light dark:bg-legal-slate/10 transition-colors">
         <div className="container mx-auto">
           <div className="grid gap-12 md:grid-cols-2 items-center">
             <div className="fade-up-element">
@@ -229,16 +231,16 @@ const Index = () => {
       </section>
       
       {/* Demo Section */}
-      <section id="demo" className="py-20 px-4 bg-white dark:bg-legal-slate/5">
+      <section id="demo" className="py-20 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
         <div className="container mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
               Try It Now
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-4">
-              Experience LegalGPT in Action
+            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4">
+              Experience PrecedentAI in Action
             </h2>
-            <p className="text-legal-muted text-lg">
+            <p className="text-legal-muted dark:text-gray-300 text-lg">
               Ask a legal question and see how our AI can provide insightful, relevant information to assist you.
             </p>
           </div>
@@ -248,12 +250,14 @@ const Index = () => {
           </div>
           
           <div className="mt-12 text-center fade-up-element">
-            <p className="text-legal-muted mb-6">
-              Ready to experience the full capabilities of LegalGPT?
+            <p className="text-legal-muted dark:text-gray-300 mb-6">
+              Ready to experience the full capabilities of PrecedentAI?
             </p>
-            <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-6 text-base">
-              Start Your Free Trial
-            </Button>
+            <Link to="/chat">
+              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-6 text-base">
+                Start Using PrecedentAI
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -305,7 +309,7 @@ const Index = () => {
       </section>
       
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-legal-light dark:bg-legal-slate/10">
+      <section className="py-20 px-4 bg-legal-light dark:bg-legal-slate/10 transition-colors">
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto text-center fade-up-element">
             <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-6">
