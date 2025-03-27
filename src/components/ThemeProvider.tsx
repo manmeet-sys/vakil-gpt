@@ -23,7 +23,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "dark", // Changed default to dark for ChatGPT-like experience
   storageKey = "precedent-ai-theme",
   ...props
 }: ThemeProviderProps) {

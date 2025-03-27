@@ -1,17 +1,24 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import ChatInterface from '@/components/ChatInterface';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const ChatPage = () => {
+  const { theme } = useTheme();
+  
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-legal-light dark:bg-legal-slate/90 py-10 px-4 transition-colors duration-300">
-      <div className="w-full max-w-4xl mb-6 text-center">
-        <h1 className="text-3xl font-bold text-legal-slate dark:text-white mb-2">PrecedentAI Legal Assistant</h1>
-        <p className="text-legal-muted dark:text-gray-300">Your AI assistant specialized in Indian law, with focus on the Indian Constitution</p>
-      </div>
+    <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
+      <header className="border-b border-gray-200 dark:border-zinc-700/50 py-3 px-4 flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-gray-800 dark:text-white">PrecedentAI</h1>
+        <ThemeToggle />
+      </header>
       
-      <ChatInterface className="w-full" />
+      <main className="flex-1 flex flex-col items-center py-6 px-4 overflow-hidden">
+        <div className="w-full max-w-4xl">
+          <ChatInterface className="w-full h-[calc(100vh-8rem)]" />
+        </div>
+      </main>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, KeyRound, Settings } from 'lucide-react';
+import { Send, KeyRound, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -346,77 +346,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
   return (
     <div className={cn(
-      "flex flex-col h-[500px] md:h-[600px] w-full max-w-3xl mx-auto rounded-xl shadow-elegant border border-legal-border overflow-hidden bg-legal-light/50 dark:bg-legal-slate/5",
+      "flex flex-col h-full w-full rounded-lg overflow-hidden bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm",
       className
     )}>
-      <div className="bg-white dark:bg-legal-slate/10 border-b border-legal-border px-4 py-3 flex justify-between items-center">
-        <div>
-          <h3 className="font-semibold text-legal-slate">PrecedentAI Assistant</h3>
-          <p className="text-xs text-legal-muted">Indian Legal AI Specialist</p>
-        </div>
-        <div className="flex gap-2">
-          <Dialog open={showSystemPromptSettings} onOpenChange={setShowSystemPromptSettings}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs flex items-center gap-1"
-              >
-                <Settings className="h-3 w-3" />
-                Custom Prompt
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Customize System Prompt</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="systemPrompt">System Prompt</Label>
-                  <Textarea
-                    id="systemPrompt"
-                    value={systemPrompt}
-                    onChange={(e) => setSystemPrompt(e.target.value)}
-                    rows={8}
-                    className="resize-none"
-                    placeholder="Enter your custom system prompt..."
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This prompt defines how the AI assistant behaves. You can customize it to focus on specific legal domains or response styles.
-                  </p>
-                </div>
-                <div className="flex justify-between">
-                  <Button variant="outline" onClick={resetSystemPrompt}>
-                    Reset to Default
-                  </Button>
-                  <Button onClick={saveSystemPrompt}>
-                    Save Changes
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-xs flex items-center gap-1"
-            onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-          >
-            <KeyRound className="h-3 w-3" />
-            {apiKey ? 'Change API Key' : 'Set API Key'}
-          </Button>
-        </div>
-      </div>
-      
       {showApiKeyInput && (
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border-b border-legal-border">
-          <div className="text-sm mb-2">Select API provider and enter your API key</div>
+        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-gray-200 dark:border-zinc-800">
+          <div className="text-sm mb-2 font-medium">Select API provider and enter your API key</div>
           <div className="flex gap-2 mb-2">
             <select 
               value={apiProvider}
               onChange={(e) => setApiProvider(e.target.value as 'deepseek' | 'gemini')}
-              className="px-3 py-2 bg-white dark:bg-legal-slate/20 border border-legal-border rounded-md text-sm"
+              className="px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-md text-sm"
             >
               <option value="deepseek">DeepSeek API</option>
               <option value="gemini">Google Gemini API</option>
@@ -428,13 +368,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={apiProvider === 'deepseek' ? 'DeepSeek API Key' : 'Gemini API Key'}
-              className="flex-1 text-sm border-legal-border"
+              className="flex-1 text-sm border-gray-300 dark:border-zinc-700 dark:bg-zinc-800"
             />
-            <Button onClick={saveApiKey} className="bg-legal-accent hover:bg-legal-accent/90 text-white">
+            <Button onClick={saveApiKey} className="bg-blue-600 hover:bg-blue-700 text-white">
               Save
             </Button>
           </div>
-          <p className="text-xs mt-2 text-legal-muted">
+          <p className="text-xs mt-2 text-gray-600 dark:text-gray-400">
             Your API key is stored locally in your browser and never sent to our servers.
             {apiProvider === 'gemini' && (
               <span> For Gemini, use an API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google AI Studio</a>.</span>
@@ -443,57 +383,107 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
         </div>
       )}
       
-      <div className="flex-1 p-4 overflow-y-auto">
-        <div className="space-y-4">
-          {messages.map((message) => (
-            <LegalChatMessage
-              key={message.id}
-              message={message.text}
-              isUser={message.isUser}
-            />
-          ))}
-          
-          {isLoading && (
-            <LegalChatMessage
-              message=""
-              isUser={false}
-              isLoading={true}
-            />
-          )}
-          
-          <div ref={messagesEndRef} />
-        </div>
+      <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-zinc-800">
+        <Dialog open={showSystemPromptSettings} onOpenChange={setShowSystemPromptSettings}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs flex items-center gap-1"
+            >
+              <Settings className="h-3 w-3" />
+              Custom Prompt
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px] bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
+            <DialogHeader>
+              <DialogTitle>Customize System Prompt</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="systemPrompt">System Prompt</Label>
+                <Textarea
+                  id="systemPrompt"
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  rows={8}
+                  className="resize-none dark:bg-zinc-800 dark:border-zinc-700"
+                  placeholder="Enter your custom system prompt..."
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  This prompt defines how the AI assistant behaves. You can customize it to focus on specific legal domains or response styles.
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={resetSystemPrompt} className="dark:border-zinc-700 dark:hover:bg-zinc-800">
+                  Reset to Default
+                </Button>
+                <Button onClick={saveSystemPrompt} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="text-xs flex items-center gap-1"
+          onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+        >
+          <KeyRound className="h-3 w-3" />
+          {apiKey ? 'Change API Key' : 'Set API Key'}
+        </Button>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto" id="chat-messages">
+        {messages.map((message) => (
+          <LegalChatMessage
+            key={message.id}
+            message={message.text}
+            isUser={message.isUser}
+          />
+        ))}
+        
+        {isLoading && (
+          <LegalChatMessage
+            message=""
+            isUser={false}
+            isLoading={true}
+          />
+        )}
+        
+        <div ref={messagesEndRef} />
       </div>
       
       <form 
         onSubmit={handleSendMessage}
-        className="border-t border-legal-border bg-white dark:bg-legal-slate/10 p-4"
+        className="border-t border-gray-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-900"
       >
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="flex-shrink-0 text-legal-muted hover:text-legal-slate border-legal-border"
-          >
-            <Paperclip className="h-4 w-4" />
-            <span className="sr-only">Attach file</span>
-          </Button>
-          
+        <div className="flex items-center gap-2">
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Type your legal question..."
-            className="flex-1 border-legal-border focus-visible:ring-legal-accent"
+            className="flex-1 py-6 border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 focus-visible:ring-blue-500"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (inputValue.trim()) {
+                  handleSendMessage(e);
+                }
+              }
+            }}
           />
           
           <Button
             type="submit"
-            className="flex-shrink-0 bg-legal-accent hover:bg-legal-accent/90 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-10 h-10 p-0 flex items-center justify-center"
             disabled={!inputValue.trim() || isLoading}
           >
-            <Send className="h-4 w-4 mr-2" />
-            Send
+            <Send className="h-4 w-4" />
+            <span className="sr-only">Send</span>
           </Button>
         </div>
       </form>

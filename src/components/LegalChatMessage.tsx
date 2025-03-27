@@ -14,45 +14,75 @@ const LegalChatMessage: React.FC<LegalChatMessageProps> = ({
   isUser,
   isLoading = false
 }) => {
+  // Function to format message with proper markdown-like styling
+  const formatMessage = (text: string) => {
+    // Simple replacements for formatting
+    return text
+      .split('\n')
+      .map((line, i) => {
+        // Process code blocks
+        if (line.startsWith('```')) {
+          return `<pre class="bg-gray-100 dark:bg-zinc-800 p-3 rounded-md my-2 overflow-x-auto font-mono text-sm">${line.replace('```', '')}</pre>`;
+        }
+        
+        // Process headings
+        if (line.startsWith('# ')) {
+          return `<h1 class="text-xl font-bold my-2">${line.substring(2)}</h1>`;
+        }
+        if (line.startsWith('## ')) {
+          return `<h2 class="text-lg font-bold my-2">${line.substring(3)}</h2>`;
+        }
+        if (line.startsWith('### ')) {
+          return `<h3 class="text-md font-bold my-2">${line.substring(4)}</h3>`;
+        }
+        
+        // Process lists
+        if (line.match(/^\d+\.\s/)) {
+          return `<li class="ml-4 list-decimal">${line.replace(/^\d+\.\s/, '')}</li>`;
+        }
+        if (line.startsWith('- ')) {
+          return `<li class="ml-4 list-disc">${line.substring(2)}</li>`;
+        }
+        
+        // Process bold and italic
+        let processedLine = line
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>');
+          
+        return `<p>${processedLine}</p>`;
+      })
+      .join('');
+  };
+
   return (
     <div className={cn(
-      "flex mb-4 animate-fade-up group", 
-      isUser ? "justify-end" : "justify-start"
+      "py-6 px-4 flex items-start gap-4 border-b border-gray-100 dark:border-zinc-800 animate-fade-up group", 
+      isUser ? "bg-white dark:bg-zinc-900" : "bg-gray-50 dark:bg-zinc-800/20"
     )}>
       <div className={cn(
-        "flex max-w-[80%] sm:max-w-[70%] items-start",
-        isUser ? "flex-row-reverse" : "flex-row"
+        "w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center",
+        isUser ? "bg-green-500" : "bg-blue-500"
       )}>
-        <div className={cn(
-          "w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center",
-          isUser ? "ml-3" : "mr-3",
-          isUser ? "bg-legal-accent text-white" : "bg-gray-100 text-legal-slate dark:bg-legal-slate/20 dark:text-white/90"
-        )}>
-          {isUser ? (
-            <UserCircle className="w-5 h-5" />
-          ) : (
-            <Bot className="w-5 h-5" />
-          )}
-        </div>
-        
-        <div className={cn(
-          "py-3 px-4 rounded-lg animate-scale shadow-elegant",
-          isUser 
-            ? "bg-legal-accent text-white rounded-tr-none" 
-            : "bg-white dark:bg-legal-slate/10 border border-legal-border dark:border-legal-slate/20 text-legal-slate dark:text-white/90 rounded-tl-none"
-        )}>
-          {isLoading ? (
-            <div className="typing-indicator">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              {message}
-            </div>
-          )}
-        </div>
+        {isUser ? (
+          <UserCircle className="w-5 h-5 text-white" />
+        ) : (
+          <Bot className="w-5 h-5 text-white" />
+        )}
+      </div>
+      
+      <div className="flex-1 max-w-full overflow-hidden">
+        {isLoading ? (
+          <div className="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        ) : (
+          <div 
+            className="prose prose-sm dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: formatMessage(message) }}
+          />
+        )}
       </div>
     </div>
   );
