@@ -1,11 +1,14 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, KeyRound } from 'lucide-react';
+import { Send, Paperclip, KeyRound, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import LegalChatMessage from './LegalChatMessage';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface Message {
   id: string;
@@ -21,6 +24,12 @@ const INITIAL_MESSAGES: Message[] = [
   }
 ];
 
+const DEFAULT_SYSTEM_PROMPT = `You are LegalGPT, an AI assistant specialized in legal information. 
+You provide helpful, accurate, and clear information about legal topics. 
+Remember that you provide general legal information, not specific legal advice. 
+Always suggest consulting with a qualified attorney for specific legal problems.
+Focus on giving factual, well-structured responses about legal matters.`;
+
 interface ChatInterfaceProps {
   className?: string;
 }
@@ -31,16 +40,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
+  const [showSystemPromptSettings, setShowSystemPromptSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Try to get API key from localStorage on initial load
+  // Try to get API key and system prompt from localStorage on initial load
   useEffect(() => {
-    const savedApiKey = localStorage.getItem('deepseek-api-key');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-    } else {
-      // Show API key input if no key is found
-      setShowApiKeyInput(true);
+    // Set the provided API key
+    const providedApiKey = 'sk-8efdf32656bc45889804d7dc4b80c071';
+    setApiKey(providedApiKey);
+    localStorage.setItem('deepseek-api-key', providedApiKey);
+    
+    // Check for custom system prompt
+    const savedSystemPrompt = localStorage.getItem('system-prompt');
+    if (savedSystemPrompt) {
+      setSystemPrompt(savedSystemPrompt);
     }
   }, []);
 
@@ -60,6 +74,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     } else {
       toast.error('Please enter a valid API key');
     }
+  };
+
+  const saveSystemPrompt = () => {
+    localStorage.setItem('system-prompt', systemPrompt);
+    setShowSystemPromptSettings(false);
+    toast.success('Custom prompt saved successfully');
+  };
+
+  const resetSystemPrompt = () => {
+    setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
+    localStorage.removeItem('system-prompt');
+    toast.success('Prompt reset to default');
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -129,11 +155,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           messages: [
             {
               role: 'system',
-              content: `You are LegalGPT, an AI assistant specialized in legal information. 
-              You provide helpful, accurate, and clear information about legal topics. 
-              Remember that you provide general legal information, not specific legal advice. 
-              Always suggest consulting with a qualified attorney for specific legal problems.
-              Focus on giving factual, well-structured responses about legal matters.`
+              content: systemPrompt
             },
             ...previousMessages,
             {
@@ -186,15 +208,59 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           <h3 className="font-semibold text-legal-slate">LegalGPT Assistant</h3>
           <p className="text-xs text-legal-muted">Ask any legal question</p>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="text-xs flex items-center gap-1"
-          onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-        >
-          <KeyRound className="h-3 w-3" />
-          {apiKey ? 'Change API Key' : 'Set API Key'}
-        </Button>
+        <div className="flex gap-2">
+          <Dialog open={showSystemPromptSettings} onOpenChange={setShowSystemPromptSettings}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs flex items-center gap-1"
+              >
+                <Settings className="h-3 w-3" />
+                Custom Prompt
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Customize System Prompt</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="systemPrompt">System Prompt</Label>
+                  <Textarea
+                    id="systemPrompt"
+                    value={systemPrompt}
+                    onChange={(e) => setSystemPrompt(e.target.value)}
+                    rows={8}
+                    className="resize-none"
+                    placeholder="Enter your custom system prompt..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This prompt defines how the AI assistant behaves. You can customize it to focus on specific legal domains or response styles.
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <Button variant="outline" onClick={resetSystemPrompt}>
+                    Reset to Default
+                  </Button>
+                  <Button onClick={saveSystemPrompt}>
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs flex items-center gap-1"
+            onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+          >
+            <KeyRound className="h-3 w-3" />
+            {apiKey ? 'Change API Key' : 'Set API Key'}
+          </Button>
+        </div>
       </div>
       
       {showApiKeyInput && (
