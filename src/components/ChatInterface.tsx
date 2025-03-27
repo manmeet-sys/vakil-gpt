@@ -238,18 +238,22 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           parts: [{ text: m.text }]
         }));
 
-      // Gemini API endpoint
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
+      // Updated Gemini API endpoint with the correct API version
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           contents: [
-            // System prompt as a model message
+            // System prompt as a user message since Gemini doesn't have explicit system prompts
+            {
+              role: 'user',
+              parts: [{ text: `Instructions: ${systemPrompt}` }]
+            },
             {
               role: 'model',
-              parts: [{ text: systemPrompt }]
+              parts: [{ text: 'I understand. I will follow these instructions.' }]
             },
             ...previousMessages,
             {
@@ -292,7 +296,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
       const data = await response.json();
       
-      // Gemini response format is different from DeepSeek
+      // Gemini response format
       if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
         return data.candidates[0].content.parts[0].text;
       } else {
