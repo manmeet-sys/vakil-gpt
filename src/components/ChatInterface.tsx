@@ -231,36 +231,46 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
   const fetchGeminiResponse = async (userInput: string): Promise<string> => {
     try {
+      // Prepare conversation history (skip the initial welcome message)
       const previousMessages = messages
-        .filter(m => messages.indexOf(m) > 0) // Skip the initial welcome message
+        .filter(m => messages.indexOf(m) > 0)
         .map(m => ({
           role: m.isUser ? 'user' : 'model',
           parts: [{ text: m.text }]
         }));
+      
+      // Format contents array with proper system prompt handling
+      const contents = [];
+      
+      // Add system prompt as first user message
+      contents.push({
+        role: 'user',
+        parts: [{ text: systemPrompt }]
+      });
+      
+      // Add acknowledgment from the model
+      contents.push({
+        role: 'model',
+        parts: [{ text: 'I will act as LegalGPT, providing legal information but not legal advice.' }]
+      });
+      
+      // Add conversation history
+      contents.push(...previousMessages);
+      
+      // Add current user input
+      contents.push({
+        role: 'user',
+        parts: [{ text: userInput }]
+      });
 
-      // Updated Gemini API endpoint with the correct API version
+      // Make API request with the correct endpoint and model
       const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          contents: [
-            // System prompt as a user message since Gemini doesn't have explicit system prompts
-            {
-              role: 'user',
-              parts: [{ text: `Instructions: ${systemPrompt}` }]
-            },
-            {
-              role: 'model',
-              parts: [{ text: 'I understand. I will follow these instructions.' }]
-            },
-            ...previousMessages,
-            {
-              role: 'user',
-              parts: [{ text: userInput }]
-            }
-          ],
+          contents: contents,
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 1000,
@@ -296,7 +306,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
       const data = await response.json();
       
-      // Gemini response format
+      // Extract text from Gemini response
       if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
         return data.candidates[0].content.parts[0].text;
       } else {
