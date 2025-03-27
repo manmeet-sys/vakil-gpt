@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, KeyRound, Settings } from 'lucide-react';
+import { Send, KeyRound, Settings, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +8,7 @@ import LegalChatMessage from './LegalChatMessage';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 
 interface Message {
   id: string;
@@ -121,6 +122,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       title: "Success",
       description: "Prompt reset to default",
     });
+  };
+
+  const handleAnalysisComplete = (analysis: string) => {
+    const aiMessage: Message = {
+      id: Date.now().toString(),
+      text: "Based on your request, I've prepared the following legal analysis:\n\n" + analysis,
+      isUser: false
+    };
+    
+    setMessages(prev => [...prev, aiMessage]);
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -384,47 +395,55 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       )}
       
       <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-zinc-800">
-        <Dialog open={showSystemPromptSettings} onOpenChange={setShowSystemPromptSettings}>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-xs flex items-center gap-1"
-            >
-              <Settings className="h-3 w-3" />
-              Custom Prompt
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
-            <DialogHeader>
-              <DialogTitle>Customize System Prompt</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="systemPrompt">System Prompt</Label>
-                <Textarea
-                  id="systemPrompt"
-                  value={systemPrompt}
-                  onChange={(e) => setSystemPrompt(e.target.value)}
-                  rows={8}
-                  className="resize-none dark:bg-zinc-800 dark:border-zinc-700"
-                  placeholder="Enter your custom system prompt..."
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  This prompt defines how the AI assistant behaves. You can customize it to focus on specific legal domains or response styles.
-                </p>
+        <div className="flex items-center gap-2">
+          <Dialog open={showSystemPromptSettings} onOpenChange={setShowSystemPromptSettings}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs flex items-center gap-1"
+              >
+                <Settings className="h-3 w-3" />
+                Custom Prompt
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px] bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
+              <DialogHeader>
+                <DialogTitle>Customize System Prompt</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="systemPrompt">System Prompt</Label>
+                  <Textarea
+                    id="systemPrompt"
+                    value={systemPrompt}
+                    onChange={(e) => setSystemPrompt(e.target.value)}
+                    rows={8}
+                    className="resize-none dark:bg-zinc-800 dark:border-zinc-700"
+                    placeholder="Enter your custom system prompt..."
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    This prompt defines how the AI assistant behaves. You can customize it to focus on specific legal domains or response styles.
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <Button variant="outline" onClick={resetSystemPrompt} className="dark:border-zinc-700 dark:hover:bg-zinc-800">
+                    Reset to Default
+                  </Button>
+                  <Button onClick={saveSystemPrompt} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    Save Changes
+                  </Button>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={resetSystemPrompt} className="dark:border-zinc-700 dark:hover:bg-zinc-800">
-                  Reset to Default
-                </Button>
-                <Button onClick={saveSystemPrompt} className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Save Changes
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+          
+          <LegalAnalysisGenerator 
+            apiKey={apiKey} 
+            apiProvider={apiProvider} 
+            onAnalysisComplete={handleAnalysisComplete} 
+          />
+        </div>
         
         <Button 
           variant="outline" 
