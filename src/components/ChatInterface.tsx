@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, KeyRound, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import LegalChatMessage from './LegalChatMessage';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
@@ -47,9 +46,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   // Try to get API key and system prompt from localStorage on initial load
   useEffect(() => {
     // Set the provided API key
-    const providedApiKey = 'sk-8efdf32656bc45889804d7dc4b80c071';
-    setApiKey(providedApiKey);
-    localStorage.setItem('deepseek-api-key', providedApiKey);
+    const savedApiKey = localStorage.getItem('deepseek-api-key') || 'sk-8efdf32656bc45889804d7dc4b80c071';
+    setApiKey(savedApiKey);
     
     // Check for custom system prompt
     const savedSystemPrompt = localStorage.getItem('system-prompt');
@@ -70,22 +68,35 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     if (apiKey.trim()) {
       localStorage.setItem('deepseek-api-key', apiKey);
       setShowApiKeyInput(false);
-      toast.success('API key saved successfully');
+      toast({
+        title: "Success",
+        description: "API key saved successfully",
+      });
     } else {
-      toast.error('Please enter a valid API key');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a valid API key",
+      });
     }
   };
 
   const saveSystemPrompt = () => {
     localStorage.setItem('system-prompt', systemPrompt);
     setShowSystemPromptSettings(false);
-    toast.success('Custom prompt saved successfully');
+    toast({
+      title: "Success",
+      description: "Custom prompt saved successfully",
+    });
   };
 
   const resetSystemPrompt = () => {
     setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
     localStorage.removeItem('system-prompt');
-    toast.success('Prompt reset to default');
+    toast({
+      title: "Success",
+      description: "Prompt reset to default",
+    });
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -95,7 +106,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     
     if (!apiKey) {
       setShowApiKeyInput(true);
-      toast.error('Please enter your DeepSeek API key first');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter your DeepSeek API key first",
+      });
       return;
     }
     
@@ -121,15 +136,34 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       setMessages(prev => [...prev, responseMessage]);
     } catch (error) {
       console.error('Error fetching AI response:', error);
-      toast.error('Failed to get response. Please check your API key and try again.');
       
-      const errorMessage: Message = {
+      let errorMessage = "I'm sorry, I encountered an error processing your request.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('401')) {
+          errorMessage += " Invalid API key or authentication error. Please check your API key and try again.";
+        } else if (error.message.includes('429')) {
+          errorMessage += " Rate limit exceeded. Please try again later.";
+        } else if (error.message.includes('500')) {
+          errorMessage += " The DeepSeek API is experiencing issues. Please try again later.";
+        } else {
+          errorMessage += " " + error.message;
+        }
+      }
+      
+      toast({
+        variant: "destructive",
+        title: "API Error",
+        description: "Failed to get response. Please check your API key and try again.",
+      });
+      
+      const aiErrorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I'm sorry, I encountered an error processing your request. Please check your API key or try again later.",
+        text: errorMessage,
         isUser: false
       };
       
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => [...prev, aiErrorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -170,7 +204,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to fetch response');
+        const errorMessage = errorData.error?.message || `API error: ${response.status} ${response.statusText}`;
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
