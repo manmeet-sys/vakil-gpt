@@ -16,6 +16,16 @@ const LegalChatMessage: React.FC<LegalChatMessageProps> = ({
 }) => {
   // Function to format message with proper markdown-like styling
   const formatMessage = (text: string) => {
+    // Check if the text is JSON
+    try {
+      if (text.trim().startsWith('{') && text.trim().endsWith('}')) {
+        const jsonObj = JSON.parse(text);
+        return `<pre class="bg-gray-100 dark:bg-zinc-800 p-3 rounded-md my-2 overflow-x-auto font-mono text-sm">${JSON.stringify(jsonObj, null, 2)}</pre>`;
+      }
+    } catch (e) {
+      // Not valid JSON, continue with normal formatting
+    }
+
     // Simple replacements for formatting
     return text
       .split('\n')

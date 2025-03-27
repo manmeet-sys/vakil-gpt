@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, KeyRound, Settings, BookOpen } from 'lucide-react';
+import { Send, KeyRound, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +9,7 @@ import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
+import GeminiFlashAnalyzer from './GeminiFlashAnalyzer';
 
 interface Message {
   id: string;
@@ -442,6 +443,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
             apiKey={apiKey} 
             apiProvider={apiProvider} 
             onAnalysisComplete={handleAnalysisComplete} 
+          />
+          
+          <GeminiFlashAnalyzer
+            apiKey={apiKey}
+            onAnalysisComplete={handleAnalysisComplete}
           />
         </div>
         
