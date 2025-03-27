@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, KeyRound, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,16 +18,38 @@ interface Message {
 const INITIAL_MESSAGES: Message[] = [
   {
     id: '1',
-    text: "Welcome to LegalGPT. How can I assist you with your legal questions today?",
+    text: "Welcome to PrecedentAI. I'm your legal assistant specialized in Indian law, with focus on the Indian Constitution. How can I assist you today?",
     isUser: false
   }
 ];
 
-const DEFAULT_SYSTEM_PROMPT = `You are LegalGPT, an AI assistant specialized in legal information. 
-You provide helpful, accurate, and clear information about legal topics. 
-Remember that you provide general legal information, not specific legal advice. 
-Always suggest consulting with a qualified attorney for specific legal problems.
-Focus on giving factual, well-structured responses about legal matters.`;
+const DEFAULT_SYSTEM_PROMPT = `You are PrecedentAI, an advanced legal AI assistant specialized in Indian law with primary focus on the Indian Constitution. 
+
+Your core functionalities include:
+1. Legal Document Analysis: Extract key information from contracts, court filings, and legal opinions. Identify critical clauses and flag potential issues.
+2. Case Law Research: Search and analyze relevant case law from Indian courts, especially constitutional interpretations. Provide citations and explain legal principles.
+3. Compliance Assistant: Offer guidance for divorce law, corporate law, criminal law, real estate law, and company formation, with procedures, checklists, and templates.
+4. Legal Risk Assessment: Evaluate risks in scenarios like contract disputes or regulatory compliance, suggesting mitigation strategies.
+5. Legal Education: Explain legal concepts in simple language, focusing on the Indian Constitution and landmark cases.
+6. Due Diligence Support: Assist in due diligence for transactions, detecting issues like title defects or pending litigation.
+7. Legal Filing Processes: Guide users through filing legal documents with templates and deadline alerts.
+8. Contract Drafting: Draft or refine contracts ensuring legal soundness and clarity.
+9. Case Summaries: Provide concise summaries of case law, highlighting significance and implications.
+
+You are powered by legal data including the Indian Constitution, statutes like the Indian Penal Code and Companies Act, case law from the Supreme Court and High Courts, and authoritative legal texts.
+
+Important ethical guidelines:
+- You provide LEGAL INFORMATION, not legal advice. Always recommend consulting with qualified attorneys for specific legal problems.
+- Maintain confidentiality and adhere to Indian data protection laws.
+- Be transparent about your limitations and the need for human oversight.
+- Focus on unbiased, accurate information aligned with constitutional norms.
+
+When responding to queries:
+- Ask clarifying questions when faced with ambiguity.
+- Tailor your responses based on the legal field specified.
+- Provide detailed or simplified answers based on user needs.
+- Include relevant citations to legal sources when applicable.
+- Always prioritize accuracy over speed.`;
 
 interface ChatInterfaceProps {
   className?: string;
@@ -45,16 +66,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Try to get API key and system prompt from localStorage on initial load
   useEffect(() => {
-    // Set the saved API key and provider
     const savedApiKey = localStorage.getItem('ai-api-key') || 'AIzaSyBU6DAN_wDG7nqyV60a7ZaIjHVp-SE2x2w';
     setApiKey(savedApiKey);
     
     const savedApiProvider = localStorage.getItem('ai-api-provider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(savedApiProvider);
     
-    // Check for custom system prompt
     const savedSystemPrompt = localStorage.getItem('system-prompt');
     if (savedSystemPrompt) {
       setSystemPrompt(savedSystemPrompt);
@@ -185,7 +203,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const fetchDeepSeekResponse = async (userInput: string): Promise<string> => {
     try {
       const previousMessages = messages
-        .filter(m => messages.indexOf(m) > 0) // Skip the initial welcome message
+        .filter(m => messages.indexOf(m) > 0)
         .map(m => ({
           role: m.isUser ? 'user' : 'assistant',
           content: m.text
@@ -231,7 +249,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
   const fetchGeminiResponse = async (userInput: string): Promise<string> => {
     try {
-      // Prepare conversation history (skip the initial welcome message)
       const previousMessages = messages
         .filter(m => messages.indexOf(m) > 0)
         .map(m => ({
@@ -239,31 +256,25 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           parts: [{ text: m.text }]
         }));
       
-      // Format contents array with proper system prompt handling
       const contents = [];
       
-      // Add system prompt as first user message
       contents.push({
         role: 'user',
         parts: [{ text: systemPrompt }]
       });
       
-      // Add acknowledgment from the model
       contents.push({
         role: 'model',
-        parts: [{ text: 'I will act as LegalGPT, providing legal information but not legal advice.' }]
+        parts: [{ text: 'I will act as PrecedentAI, providing legal information but not legal advice.' }]
       });
       
-      // Add conversation history
       contents.push(...previousMessages);
       
-      // Add current user input
       contents.push({
         role: 'user',
         parts: [{ text: userInput }]
       });
 
-      // Make API request with the correct endpoint and model
       const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
@@ -306,7 +317,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
       const data = await response.json();
       
-      // Extract text from Gemini response
       if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
         return data.candidates[0].content.parts[0].text;
       } else {
@@ -318,7 +328,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     }
   };
 
-  // Simple fallback response generator for when API is not available
   const generateFallbackResponse = (userInput: string): string => {
     const input = userInput.toLowerCase();
     
@@ -329,7 +338,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     } else if (input.includes('rights') || input.includes('entitled')) {
       return "Legal rights vary significantly by jurisdiction and context. To provide accurate information about your rights, I would need to know your location and the specific situation you're inquiring about.";
     } else if (input.includes('hello') || input.includes('hi')) {
-      return "Hello! I'm LegalGPT, your AI legal assistant. Please note that while I can provide legal information, I cannot provide legal advice that substitutes for a qualified attorney. How can I help you today?";
+      return "Hello! I'm PrecedentAI, your AI legal assistant. Please note that while I can provide legal information, I cannot provide legal advice that substitutes for a qualified attorney. How can I help you today?";
     } else {
       return "Thank you for your question. To provide you with accurate legal information, I'd need more specific details. Please note that I provide general legal information, not legal advice. For specific advice tailored to your situation, consulting with a qualified attorney is recommended.";
     }
@@ -342,8 +351,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     )}>
       <div className="bg-white dark:bg-legal-slate/10 border-b border-legal-border px-4 py-3 flex justify-between items-center">
         <div>
-          <h3 className="font-semibold text-legal-slate">LegalGPT Assistant</h3>
-          <p className="text-xs text-legal-muted">Ask any legal question</p>
+          <h3 className="font-semibold text-legal-slate">PrecedentAI Assistant</h3>
+          <p className="text-xs text-legal-muted">Indian Legal AI Specialist</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={showSystemPromptSettings} onOpenChange={setShowSystemPromptSettings}>
