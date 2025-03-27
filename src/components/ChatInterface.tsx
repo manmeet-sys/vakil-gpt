@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, KeyRound, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -41,13 +42,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [showSystemPromptSettings, setShowSystemPromptSettings] = useState(false);
+  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('deepseek');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Try to get API key and system prompt from localStorage on initial load
   useEffect(() => {
-    // Set the provided API key
-    const savedApiKey = localStorage.getItem('deepseek-api-key') || 'sk-8efdf32656bc45889804d7dc4b80c071';
+    // Set the saved API key and provider
+    const savedApiKey = localStorage.getItem('ai-api-key') || '';
     setApiKey(savedApiKey);
+    
+    const savedApiProvider = localStorage.getItem('ai-api-provider') as 'deepseek' | 'gemini' || 'deepseek';
+    setApiProvider(savedApiProvider);
     
     // Check for custom system prompt
     const savedSystemPrompt = localStorage.getItem('system-prompt');
@@ -66,11 +71,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
   const saveApiKey = () => {
     if (apiKey.trim()) {
-      localStorage.setItem('deepseek-api-key', apiKey);
+      localStorage.setItem('ai-api-key', apiKey);
+      localStorage.setItem('ai-api-provider', apiProvider);
       setShowApiKeyInput(false);
       toast({
         title: "Success",
-        description: "API key saved successfully",
+        description: `${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key saved successfully`,
       });
     } else {
       toast({
@@ -109,7 +115,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please enter your DeepSeek API key first",
+        description: `Please enter your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key first`,
       });
       return;
     }
@@ -125,7 +131,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     setIsLoading(true);
     
     try {
-      const response = await fetchDeepSeekResponse(inputValue);
+      let response;
+      if (apiProvider === 'deepseek') {
+        response = await fetchDeepSeekResponse(inputValue);
+      } else if (apiProvider === 'gemini') {
+        response = await fetchGeminiResponse(inputValue);
+      } else {
+        throw new Error('Unsupported API provider');
+      }
       
       const responseMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -135,17 +148,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       
       setMessages(prev => [...prev, responseMessage]);
     } catch (error) {
-      console.error('Error fetching AI response:', error);
+      console.error(`Error fetching ${apiProvider} response:`, error);
       
       let errorMessage = "I'm sorry, I encountered an error processing your request.";
       
       if (error instanceof Error) {
-        if (error.message.includes('401')) {
-          errorMessage += " Invalid API key or authentication error. Please check your API key and try again.";
-        } else if (error.message.includes('429')) {
-          errorMessage += " Rate limit exceeded. Please try again later.";
+        if (error.message.includes('401') || error.message.includes('invalid')) {
+          errorMessage += ` Invalid API key or authentication error. Please check your ${apiProvider} API key and try again.`;
+        } else if (error.message.includes('429') || error.message.includes('quota')) {
+          errorMessage += " Rate limit exceeded or quota reached. Please try again later.";
         } else if (error.message.includes('500')) {
-          errorMessage += " The DeepSeek API is experiencing issues. Please try again later.";
+          errorMessage += ` The ${apiProvider} API is experiencing issues. Please try again later.`;
         } else {
           errorMessage += " " + error.message;
         }
@@ -154,7 +167,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       toast({
         variant: "destructive",
         title: "API Error",
-        description: "Failed to get response. Please check your API key and try again.",
+        description: `Failed to get response from ${apiProvider}. Please check your API key and try again.`,
       });
       
       const aiErrorMessage: Message = {
@@ -212,6 +225,81 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       return data.choices[0].message.content;
     } catch (error) {
       console.error('DeepSeek API error:', error);
+      throw error;
+    }
+  };
+
+  const fetchGeminiResponse = async (userInput: string): Promise<string> => {
+    try {
+      const previousMessages = messages
+        .filter(m => messages.indexOf(m) > 0) // Skip the initial welcome message
+        .map(m => ({
+          role: m.isUser ? 'user' : 'model',
+          parts: [{ text: m.text }]
+        }));
+
+      // Gemini API endpoint
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [
+            // System prompt as a model message
+            {
+              role: 'model',
+              parts: [{ text: systemPrompt }]
+            },
+            ...previousMessages,
+            {
+              role: 'user',
+              parts: [{ text: userInput }]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1000,
+            topK: 40,
+            topP: 0.95
+          },
+          safetySettings: [
+            {
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_HATE_SPEECH",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage = errorData.error?.message || `API error: ${response.status} ${response.statusText}`;
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      
+      // Gemini response format is different from DeepSeek
+      if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+        return data.candidates[0].content.parts[0].text;
+      } else {
+        throw new Error('Invalid response format from Gemini API');
+      }
+    } catch (error) {
+      console.error('Gemini API error:', error);
       throw error;
     }
   };
@@ -300,13 +388,23 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       
       {showApiKeyInput && (
         <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border-b border-legal-border">
-          <div className="text-sm mb-2">Enter your DeepSeek API key to enable AI responses</div>
+          <div className="text-sm mb-2">Select API provider and enter your API key</div>
+          <div className="flex gap-2 mb-2">
+            <select 
+              value={apiProvider}
+              onChange={(e) => setApiProvider(e.target.value as 'deepseek' | 'gemini')}
+              className="px-3 py-2 bg-white dark:bg-legal-slate/20 border border-legal-border rounded-md text-sm"
+            >
+              <option value="deepseek">DeepSeek API</option>
+              <option value="gemini">Google Gemini API</option>
+            </select>
+          </div>
           <div className="flex gap-2">
             <Input 
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="DeepSeek API Key"
+              placeholder={apiProvider === 'deepseek' ? 'DeepSeek API Key' : 'Gemini API Key'}
               className="flex-1 text-sm border-legal-border"
             />
             <Button onClick={saveApiKey} className="bg-legal-accent hover:bg-legal-accent/90 text-white">
@@ -315,6 +413,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           </div>
           <p className="text-xs mt-2 text-legal-muted">
             Your API key is stored locally in your browser and never sent to our servers.
+            {apiProvider === 'gemini' && (
+              <span> For Gemini, use an API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google AI Studio</a>.</span>
+            )}
           </p>
         </div>
       )}
