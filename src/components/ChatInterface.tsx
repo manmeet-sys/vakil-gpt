@@ -38,20 +38,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState('AIzaSyBU6DAN_wDG7nqyV60a7ZaIjHVp-SE2x2w');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [showSystemPromptSettings, setShowSystemPromptSettings] = useState(false);
-  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('deepseek');
+  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Try to get API key and system prompt from localStorage on initial load
   useEffect(() => {
     // Set the saved API key and provider
-    const savedApiKey = localStorage.getItem('ai-api-key') || '';
+    const savedApiKey = localStorage.getItem('ai-api-key') || 'AIzaSyBU6DAN_wDG7nqyV60a7ZaIjHVp-SE2x2w';
     setApiKey(savedApiKey);
     
-    const savedApiProvider = localStorage.getItem('ai-api-provider') as 'deepseek' | 'gemini' || 'deepseek';
+    const savedApiProvider = localStorage.getItem('ai-api-provider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(savedApiProvider);
     
     // Check for custom system prompt
