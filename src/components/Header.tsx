@@ -20,6 +20,9 @@ const Header = () => {
           <Link to="/chat" className="text-legal-slate dark:text-white/90 hover:text-legal-accent transition-colors">
             Chat
           </Link>
+          <Link to="/legal-document-analyzer" className="text-legal-slate dark:text-white/90 hover:text-legal-accent transition-colors">
+            Document Analyzer
+          </Link>
           <a href="#features" className="text-legal-slate dark:text-white/90 hover:text-legal-accent transition-colors">
             Features
           </a>
