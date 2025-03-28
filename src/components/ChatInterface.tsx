@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 import GeminiFlashAnalyzer from './GeminiFlashAnalyzer';
+import KnowledgeBaseButton from './KnowledgeBaseButton';
 
 interface Message {
   id: string;
@@ -135,6 +136,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     setMessages(prev => [...prev, aiMessage]);
   };
 
+  const incorporateKnowledgeBase = (userInput: string): string => {
+    const savedItems = localStorage.getItem('precedentAI-knowledge');
+    if (!savedItems) return userInput;
+    
+    try {
+      const knowledgeItems = JSON.parse(savedItems);
+      
+      if (!knowledgeItems || knowledgeItems.length === 0) return userInput;
+      
+      let knowledgeContext = "Here is some additional context from my knowledge base that might be relevant to this query:\n\n";
+      
+      const recentItems = knowledgeItems
+        .sort((a: any, b: any) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime())
+        .slice(0, 3);
+      
+      recentItems.forEach((item: any, index: number) => {
+        knowledgeContext += `[Knowledge Item ${index + 1}] ${item.title}\n`;
+        knowledgeContext += `${item.content.substring(0, 500)}${item.content.length > 500 ? '...' : ''}\n\n`;
+      });
+      
+      return `${userInput}\n\n${knowledgeContext}`;
+    } catch (e) {
+      console.error('Failed to parse knowledge items:', e);
+      return userInput;
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -161,11 +189,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     setIsLoading(true);
     
     try {
+      const enhancedUserInput = incorporateKnowledgeBase(inputValue);
+      
       let response;
       if (apiProvider === 'deepseek') {
-        response = await fetchDeepSeekResponse(inputValue);
+        response = await fetchDeepSeekResponse(enhancedUserInput);
       } else if (apiProvider === 'gemini') {
-        response = await fetchGeminiResponse(inputValue);
+        response = await fetchGeminiResponse(enhancedUserInput);
       } else {
         throw new Error('Unsupported API provider');
       }
@@ -449,6 +479,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
             apiKey={apiKey}
             onAnalysisComplete={handleAnalysisComplete}
           />
+          
+          <KnowledgeBaseButton />
         </div>
         
         <Button 
