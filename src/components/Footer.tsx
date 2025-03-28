@@ -1,18 +1,15 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import AnimatedLogo from './AnimatedLogo';
 import { Mail, Phone } from 'lucide-react';
-
 interface FooterProps {
   className?: string;
 }
-
-const Footer: React.FC<FooterProps> = ({ className }) => {
+const Footer: React.FC<FooterProps> = ({
+  className
+}) => {
   const currentYear = new Date().getFullYear();
-  
-  return (
-    <footer className={cn("bg-legal-light dark:bg-legal-slate/10 border-t border-legal-border", className)}>
+  return <footer className={cn("bg-legal-light dark:bg-legal-slate/10 border-t border-legal-border", className)}>
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-1">
@@ -74,7 +71,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             &copy; {currentYear} LegalGPT. All rights reserved.
           </p>
           
-          <p className="text-legal-muted text-sm mt-2 md:mt-0">
+          <p className="mt-2 md:mt-0 text-center text-sm font-extrabold text-slate-950">
             Made with ❤️ by <a href="mailto:Manmeetsingh20378@gmail.com" className="hover:text-legal-accent transition-colors">Manmeet Singh</a> & <a href="https://bhavychhabra.art" target="_blank" rel="noopener noreferrer" className="hover:text-legal-accent transition-colors">bhavychhabra.art</a>
           </p>
           
@@ -100,8 +97,6 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
