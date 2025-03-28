@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 import GeminiFlashAnalyzer from './GeminiFlashAnalyzer';
 import KnowledgeBaseButton from './KnowledgeBaseButton';
+import PdfAnalyzer from './PdfAnalyzer';
 
 interface Message {
   id: string;
@@ -426,7 +427,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       )}
       
       <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-zinc-800">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Dialog open={showSystemPromptSettings} onOpenChange={setShowSystemPromptSettings}>
             <DialogTrigger asChild>
               <Button 
@@ -477,6 +478,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           
           <GeminiFlashAnalyzer
             apiKey={apiKey}
+            onAnalysisComplete={handleAnalysisComplete}
+          />
+          
+          <PdfAnalyzer
+            apiKey={apiKey}
+            apiProvider={apiProvider}
             onAnalysisComplete={handleAnalysisComplete}
           />
           
