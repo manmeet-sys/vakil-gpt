@@ -1,19 +1,21 @@
-
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { GraduationCap, Loader2, BookOpen, Search } from 'lucide-react';
+import { GraduationCap, Loader2, BookOpen, Search, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const LegalEducationPage = () => {
   const [activeTab, setActiveTab] = useState<string>('explain');
   const [legalConcept, setLegalConcept] = useState<string>('');
   const [caseStudyTopic, setCaseStudyTopic] = useState<string>('');
   const [comparisonTopic, setComparisonTopic] = useState<string>('');
+  const [specialistQuery, setSpecialistQuery] = useState<string>('');
+  const [specialistType, setSpecialistType] = useState<string>('constitutional');
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
@@ -46,6 +48,9 @@ const LegalEducationPage = () => {
     } else if (activeTab === 'compare') {
       prompt = comparisonTopic;
       emptyFieldMessage = 'Please enter legal concepts to compare';
+    } else if (activeTab === 'specialist') {
+      prompt = specialistQuery;
+      emptyFieldMessage = 'Please enter a question for the specialist';
     }
     
     if (!prompt.trim()) {
@@ -141,6 +146,49 @@ const LegalEducationPage = () => {
       6. Mention significant Indian cases that illustrate the distinctions
       
       Format your comparison in a structured, educational manner that helps clarify the distinctions and relationships between these legal concepts.`;
+    } else if (activeTab === 'specialist') {
+      const specialistProfiles = {
+        constitutional: {
+          title: "Constitutional Law Specialist",
+          expertise: "expert in constitutional law, Indian constitution, fundamental rights, directive principles, constitutional amendments, and landmark Supreme Court judgments"
+        },
+        criminal: {
+          title: "Criminal Law Specialist",
+          expertise: "expert in Indian criminal law, Indian Penal Code, Criminal Procedure Code, criminal defense, prosecution procedures, bail provisions, and criminal jurisprudence"
+        },
+        corporate: {
+          title: "Corporate Law Specialist",
+          expertise: "expert in Indian corporate law, Companies Act, corporate governance, mergers and acquisitions, securities law, corporate compliance, and business regulations"
+        },
+        property: {
+          title: "Property Law Specialist",
+          expertise: "expert in Indian property law, real estate transactions, land acquisition, property registration, tenancy laws, and property dispute resolution"
+        },
+        family: {
+          title: "Family Law Specialist",
+          expertise: "expert in Indian family law, personal laws, marriage, divorce, adoption, maintenance, succession, and family dispute resolution"
+        },
+        tax: {
+          title: "Tax Law Specialist",
+          expertise: "expert in Indian tax law, income tax, GST, international taxation, tax planning, tax compliance, and tax dispute resolution"
+        }
+      };
+      
+      const specialist = specialistProfiles[specialistType as keyof typeof specialistProfiles];
+      
+      systemPrompt = `You are PrecedentAI's virtual ${specialist.title}, an ${specialist.expertise} with focus on the Indian legal system.
+      
+      Answer the following legal question with your specialized knowledge:
+      "${prompt}"
+      
+      Your response should:
+      1. Provide an expert perspective based on your specialist area of law
+      2. Reference relevant Indian legal provisions and authorities
+      3. Explain legal concepts specific to ${specialistType} law clearly
+      4. Mention important case precedents if applicable
+      5. Outline practical implications and considerations
+      
+      Format your response in a structured, educational manner, making complex legal concepts accessible while demonstrating your specialist expertise. Remember to note that your response is educational information, not legal advice.`;
     }
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
@@ -219,6 +267,49 @@ const LegalEducationPage = () => {
       6. Mention significant Indian cases that illustrate the distinctions
       
       Format your comparison in a structured, educational manner that helps clarify the distinctions and relationships between these legal concepts.`;
+    } else if (activeTab === 'specialist') {
+      const specialistProfiles = {
+        constitutional: {
+          title: "Constitutional Law Specialist",
+          expertise: "expert in constitutional law, Indian constitution, fundamental rights, directive principles, constitutional amendments, and landmark Supreme Court judgments"
+        },
+        criminal: {
+          title: "Criminal Law Specialist",
+          expertise: "expert in Indian criminal law, Indian Penal Code, Criminal Procedure Code, criminal defense, prosecution procedures, bail provisions, and criminal jurisprudence"
+        },
+        corporate: {
+          title: "Corporate Law Specialist",
+          expertise: "expert in Indian corporate law, Companies Act, corporate governance, mergers and acquisitions, securities law, corporate compliance, and business regulations"
+        },
+        property: {
+          title: "Property Law Specialist",
+          expertise: "expert in Indian property law, real estate transactions, land acquisition, property registration, tenancy laws, and property dispute resolution"
+        },
+        family: {
+          title: "Family Law Specialist",
+          expertise: "expert in Indian family law, personal laws, marriage, divorce, adoption, maintenance, succession, and family dispute resolution"
+        },
+        tax: {
+          title: "Tax Law Specialist",
+          expertise: "expert in Indian tax law, income tax, GST, international taxation, tax planning, tax compliance, and tax dispute resolution"
+        }
+      };
+      
+      const specialist = specialistProfiles[specialistType as keyof typeof specialistProfiles];
+      
+      systemPrompt = `You are PrecedentAI's virtual ${specialist.title}, an ${specialist.expertise} with focus on the Indian legal system.
+      
+      Answer the following legal question with your specialized knowledge:
+      "${prompt}"
+      
+      Your response should:
+      1. Provide an expert perspective based on your specialist area of law
+      2. Reference relevant Indian legal provisions and authorities
+      3. Explain legal concepts specific to ${specialistType} law clearly
+      4. Mention important case precedents if applicable
+      5. Outline practical implications and considerations
+      
+      Format your response in a structured, educational manner, making complex legal concepts accessible while demonstrating your specialist expertise. Remember to note that your response is educational information, not legal advice.`;
     }
     
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -254,10 +345,11 @@ const LegalEducationPage = () => {
     >
       <div className="max-w-4xl mx-auto">
         <Tabs defaultValue="explain" value={activeTab} onValueChange={handleTabChange} className="mb-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="explain">Explain Concepts</TabsTrigger>
             <TabsTrigger value="case-study">Case Studies</TabsTrigger>
             <TabsTrigger value="compare">Compare Concepts</TabsTrigger>
+            <TabsTrigger value="specialist">Law Specialists</TabsTrigger>
           </TabsList>
           
           <TabsContent value="explain">
@@ -368,6 +460,65 @@ const LegalEducationPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
+          
+          <TabsContent value="specialist">
+            <Card>
+              <CardHeader>
+                <CardTitle>Consult Law Specialists</CardTitle>
+                <CardDescription>
+                  Get expert insights from specialists in different areas of Indian law.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Select Specialist Type</label>
+                    <Select 
+                      value={specialistType} 
+                      onValueChange={setSpecialistType}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select specialist type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="constitutional">Constitutional Law</SelectItem>
+                        <SelectItem value="criminal">Criminal Law</SelectItem>
+                        <SelectItem value="corporate">Corporate Law</SelectItem>
+                        <SelectItem value="property">Property Law</SelectItem>
+                        <SelectItem value="family">Family Law</SelectItem>
+                        <SelectItem value="tax">Tax Law</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <Textarea
+                    value={specialistQuery}
+                    onChange={(e) => setSpecialistQuery(e.target.value)}
+                    placeholder="Ask a specific legal question in this area of law"
+                    className="min-h-[80px]"
+                  />
+                  
+                  <Button 
+                    onClick={handleGenerateContent} 
+                    disabled={isGenerating || !specialistQuery.trim()}
+                    className="w-full"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Consulting Specialist...
+                      </>
+                    ) : (
+                      <>
+                        <Users className="mr-2 h-4 w-4" />
+                        Consult Specialist
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {results && (
@@ -375,10 +526,14 @@ const LegalEducationPage = () => {
             <CardHeader>
               <CardTitle>
                 {activeTab === 'explain' ? 'Concept Explanation' : 
-                 activeTab === 'case-study' ? 'Case Study' : 'Concept Comparison'}
+                 activeTab === 'case-study' ? 'Case Study' : 
+                 activeTab === 'compare' ? 'Concept Comparison' :
+                 'Specialist Consultation'}
               </CardTitle>
               <CardDescription>
-                Legal educational content based on your request.
+                {activeTab === 'specialist' 
+                  ? `Expert insights from a ${specialistType.charAt(0).toUpperCase() + specialistType.slice(1)} Law Specialist`
+                  : 'Legal educational content based on your request.'}
               </CardDescription>
             </CardHeader>
             <CardContent>
