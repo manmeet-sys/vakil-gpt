@@ -8,14 +8,14 @@ interface KnowledgeBaseButtonProps {
   className?: string;
 }
 
-const KnowledgeBaseButton: React.FC<KnowledgeBaseButtonProps> = ({ className }) => {
+const KnowledgeBaseButton = ({ className }: KnowledgeBaseButtonProps) => {
   const navigate = useNavigate();
 
   return (
     <Button 
       variant="outline" 
       size="sm" 
-      className={`text-xs flex items-center gap-1 ${className}`}
+      className={`text-xs flex items-center gap-1 ${className || ''}`}
       onClick={() => navigate('/knowledge')}
     >
       <Book className="h-3 w-3" />
