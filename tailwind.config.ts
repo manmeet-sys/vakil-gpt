@@ -65,11 +65,28 @@ export default {
 				},
 				legal: {
 					'slate': '#2A3B4C',
-					'accent': '#0F4C81',
-					'light': '#F8FAFC',
-					'muted': '#94A3B8',
+					'accent': '#0070C9',
+					'light': '#F5F5F7',
+					'muted': '#86868B',
 					'surface': '#FFFFFF',
-					'border': '#E2E8F0'
+					'border': '#D2D2D7',
+					'success': '#34C759',
+					'warning': '#FF9500',
+					'error': '#FF3B30',
+					'info': '#007AFF'
+				},
+				apple: {
+					'blue': '#0070C9',
+					'gray': '#86868B',
+					'light-gray': '#F5F5F7',
+					'dark-gray': '#1D1D1F',
+					'red': '#FF3B30',
+					'green': '#34C759',
+					'orange': '#FF9500',
+					'yellow': '#FFCC00',
+					'purple': '#5856D6',
+					'teal': '#5AC8FA',
+					'indigo': '#5E5CE6'
 				}
 			},
 			borderRadius: {
@@ -132,19 +149,23 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fade-in': 'fade-in 0.5s ease-out',
-				'fade-up': 'fade-up 0.5s ease-out',
+				'fade-in': 'fade-in 0.5s ease-out forwards',
+				'fade-up': 'fade-up 0.5s ease-out forwards',
 				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
 				'scale': 'scale 0.2s ease-out'
 			},
 			fontFamily: {
-				sans: ['Inter var', 'Inter', 'sans-serif'],
-				serif: ['Merriweather', 'serif']
+				sans: ['-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'sans-serif'],
+				serif: ['New York', 'Times New Roman', 'serif'],
+				mono: ['SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace']
 			},
 			boxShadow: {
 				'elegant': '0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.02)',
 				'elevated': '0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)'
+				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+				'apple': '0 2px 10px rgba(0, 0, 0, 0.05)',
+				'apple-hover': '0 4px 20px rgba(0, 0, 0, 0.1)',
+				'card': '0 2px 8px rgba(0, 0, 0, 0.04)'
 			},
 			backdropBlur: {
 				'xs': '2px'

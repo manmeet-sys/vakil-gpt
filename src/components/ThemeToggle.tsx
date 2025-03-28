@@ -11,20 +11,20 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full w-8 h-8">
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 bg-secondary/80 backdrop-blur-sm">
+          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-apple-dark-gray dark:text-white" />
+          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-apple-dark-gray dark:text-white" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700">
-        <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700">
+      <DropdownMenuContent align="end" className="bg-white dark:bg-apple-dark-gray border border-apple-light-gray dark:border-apple-gray/30 rounded-xl shadow-apple">
+        <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer hover:bg-apple-light-gray dark:hover:bg-apple-gray/20 rounded-md my-0.5 text-sf-body">
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700">
+        <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer hover:bg-apple-light-gray dark:hover:bg-apple-gray/20 rounded-md my-0.5 text-sf-body">
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700">
+        <DropdownMenuItem onClick={() => setTheme("system")} className="cursor-pointer hover:bg-apple-light-gray dark:hover:bg-apple-gray/20 rounded-md my-0.5 text-sf-body">
           System
         </DropdownMenuItem>
       </DropdownMenuContent>
