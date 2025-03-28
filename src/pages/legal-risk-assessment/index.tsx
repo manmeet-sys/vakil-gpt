@@ -15,14 +15,14 @@ const LegalRiskAssessmentPage = () => {
   const [isAssessing, setIsAssessing] = useState(false);
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>('');
+  const [apiKey, setApiKey] = useState<string>('AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc');
   const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
 
   // Load API key on component mount
   React.useEffect(() => {
     const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(storedApiProvider);
-    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
+    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || (storedApiProvider === 'gemini' ? 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc' : '');
     setApiKey(storedApiKey);
   }, []);
 
@@ -254,3 +254,4 @@ const LegalRiskAssessmentPage = () => {
 };
 
 export default LegalRiskAssessmentPage;
+

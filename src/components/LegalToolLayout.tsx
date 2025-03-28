@@ -2,7 +2,7 @@
 import React, { ReactNode } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,18 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
   const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
   const { toast } = useToast();
 
+  useEffect(() => {
+    // Load the API key on component mount
+    const provider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    setApiProvider(provider);
+    loadApiKey(provider);
+    
+    // Set default Gemini API key if not already set
+    if (!localStorage.getItem('geminiApiKey')) {
+      localStorage.setItem('geminiApiKey', 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc');
+    }
+  }, []);
+
   const handleSaveApiKey = () => {
     localStorage.setItem(`${apiProvider}ApiKey`, apiKey);
     toast({
@@ -31,7 +43,8 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
   };
 
   const loadApiKey = (provider: 'deepseek' | 'gemini') => {
-    const key = localStorage.getItem(`${provider}ApiKey`) || '';
+    const defaultKey = provider === 'gemini' ? 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc' : '';
+    const key = localStorage.getItem(`${provider}ApiKey`) || defaultKey;
     setApiKey(key);
   };
 
@@ -127,3 +140,4 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
 };
 
 export default LegalToolLayout;
+

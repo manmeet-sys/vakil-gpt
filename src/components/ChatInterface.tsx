@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, KeyRound, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -63,7 +64,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState('AIzaSyBU6DAN_wDG7nqyV60a7ZaIjHVp-SE2x2w');
+  const [apiKey, setApiKey] = useState('AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [showSystemPromptSettings, setShowSystemPromptSettings] = useState(false);
@@ -71,7 +72,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const savedApiKey = localStorage.getItem('ai-api-key') || 'AIzaSyBU6DAN_wDG7nqyV60a7ZaIjHVp-SE2x2w';
+    const savedApiKey = localStorage.getItem('ai-api-key') || 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc';
     setApiKey(savedApiKey);
     
     const savedApiProvider = localStorage.getItem('ai-api-provider') as 'deepseek' | 'gemini' || 'gemini';
@@ -556,3 +557,4 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 };
 
 export default ChatInterface;
+
