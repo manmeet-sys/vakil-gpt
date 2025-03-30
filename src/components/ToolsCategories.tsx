@@ -21,12 +21,12 @@ interface ToolCategoryProps {
   className?: string;
 }
 
-const ToolCategory: React.FC<ToolCategoryProps> = ({
+const ToolCategory = ({
   title,
   description,
   tools,
   className
-}) => {
+}: ToolCategoryProps) => {
   const navigate = useNavigate();
 
   return (
