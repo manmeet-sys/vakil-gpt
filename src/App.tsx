@@ -22,6 +22,7 @@ import LegalBriefGenerationPage from "./pages/legal-brief-generation";
 import StatuteTrackerPage from "./pages/statute-tracker";
 import ContractDraftingPage from "./pages/contract-drafting";
 import StartupToolkitPage from "./pages/startup-toolkit";
+import PleaBargainPage from "./pages/plea-bargain";
 
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/statute-tracker" element={<StatuteTrackerPage />} />
             <Route path="/contract-drafting" element={<ContractDraftingPage />} />
             <Route path="/startup-toolkit" element={<StartupToolkitPage />} />
+            <Route path="/plea-bargain" element={<PleaBargainPage />} />
             
             {/* Still using placeholder for remaining tools */}
             <Route path="/e-signature" element={<PlaceholderToolPage />} />
@@ -61,7 +63,6 @@ const App = () => (
             <Route path="/virtual-assistant" element={<PlaceholderToolPage />} />
             <Route path="/ip-protection" element={<PlaceholderToolPage />} />
             <Route path="/sentencing-predictor" element={<PlaceholderToolPage />} />
-            <Route path="/plea-bargain" element={<PlaceholderToolPage />} />
             <Route path="/aml-compliance" element={<PlaceholderToolPage />} />
             <Route path="/tax-compliance" element={<PlaceholderToolPage />} />
             <Route path="/regulatory-reporting" element={<PlaceholderToolPage />} />
