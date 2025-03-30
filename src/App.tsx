@@ -27,6 +27,9 @@ import ESignaturePage from "./pages/e-signature";
 import GdprCompliancePage from "./pages/gdpr-compliance";
 import LitigationPredictionPage from "./pages/litigation-prediction";
 import TaxCompliancePage from "./pages/tax-compliance";
+import BillingTrackingPage from "./pages/billing-tracking";
+import IPProtectionPage from "./pages/ip-protection";
+import SentencingPredictorPage from "./pages/sentencing-predictor";
 
 import NotFound from "./pages/NotFound";
 
@@ -60,14 +63,14 @@ const App = () => (
             <Route path="/gdpr-compliance" element={<GdprCompliancePage />} />
             <Route path="/litigation-prediction" element={<LitigationPredictionPage />} />
             <Route path="/tax-compliance" element={<TaxCompliancePage />} />
+            <Route path="/billing-tracking" element={<BillingTrackingPage />} />
+            <Route path="/ip-protection" element={<IPProtectionPage />} />
+            <Route path="/sentencing-predictor" element={<SentencingPredictorPage />} />
             
             {/* Still using placeholder for remaining tools */}
             <Route path="/court-filing" element={<PlaceholderToolPage />} />
             <Route path="/deadline-management" element={<PlaceholderToolPage />} />
-            <Route path="/billing-tracking" element={<PlaceholderToolPage />} />
             <Route path="/virtual-assistant" element={<PlaceholderToolPage />} />
-            <Route path="/ip-protection" element={<PlaceholderToolPage />} />
-            <Route path="/sentencing-predictor" element={<PlaceholderToolPage />} />
             <Route path="/aml-compliance" element={<PlaceholderToolPage />} />
             <Route path="/regulatory-reporting" element={<PlaceholderToolPage />} />
             <Route path="/m&a-due-diligence" element={<PlaceholderToolPage />} />
