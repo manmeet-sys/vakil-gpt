@@ -14,7 +14,7 @@ const AnimatedLogo: React.FC<AnimatedLogoProps> = ({ className }) => {
         <Gavel className="w-6 h-6 text-legal-accent animate-pulse-subtle" />
       </div>
       <div className="font-sans font-semibold text-xl tracking-tight">
-        <span className="text-legal-slate">Legal</span>
+        <span className="text-legal-slate">Vakil</span>
         <span className="text-legal-accent">GPT</span>
       </div>
     </div>

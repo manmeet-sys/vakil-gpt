@@ -27,7 +27,7 @@ const SafeHeader: React.FC<HeaderProps> = (props) => {
           <div className="flex items-center gap-2">
             <a href="/" className="flex items-center gap-2">
               <AnimatedLogo />
-              <span className="font-bold text-lg text-legal-slate dark:text-white">LegalGPT <span className="text-apple-orange text-xs align-top">IN</span></span>
+              <span className="font-bold text-lg text-legal-slate dark:text-white">VakilGPT <span className="text-apple-orange text-xs align-top">IN</span></span>
             </a>
           </div>
           <ThemeToggle />
@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <AnimatedLogo />
-            <span className="font-bold text-lg text-legal-slate dark:text-white">LegalGPT <span className="text-apple-orange text-xs align-top">IN</span></span>
+            <span className="font-bold text-lg text-legal-slate dark:text-white">VakilGPT <span className="text-apple-orange text-xs align-top">IN</span></span>
           </Link>
         </div>
 
