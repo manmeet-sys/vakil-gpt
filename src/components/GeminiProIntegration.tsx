@@ -8,6 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getGeminiResponse } from './GeminiProIntegration';
 
 interface GeminiProIntegrationProps {
   apiKey: string;
@@ -71,7 +72,7 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
 
     try {
       const prompt = getPromptTemplate(analysisType, text);
-      const analysis = await fetchGeminiProResponse(prompt);
+      const analysis = await getGeminiResponse(prompt, apiKey);
       
       onAnalysisComplete(analysis);
       setIsOpen(false);
@@ -90,54 +91,6 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
       });
     } finally {
       setIsGenerating(false);
-    }
-  };
-
-  const fetchGeminiProResponse = async (prompt: string): Promise<string> => {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: "user", parts: [{ text: prompt }] }
-        ],
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 4096,
-          topK: 40,
-          topP: 0.95
-        },
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          }
-        ]
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response format from Gemini API');
     }
   };
 

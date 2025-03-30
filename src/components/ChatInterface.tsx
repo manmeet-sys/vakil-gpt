@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, KeyRound, Settings } from 'lucide-react';
+import { Send, KeyRound, Settings, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,7 @@ import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 import GeminiFlashAnalyzer from './GeminiFlashAnalyzer';
 import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
-import GeminiProIntegration from './GeminiProIntegration';
+import * as GeminiProIntegration from './GeminiProIntegration';
 
 interface Message {
   id: string;
@@ -477,10 +477,27 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
             onAnalysisComplete={handleAnalysisComplete} 
           />
           
-          <GeminiProIntegration
-            apiKey={apiKey}
-            onAnalysisComplete={handleAnalysisComplete}
-          />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs flex items-center gap-1"
+            onClick={() => {
+              if (!apiKey) {
+                toast({
+                  variant: "destructive",
+                  title: "API Key Required",
+                  description: "Please set your Gemini API key first",
+                });
+                setShowApiKeyInput(true);
+                return;
+              }
+              
+              setIsOpen(true);
+            }}
+          >
+            <Zap className="h-3 w-3" />
+            Gemini Pro
+          </Button>
           
           <GeminiFlashAnalyzer
             apiKey={apiKey}
