@@ -54,7 +54,7 @@ const ToolCategory = ({
         {tools.map((tool) => (
           <Card 
             key={tool.id} 
-            className="border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 hover:shadow-lg transition-all duration-300"
+            className="border border-legal-border/60 dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 backdrop-blur-sm rounded-xl hover:shadow-apple-hover transition-all duration-300"
           >
             <CardHeader className="pb-2">
               <div className="w-10 h-10 rounded-full bg-legal-accent/10 flex items-center justify-center mb-2">

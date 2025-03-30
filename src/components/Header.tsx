@@ -27,7 +27,7 @@ const SafeHeader: React.FC<HeaderProps> = (props) => {
           <div className="flex items-center gap-2">
             <a href="/" className="flex items-center gap-2">
               <AnimatedLogo />
-              <span className="font-bold text-lg text-legal-slate dark:text-white">LegalGPT</span>
+              <span className="font-bold text-lg text-legal-slate dark:text-white">LegalGPT <span className="text-apple-orange text-xs align-top">IN</span></span>
             </a>
           </div>
           <ThemeToggle />
@@ -44,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full bg-white/80 dark:bg-legal-slate/80 backdrop-blur-md border-b border-legal-border dark:border-legal-slate/20",
+        "sticky top-0 z-50 w-full bg-white/80 dark:bg-legal-slate/80 backdrop-blur-md border-b border-legal-border/60 dark:border-legal-slate/20 shadow-sm",
         className
       )}
     >
@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <AnimatedLogo />
-            <span className="font-bold text-lg text-legal-slate dark:text-white">LegalGPT</span>
+            <span className="font-bold text-lg text-legal-slate dark:text-white">LegalGPT <span className="text-apple-orange text-xs align-top">IN</span></span>
           </Link>
         </div>
 
@@ -93,10 +93,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
         </nav>
 
         {/* Mobile Menu Button */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center">
+          <ThemeToggle />
           <Button
             variant="ghost"
-            className="h-9 w-9 p-0"
+            className="h-9 w-9 p-0 ml-2"
             onClick={() => setIsOpen(!isOpen)}
           >
             <Menu className="h-5 w-5" />
@@ -104,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           </Button>
         </div>
 
-        {/* Theme Toggle */}
+        {/* Theme Toggle (Desktop) */}
         <div className="hidden md:flex items-center">
           <ThemeToggle />
         </div>
@@ -157,9 +158,6 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
               >
                 Knowledge
               </Link>
-              <div className="pt-2 pb-1">
-                <ThemeToggle />
-              </div>
             </div>
           </motion.div>
         )}
