@@ -14,10 +14,11 @@ import { toast } from '@/hooks/use-toast';
 import { 
   FileText, Scale, BarChart, History, ArrowRight, Check, RotateCcw, 
   Clock, Briefcase, FileCheck, CircleHelp, ChevronRight, ChevronLeft, 
-  Shield, Trash, Loader2
+  Shield, Trash, Loader2, AlertTriangle, AlertCircle, Book, Download, Info
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { getGeminiResponse } from './GeminiProIntegration';
+import { Separator } from '@/components/ui/separator';
 
 interface CrimeCategory {
   id: string;
@@ -202,7 +203,6 @@ const sentencingFactors: SentencingFactor[] = [
 const SentencingPredictorTool: React.FC = () => {
   const [activeTab, setActiveTab] = useState('case-info');
   
-  // Case Information State
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedOffense, setSelectedOffense] = useState('');
   const [offenseLevel, setOffenseLevel] = useState<'misdemeanor' | 'felony'>('misdemeanor');
@@ -210,7 +210,6 @@ const SentencingPredictorTool: React.FC = () => {
   const [jurisdiction, setJurisdiction] = useState('');
   const [caseDetails, setCaseDetails] = useState('');
   
-  // Defendant Information State
   const [age, setAge] = useState('');
   const [priorOffenses, setPriorOffenses] = useState<PriorOffense[]>([]);
   const [newPriorOffense, setNewPriorOffense] = useState({
@@ -221,14 +220,12 @@ const SentencingPredictorTool: React.FC = () => {
   const [factors, setFactors] = useState<SentencingFactor[]>(sentencingFactors);
   const [additionalFactors, setAdditionalFactors] = useState('');
   
-  // Analysis State
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [sentencingEstimate, setSentencingEstimate] = useState<SentencingEstimate | null>(null);
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
   const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState('');
   
-  // Dialog States
   const [isFactorDialogOpen, setIsFactorDialogOpen] = useState(false);
   const [isOffenseDialogOpen, setIsOffenseDialogOpen] = useState(false);
   
@@ -316,7 +313,6 @@ const SentencingPredictorTool: React.FC = () => {
     setIsAnalyzing(true);
     
     try {
-      // Generate a mock sentencing estimate first
       const mockEstimate: SentencingEstimate = {
         probabilityOfIncarceration: Math.random() * 100,
         estimatedSentenceRange: {
@@ -344,7 +340,6 @@ const SentencingPredictorTool: React.FC = () => {
         ]
       };
       
-      // Add all selected factors to the estimate
       factors.filter(f => f.selected).forEach(factor => {
         mockEstimate.factors.push({
           key: factor.name,
@@ -355,7 +350,6 @@ const SentencingPredictorTool: React.FC = () => {
       
       setSentencingEstimate(mockEstimate);
       
-      // Now get AI analysis of the case
       const selectedFactors = factors.filter(f => f.selected).map(f => `${f.name} (${f.type})`).join(', ');
       
       const prompt = `You are a sentencing analysis expert. Based on the following case information, provide a detailed analysis of likely sentencing outcomes and legal considerations.
@@ -383,7 +377,6 @@ Ensure your analysis is balanced, fact-based, and considers both the prosecution
       const analysis = await getGeminiResponse(prompt, apiKey);
       setAiAnalysis(analysis);
       
-      // Move to the analysis tab
       setActiveTab('analysis');
       
       toast({
@@ -510,7 +503,7 @@ This analysis is provided for informational purposes only and should not be cons
             Defendant Profile
           </TabsTrigger>
           <TabsTrigger value="analysis">
-            <BarChart3 className="mr-2 h-4 w-4" />
+            <BarChart className="mr-2 h-4 w-4" />
             Sentencing Analysis
           </TabsTrigger>
         </TabsList>
@@ -861,7 +854,7 @@ This analysis is provided for informational purposes only and should not be cons
           {!sentencingEstimate ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <BarChart3 className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <BarChart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-medium mb-2">No Analysis Generated Yet</h3>
                 <p className="text-muted-foreground mb-4">
                   Fill in the case and defendant information, then generate an analysis to see results.
@@ -1048,7 +1041,6 @@ This analysis is provided for informational purposes only and should not be cons
         </TabsContent>
       </Tabs>
       
-      {/* API Key Dialog */}
       <Dialog open={isApiKeyDialogOpen} onOpenChange={setIsApiKeyDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -1079,7 +1071,6 @@ This analysis is provided for informational purposes only and should not be cons
         </DialogContent>
       </Dialog>
       
-      {/* Sentencing Factors Dialog */}
       <Dialog open={isFactorDialogOpen} onOpenChange={setIsFactorDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -1162,7 +1153,6 @@ This analysis is provided for informational purposes only and should not be cons
         </DialogContent>
       </Dialog>
       
-      {/* Prior Offense Dialog */}
       <Dialog open={isOffenseDialogOpen} onOpenChange={setIsOffenseDialogOpen}>
         <DialogContent>
           <DialogHeader>
