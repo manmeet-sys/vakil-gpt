@@ -4,10 +4,12 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ChatInterface from '@/components/ChatInterface';
 import FeatureCard from '@/components/FeatureCard';
+import AllTools from '@/components/AllTools';
 import { Gavel, Scale, FileText, Shield, BookOpen, CheckCircle, ArrowRight, Search, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+
 const features = [{
   icon: FileText,
   title: 'Legal Document Analysis',
@@ -33,6 +35,7 @@ const features = [{
   title: 'Due Diligence Support',
   description: 'Streamline due diligence with automated document review, entity extraction, and customizable report generation. Reduce review time by up to 80% while increasing accuracy.'
 }];
+
 const benefits = [{
   title: 'Save Time',
   description: 'Reduce legal research time by up to 70% with instant access to relevant information, automated document analysis, and AI-powered summaries.',
@@ -50,6 +53,7 @@ const benefits = [{
   description: 'Keep up with changing laws and regulations through real-time updates and alerts. Never miss an important regulatory change that affects your business.',
   percentage: 95
 }];
+
 const howItWorks = [{
   title: 'Ask Questions',
   description: 'Simply type your legal question or upload a document. Our AI understands complex legal queries and provides relevant responses.',
@@ -63,6 +67,7 @@ const howItWorks = [{
   description: 'Add your own documents to the knowledge base to make responses more relevant to your specific needs and jurisdiction.',
   icon: Settings
 }];
+
 const Index = () => {
   useEffect(() => {
     const inViewObserver = new IntersectionObserver(entries => {
@@ -86,6 +91,7 @@ const Index = () => {
       elements.forEach(el => inViewObserver.unobserve(el));
     };
   }, []);
+
   return <>
       <Header />
       
@@ -110,9 +116,11 @@ const Index = () => {
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Button variant="outline" className="border-legal-border hover:bg-legal-light dark:hover:bg-legal-slate/20 text-legal-slate dark:text-white/90 text-base px-6 py-6">
-                Watch Demo
-              </Button>
+              <Link to="/tools">
+                <Button variant="outline" className="border-legal-border hover:bg-legal-light dark:hover:bg-legal-slate/20 text-legal-slate dark:text-white/90 text-base px-6 py-6 w-full sm:w-auto">
+                  Explore All Tools
+                </Button>
+              </Link>
             </div>
             <div className="pt-4 flex items-center space-x-4 text-sm text-legal-muted dark:text-gray-400">
               <div className="flex -space-x-2">
@@ -194,14 +202,29 @@ const Index = () => {
             <p className="text-legal-muted text-lg">
               PrecedentAI offers a suite of AI-powered tools designed specifically for legal professionals to streamline workflows and enhance decision-making.
             </p>
+            <div className="mt-6">
+              <Link to="/tools">
+                <Button className="bg-legal-accent/10 hover:bg-legal-accent/20 text-legal-accent px-6 py-2">
+                  View All Tools
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
           
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
             {features.map((feature, index) => <div key={feature.title} className="fade-up-element" style={{
             animationDelay: `${index * 100}ms`
           }}>
                 <FeatureCard icon={feature.icon} title={feature.title} description={feature.description} />
               </div>)}
+          </div>
+          
+          <div className="mt-16 fade-up-element">
+            <h3 className="text-2xl font-bold text-legal-slate dark:text-white mb-6 text-center">
+              Explore All Legal & Financial Tools
+            </h3>
+            <AllTools />
           </div>
         </div>
       </section>
@@ -354,13 +377,17 @@ const Index = () => {
               Join thousands of legal professionals who are using PrecedentAI to work smarter, faster, and more effectively.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-6 text-base group">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button variant="outline" className="border-legal-border hover:bg-white text-legal-slate px-8 py-6 text-base">
-                Schedule Demo
-              </Button>
+              <Link to="/chat">
+                <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-6 text-base group">
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link to="/tools">
+                <Button variant="outline" className="border-legal-border hover:bg-white text-legal-slate px-8 py-6 text-base">
+                  Explore All Tools
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -369,4 +396,5 @@ const Index = () => {
       <Footer />
     </>;
 };
+
 export default Index;

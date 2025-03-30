@@ -1,211 +1,143 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import AnimatedLogo from './AnimatedLogo';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { 
-  ChevronDown, 
-  BookOpen, 
-  ScrollText, 
-  Scale, 
-  Shield, 
-  ClipboardCheck, 
-  GraduationCap,
-  Menu,
-  X
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetClose
-} from "@/components/ui/sheet";
+import { Menu } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
+import AnimatedLogo from './AnimatedLogo';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const Header = () => {
+interface HeaderProps {
+  className?: string;
+}
+
+const Header: React.FC<HeaderProps> = ({ className }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   return (
-    <header className="py-4 px-4 border-b border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 sticky top-0 z-50 transition-colors">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center">
-          <AnimatedLogo />
-        </Link>
-        
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full bg-white/80 dark:bg-legal-slate/80 backdrop-blur-md border-b border-legal-border dark:border-legal-slate/20",
+        className
+      )}
+    >
+      <div className="container mx-auto px-4 flex h-16 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
+            <AnimatedLogo />
+            <span className="font-bold text-lg text-legal-slate dark:text-white">LegalGPT</span>
+          </Link>
+        </div>
+
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center space-x-6">
-          <Link to="/" className="text-legal-slate dark:text-white/90 hover:text-legal-accent transition-colors">
+        <nav className="hidden md:flex items-center space-x-1">
+          <Link
+            to="/"
+            className={`px-3 py-2 text-sm font-medium rounded-md text-legal-slate hover:text-legal-accent dark:text-gray-200 dark:hover:text-white transition-colors ${
+              location.pathname === "/" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : ""
+            }`}
+          >
             Home
           </Link>
-          <Link to="/chat" className="text-legal-slate dark:text-white/90 hover:text-legal-accent transition-colors">
+          <Link
+            to="/chat"
+            className={`px-3 py-2 text-sm font-medium rounded-md text-legal-slate hover:text-legal-accent dark:text-gray-200 dark:hover:text-white transition-colors ${
+              location.pathname === "/chat" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : ""
+            }`}
+          >
             Chat
           </Link>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center text-legal-slate dark:text-white/90 hover:text-legal-accent transition-colors">
-              Legal Tools <ChevronDown className="h-4 w-4 ml-1" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem asChild>
-                <Link to="/legal-document-analyzer" className="flex items-center gap-2">
-                  <ScrollText className="h-4 w-4" />
-                  Document Analyzer
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/case-law-research" className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  Case Law Research
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/compliance-assistance" className="flex items-center gap-2">
-                  <ClipboardCheck className="h-4 w-4" />
-                  Compliance Assistance
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/legal-risk-assessment" className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Risk Assessment
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/legal-due-diligence" className="flex items-center gap-2">
-                  <Scale className="h-4 w-4" />
-                  Due Diligence
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/legal-education" className="flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4" />
-                  Legal Education
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <a href="#features" className="text-legal-slate dark:text-white/90 hover:text-legal-accent transition-colors">
-            Features
-          </a>
-          <a href="#benefits" className="text-legal-slate dark:text-white/90 hover:text-legal-accent transition-colors">
-            Benefits
-          </a>
+          <Link
+            to="/tools"
+            className={`px-3 py-2 text-sm font-medium rounded-md text-legal-slate hover:text-legal-accent dark:text-gray-200 dark:hover:text-white transition-colors ${
+              location.pathname === "/tools" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : ""
+            }`}
+          >
+            Tools
+          </Link>
+          <Link
+            to="/knowledge"
+            className={`px-3 py-2 text-sm font-medium rounded-md text-legal-slate hover:text-legal-accent dark:text-gray-200 dark:hover:text-white transition-colors ${
+              location.pathname === "/knowledge" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : ""
+            }`}
+          >
+            Knowledge
+          </Link>
         </nav>
-        
-        {/* Mobile Hamburger Menu */}
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white hidden lg:flex">
-            Sign Up
+
+        {/* Mobile Menu Button */}
+        <div className="md:hidden">
+          <Button
+            variant="ghost"
+            className="h-9 w-9 p-0"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
           </Button>
-          
-          <Sheet>
-            <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[80vw] max-w-xs p-0">
-              <div className="flex flex-col h-full">
-                <div className="p-4 border-b border-border flex items-center justify-between">
-                  <AnimatedLogo />
-                  <SheetClose asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                      <X className="h-5 w-5" />
-                      <span className="sr-only">Close menu</span>
-                    </Button>
-                  </SheetClose>
-                </div>
-                
-                <div className="flex-1 overflow-auto py-4">
-                  <div className="flex flex-col space-y-1 px-2">
-                    <SheetClose asChild>
-                      <Link to="/" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        Home
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link to="/chat" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        Chat
-                      </Link>
-                    </SheetClose>
-                    
-                    <div className="pt-2 pb-1">
-                      <p className="px-4 text-xs font-semibold text-muted-foreground">Legal Tools</p>
-                    </div>
-                    
-                    <SheetClose asChild>
-                      <Link to="/legal-document-analyzer" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        <ScrollText className="mr-2 h-4 w-4" />
-                        Document Analyzer
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link to="/case-law-research" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        <BookOpen className="mr-2 h-4 w-4" />
-                        Case Law Research
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link to="/compliance-assistance" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        <ClipboardCheck className="mr-2 h-4 w-4" />
-                        Compliance Assistance
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link to="/legal-risk-assessment" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        <Shield className="mr-2 h-4 w-4" />
-                        Risk Assessment
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link to="/legal-due-diligence" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        <Scale className="mr-2 h-4 w-4" />
-                        Due Diligence
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link to="/legal-education" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        <GraduationCap className="mr-2 h-4 w-4" />
-                        Legal Education
-                      </Link>
-                    </SheetClose>
-                    
-                    <div className="pt-2 pb-1">
-                      <p className="px-4 text-xs font-semibold text-muted-foreground">More</p>
-                    </div>
-                    
-                    <SheetClose asChild>
-                      <a href="#features" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        Features
-                      </a>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <a href="#benefits" className="flex items-center rounded-md px-4 py-3 text-sm font-medium hover:bg-muted">
-                        Benefits
-                      </a>
-                    </SheetClose>
-                  </div>
-                </div>
-                
-                <div className="p-4 border-t border-border">
-                  <Button className="w-full bg-legal-accent hover:bg-legal-accent/90 text-white">
-                    Sign Up
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+        </div>
+
+        {/* Theme Toggle */}
+        <div className="hidden md:flex items-center">
+          <ThemeToggle />
         </div>
       </div>
+
+      {/* Mobile Navigation */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden absolute top-16 inset-x-0 bg-white dark:bg-legal-slate border-b border-legal-border dark:border-legal-slate/20 shadow-lg"
+          >
+            <div className="px-4 py-2 space-y-1">
+              <Link
+                to="/"
+                className={`block px-3 py-2 text-sm font-medium rounded-md ${
+                  location.pathname === "/" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                Home
+              </Link>
+              <Link
+                to="/chat"
+                className={`block px-3 py-2 text-sm font-medium rounded-md ${
+                  location.pathname === "/chat" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                Chat
+              </Link>
+              <Link
+                to="/tools"
+                className={`block px-3 py-2 text-sm font-medium rounded-md ${
+                  location.pathname === "/tools" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                Tools
+              </Link>
+              <Link
+                to="/knowledge"
+                className={`block px-3 py-2 text-sm font-medium rounded-md ${
+                  location.pathname === "/knowledge" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                Knowledge
+              </Link>
+              <div className="pt-2 pb-1">
+                <ThemeToggle />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

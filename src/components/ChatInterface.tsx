@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, KeyRound, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 import GeminiFlashAnalyzer from './GeminiFlashAnalyzer';
 import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
+import GeminiProIntegration from './GeminiProIntegration';
 
 interface Message {
   id: string;
@@ -477,6 +477,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
             onAnalysisComplete={handleAnalysisComplete} 
           />
           
+          <GeminiProIntegration
+            apiKey={apiKey}
+            onAnalysisComplete={handleAnalysisComplete}
+          />
+          
           <GeminiFlashAnalyzer
             apiKey={apiKey}
             onAnalysisComplete={handleAnalysisComplete}
@@ -557,4 +562,3 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 };
 
 export default ChatInterface;
-
