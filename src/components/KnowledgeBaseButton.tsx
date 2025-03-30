@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Book } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,10 +11,21 @@ import {
 
 interface KnowledgeBaseButtonProps {
   className?: string;
+  onInsert?: (text: string) => void;
 }
 
-const KnowledgeBaseButton = ({ className }: KnowledgeBaseButtonProps) => {
+const KnowledgeBaseButton = ({ className, onInsert }: KnowledgeBaseButtonProps) => {
   const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (onInsert) {
+      // If onInsert is provided, use it to insert a reference
+      onInsert(" [Reference from knowledge base] ");
+    } else {
+      // Otherwise navigate to the knowledge page
+      navigate('/knowledge');
+    }
+  };
 
   return (
     <TooltipProvider>
@@ -25,7 +35,7 @@ const KnowledgeBaseButton = ({ className }: KnowledgeBaseButtonProps) => {
             variant="outline" 
             size="sm" 
             className={`text-xs flex items-center gap-1 ${className || ''}`}
-            onClick={() => navigate('/knowledge')}
+            onClick={handleClick}
           >
             <Book className="h-3 w-3" />
             Knowledge Base

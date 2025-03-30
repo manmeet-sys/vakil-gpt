@@ -1,19 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, KeyRound, Settings, Zap } from 'lucide-react';
+import { Send, KeyRound, Settings, Zap, Loader2, Plus, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { LegalChatMessage } from './LegalChatMessage';
+import LegalChatMessage from './LegalChatMessage';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 import GeminiFlashAnalyzer from './GeminiFlashAnalyzer';
 import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
 import { getGeminiResponse } from './GeminiProIntegration';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -372,12 +371,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
             onAnalysisComplete={handleAnalysisComplete}
           />
           
-          <KnowledgeBaseButton
-            onInsert={(text) => setInput(prev => prev + text)}
-          />
+          <KnowledgeBaseButton />
           
           <PdfAnalyzer 
             apiKey={apiKey}
+            apiProvider="gemini"
             onAnalysisComplete={handleAnalysisComplete} 
           />
         </div>
@@ -388,9 +386,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
         {messages.map((message) => (
           <LegalChatMessage
             key={message.id}
-            message={message}
+            message={message.content}
+            isUser={message.role === 'user'}
           />
         ))}
+        {isLoading && (
+          <LegalChatMessage
+            message=""
+            isUser={false}
+            isLoading={true}
+          />
+        )}
         <div ref={messagesEndRef} />
       </div>
       

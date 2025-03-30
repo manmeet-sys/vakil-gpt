@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import { 
   Search, FileText, Shield, Bookmark, Copyright, Hash, Database, 
-  CheckCircle, AlertTriangle, Loader2, Download, Edit
+  CheckCircle, AlertTriangle, Loader2, Download, Edit, Plus, Trash
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { getGeminiResponse } from './GeminiProIntegration';
@@ -112,7 +111,6 @@ const IPProtectionTool: React.FC = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
   const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
   
-  // IP Portfolio state
   const [myIpAssets, setMyIpAssets] = useState<IPAsset[]>(() => {
     const saved = localStorage.getItem('ipAssets');
     return saved ? JSON.parse(saved) : [];
@@ -128,7 +126,6 @@ const IPProtectionTool: React.FC = () => {
     notes: ''
   });
   
-  // Analysis state
   const [analysisText, setAnalysisText] = useState('');
   const [analysisResult, setAnalysisResult] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -154,10 +151,8 @@ const IPProtectionTool: React.FC = () => {
     setIsSearching(true);
     
     try {
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Return mock data based on search type
       if (searchType === 'trademark') {
         setSearchResults(mockTrademarkResults.filter(result => 
           result.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -168,7 +163,6 @@ const IPProtectionTool: React.FC = () => {
           result.description.toLowerCase().includes(searchQuery.toLowerCase())
         ));
       } else {
-        // Copyright search - return empty for now
         setSearchResults([]);
       }
       
@@ -782,7 +776,6 @@ Please structure your response with these sections:
         </TabsContent>
       </Tabs>
       
-      {/* API Key Dialog */}
       <Dialog open={isApiKeyDialogOpen} onOpenChange={setIsApiKeyDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -813,7 +806,6 @@ Please structure your response with these sections:
         </DialogContent>
       </Dialog>
       
-      {/* Add/Edit Asset Dialog */}
       <Dialog open={isAssetDialogOpen} onOpenChange={setIsAssetDialogOpen}>
         <DialogContent>
           <DialogHeader>
