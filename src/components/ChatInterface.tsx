@@ -37,7 +37,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'deepseek'>('gemini');
+  const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'deepseek'>(() => 
+    localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini'
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [analysisType, setAnalysisType] = useState('legal-brief');
   const [text, setText] = useState('');
@@ -126,7 +128,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   };
 
   const saveApiKey = () => {
-    localStorage.setItem('geminiApiKey', apiKey);
+    localStorage.setItem(`${selectedProvider}ApiKey`, apiKey);
+    localStorage.setItem('preferredApiProvider', selectedProvider);
     setShowApiKeyInput(false);
     
     toast({

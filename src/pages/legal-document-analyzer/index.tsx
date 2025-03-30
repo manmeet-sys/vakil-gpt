@@ -13,12 +13,16 @@ const LegalDocumentAnalyzerPage = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [analysisResult, setAnalysisResult] = useState<string>('');
-  const [apiKey, setApiKey] = useState<string>(() => {
-    return localStorage.getItem('ai-api-key') || 'AIzaSyBU6DAN_wDG7nqyV60a7ZaIjHVp-SE2x2w';
-  });
-  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>(() => {
-    return localStorage.getItem('ai-api-provider') as 'deepseek' | 'gemini' || 'gemini';
-  });
+  const [apiKey, setApiKey] = useState<string>('');
+  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
+  
+  // Load API key on component mount
+  React.useEffect(() => {
+    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    setApiProvider(storedApiProvider);
+    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
+    setApiKey(storedApiKey);
+  }, []);
   
   const handleAnalysisComplete = (analysis: string) => {
     setAnalysisResult(analysis);
