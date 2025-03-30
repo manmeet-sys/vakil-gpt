@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,12 @@ import LegalDueDiligencePage from "./pages/legal-due-diligence";
 import LegalEducationPage from "./pages/legal-education";
 import ToolsPage from "./pages/tools";
 import PlaceholderToolPage from "./pages/placeholder-tool";
+
+// New implemented tool pages
+import LegalBriefGenerationPage from "./pages/legal-brief-generation";
+import StatuteTrackerPage from "./pages/statute-tracker";
+import ContractDraftingPage from "./pages/contract-drafting";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,9 +46,12 @@ const App = () => (
             <Route path="/legal-due-diligence" element={<LegalDueDiligencePage />} />
             <Route path="/legal-education" element={<LegalEducationPage />} />
             
-            <Route path="/legal-brief-generation" element={<PlaceholderToolPage />} />
-            <Route path="/statute-tracker" element={<PlaceholderToolPage />} />
-            <Route path="/contract-drafting" element={<PlaceholderToolPage />} />
+            {/* Implemented tools */}
+            <Route path="/legal-brief-generation" element={<LegalBriefGenerationPage />} />
+            <Route path="/statute-tracker" element={<StatuteTrackerPage />} />
+            <Route path="/contract-drafting" element={<ContractDraftingPage />} />
+            
+            {/* Still using placeholder for remaining tools */}
             <Route path="/e-signature" element={<PlaceholderToolPage />} />
             <Route path="/gdpr-compliance" element={<PlaceholderToolPage />} />
             <Route path="/litigation-prediction" element={<PlaceholderToolPage />} />
