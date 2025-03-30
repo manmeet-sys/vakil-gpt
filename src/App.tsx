@@ -17,10 +17,11 @@ import LegalEducationPage from "./pages/legal-education";
 import ToolsPage from "./pages/tools";
 import PlaceholderToolPage from "./pages/placeholder-tool";
 
-// New implemented tool pages
+// Implemented tool pages
 import LegalBriefGenerationPage from "./pages/legal-brief-generation";
 import StatuteTrackerPage from "./pages/statute-tracker";
 import ContractDraftingPage from "./pages/contract-drafting";
+import StartupToolkitPage from "./pages/startup-toolkit";
 
 import NotFound from "./pages/NotFound";
 
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/legal-brief-generation" element={<LegalBriefGenerationPage />} />
             <Route path="/statute-tracker" element={<StatuteTrackerPage />} />
             <Route path="/contract-drafting" element={<ContractDraftingPage />} />
+            <Route path="/startup-toolkit" element={<StartupToolkitPage />} />
             
             {/* Still using placeholder for remaining tools */}
             <Route path="/e-signature" element={<PlaceholderToolPage />} />
@@ -58,7 +60,6 @@ const App = () => (
             <Route path="/billing-tracking" element={<PlaceholderToolPage />} />
             <Route path="/virtual-assistant" element={<PlaceholderToolPage />} />
             <Route path="/ip-protection" element={<PlaceholderToolPage />} />
-            <Route path="/startup-toolkit" element={<PlaceholderToolPage />} />
             <Route path="/sentencing-predictor" element={<PlaceholderToolPage />} />
             <Route path="/plea-bargain" element={<PlaceholderToolPage />} />
             <Route path="/aml-compliance" element={<PlaceholderToolPage />} />
