@@ -26,6 +26,7 @@ import PleaBargainPage from "./pages/plea-bargain";
 import ESignaturePage from "./pages/e-signature";
 import GdprCompliancePage from "./pages/gdpr-compliance";
 import LitigationPredictionPage from "./pages/litigation-prediction";
+import TaxCompliancePage from "./pages/tax-compliance";
 
 import NotFound from "./pages/NotFound";
 
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/e-signature" element={<ESignaturePage />} />
             <Route path="/gdpr-compliance" element={<GdprCompliancePage />} />
             <Route path="/litigation-prediction" element={<LitigationPredictionPage />} />
+            <Route path="/tax-compliance" element={<TaxCompliancePage />} />
             
             {/* Still using placeholder for remaining tools */}
             <Route path="/court-filing" element={<PlaceholderToolPage />} />
@@ -67,7 +69,6 @@ const App = () => (
             <Route path="/ip-protection" element={<PlaceholderToolPage />} />
             <Route path="/sentencing-predictor" element={<PlaceholderToolPage />} />
             <Route path="/aml-compliance" element={<PlaceholderToolPage />} />
-            <Route path="/tax-compliance" element={<PlaceholderToolPage />} />
             <Route path="/regulatory-reporting" element={<PlaceholderToolPage />} />
             <Route path="/m&a-due-diligence" element={<PlaceholderToolPage />} />
             <Route path="/financial-obligations" element={<PlaceholderToolPage />} />
