@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { AlertTriangle, Search, Shield, Loader2, FileText, CheckCircle, AlertCircle, Download, X, Info, Calendar } from 'lucide-react';
+import { AlertTriangle, Search, Shield, Loader2, FileText, CheckCircle, AlertCircle, Download, X, Info, Calendar, Trash } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getGeminiResponse } from './GeminiProIntegration';
 

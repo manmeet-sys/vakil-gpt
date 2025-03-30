@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { CircleHelp, Search, Shield, Upload, Loader2, FileText, CheckCircle, AlertTriangle, X } from 'lucide-react';
+import { CircleHelp, Search, Shield, Upload, Loader2, FileText, CheckCircle, AlertTriangle, X, AlertCircle, Download } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getGeminiResponse } from './GeminiProIntegration';
 
