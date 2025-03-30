@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { DollarSign, FileText, AlertTriangle, Check, Building, ChevronRight, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import GeminiProIntegration from './GeminiProIntegration';
+import * as GeminiAI from '@/components/GeminiProIntegration';
 
 interface TaxAnalysisResult {
   summary: string;
@@ -77,8 +77,9 @@ const TaxComplianceTool = () => {
         (Include at least 2 applicable laws or regulations)
       `;
 
-      // Use GeminiProIntegration to generate analysis
-      const response = await GeminiProIntegration.getGeminiResponse(prompt);
+      // Use directly imported GeminiAI module function
+      const apiKey = localStorage.getItem('geminiApiKey') || '';
+      const response = await GeminiAI.getGeminiResponse(prompt, apiKey);
       
       // Parse the AI response to extract structured data
       const result = parseAIResponse(response);
