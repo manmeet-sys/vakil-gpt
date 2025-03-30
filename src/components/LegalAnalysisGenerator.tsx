@@ -6,14 +6,16 @@ import { Loader2, BookOpen } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
+// Hardcoded API keys (in a real app these would be environment variables)
+const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+const DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY_HERE";
+
 interface LegalAnalysisGeneratorProps {
-  apiKey: string;
   apiProvider: 'deepseek' | 'gemini';
   onAnalysisComplete: (analysis: string) => void;
 }
 
 const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({ 
-  apiKey, 
   apiProvider,
   onAnalysisComplete 
 }) => {
@@ -27,15 +29,6 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
         variant: "destructive",
         title: "Error",
         description: "Please enter some legal text to analyze",
-      });
-      return;
-    }
-
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key first`,
       });
       return;
     }
@@ -83,7 +76,7 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
     
     Format your response with clear sections and citations where applicable. Provide a thorough yet concise analysis.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -130,7 +123,7 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
       },
       body: JSON.stringify({
         model: 'deepseek-chat',

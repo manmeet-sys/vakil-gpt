@@ -3,14 +3,17 @@
  * Utility functions for AI analysis
  */
 
+// Hardcoded API keys - in a real production app, these would be environment variables
+const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+const DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY_HERE";
+
 /**
  * Generates analysis using Gemini API
  * @param text The text to analyze
  * @param filename The name of the file being analyzed
- * @param apiKey The API key for Gemini
  * @returns A promise that resolves to the analysis
  */
-export const generateGeminiAnalysis = async (text: string, filename: string, apiKey: string): Promise<string> => {
+export const generateGeminiAnalysis = async (text: string, filename: string): Promise<string> => {
   const systemPrompt = `You are PrecedentAI, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution.
   
 I'm providing you with text extracted from a PDF document named "${filename}".
@@ -24,7 +27,7 @@ Please analyze this legal document and provide:
 
 Format your response with clear sections and be thorough yet concise in your legal analysis.`;
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -59,10 +62,9 @@ Format your response with clear sections and be thorough yet concise in your leg
  * Generates analysis using DeepSeek API
  * @param text The text to analyze
  * @param filename The name of the file being analyzed
- * @param apiKey The API key for DeepSeek
  * @returns A promise that resolves to the analysis
  */
-export const generateDeepSeekAnalysis = async (text: string, filename: string, apiKey: string): Promise<string> => {
+export const generateDeepSeekAnalysis = async (text: string, filename: string): Promise<string> => {
   const systemPrompt = `You are PrecedentAI, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution.
   
 I'm providing you with text extracted from a PDF document named "${filename}".
@@ -80,7 +82,7 @@ Format your response with clear sections and be thorough yet concise in your leg
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
     },
     body: JSON.stringify({
       model: 'deepseek-chat',

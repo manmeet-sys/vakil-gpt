@@ -1,9 +1,10 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, KeyRound, Settings, Zap, Loader2, Plus, Trash } from 'lucide-react';
+import { Send, Settings, Zap, Loader2, Plus, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import LegalChatMessage from './LegalChatMessage';
@@ -34,8 +35,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'deepseek'>(() => 
     localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini'
@@ -61,8 +60,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   useEffect(() => {
     const storedProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     setSelectedProvider(storedProvider);
-    const storedApiKey = localStorage.getItem(`${storedProvider}ApiKey`) || '';
-    setApiKey(storedApiKey);
   }, []);
 
   const scrollToBottom = () => {
@@ -72,16 +69,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim()) return;
-    
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: "Please set your API key first",
-      });
-      setShowApiKeyInput(true);
-      return;
-    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -101,11 +88,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           `You are VakilGPT, a legal assistant specializing in Indian law. 
           Respond to the following query with accurate legal information relevant to Indian law and the Indian Constitution:
           
-          ${input}`,
-          apiKey
+          ${input}`
         );
       } else {
-        // For DeepSeek (currently not implemented in this file)
+        // For DeepSeek (currently using a placeholder response)
         response = "DeepSeek response will be implemented here";
       }
 
@@ -126,18 +112,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const saveApiKey = () => {
-    localStorage.setItem(`${selectedProvider}ApiKey`, apiKey);
-    localStorage.setItem('preferredApiProvider', selectedProvider);
-    setShowApiKeyInput(false);
-    setApiKey('');
-    
-    toast({
-      title: "API Key Saved",
-      description: "Your API key has been saved for future sessions",
-    });
   };
 
   const clearChat = () => {
@@ -188,20 +162,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       return;
     }
 
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: "Please set your Gemini API key first",
-      });
-      return;
-    }
-
     setIsGenerating(true);
 
     try {
       const prompt = getPromptTemplate(analysisType, text);
-      const analysis = await getGeminiResponse(prompt, apiKey);
+      const analysis = await getGeminiResponse(prompt);
       
       handleAnalysisComplete(analysis);
       setIsOpen(false);
@@ -238,77 +203,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <Dialog open={showApiKeyInput} onOpenChange={setShowApiKeyInput}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs flex items-center gap-1"
-              >
-                <KeyRound className="h-3 w-3" />
-                API Key
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Set API Key</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div>
-                  <Label htmlFor="api-key">API Key</Label>
-                  <Input
-                    id="api-key"
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="Enter your API key"
-                    className="mt-2"
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="gemini"
-                    checked={selectedProvider === 'gemini'}
-                    onChange={() => setSelectedProvider('gemini')}
-                  />
-                  <Label htmlFor="gemini">Gemini</Label>
-                  
-                  <input
-                    type="radio"
-                    id="deepseek"
-                    checked={selectedProvider === 'deepseek'}
-                    onChange={() => setSelectedProvider('deepseek')}
-                    className="ml-4"
-                  />
-                  <Label htmlFor="deepseek">DeepSeek</Label>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" onClick={saveApiKey}>Save</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button 
                 variant="outline" 
                 size="sm" 
                 className="text-xs flex items-center gap-1"
-                onClick={() => {
-                  if (!apiKey) {
-                    toast({
-                      variant: "destructive",
-                      title: "API Key Required",
-                      description: "Please set your Gemini API key first",
-                    });
-                    setShowApiKeyInput(true);
-                    return;
-                  }
-                  
-                  setIsOpen(true);
-                }}
               >
                 <Zap className="h-3 w-3" />
                 Gemini Pro
@@ -366,20 +266,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           </Dialog>
           
           <LegalAnalysisGenerator
-            apiKey={apiKey}
             apiProvider="gemini"
             onAnalysisComplete={handleAnalysisComplete} 
           />
           
           <GeminiFlashAnalyzer
-            apiKey={apiKey}
             onAnalysisComplete={handleAnalysisComplete}
           />
           
           <KnowledgeBaseButton />
           
           <PdfAnalyzer 
-            apiKey={apiKey}
             apiProvider="gemini"
             onAnalysisComplete={handleAnalysisComplete} 
           />

@@ -2,19 +2,18 @@
 // This file exports the API functions from GeminiProIntegration component
 // to be used directly by other components
 
+// Hardcoded API key - in a real app this would be an environment variable
+const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+
 /**
  * Makes a request to the Gemini Pro API and returns the response text
  * @param prompt The text prompt to send to the API
- * @param apiKey The Gemini API key (optional, will use default if not provided)
  * @returns A Promise that resolves to the response text
  */
-export const getGeminiResponse = async (prompt: string, apiKey?: string): Promise<string> => {
+export const getGeminiResponse = async (prompt: string): Promise<string> => {
   try {
-    // Use provided API key or retrieve from localStorage
-    const key = apiKey || localStorage.getItem('geminiApiKey') || localStorage.getItem('geminiApiKey') || '';
-    
-    // Make request to Gemini API
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${key}`, {
+    // Make request to Gemini API using the hardcoded key
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

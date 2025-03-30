@@ -13,15 +13,12 @@ const LegalDocumentAnalyzerPage = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [analysisResult, setAnalysisResult] = useState<string>('');
-  const [apiKey, setApiKey] = useState<string>('');
   const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
   
-  // Load API key on component mount
+  // Load API provider preference on component mount
   React.useEffect(() => {
     const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(storedApiProvider);
-    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
-    setApiKey(storedApiKey);
   }, []);
   
   const handleAnalysisComplete = (analysis: string) => {
@@ -64,7 +61,6 @@ const LegalDocumentAnalyzerPage = () => {
             
             <div className="flex justify-center mb-6">
               <PdfAnalyzer 
-                apiKey={apiKey}
                 apiProvider={apiProvider}
                 onAnalysisComplete={handleAnalysisComplete}
               />

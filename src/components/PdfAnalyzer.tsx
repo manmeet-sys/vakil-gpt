@@ -10,13 +10,11 @@ import { extractTextFromPdf } from '@/utils/pdfExtraction';
 import { generateGeminiAnalysis, generateDeepSeekAnalysis } from '@/utils/aiAnalysis';
 
 interface PdfAnalyzerProps {
-  apiKey: string;
   apiProvider: 'deepseek' | 'gemini';
   onAnalysisComplete: (analysis: string) => void;
 }
 
 const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ 
-  apiKey, 
   apiProvider,
   onAnalysisComplete 
 }) => {
@@ -36,15 +34,6 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({
       return;
     }
 
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: "Please set your API key first",
-      });
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -54,9 +43,9 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({
       let analysis = '';
       
       if (apiProvider === 'gemini') {
-        analysis = await generateGeminiAnalysis(text, pdfFile.name, apiKey);
+        analysis = await generateGeminiAnalysis(text, pdfFile.name);
       } else if (apiProvider === 'deepseek') {
-        analysis = await generateDeepSeekAnalysis(text, pdfFile.name, apiKey);
+        analysis = await generateDeepSeekAnalysis(text, pdfFile.name);
       }
 
       onAnalysisComplete(analysis);
