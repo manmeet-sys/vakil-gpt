@@ -374,8 +374,8 @@ Please structure your analysis with these sections:
 
 Ensure your analysis is balanced, fact-based, and considers both the prosecution and defense perspectives.`;
       
-      const analysis = await getGeminiResponse(prompt, apiKey);
-      setAiAnalysis(analysis);
+      const response = await getGeminiResponse(prompt);
+      setAiAnalysis(response);
       
       setActiveTab('analysis');
       

@@ -5,14 +5,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Zap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { getGeminiResponse } from './GeminiProIntegration';
 
 interface GeminiFlashAnalyzerProps {
-  apiKey: string;
   onAnalysisComplete: (analysis: string) => void;
 }
 
 const GeminiFlashAnalyzer: React.FC<GeminiFlashAnalyzerProps> = ({ 
-  apiKey, 
   onAnalysisComplete 
 }) => {
   const [legalText, setLegalText] = useState('');
@@ -25,15 +24,6 @@ const GeminiFlashAnalyzer: React.FC<GeminiFlashAnalyzerProps> = ({
         variant: "destructive",
         title: "Error",
         description: "Please enter some legal text to analyze",
-      });
-      return;
-    }
-
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: "Please set your Gemini API key first",
       });
       return;
     }
@@ -64,45 +54,28 @@ const GeminiFlashAnalyzer: React.FC<GeminiFlashAnalyzerProps> = ({
   };
 
   const generateGeminiFlashAnalysis = async (text: string): Promise<string> => {
-    // Using the Gemini 2.0 Flash model as specified in your Python script
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { 
-            role: "user", 
-            parts: [{ text }] 
-          }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 8000,
-          topK: 40,
-          topP: 0.95,
-          responseMimeType: "application/json"
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      const responseText = data.candidates[0].content.parts[0].text;
-      try {
-        // Try to parse JSON response
-        const jsonData = JSON.parse(responseText);
-        return JSON.stringify(jsonData, null, 2);
-      } catch (e) {
-        // If not valid JSON, return as is
-        return responseText;
-      }
-    } else {
-      throw new Error('Invalid response format from Gemini API');
+    const systemPrompt = `You are PrecedentAI, a legal analysis system specialized in Indian law.
+    
+    Analyze the provided legal text and generate a comprehensive structured analysis in JSON format that includes:
+    1. A summary of the document or text
+    2. Key legal concepts identified
+    3. Potential legal risks and implications
+    4. Recommendations
+    
+    The response should be formatted as valid JSON with these sections.`;
+    
+    const prompt = `${systemPrompt}\n\nText to analyze: ${text}`;
+    
+    // Use the standard Gemini response function for the analysis
+    const response = await getGeminiResponse(prompt);
+    
+    try {
+      // Try to parse JSON response
+      JSON.parse(response);
+      return response;
+    } catch (e) {
+      // If not valid JSON, return as is
+      return response;
     }
   };
 

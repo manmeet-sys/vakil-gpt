@@ -308,8 +308,8 @@ Please structure your response with these sections:
 4. Patent Considerations
 5. Risk Mitigation Recommendations`;
       
-      const result = await getGeminiResponse(prompt, apiKey);
-      setAnalysisResult(result);
+      const response = await getGeminiResponse(prompt);
+      setAnalysisResult(response);
       
       toast({
         title: "Analysis Complete",

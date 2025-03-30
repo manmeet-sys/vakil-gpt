@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -78,8 +77,7 @@ const TaxComplianceTool = () => {
       `;
 
       // Use directly imported GeminiAI module function
-      const apiKey = localStorage.getItem('geminiApiKey') || '';
-      const response = await GeminiAI.getGeminiResponse(prompt, apiKey);
+      const response = await GeminiAI.getGeminiResponse(prompt);
       
       // Parse the AI response to extract structured data
       const result = parseAIResponse(response);
