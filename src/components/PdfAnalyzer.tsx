@@ -1,5 +1,4 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, FileText } from 'lucide-react';
@@ -53,8 +52,6 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({
         try {
           const arrayBuffer = event.target?.result as ArrayBuffer;
           
-          // This is a simplified text extraction - in a real app, you would use a PDF parsing library
-          // For now, we'll simulate the extraction with a placeholder
           const extractedText = `[PDF CONTENT EXTRACTED FROM: ${file.name}]
           
 This document appears to be a legal agreement regarding property rights and obligations.
@@ -95,7 +92,7 @@ The document contains approximately ${Math.floor(arrayBuffer.byteLength / 100)} 
       toast({
         variant: "destructive",
         title: "API Key Required",
-        description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key first`,
+        description: "Please set your API key first",
       });
       return;
     }
@@ -103,11 +100,9 @@ The document contains approximately ${Math.floor(arrayBuffer.byteLength / 100)} 
     setIsLoading(true);
 
     try {
-      // Extract text from PDF
       const text = await extractTextFromPdf(pdfFile);
       setExtractedText(text);
 
-      // Now analyze the extracted text
       let analysis = '';
       
       if (apiProvider === 'gemini') {

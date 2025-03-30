@@ -29,12 +29,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     {
       id: '1',
       role: 'assistant',
-      content: "Welcome to PrecedentAI. I'm your AI legal assistant specializing in Indian law. I can help with legal questions, analyze documents, and provide information on constitutional matters. How can I assist you today?"
+      content: "Welcome to VakilGPT. I'm your AI legal assistant specializing in Indian law. I can help with legal questions, analyze documents, and provide information on constitutional matters. How can I assist you today?"
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
+  const [apiKey, setApiKey] = useState('');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'deepseek'>(() => 
@@ -59,10 +59,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   }, [messages]);
 
   useEffect(() => {
-    if (apiKey) {
-      localStorage.setItem('geminiApiKey', apiKey);
-    }
-  }, [apiKey]);
+    const storedProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    setSelectedProvider(storedProvider);
+    const storedApiKey = localStorage.getItem(`${storedProvider}ApiKey`) || '';
+    setApiKey(storedApiKey);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -97,7 +98,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       
       if (selectedProvider === 'gemini') {
         response = await getGeminiResponse(
-          `You are PrecedentAI, a legal assistant specializing in Indian law. 
+          `You are VakilGPT, a legal assistant specializing in Indian law. 
           Respond to the following query with accurate legal information relevant to Indian law and the Indian Constitution:
           
           ${input}`,
@@ -131,6 +132,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     localStorage.setItem(`${selectedProvider}ApiKey`, apiKey);
     localStorage.setItem('preferredApiProvider', selectedProvider);
     setShowApiKeyInput(false);
+    setApiKey('');
     
     toast({
       title: "API Key Saved",
@@ -143,7 +145,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       {
         id: '1',
         role: 'assistant',
-        content: "Welcome to PrecedentAI. I'm your AI legal assistant specializing in Indian law. I can help with legal questions, analyze documents, and provide information on constitutional matters. How can I assist you today?"
+        content: "Welcome to VakilGPT. I'm your AI legal assistant specializing in Indian law. I can help with legal questions, analyze documents, and provide information on constitutional matters. How can I assist you today?"
       }
     ]);
     
@@ -253,13 +255,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div>
-                  <Label htmlFor="api-key">Gemini API Key</Label>
+                  <Label htmlFor="api-key">API Key</Label>
                   <Input
                     id="api-key"
                     type="password"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="Enter your Gemini API key"
+                    placeholder="Enter your API key"
                     className="mt-2"
                   />
                 </div>

@@ -10,8 +10,8 @@
  */
 export const getGeminiResponse = async (prompt: string, apiKey?: string): Promise<string> => {
   try {
-    // Use default API key if none provided
-    const key = apiKey || localStorage.getItem('geminiApiKey') || 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc';
+    // Use provided API key or retrieve from localStorage
+    const key = apiKey || localStorage.getItem('geminiApiKey') || localStorage.getItem('geminiApiKey') || '';
     
     // Make request to Gemini API
     const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${key}`, {

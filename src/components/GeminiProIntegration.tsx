@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -63,7 +63,7 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
       toast({
         variant: "destructive",
         title: "API Key Required",
-        description: "Please set your Gemini API key first",
+        description: "Please set your API key first",
       });
       return;
     }
