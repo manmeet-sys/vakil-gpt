@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,21 @@ const ToolCategory = ({
   tools,
   className
 }: ToolCategoryProps) => {
-  const navigate = useNavigate();
+  // Safe navigation with fallback for when component is rendered outside Router context
+  let navigate: (path: string) => void;
+  
+  try {
+    navigate = useNavigate();
+  } catch (error) {
+    // Fallback navigation function if not within Router context
+    navigate = (path: string) => {
+      window.location.href = path;
+    };
+  }
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -59,7 +73,7 @@ const ToolCategory = ({
               <Button 
                 variant="ghost" 
                 className="text-legal-accent hover:text-legal-accent/90 hover:bg-legal-accent/10 p-0 h-8"
-                onClick={() => navigate(tool.path)}
+                onClick={() => handleNavigation(tool.path)}
               >
                 Explore Tool
                 <ArrowRight className="ml-1 h-3.5 w-3.5" />

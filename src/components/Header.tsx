@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -11,8 +12,33 @@ interface HeaderProps {
   className?: string;
 }
 
+// Safe wrapper component to handle potential router context issues
+const SafeHeader: React.FC<HeaderProps> = (props) => {
+  try {
+    return <Header {...props} />;
+  } catch (error) {
+    // Fallback simple header when outside router context
+    return (
+      <header className={cn(
+        "sticky top-0 z-50 w-full bg-white/80 dark:bg-legal-slate/80 backdrop-blur-md border-b border-legal-border dark:border-legal-slate/20",
+        props.className
+      )}>
+        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <a href="/" className="flex items-center gap-2">
+              <AnimatedLogo />
+              <span className="font-bold text-lg text-legal-slate dark:text-white">LegalGPT</span>
+            </a>
+          </div>
+          <ThemeToggle />
+        </div>
+      </header>
+    );
+  }
+};
+
 const Header: React.FC<HeaderProps> = ({ className }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
 
   return (
@@ -142,4 +168,4 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
   );
 };
 
-export default Header;
+export default SafeHeader;
