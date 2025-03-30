@@ -23,6 +23,9 @@ import StatuteTrackerPage from "./pages/statute-tracker";
 import ContractDraftingPage from "./pages/contract-drafting";
 import StartupToolkitPage from "./pages/startup-toolkit";
 import PleaBargainPage from "./pages/plea-bargain";
+import ESignaturePage from "./pages/e-signature";
+import GdprCompliancePage from "./pages/gdpr-compliance";
+import LitigationPredictionPage from "./pages/litigation-prediction";
 
 import NotFound from "./pages/NotFound";
 
@@ -52,11 +55,11 @@ const App = () => (
             <Route path="/contract-drafting" element={<ContractDraftingPage />} />
             <Route path="/startup-toolkit" element={<StartupToolkitPage />} />
             <Route path="/plea-bargain" element={<PleaBargainPage />} />
+            <Route path="/e-signature" element={<ESignaturePage />} />
+            <Route path="/gdpr-compliance" element={<GdprCompliancePage />} />
+            <Route path="/litigation-prediction" element={<LitigationPredictionPage />} />
             
             {/* Still using placeholder for remaining tools */}
-            <Route path="/e-signature" element={<PlaceholderToolPage />} />
-            <Route path="/gdpr-compliance" element={<PlaceholderToolPage />} />
-            <Route path="/litigation-prediction" element={<PlaceholderToolPage />} />
             <Route path="/court-filing" element={<PlaceholderToolPage />} />
             <Route path="/deadline-management" element={<PlaceholderToolPage />} />
             <Route path="/billing-tracking" element={<PlaceholderToolPage />} />
