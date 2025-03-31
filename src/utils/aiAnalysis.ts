@@ -3,8 +3,8 @@
  * Utility functions for AI analysis
  */
 
-// Hardcoded API keys - in a real production app, these would be environment variables
-const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+// Hardcoded API keys
+const GEMINI_API_KEY = "AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc";
 const DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY_HERE";
 
 /**

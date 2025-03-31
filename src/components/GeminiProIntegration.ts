@@ -2,8 +2,8 @@
 // This file exports the API functions from GeminiProIntegration component
 // to be used directly by other components
 
-// Hardcoded API key - in a real app this would be an environment variable
-const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+// Hardcoded API key
+const GEMINI_API_KEY = "AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc";
 
 /**
  * Makes a request to the Gemini Pro API and returns the response text

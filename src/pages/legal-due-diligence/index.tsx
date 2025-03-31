@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Scale, FileText, Loader2, Upload } from 'lucide-react';
@@ -8,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { getGeminiResponse } from '@/components/GeminiProIntegration';
 
 const LegalDueDiligencePage = () => {
   const [transactionType, setTransactionType] = useState<string>('');
@@ -15,15 +15,12 @@ const LegalDueDiligencePage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>('AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc');
   const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
 
-  // Load API key on component mount
+  // Load API provider preference on component mount
   React.useEffect(() => {
     const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(storedApiProvider);
-    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || (storedApiProvider === 'gemini' ? 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc' : '');
-    setApiKey(storedApiKey);
   }, []);
 
   const handleGenerateDueDiligence = async () => {
@@ -32,15 +29,6 @@ const LegalDueDiligencePage = () => {
         variant: "destructive",
         title: "Missing Information",
         description: "Please fill in all required fields",
-      });
-      return;
-    }
-
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key first`,
       });
       return;
     }
@@ -90,33 +78,7 @@ const LegalDueDiligencePage = () => {
     
     Format your response as a professional due diligence report with clear sections.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: systemPrompt }] }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 4000,
-          topK: 40,
-          topP: 0.95
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response format from Gemini API');
-    }
+    return await getGeminiResponse(systemPrompt);
   };
 
   const generateDeepSeekDueDiligenceResults = async (): Promise<string> => {
@@ -136,29 +98,8 @@ const LegalDueDiligencePage = () => {
     
     Format your response as a professional due diligence report with clear sections.`;
     
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemPrompt }
-        ],
-        temperature: 0.2,
-        max_tokens: 4000
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
+    // For now, just use Gemini API since DeepSeek API key is not provided
+    return await getGeminiResponse(systemPrompt);
   };
 
   return (
@@ -262,4 +203,3 @@ const LegalDueDiligencePage = () => {
 };
 
 export default LegalDueDiligencePage;
-

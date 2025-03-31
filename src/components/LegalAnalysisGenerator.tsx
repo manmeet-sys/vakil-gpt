@@ -1,13 +1,13 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, BookOpen } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { getGeminiResponse } from './GeminiProIntegration';
 
 // Hardcoded API keys (in a real app these would be environment variables)
-const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+const GEMINI_API_KEY = "AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc";
 const DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY_HERE";
 
 interface LegalAnalysisGeneratorProps {
@@ -76,35 +76,8 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
     
     Format your response with clear sections and citations where applicable. Provide a thorough yet concise analysis.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: systemPrompt }] },
-          { role: 'model', parts: [{ text: 'I will analyze the legal text as PrecedentAI, providing detailed insights on Indian law and constitutional matters.' }] },
-          { role: 'user', parts: [{ text }] }
-        ],
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 4000,
-          topK: 40,
-          topP: 0.95
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response format from Gemini API');
-    }
+    const prompt = `${systemPrompt}\n\nText to analyze: ${text}`;
+    return await getGeminiResponse(prompt);
   };
 
   const generateDeepSeekAnalysis = async (text: string): Promise<string> => {
