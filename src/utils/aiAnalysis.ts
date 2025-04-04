@@ -14,7 +14,7 @@ const DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY_HERE";
  * @returns A promise that resolves to the analysis
  */
 export const generateGeminiAnalysis = async (text: string, filename: string): Promise<string> => {
-  const systemPrompt = `You are PrecedentAI, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution.
+  const systemPrompt = `You are VakilGPT, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution.
   
 I'm providing you with text extracted from a PDF document named "${filename}".
 
@@ -33,7 +33,7 @@ Format your response with clear sections and be thorough yet concise in your leg
     body: JSON.stringify({
       contents: [
         { role: 'user', parts: [{ text: systemPrompt }] },
-        { role: 'model', parts: [{ text: 'I will analyze the legal document as PrecedentAI, with focus on Indian law and constitutional considerations.' }] },
+        { role: 'model', parts: [{ text: 'I will analyze the legal document as VakilGPT, with focus on Indian law and constitutional considerations.' }] },
         { role: 'user', parts: [{ text }] }
       ],
       generationConfig: {
@@ -65,7 +65,7 @@ Format your response with clear sections and be thorough yet concise in your leg
  * @returns A promise that resolves to the analysis
  */
 export const generateDeepSeekAnalysis = async (text: string, filename: string): Promise<string> => {
-  const systemPrompt = `You are PrecedentAI, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution.
+  const systemPrompt = `You are VakilGPT, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution.
   
 I'm providing you with text extracted from a PDF document named "${filename}".
 

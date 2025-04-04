@@ -62,7 +62,7 @@ const LegalDueDiligencePage = () => {
   };
 
   const generateGeminiDueDiligenceResults = async (): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's legal due diligence specialist with expertise in Indian corporate and commercial law.
+    const systemPrompt = `You are VakilGPT's legal due diligence specialist with expertise in Indian corporate and commercial law.
     
     Generate a comprehensive legal due diligence report based on the following information:
     - Transaction Type: ${transactionType}
@@ -82,7 +82,7 @@ const LegalDueDiligencePage = () => {
   };
 
   const generateDeepSeekDueDiligenceResults = async (): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's legal due diligence specialist with expertise in Indian corporate and commercial law.
+    const systemPrompt = `You are VakilGPT's legal due diligence specialist with expertise in Indian corporate and commercial law.
     
     Generate a comprehensive legal due diligence report based on the following information:
     - Transaction Type: ${transactionType}
@@ -105,7 +105,7 @@ const LegalDueDiligencePage = () => {
   return (
     <LegalToolLayout 
       title="Legal Due Diligence" 
-      description="Generate comprehensive due diligence reports and checklists"
+      description="Generate comprehensive due diligence reports for Indian legal transactions"
       icon={<Scale className="h-6 w-6 text-blue-600" />}
     >
       <div className="max-w-4xl mx-auto">
@@ -113,7 +113,7 @@ const LegalDueDiligencePage = () => {
           <CardHeader>
             <CardTitle>Due Diligence Information</CardTitle>
             <CardDescription>
-              Provide details about the transaction for a tailored due diligence report.
+              Provide details about the transaction for a tailored due diligence report under Indian law.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -144,7 +144,7 @@ const LegalDueDiligencePage = () => {
                   id="diligence-info"
                   value={dueDiligenceInfo}
                   onChange={(e) => setDueDiligenceInfo(e.target.value)}
-                  placeholder="Describe the transaction, parties involved, key concerns, and any specific areas you'd like the due diligence to focus on."
+                  placeholder="Describe the transaction, parties involved, key concerns, and any specific areas you'd like the due diligence to focus on under Indian law."
                   className="min-h-[150px]"
                 />
               </div>
@@ -155,7 +155,7 @@ const LegalDueDiligencePage = () => {
                   <div>
                     <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">Document Upload Coming Soon</h4>
                     <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                      Soon you'll be able to upload transaction documents directly for more accurate due diligence analysis.
+                      Soon you'll be able to upload transaction documents directly for more accurate due diligence analysis under Indian law.
                     </p>
                   </div>
                 </div>
@@ -187,7 +187,7 @@ const LegalDueDiligencePage = () => {
             <CardHeader>
               <CardTitle>Due Diligence Report</CardTitle>
               <CardDescription>
-                Comprehensive legal due diligence analysis for your transaction.
+                Comprehensive legal due diligence analysis for your transaction under Indian law.
               </CardDescription>
             </CardHeader>
             <CardContent>

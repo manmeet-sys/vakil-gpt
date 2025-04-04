@@ -73,7 +73,7 @@ const CaseLawResearchPage = () => {
   };
 
   const generateGeminiCaseLawResults = async (query: string): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's case law research assistant specialized in Indian law. 
+    const systemPrompt = `You are VakilGPT's case law research assistant specialized in Indian law. 
     
     For the provided query, find and summarize relevant case law precedents from Indian courts, including:
     1. Key Supreme Court cases relevant to the query
@@ -115,7 +115,7 @@ const CaseLawResearchPage = () => {
   };
 
   const generateDeepSeekCaseLawResults = async (query: string): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's case law research assistant specialized in Indian law. 
+    const systemPrompt = `You are VakilGPT's case law research assistant specialized in Indian law. 
     
     For the provided query, find and summarize relevant case law precedents from Indian courts, including:
     1. Key Supreme Court cases relevant to the query
@@ -154,15 +154,15 @@ const CaseLawResearchPage = () => {
   return (
     <LegalToolLayout 
       title="Case Law Research" 
-      description="Research relevant case law precedents based on your legal queries"
+      description="Research relevant case law precedents from Indian courts based on your legal queries"
       icon={<BookOpen className="h-6 w-6 text-blue-600" />}
     >
       <div className="max-w-4xl mx-auto">
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Search for Case Law</CardTitle>
+            <CardTitle>Search for Indian Case Law</CardTitle>
             <CardDescription>
-              Enter your legal question or describe the legal issue to find relevant precedents.
+              Enter your legal question or describe the legal issue to find relevant Indian precedents.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -186,7 +186,7 @@ const CaseLawResearchPage = () => {
                 ) : (
                   <>
                     <Search className="mr-2 h-4 w-4" />
-                    Research Case Law
+                    Research Indian Case Law
                   </>
                 )}
               </Button>
@@ -199,7 +199,7 @@ const CaseLawResearchPage = () => {
             <CardHeader>
               <CardTitle>Research Results</CardTitle>
               <CardDescription>
-                Relevant case law and precedents based on your query.
+                Relevant Indian case law and precedents based on your query.
               </CardDescription>
             </CardHeader>
             <CardContent>
