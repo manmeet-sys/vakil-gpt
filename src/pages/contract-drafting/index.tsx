@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { FileText, CheckCircle, AlertTriangle, Send, User, Building, Tag, FileSearch, FilePlus } from 'lucide-react';
+import { FileText, CheckCircle, AlertTriangle, Send, User, Building, Tag, FileSearch, FilePlus, FileUp } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PdfFileUpload from '@/components/PdfFileUpload';
+import { extractTextFromPdf } from '@/utils/pdfExtraction';
 
 const ContractDraftingPage = () => {
   const [activeTab, setActiveTab] = useState('review');
@@ -17,6 +18,8 @@ const ContractDraftingPage = () => {
   const [contractText, setContractText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isDrafting, setIsDrafting] = useState(false);
+  const [pdfFile, setPdfFile] = useState(null);
+  const [isExtractingPdf, setIsExtractingPdf] = useState(false);
   const [partyA, setPartyA] = useState('');
   const [partyAType, setPartyAType] = useState('individual');
   const [partyB, setPartyB] = useState('');
@@ -38,11 +41,35 @@ const ContractDraftingPage = () => {
   
   const { toast } = useToast();
   
+  const handlePdfUpload = async (file) => {
+    if (!file) return;
+    
+    try {
+      setIsExtractingPdf(true);
+      const extractedText = await extractTextFromPdf(file);
+      setContractText(extractedText);
+      setPdfFile(file);
+      
+      toast({
+        title: "PDF Extracted",
+        description: `Successfully extracted text from ${file.name}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Extraction Failed",
+        description: "Failed to extract text from the PDF. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExtractingPdf(false);
+    }
+  };
+  
   const handleAnalyzeContract = async () => {
     if (!contractText) {
       toast({
         title: "Text Required",
-        description: "Please enter or paste contract text for analysis",
+        description: "Please enter, paste, or upload a contract for analysis",
         variant: "destructive"
       });
       return;
@@ -60,7 +87,7 @@ const ContractDraftingPage = () => {
     setIsAnalyzing(true);
     
     try {
-      // Simulate API call with a timeout
+      
       setTimeout(() => {
         // This would be replaced with actual AI analysis using Gemini or DeepSeek
         const mockAnalysis = {
@@ -157,6 +184,7 @@ const ContractDraftingPage = () => {
   };
 
   const handleDraftContract = async () => {
+    
     if (!contractType || !partyA || !partyB || !jurisdiction) {
       toast({
         title: "Missing Information",
@@ -385,21 +413,41 @@ ________________________`;
                   </div>
                 </div>
                 
-                <div className="pt-4">
-                  <Label htmlFor="contract-text">Contract Text</Label>
-                  <Textarea 
-                    id="contract-text" 
-                    placeholder="Paste your contract text here..." 
-                    className="min-h-64"
-                    value={contractText}
-                    onChange={(e) => setContractText(e.target.value)}
-                  />
+                <div className="pt-4 space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="border-b pb-4">
+                      <h3 className="text-lg font-medium mb-3 flex items-center">
+                        <FileUp className="h-5 w-5 mr-2 text-blue-600" />
+                        Upload PDF Contract
+                      </h3>
+                      <PdfFileUpload
+                        onChange={handlePdfUpload}
+                        pdfFile={pdfFile}
+                      />
+                      {isExtractingPdf && (
+                        <div className="mt-2 text-sm text-blue-600">
+                          Extracting text from PDF...
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="contract-text">Contract Text</Label>
+                      <Textarea 
+                        id="contract-text" 
+                        placeholder="Paste your contract text here or upload a PDF above..." 
+                        className="min-h-64"
+                        value={contractText}
+                        onChange={(e) => setContractText(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end border-t border-legal-border dark:border-legal-slate/20 py-4">
                 <Button 
                   onClick={handleAnalyzeContract}
-                  disabled={isAnalyzing}
+                  disabled={isAnalyzing || isExtractingPdf}
                   className="w-full sm:w-auto"
                 >
                   {isAnalyzing ? (
@@ -415,6 +463,7 @@ ________________________`;
             </Card>
             
             {analysis && (
+              
               <div className="space-y-6">
                 <Card className="bg-white dark:bg-legal-slate/10 border-legal-border dark:border-legal-slate/20">
                   <CardHeader>
@@ -678,122 +727,4 @@ ________________________`;
                       
                       <div>
                         <Label htmlFor="draft-party-a-type">Type</Label>
-                        <Select value={partyAType} onValueChange={setPartyAType}>
-                          <SelectTrigger id="draft-party-a-type">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="individual">Individual</SelectItem>
-                            <SelectItem value="corporation">Corporation</SelectItem>
-                            <SelectItem value="llp">LLP</SelectItem>
-                            <SelectItem value="partnership">Partnership</SelectItem>
-                            <SelectItem value="huf">HUF</SelectItem>
-                            <SelectItem value="proprietorship">Proprietorship</SelectItem>
-                            <SelectItem value="trust">Trust</SelectItem>
-                            <SelectItem value="society">Society</SelectItem>
-                            <SelectItem value="government">Government Entity</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3 p-3 rounded-md border border-legal-border dark:border-legal-slate/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Building className="h-5 w-5 text-legal-slate dark:text-white" />
-                        <h4 className="font-medium">Second Party</h4>
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="draft-party-b-name">Name</Label>
-                        <Input 
-                          id="draft-party-b-name" 
-                          placeholder="Full legal name" 
-                          value={partyB}
-                          onChange={(e) => setPartyB(e.target.value)}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="draft-party-b-type">Type</Label>
-                        <Select value={partyBType} onValueChange={setPartyBType}>
-                          <SelectTrigger id="draft-party-b-type">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="individual">Individual</SelectItem>
-                            <SelectItem value="corporation">Corporation</SelectItem>
-                            <SelectItem value="llp">LLP</SelectItem>
-                            <SelectItem value="partnership">Partnership</SelectItem>
-                            <SelectItem value="huf">HUF</SelectItem>
-                            <SelectItem value="proprietorship">Proprietorship</SelectItem>
-                            <SelectItem value="trust">Trust</SelectItem>
-                            <SelectItem value="society">Society</SelectItem>
-                            <SelectItem value="government">Government Entity</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="pt-4 space-y-4">
-                  <div>
-                    <Label htmlFor="contract-purpose">Contract Purpose</Label>
-                    <Textarea 
-                      id="contract-purpose" 
-                      placeholder="Describe the purpose of this contract..." 
-                      className="min-h-20"
-                      value={contractPurpose}
-                      onChange={(e) => setContractPurpose(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="key-terms">Key Terms and Conditions</Label>
-                    <Textarea 
-                      id="key-terms" 
-                      placeholder="List key terms that should be included..." 
-                      className="min-h-24"
-                      value={keyTerms}
-                      onChange={(e) => setKeyTerms(e.target.value)}
-                    />
-                  </div>
-                  
-                  {contractText && (
-                    <div>
-                      <Label htmlFor="drafted-contract">Generated Contract</Label>
-                      <Textarea 
-                        id="drafted-contract" 
-                        className="min-h-64"
-                        value={contractText}
-                        onChange={(e) => setContractText(e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end border-t border-legal-border dark:border-legal-slate/20 py-4">
-                <Button 
-                  onClick={handleDraftContract}
-                  disabled={isDrafting}
-                  className="w-full sm:w-auto"
-                >
-                  {isDrafting ? (
-                    <>Drafting Contract...</>
-                  ) : (
-                    <>
-                      Generate Contract
-                      <Send className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </LegalToolLayout>
-  );
-};
-
-export default ContractDraftingPage;
+                        <Select value={partyAT
