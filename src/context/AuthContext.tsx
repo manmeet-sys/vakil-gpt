@@ -21,6 +21,7 @@ interface AuthContextProps {
     error: Error | null;
     data: any;
   }>;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -29,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -36,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       (event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
+        setIsAuthenticated(!!currentSession?.user);
         
         if (event === 'SIGNED_IN') {
           toast.success('Successfully signed in');
@@ -55,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
+      setIsAuthenticated(!!currentSession?.user);
       setLoading(false);
     });
 
@@ -126,6 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     resetPassword,
+    isAuthenticated,
   };
 
   return (
