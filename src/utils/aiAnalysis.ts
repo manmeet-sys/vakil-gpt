@@ -20,10 +20,11 @@ I'm providing you with text extracted from a PDF document named "${filename}".
 
 Please analyze this legal document and provide:
 1. A summary of the document type and purpose
-2. Key legal provisions and terms identified
-3. Potential legal implications under Indian law
-4. Any constitutional considerations
-5. Recommendations or areas of concern
+2. Key legal provisions and terms identified under Indian law
+3. Potential legal implications in the Indian legal context
+4. Constitutional considerations with reference to specific articles
+5. Relevant Supreme Court and High Court judgments
+6. Recommendations or areas of concern for Indian practice
 
 Format your response with clear sections and be thorough yet concise in your legal analysis.`;
 
@@ -33,7 +34,7 @@ Format your response with clear sections and be thorough yet concise in your leg
     body: JSON.stringify({
       contents: [
         { role: 'user', parts: [{ text: systemPrompt }] },
-        { role: 'model', parts: [{ text: 'I will analyze the legal document as VakilGPT, with focus on Indian law and constitutional considerations.' }] },
+        { role: 'model', parts: [{ text: 'I will analyze the legal document as VakilGPT, with specific focus on Indian law and constitutional considerations.' }] },
         { role: 'user', parts: [{ text }] }
       ],
       generationConfig: {
@@ -71,10 +72,11 @@ I'm providing you with text extracted from a PDF document named "${filename}".
 
 Please analyze this legal document and provide:
 1. A summary of the document type and purpose
-2. Key legal provisions and terms identified
-3. Potential legal implications under Indian law
-4. Any constitutional considerations
-5. Recommendations or areas of concern
+2. Key legal provisions and terms identified under Indian law
+3. Potential legal implications in the Indian legal context
+4. Constitutional considerations with reference to specific articles
+5. Relevant Supreme Court and High Court judgments
+6. Recommendations or areas of concern for Indian practice
 
 Format your response with clear sections and be thorough yet concise in your legal analysis.`;
   

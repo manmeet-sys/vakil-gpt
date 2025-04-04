@@ -15,81 +15,116 @@ const StatuteTrackerPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('tracking');
   
-  // Mocked statutes for demonstration
+  // Mocked Indian statutes for demonstration
   const [trackedStatutes, setTrackedStatutes] = useState([
     {
       id: 1,
-      name: "California Consumer Privacy Act (CCPA)",
-      jurisdiction: "California",
-      lastUpdated: "2023-11-15",
+      name: "Information Technology Act, 2000",
+      jurisdiction: "India",
+      lastUpdated: "2023-12-10",
       recentChanges: 2,
       notifications: true
     },
     {
       id: 2,
-      name: "General Data Protection Regulation (GDPR)",
-      jurisdiction: "European Union",
-      lastUpdated: "2023-09-30",
-      recentChanges: 0,
+      name: "The Constitution of India",
+      jurisdiction: "India",
+      lastUpdated: "2023-11-15",
+      recentChanges: 1,
       notifications: true
     },
     {
       id: 3,
-      name: "Health Insurance Portability and Accountability Act (HIPAA)",
-      jurisdiction: "United States",
-      lastUpdated: "2023-08-22",
-      recentChanges: 1,
+      name: "Indian Penal Code, 1860",
+      jurisdiction: "India",
+      lastUpdated: "2023-10-05",
+      recentChanges: 3,
       notifications: false
     }
   ]);
   
-  // Mocked statute updates
+  // Mocked statute updates (India-specific)
   const statuteUpdates = [
     {
       id: 101,
-      statuteName: "California Consumer Privacy Act (CCPA)",
-      updateDate: "2023-11-15",
-      description: "Updated enforcement provisions with increased penalties for violations",
+      statuteName: "Information Technology Act, 2000",
+      updateDate: "2023-12-10",
+      description: "New rules regarding data localization and digital privacy",
       type: "Amendment"
     },
     {
       id: 102,
-      statuteName: "California Consumer Privacy Act (CCPA)",
-      updateDate: "2023-10-28",
-      description: "Expanded definition of 'personal information' to include biometric data",
-      type: "Amendment"
+      statuteName: "Information Technology Act, 2000",
+      updateDate: "2023-11-22",
+      description: "Updated requirements for intermediary liability protections",
+      type: "Rules"
     },
     {
       id: 103,
-      statuteName: "Health Insurance Portability and Accountability Act (HIPAA)",
-      updateDate: "2023-08-22",
-      description: "New guidance on telehealth privacy requirements",
-      type: "Guidance"
+      statuteName: "The Constitution of India",
+      updateDate: "2023-11-15",
+      description: "103rd Constitutional Amendment related to EWS reservations interpretation",
+      type: "Interpretation"
+    },
+    {
+      id: 104,
+      statuteName: "Indian Penal Code, 1860",
+      updateDate: "2023-10-05",
+      description: "Introduction of Bharatiya Nyaya Sanhita to replace IPC",
+      type: "Major Revision"
+    },
+    {
+      id: 105,
+      statuteName: "Indian Penal Code, 1860",
+      updateDate: "2023-09-20",
+      description: "Changes to provisions related to cybercrime",
+      type: "Amendment"
+    },
+    {
+      id: 106,
+      statuteName: "Indian Penal Code, 1860",
+      updateDate: "2023-08-15",
+      description: "Supreme Court judgment clarifying sedition law application",
+      type: "Judgment"
     }
   ];
   
-  // Mocked recommendations
+  // Mocked recommendations (India-specific)
   const recommendations = [
     {
       id: 201,
-      name: "Americans with Disabilities Act (ADA)",
-      jurisdiction: "United States",
+      name: "The Companies Act, 2013",
+      jurisdiction: "India",
       relevance: "High",
-      reason: "Based on your tracked healthcare regulations"
+      reason: "Related to corporate law practice in India"
     },
     {
       id: 202,
-      name: "EU Digital Services Act",
-      jurisdiction: "European Union",
+      name: "The Right to Information Act, 2005",
+      jurisdiction: "India",
       relevance: "Medium",
-      reason: "Related to your GDPR tracking interest"
+      reason: "Important for transparency and administrative law"
     },
     {
       id: 203,
-      name: "California Privacy Rights Act (CPRA)",
-      jurisdiction: "California",
+      name: "Bharatiya Nagarik Suraksha Sanhita, 2023",
+      jurisdiction: "India",
       relevance: "High",
-      reason: "Extends and amends the CCPA you're tracking"
+      reason: "Will replace CrPC and impact criminal procedure"
+    },
+    {
+      id: 204,
+      name: "The Digital Personal Data Protection Act, 2023",
+      jurisdiction: "India",
+      relevance: "High",
+      reason: "Recent legislation affecting tech and privacy law"
+    },
+    {
+      id: 205,
+      name: "The Arbitration and Conciliation Act, 1996",
+      jurisdiction: "India",
+      relevance: "Medium",
+      reason: "Important for dispute resolution practice"
     }
   ];
   
@@ -134,15 +169,15 @@ const StatuteTrackerPage = () => {
   
   return (
     <LegalToolLayout
-      title="Statute & Regulation Tracker"
-      description="Stay up-to-date with changes in laws and regulations across jurisdictions. Set up alerts for amendments to statutes relevant to your practice."
+      title="Indian Statute & Regulation Tracker"
+      description="Stay up-to-date with changes in Indian laws and regulations. Set up alerts for amendments to statutes, new Supreme Court interpretations, and regulatory changes relevant to your practice."
       icon={<Scale className="w-6 h-6 text-white" />}
     >
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <div className="relative">
             <Input
-              placeholder="Search statutes by name or jurisdiction..."
+              placeholder="Search Indian statutes by name..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -254,7 +289,12 @@ const StatuteTrackerPage = () => {
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                           <h3 className="font-semibold">{update.statuteName}</h3>
-                          <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/50">
+                          <Badge variant="outline" className={`${
+                            update.type === 'Major Revision' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                            update.type === 'Amendment' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                            update.type === 'Judgment' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
+                            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                          } border-${update.type === 'Major Revision' ? 'red' : update.type === 'Amendment' ? 'blue' : update.type === 'Judgment' ? 'purple' : 'green'}-200 hover:bg-${update.type === 'Major Revision' ? 'red' : update.type === 'Amendment' ? 'blue' : update.type === 'Judgment' ? 'purple' : 'green'}-100`}>
                             {update.type}
                           </Badge>
                         </div>

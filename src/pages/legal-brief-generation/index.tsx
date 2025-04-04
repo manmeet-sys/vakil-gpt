@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
 const LegalBriefGenerationPage = () => {
@@ -16,6 +17,12 @@ const LegalBriefGenerationPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedBrief, setGeneratedBrief] = useState('');
   const { toast } = useToast();
+  const [apiProvider, setApiProvider] = useState<'gemini' | 'deepseek'>('gemini');
+  
+  React.useEffect(() => {
+    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    setApiProvider(storedApiProvider);
+  }, []);
   
   const handleGenerateBrief = async () => {
     if (!topic) {
@@ -30,49 +37,101 @@ const LegalBriefGenerationPage = () => {
     setIsGenerating(true);
     
     try {
-      // In a real implementation, this would call an AI API
-      const apiKey = localStorage.getItem('geminiApiKey');
+      // Get API key based on provider
+      const apiKey = localStorage.getItem(`${apiProvider}ApiKey`);
       
-      // Simulate API call with a timeout
-      setTimeout(() => {
-        const sampleBrief = `
-# Legal Brief: ${topic}
-## Jurisdiction: ${jurisdiction || 'General'}
-
-### Summary
-This brief addresses key legal considerations regarding ${topic} ${jurisdiction ? `in ${jurisdiction}` : ''}.
-
-### Analysis
-${context || 'Based on current legal standards,'} the following considerations apply:
-
-1. Legal precedents suggest careful attention to procedural requirements
-2. Recent case law indicates evolving standards in this area
-3. Statutory provisions require specific compliance measures
-
-### Recommendations
-Based on the above analysis, we recommend:
-- Thorough documentation of all relevant facts
-- Consultation with specialized counsel in this domain
-- Careful compliance with all jurisdictional requirements
-
-### Relevant Citations
-- Smith v. Jones, 2020
-- Legal Standards Act of 2018
-- International Protocols on ${topic}, 2019
-        `;
-        
-        setGeneratedBrief(sampleBrief);
-        setIsGenerating(false);
-        
+      if (!apiKey) {
         toast({
-          title: "Brief Generated",
-          description: "Your legal brief has been generated successfully",
+          title: "API Key Required",
+          description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key in settings first`,
+          variant: "destructive"
         });
-      }, 2000);
+        setIsGenerating(false);
+        return;
+      }
+      
+      // Prepare system prompt for legal brief
+      const systemPrompt = `You are VakilGPT, a legal expert specialized in Indian law. Generate a comprehensive legal brief on ${topic} ${jurisdiction ? `in the context of ${jurisdiction}` : `under Indian law`}.
+      
+      The brief should include:
+      1. Introduction to the legal topic
+      2. Relevant statutes and sections from Indian law
+      3. Key Supreme Court and High Court judgments
+      4. Legal analysis with citations to precedents
+      5. Practical recommendations
+      
+      Additional context for consideration: ${context || 'None provided'}`;
+      
+      let briefText = '';
+      
+      if (apiProvider === 'gemini') {
+        // Generate with Gemini
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              { role: 'user', parts: [{ text: systemPrompt }] }
+            ],
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 4000,
+              topK: 40,
+              topP: 0.95
+            }
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || `API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+          briefText = data.candidates[0].content.parts[0].text;
+        } else {
+          throw new Error('Invalid response format from Gemini API');
+        }
+      } else {
+        // Generate with DeepSeek
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-chat',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `Generate a legal brief on ${topic}` }
+            ],
+            temperature: 0.2,
+            max_tokens: 4000
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || `API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        briefText = data.choices[0].message.content;
+      }
+      
+      setGeneratedBrief(briefText);
+      setIsGenerating(false);
+      
+      toast({
+        title: "Brief Generated",
+        description: "Your legal brief has been generated successfully",
+      });
     } catch (error) {
       toast({
         title: "Generation Failed",
-        description: "There was an error generating your brief. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error generating your brief. Please try again.",
         variant: "destructive"
       });
       setIsGenerating(false);
@@ -81,8 +140,8 @@ Based on the above analysis, we recommend:
   
   return (
     <LegalToolLayout
-      title="AI-Powered Legal Brief Generation"
-      description="Generate comprehensive legal briefs based on your specific topic, jurisdiction, and context. Our AI analyzes relevant case law and statutes to provide structured and well-cited legal briefs."
+      title="AI-Powered Indian Legal Brief Generation"
+      description="Generate comprehensive legal briefs based on Indian law. Our AI analyzes relevant case law, statutes, and constitutional provisions to provide structured and well-cited legal briefs for Indian legal practice."
       icon={<BookOpen className="w-6 h-6 text-white" />}
     >
       <div className="max-w-4xl mx-auto space-y-6">
@@ -93,20 +152,32 @@ Based on the above analysis, we recommend:
                 <Label htmlFor="topic">Legal Topic</Label>
                 <Input 
                   id="topic" 
-                  placeholder="e.g., Intellectual Property Rights, Contract Breach" 
+                  placeholder="e.g., Right to Privacy, Arbitration, Land Acquisition" 
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                 />
               </div>
               
               <div>
-                <Label htmlFor="jurisdiction">Jurisdiction (Optional)</Label>
-                <Input 
-                  id="jurisdiction" 
-                  placeholder="e.g., California, European Union" 
-                  value={jurisdiction}
-                  onChange={(e) => setJurisdiction(e.target.value)}
-                />
+                <Label htmlFor="jurisdiction">Indian Jurisdiction (Optional)</Label>
+                <Select value={jurisdiction} onValueChange={setJurisdiction}>
+                  <SelectTrigger id="jurisdiction">
+                    <SelectValue placeholder="Select jurisdiction" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="constitutional">Constitutional</SelectItem>
+                    <SelectItem value="criminal">Criminal Law</SelectItem>
+                    <SelectItem value="civil">Civil Law</SelectItem>
+                    <SelectItem value="corporate">Corporate Law</SelectItem>
+                    <SelectItem value="taxation">Taxation</SelectItem>
+                    <SelectItem value="intellectual-property">Intellectual Property</SelectItem>
+                    <SelectItem value="environmental">Environmental Law</SelectItem>
+                    <SelectItem value="delhi-hc">Delhi High Court</SelectItem>
+                    <SelectItem value="bombay-hc">Bombay High Court</SelectItem>
+                    <SelectItem value="madras-hc">Madras High Court</SelectItem>
+                    <SelectItem value="calcutta-hc">Calcutta High Court</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
@@ -131,7 +202,7 @@ Based on the above analysis, we recommend:
                 <>Generating Brief...</>
               ) : (
                 <>
-                  Generate Brief
+                  Generate Legal Brief
                   <Send className="ml-2 h-4 w-4" />
                 </>
               )}
