@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, ExternalLink, Shield, BookOpen, Book, AlertTriangle, FileUp, Download, Compass } from 'lucide-react';
+import { FileText, ExternalLink, Shield, BookOpen, Book, AlertTriangle, FileUp, Download, Compass, FileCheck, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import PdfFileUpload from '@/components/PdfFileUpload';
 import { extractTextFromPdf } from '@/utils/pdfExtraction';
@@ -36,54 +35,70 @@ const RefinedIPProtectionTool = () => {
   const [draftDescription, setDraftDescription] = useState('');
   const [generatedDraft, setGeneratedDraft] = useState('');
 
-  // Curated list of verified working Indian IP resources
+  // Updated list of verified working Indian IP resources
   const verifiedIPResources: IPResource[] = [
     {
       title: "Indian Intellectual Property Office",
-      url: "https://ipindia.gov.in/",
-      description: "Official website of the Indian IP office with comprehensive information on all types of IP protection",
+      url: "https://ipindia.gov.in",
+      description: "Official IP India website with information on patents, trademarks, designs, and geographical indications",
       icon: <Shield className="h-4 w-4 mr-2" />,
       organization: "Controller General of Patents, Designs & Trade Marks",
       category: "general"
     },
     {
-      title: "Indian Trademark Registry",
-      url: "https://ipindiaonline.gov.in/trademarkefiling/user/frmlogin.aspx",
-      description: "Official portal for trademark filing in India",
-      icon: <ExternalLink className="h-4 w-4 mr-2" />,
-      organization: "Controller General of Patents, Designs & Trade Marks",
+      title: "Public Search for Indian Trademarks",
+      url: "https://ipindiaservices.gov.in/publicsearch",
+      description: "Search the Indian trademark database without login",
+      icon: <Search className="h-4 w-4 mr-2" />,
+      organization: "Intellectual Property India",
       category: "trademark"
     },
     {
-      title: "Indian Patent Office",
-      url: "https://ipindiaonline.gov.in/epatentfiling/goForLogin/doLogin",
-      description: "Official e-filing portal for patents in India",
-      icon: <ExternalLink className="h-4 w-4 mr-2" />,
-      organization: "Controller General of Patents, Designs & Trade Marks",
+      title: "Indian Patent Advanced Search System",
+      url: "https://ipindiaservices.gov.in/PublicSearch",
+      description: "Search for patents in the Indian patent database",
+      icon: <Search className="h-4 w-4 mr-2" />,
+      organization: "Intellectual Property India",
       category: "patent"
     },
     {
       title: "Copyright Office India",
-      url: "https://copyright.gov.in/",
-      description: "Official portal for copyright registration in India",
+      url: "https://copyright.gov.in",
+      description: "Official website for copyright registration in India",
       icon: <Book className="h-4 w-4 mr-2" />,
       organization: "Department for Promotion of Industry and Internal Trade",
       category: "copyright"
     },
     {
-      title: "Designs Registry",
+      title: "Copyright Registration Form",
+      url: "https://copyright.gov.in/frmFillApplication.aspx",
+      description: "Direct link to copyright registration form",
+      icon: <FileCheck className="h-4 w-4 mr-2" />,
+      organization: "Copyright Office India",
+      category: "copyright"
+    },
+    {
+      title: "Design Registration Information",
       url: "https://ipindia.gov.in/designs.htm",
-      description: "Information on design registration in India",
+      description: "Information on design registration process in India",
       icon: <Compass className="h-4 w-4 mr-2" />,
       organization: "Controller General of Patents, Designs & Trade Marks",
       category: "design"
     },
     {
-      title: "National Intellectual Property Awareness Mission",
-      url: "https://ipindia.gov.in/nipam.htm",
-      description: "Educational resources and awareness programs for IP in India",
+      title: "Indian IP Acts and Rules",
+      url: "https://ipindia.gov.in/acts-rules.htm",
+      description: "Access all Indian IP laws, including Patents Act, Trademarks Act, and Designs Act",
       icon: <BookOpen className="h-4 w-4 mr-2" />,
       organization: "Intellectual Property India",
+      category: "general"
+    },
+    {
+      title: "Cell for IPR Promotion & Management",
+      url: "https://cipam.gov.in",
+      description: "Government initiative to promote IP awareness and protection",
+      icon: <Shield className="h-4 w-4 mr-2" />,
+      organization: "Department for Promotion of Industry and Internal Trade",
       category: "general"
     }
   ];
@@ -729,4 +744,4 @@ Title: _______________________________`;
   );
 };
 
-export default RefinedIPProtectionTool;
+export default RefinedIPProtection
