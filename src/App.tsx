@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,29 +20,6 @@ import PlaceholderToolPage from "./pages/placeholder-tool";
 import AuthPage from "./pages/auth";
 import SignUpPage from "./pages/auth/sign-up";
 
-// Implemented tool pages
-import LegalBriefGenerationPage from "./pages/legal-brief-generation";
-import StatuteTrackerPage from "./pages/statute-tracker";
-import ContractDraftingPage from "./pages/contract-drafting";
-import StartupToolkitPage from "./pages/startup-toolkit";
-import PleaBargainPage from "./pages/plea-bargain";
-import ESignaturePage from "./pages/e-signature";
-import GdprCompliancePage from "./pages/gdpr-compliance";
-import LitigationPredictionPage from "./pages/litigation-prediction";
-import TaxCompliancePage from "./pages/tax-compliance";
-import BillingTrackingPage from "./pages/billing-tracking";
-import IPProtectionPage from "./pages/ip-protection";
-import SentencingPredictorPage from "./pages/sentencing-predictor";
-import AMLCompliancePage from "./pages/aml-compliance";
-import MADueDiligencePage from "./pages/m&a-due-diligence";
-import FinancialObligationsPage from "./pages/financial-obligations";
-import FraudDetectorPage from "./pages/fraud-detector";
-
-// New tools added
-import UserProfilePage from "./pages/user-profile";
-import CourtFilingPage from "./pages/court-filing";
-import DeadlineManagementPage from "./pages/deadline-management";
-
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -58,8 +34,13 @@ const queryClient = new QueryClient({
 });
 
 // Protect routes that require authentication
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children, useMockAuth = false }: { children: React.ReactNode, useMockAuth?: boolean }) => {
   const { isSignedIn, isLoaded } = useAuth();
+
+  // If we're using mock auth, consider the user signed in
+  if (useMockAuth) {
+    return <>{children}</>;
+  }
 
   if (!isLoaded) {
     // You might want to show a loading state here
@@ -73,7 +54,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const App = () => (
+interface AppProps {
+  useMockAuth?: boolean;
+}
+
+const App = ({ useMockAuth = false }: AppProps) => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <HelmetProvider>
@@ -87,182 +72,182 @@ const App = () => (
               
               {/* Protected routes */}
               <Route path="/tools" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <ToolsPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/chat" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <ChatPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/legal-document-analyzer" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <LegalDocumentAnalyzerPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/legal-brief-generation" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <LegalBriefGenerationPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/knowledge" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <KnowledgePage />
                 </ProtectedRoute>
               } />
               
               <Route path="/case-law-research" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <CaseLawResearchPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/statute-tracker" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <StatuteTrackerPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/contract-drafting" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <ContractDraftingPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/compliance-assistance" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <ComplianceAssistancePage />
                 </ProtectedRoute>
               } />
               
               <Route path="/gdpr-compliance" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <GdprCompliancePage />
                 </ProtectedRoute>
               } />
               
               <Route path="/aml-compliance" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <AMLCompliancePage />
                 </ProtectedRoute>
               } />
               
               <Route path="/legal-risk-assessment" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <LegalRiskAssessmentPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/litigation-prediction" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <LitigationPredictionPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/legal-due-diligence" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <LegalDueDiligencePage />
                 </ProtectedRoute>
               } />
               
               <Route path="/startup-toolkit" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <StartupToolkitPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/m&a-due-diligence" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <MADueDiligencePage />
                 </ProtectedRoute>
               } />
               
               <Route path="/ip-protection" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <IPProtectionPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/billing-tracking" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <BillingTrackingPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/financial-obligations" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <FinancialObligationsPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/fraud-detector" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <FraudDetectorPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/legal-education" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <LegalEducationPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/e-signature" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <ESignaturePage />
                 </ProtectedRoute>
               } />
               
               <Route path="/plea-bargain" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <PleaBargainPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/tax-compliance" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <TaxCompliancePage />
                 </ProtectedRoute>
               } />
               
               <Route path="/sentencing-predictor" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <SentencingPredictorPage />
                 </ProtectedRoute>
               } />
               
               {/* New tool pages */}
               <Route path="/user-profile" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <UserProfilePage />
                 </ProtectedRoute>
               } />
               
               <Route path="/court-filing" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <CourtFilingPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/deadline-management" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <DeadlineManagementPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/virtual-assistant" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <PlaceholderToolPage />
                 </ProtectedRoute>
               } />
               
               <Route path="/regulatory-reporting" element={
-                <ProtectedRoute>
+                <ProtectedRoute useMockAuth={useMockAuth}>
                   <PlaceholderToolPage />
                 </ProtectedRoute>
               } />
