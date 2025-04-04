@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import { AlertTriangle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import AMLComplianceTool from '@/components/AMLComplianceTool';

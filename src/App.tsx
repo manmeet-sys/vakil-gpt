@@ -1,9 +1,11 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { HelmetProvider } from 'react-helmet-async';
 import Index from "./pages/Index";
 import ChatPage from "./pages/chat";
 import KnowledgePage from "./pages/knowledge";
@@ -40,7 +42,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (replacing cacheTime)
       retry: 1,
       refetchOnWindowFocus: false,
     },
@@ -50,54 +52,56 @@ const queryClient = new QueryClient({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
-      <ThemeProvider defaultTheme="light">
-        <TooltipProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/tools" element={<ToolsPage />} />
-            
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/legal-document-analyzer" element={<LegalDocumentAnalyzerPage />} />
-            <Route path="/legal-brief-generation" element={<LegalBriefGenerationPage />} />
-            
-            <Route path="/knowledge" element={<KnowledgePage />} />
-            <Route path="/case-law-research" element={<CaseLawResearchPage />} />
-            <Route path="/statute-tracker" element={<StatuteTrackerPage />} />
-            
-            <Route path="/contract-drafting" element={<ContractDraftingPage />} />
-            <Route path="/compliance-assistance" element={<ComplianceAssistancePage />} />
-            <Route path="/gdpr-compliance" element={<GdprCompliancePage />} />
-            <Route path="/aml-compliance" element={<AMLCompliancePage />} />
-            
-            <Route path="/legal-risk-assessment" element={<LegalRiskAssessmentPage />} />
-            <Route path="/litigation-prediction" element={<LitigationPredictionPage />} />
-            <Route path="/legal-due-diligence" element={<LegalDueDiligencePage />} />
-            
-            <Route path="/startup-toolkit" element={<StartupToolkitPage />} />
-            <Route path="/m&a-due-diligence" element={<MADueDiligencePage />} />
-            <Route path="/ip-protection" element={<IPProtectionPage />} />
-            
-            <Route path="/billing-tracking" element={<BillingTrackingPage />} />
-            <Route path="/financial-obligations" element={<FinancialObligationsPage />} />
-            <Route path="/fraud-detector" element={<FraudDetectorPage />} />
-            
-            <Route path="/legal-education" element={<LegalEducationPage />} />
-            <Route path="/e-signature" element={<ESignaturePage />} />
-            <Route path="/plea-bargain" element={<PleaBargainPage />} />
-            <Route path="/tax-compliance" element={<TaxCompliancePage />} />
-            <Route path="/sentencing-predictor" element={<SentencingPredictorPage />} />
-            
-            <Route path="/court-filing" element={<PlaceholderToolPage />} />
-            <Route path="/deadline-management" element={<PlaceholderToolPage />} />
-            <Route path="/virtual-assistant" element={<PlaceholderToolPage />} />
-            <Route path="/regulatory-reporting" element={<PlaceholderToolPage />} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-          <Sonner />
-        </TooltipProvider>
-      </ThemeProvider>
+      <HelmetProvider>
+        <ThemeProvider defaultTheme="light">
+          <TooltipProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/tools" element={<ToolsPage />} />
+              
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/legal-document-analyzer" element={<LegalDocumentAnalyzerPage />} />
+              <Route path="/legal-brief-generation" element={<LegalBriefGenerationPage />} />
+              
+              <Route path="/knowledge" element={<KnowledgePage />} />
+              <Route path="/case-law-research" element={<CaseLawResearchPage />} />
+              <Route path="/statute-tracker" element={<StatuteTrackerPage />} />
+              
+              <Route path="/contract-drafting" element={<ContractDraftingPage />} />
+              <Route path="/compliance-assistance" element={<ComplianceAssistancePage />} />
+              <Route path="/gdpr-compliance" element={<GdprCompliancePage />} />
+              <Route path="/aml-compliance" element={<AMLCompliancePage />} />
+              
+              <Route path="/legal-risk-assessment" element={<LegalRiskAssessmentPage />} />
+              <Route path="/litigation-prediction" element={<LitigationPredictionPage />} />
+              <Route path="/legal-due-diligence" element={<LegalDueDiligencePage />} />
+              
+              <Route path="/startup-toolkit" element={<StartupToolkitPage />} />
+              <Route path="/m&a-due-diligence" element={<MADueDiligencePage />} />
+              <Route path="/ip-protection" element={<IPProtectionPage />} />
+              
+              <Route path="/billing-tracking" element={<BillingTrackingPage />} />
+              <Route path="/financial-obligations" element={<FinancialObligationsPage />} />
+              <Route path="/fraud-detector" element={<FraudDetectorPage />} />
+              
+              <Route path="/legal-education" element={<LegalEducationPage />} />
+              <Route path="/e-signature" element={<ESignaturePage />} />
+              <Route path="/plea-bargain" element={<PleaBargainPage />} />
+              <Route path="/tax-compliance" element={<TaxCompliancePage />} />
+              <Route path="/sentencing-predictor" element={<SentencingPredictorPage />} />
+              
+              <Route path="/court-filing" element={<PlaceholderToolPage />} />
+              <Route path="/deadline-management" element={<PlaceholderToolPage />} />
+              <Route path="/virtual-assistant" element={<PlaceholderToolPage />} />
+              <Route path="/regulatory-reporting" element={<PlaceholderToolPage />} />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </ThemeProvider>
+      </HelmetProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );
