@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { Shield, Upload, Check, AlertTriangle, FileText, ChevronDown, ChevronUp, Search, Send } from 'lucide-react';
+import { Shield, Upload, Check, AlertTriangle, FileText, ChevronDown, ChevronUp, Search, Send, Info } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ComplianceIssue {
   id: string;
@@ -23,13 +24,13 @@ interface ComplianceIssue {
   expanded?: boolean;
 }
 
-const GdprCompliancePage = () => {
+const GDPRCompliancePage = () => {
   const [activeTab, setActiveTab] = useState('document-scan');
   const [documentType, setDocumentType] = useState('privacy-policy');
   const [document, setDocument] = useState('');
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [uploadMode, setUploadMode] = useState<'file' | 'text'>('text');
-  const [country, setCountry] = useState('eu');
+  const [applicableRegulations, setApplicableRegulations] = useState(['pdpb']);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResults, setScanResults] = useState<{
     score: number;
@@ -43,6 +44,14 @@ const GdprCompliancePage = () => {
     if (e.target.files && e.target.files[0]) {
       setDocumentFile(e.target.files[0]);
     }
+  };
+
+  const handleRegulationChange = (regulation: string) => {
+    setApplicableRegulations(prev => 
+      prev.includes(regulation) 
+        ? prev.filter(r => r !== regulation) 
+        : [...prev, regulation]
+    );
   };
   
   const scanDocument = () => {
@@ -61,50 +70,59 @@ const GdprCompliancePage = () => {
     setTimeout(() => {
       // This would be replaced with actual AI analysis using Gemini or DeepSeek
       const mockResults = {
-        score: 72,
+        score: 68,
         issues: [
           {
-            id: 'gdpr-1',
-            title: 'Insufficient Consent Mechanism',
-            description: 'The document does not clearly specify how user consent is obtained and recorded. GDPR requires explicit, informed consent for data collection.',
+            id: 'dpdp-1',
+            title: 'Inadequate Consent Framework',
+            description: 'The document does not clearly specify how user consent is obtained and recorded. India\'s DPDP Act requires explicit, specific, and informed consent for data processing.',
             severity: 'high' as const,
-            regulation: 'GDPR Article 7',
-            remediation: 'Add a detailed section on how consent is obtained, stored, and how users can withdraw consent at any time.',
+            regulation: 'DPDP Act 2023, Section 7',
+            remediation: 'Implement a clear consent mechanism that explicitly states the purpose of data collection, with options for users to provide or withdraw consent.',
             expanded: false
           },
           {
-            id: 'gdpr-2',
-            title: 'Inadequate Data Retention Policy',
-            description: 'The document does not specify how long personal data will be stored. GDPR requires clear retention periods.',
+            id: 'dpdp-2',
+            title: 'Missing Data Principal Rights',
+            description: 'The document does not fully address the rights of data principals (individuals) as required under India\'s data protection laws.',
+            severity: 'high' as const,
+            regulation: 'DPDP Act 2023, Chapter III',
+            remediation: 'Add a comprehensive section on data principal rights including right to access, correction, erasure, and grievance redressal.',
+            expanded: false
+          },
+          {
+            id: 'dpdp-3',
+            title: 'Inadequate Data Breach Notification Procedure',
+            description: 'The document lacks clear procedures for data breach notifications to affected individuals and the Data Protection Board of India.',
             severity: 'medium' as const,
-            regulation: 'GDPR Article 5(1)(e)',
-            remediation: 'Include specific timeframes for data retention and criteria used to determine those periods.',
+            regulation: 'DPDP Act 2023, Section 9',
+            remediation: 'Include a detailed data breach notification protocol with timeframes and procedures.',
             expanded: false
           },
           {
-            id: 'gdpr-3',
-            title: 'Missing Information on International Data Transfers',
-            description: 'The document does not adequately address whether and how data may be transferred to countries outside the EU.',
+            id: 'dpdp-4',
+            title: 'Incomplete Children\'s Data Protection Measures',
+            description: 'Special protection measures for processing children\'s data are not adequately addressed.',
             severity: 'medium' as const,
-            regulation: 'GDPR Articles 44-50',
-            remediation: 'Specify if data is transferred internationally, to which countries, and what safeguards are in place.',
+            regulation: 'DPDP Act 2023, Section 10',
+            remediation: 'Add specific safeguards for processing children\'s data including age verification and parental consent mechanisms.',
             expanded: false
           },
           {
-            id: 'gdpr-4',
-            title: 'Vague Description of Data Processing Purposes',
-            description: 'The purposes for processing personal data are not specific enough to meet GDPR requirements.',
+            id: 'dpdp-5',
+            title: 'Vague Cross-Border Data Transfer Mechanism',
+            description: 'The document does not clearly specify the mechanisms for transferring data outside India.',
             severity: 'low' as const,
-            regulation: 'GDPR Article 5(1)(b)',
-            remediation: 'Clearly specify each purpose for which personal data is processed in concrete terms.',
+            regulation: 'DPDP Act 2023, Section 17',
+            remediation: 'Detail the specific countries where data may be transferred and the legal basis for such transfers.',
             expanded: false
           }
         ],
         compliantSections: [
-          'Right to Access',
-          'Right to Rectification',
-          'Data Security Measures',
-          'Contact Information'
+          'Basic Definitions',
+          'Company Contact Information',
+          'Security Measures',
+          'Cookies Policy'
         ]
       };
       
@@ -113,7 +131,7 @@ const GdprCompliancePage = () => {
       
       toast({
         title: "Analysis Complete",
-        description: "Document has been analyzed for GDPR compliance",
+        description: `Document has been analyzed for compliance with ${applicableRegulations.includes('pdpb') ? 'DPDP' : ''} ${applicableRegulations.includes('gdpr') ? 'GDPR' : ''} ${applicableRegulations.includes('other') ? 'other regulations' : ''}`,
       });
     }, 3000);
   };
@@ -143,7 +161,7 @@ const GdprCompliancePage = () => {
   const generateCompliantDocument = () => {
     toast({
       title: "Generating Compliant Document",
-      description: "Creating a GDPR-compliant version of your document...",
+      description: "Creating a DPDP-compliant version of your document...",
     });
     
     setTimeout(() => {
@@ -153,15 +171,15 @@ Last Updated: ${new Date().toISOString().split('T')[0]}
 
 1. INTRODUCTION
 
-This Privacy Policy describes how we collect, use, and process your personal information in accordance with the General Data Protection Regulation (GDPR).
+This Privacy Policy describes how we collect, use, and process your personal information in accordance with the Digital Personal Data Protection Act, 2023 (DPDP Act) of India.
 
-2. DATA CONTROLLER
+2. DATA FIDUCIARY INFORMATION
 
-[Your Company Name] is the data controller responsible for your personal data. Contact information: [email@example.com]
+[Your Company Name] is the data fiduciary responsible for your personal data. Contact information: [email@example.com]
 
-3. PERSONAL DATA WE COLLECT
+3. PERSONAL DATA WE PROCESS
 
-We collect the following categories of personal data:
+We collect and process the following categories of personal data:
 - Contact information (name, email, phone number)
 - Account information (username, password)
 - Transaction data
@@ -171,7 +189,7 @@ We collect the following categories of personal data:
 4. PURPOSES AND LEGAL BASIS FOR PROCESSING
 
 We process your personal data for the following specific purposes:
-- To provide our services (Legal basis: Contract performance)
+- To provide our services (Legal basis: Consent and Contract)
 - To improve our services (Legal basis: Legitimate interest)
 - To send marketing communications (Legal basis: Consent)
 - To comply with legal obligations (Legal basis: Legal obligation)
@@ -180,37 +198,30 @@ We process your personal data for the following specific purposes:
 
 We will retain your personal data for:
 - Account information: For the duration of your account plus 30 days after deletion
-- Transaction data: 7 years (as required by tax regulations)
+- Transaction data: 8 years (as required by Indian tax regulations)
 - Marketing preferences: Until you withdraw consent
 - Usage data: 24 months
 
-6. YOUR RIGHTS
+6. YOUR RIGHTS AS A DATA PRINCIPAL
 
-Under GDPR, you have the following rights:
-- Right to access your personal data
-- Right to rectification of inaccurate data
-- Right to erasure ("right to be forgotten")
-- Right to restriction of processing
-- Right to data portability
-- Right to object to processing
-- Rights related to automated decision making and profiling
+Under the DPDP Act 2023, you have the following rights:
+- Right to access information about your personal data
+- Right to correction and erasure of your personal data
+- Right to grievance redressal
+- Right to nominate another person in case of death or incapacity
 
 To exercise these rights, contact us at [privacy@example.com]
 
-7. INTERNATIONAL TRANSFERS
+7. CROSS-BORDER DATA TRANSFERS
 
-We transfer personal data to the following countries outside the EU:
-- United States (covered by EU-US Data Privacy Framework)
-- Canada (covered by adequacy decision)
-
-We implement appropriate safeguards including Standard Contractual Clauses for other transfers.
+We may transfer personal data to countries outside India that provide an adequate level of protection, in compliance with the conditions prescribed under the DPDP Act.
 
 8. CONSENT
 
 We obtain explicit consent for:
+- Processing your personal data for specified purposes
 - Marketing communications
-- Cookie usage (except strictly necessary cookies)
-- Processing of special categories of data
+- Processing of sensitive personal data
 
 You can withdraw consent at any time by [instructions for withdrawing consent].
 
@@ -222,37 +233,48 @@ We implement appropriate technical and organizational measures to protect your d
 - Staff training
 - Access controls
 
-10. DATA BREACH PROCEDURES
+10. DATA BREACH NOTIFICATION
 
-In case of a data breach that risks your rights and freedoms, we will notify the relevant supervisory authority within 72 hours and will inform affected individuals without undue delay.
+In case of a personal data breach that may result in significant harm to you, we will notify the Data Protection Board of India and affected individuals without undue delay.
 
-11. CHANGES TO THIS POLICY
+11. SPECIAL PROVISIONS FOR CHILDREN'S DATA
 
-We may update this Privacy Policy from time to time. We will notify you of significant changes by [email/notification in app/website].
+We implement age verification mechanisms and require verifiable parental consent before processing personal data of children (individuals under 18 years of age).
 
-12. CONTACT INFORMATION
+12. GRIEVANCE REDRESSAL
 
-If you have questions or concerns, contact us at:
-[Your DPO contact information]
+If you have any concerns or complaints regarding the processing of your personal data, you may contact our Data Protection Officer at [dpo@example.com].
 
-You have the right to lodge a complaint with a supervisory authority.`;
+You also have the right to file a complaint with the Data Protection Board of India.
+
+13. CHANGES TO THIS POLICY
+
+We may update this Privacy Policy from time to time. We will notify you of significant changes by [email/notification in app/website].`;
       
       setDocument(updatedDocument);
       
       toast({
         title: "Document Generated",
-        description: "A GDPR-compliant document has been generated. Review and customize as needed.",
+        description: "A DPDP-compliant document has been generated. Review and customize as needed.",
       });
     }, 3000);
   };
   
   return (
     <LegalToolLayout
-      title="GDPR & Data Privacy Compliance"
-      description="Review documents and policies for compliance with GDPR and other privacy regulations, identify potential issues, and generate compliant document templates."
+      title="Data Privacy Compliance - DPDP & GDPR"
+      description="Review documents and policies for compliance with India's Digital Personal Data Protection Act (DPDP) and other global privacy regulations."
       icon={<Shield className="w-6 h-6 text-white" />}
     >
       <div className="max-w-4xl mx-auto">
+        <Alert className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-900/20">
+          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertTitle>India's Data Protection Framework</AlertTitle>
+          <AlertDescription className="text-sm">
+            The Digital Personal Data Protection Act, 2023 (DPDP Act) is India's comprehensive data protection law that applies to the processing of digital personal data. Use this tool to ensure your privacy policies and data practices comply with the DPDP Act and other global regulations like GDPR where needed.
+          </AlertDescription>
+        </Alert>
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto">
             <TabsTrigger value="document-scan">
@@ -269,7 +291,7 @@ You have the right to lodge a complaint with a supervisory authority.`;
             <Card>
               <CardHeader>
                 <CardTitle>Document Compliance Check</CardTitle>
-                <CardDescription>Analyze your document for compliance with privacy regulations</CardDescription>
+                <CardDescription>Analyze your document for compliance with Indian and global privacy regulations</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -284,30 +306,52 @@ You have the right to lodge a complaint with a supervisory authority.`;
                       <SelectItem value="data-processing-agreement">Data Processing Agreement</SelectItem>
                       <SelectItem value="cookie-policy">Cookie Policy</SelectItem>
                       <SelectItem value="consent-form">Consent Form</SelectItem>
+                      <SelectItem value="data-sharing-agreement">Data Sharing Agreement</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div>
-                  <Label htmlFor="jurisdiction">Primary Jurisdiction</Label>
-                  <Select value={country} onValueChange={setCountry}>
-                    <SelectTrigger id="jurisdiction">
-                      <SelectValue placeholder="Select jurisdiction" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="eu">European Union (GDPR)</SelectItem>
-                      <SelectItem value="uk">United Kingdom (UK GDPR)</SelectItem>
-                      <SelectItem value="us-ca">California (CCPA/CPRA)</SelectItem>
-                      <SelectItem value="us-va">Virginia (VCDPA)</SelectItem>
-                      <SelectItem value="us-co">Colorado (CPA)</SelectItem>
-                      <SelectItem value="us-ct">Connecticut (CTDPA)</SelectItem>
-                      <SelectItem value="us-ut">Utah (UCPA)</SelectItem>
-                      <SelectItem value="canada">Canada (PIPEDA)</SelectItem>
-                      <SelectItem value="brazil">Brazil (LGPD)</SelectItem>
-                      <SelectItem value="australia">Australia (Privacy Act)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="block mb-2">Applicable Regulations</Label>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant={applicableRegulations.includes('pdpb') ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleRegulationChange('pdpb')}
+                      className="rounded-full"
+                    >
+                      India DPDP Act 2023
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={applicableRegulations.includes('gdpr') ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleRegulationChange('gdpr')}
+                      className="rounded-full"
+                    >
+                      EU GDPR
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={applicableRegulations.includes('it-rules') ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleRegulationChange('it-rules')}
+                      className="rounded-full"
+                    >
+                      IT Rules 2021
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={applicableRegulations.includes('other') ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleRegulationChange('other')}
+                      className="rounded-full"
+                    >
+                      Other Regulations
+                    </Button>
+                  </div>
                 </div>
                 
                 <div>
@@ -470,9 +514,9 @@ You have the right to lodge a complaint with a supervisory authority.`;
                                 }`} />
                               </div>
                               <div>
-                                <h4 className="font-medium flex items-center">
+                                <h4 className="font-medium flex items-center flex-wrap gap-2">
                                   {issue.title}
-                                  <Badge className={`ml-2 ${getSeverityColor(issue.severity)}`}>
+                                  <Badge className={`${getSeverityColor(issue.severity)}`}>
                                     {issue.severity.toUpperCase()}
                                   </Badge>
                                 </h4>
@@ -534,7 +578,7 @@ You have the right to lodge a complaint with a supervisory authority.`;
                     <Button 
                       onClick={generateCompliantDocument}
                     >
-                      Generate Compliant Document
+                      Generate DPDP-Compliant Document
                     </Button>
                   </CardFooter>
                 </Card>
@@ -545,56 +589,72 @@ You have the right to lodge a complaint with a supervisory authority.`;
           <TabsContent value="knowledge-base" className="space-y-6 mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Data Privacy Compliance Guide</CardTitle>
-                <CardDescription>Essential information about GDPR and other privacy regulations</CardDescription>
+                <CardTitle>India's Data Protection Framework</CardTitle>
+                <CardDescription>Essential information about the Digital Personal Data Protection Act, 2023 and other Indian privacy regulations</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-medium">General Data Protection Regulation (GDPR)</h3>
+                    <h3 className="text-lg font-medium">Digital Personal Data Protection Act, 2023 (DPDP Act)</h3>
                     <p className="text-legal-muted mt-1">
-                      The GDPR is a comprehensive data protection law that applies to all organizations processing the personal data of EU residents, regardless of where the organization is located.
+                      The DPDP Act is India's comprehensive legislation for the protection of digital personal data. It establishes a framework for processing digital personal data based on the principle that individuals should have control over their data.
                     </p>
                     
                     <div className="mt-4 space-y-3">
                       <div className="p-3 border border-legal-border dark:border-legal-slate/20 rounded-md">
                         <h4 className="font-medium">Key Requirements</h4>
                         <ul className="list-disc pl-5 mt-2 space-y-1 text-legal-muted">
-                          <li>Legal basis for processing (consent, contract, legitimate interest, etc.)</li>
-                          <li>Enhanced consent requirements (explicit, specific, informed)</li>
-                          <li>Data subject rights (access, erasure, portability, etc.)</li>
-                          <li>Data breach notification (72 hours)</li>
-                          <li>Privacy by design and by default</li>
-                          <li>Data Protection Impact Assessments (DPIAs)</li>
-                          <li>Appointment of Data Protection Officers (DPOs) in some cases</li>
+                          <li>Lawful processing based on consent and legitimate uses</li>
+                          <li>Explicit consent requirements (clear, specific, informed)</li>
+                          <li>Data Principal rights (access, correction, erasure)</li>
+                          <li>Data breach notification to the Data Protection Board</li>
+                          <li>Special protections for children's data</li>
+                          <li>Significant Data Fiduciaries to have additional compliance measures</li>
+                          <li>Cross-border data transfer restrictions</li>
                         </ul>
                       </div>
                       
                       <div className="p-3 border border-legal-border dark:border-legal-slate/20 rounded-md">
-                        <h4 className="font-medium">Fines and Penalties</h4>
+                        <h4 className="font-medium">Penalties</h4>
                         <p className="text-legal-muted mt-1">
-                          GDPR violations can result in fines up to €20 million or 4% of global annual revenue, whichever is higher.
+                          Non-compliance with the DPDP Act can result in penalties up to ₹250 crore (approximately $30 million) for certain violations.
                         </p>
                       </div>
                     </div>
                   </div>
                   
                   <div>
-                    <h3 className="text-lg font-medium">California Consumer Privacy Act (CCPA) & California Privacy Rights Act (CPRA)</h3>
+                    <h3 className="text-lg font-medium">Information Technology Rules, 2021</h3>
                     <p className="text-legal-muted mt-1">
-                      The CCPA/CPRA grants California residents specific rights regarding their personal information and imposes obligations on businesses that collect it.
+                      The IT Rules 2021 govern intermediaries (including social media platforms) and impose additional compliance requirements for personal data processing.
                     </p>
                     
                     <div className="mt-4 space-y-3">
                       <div className="p-3 border border-legal-border dark:border-legal-slate/20 rounded-md">
                         <h4 className="font-medium">Key Requirements</h4>
                         <ul className="list-disc pl-5 mt-2 space-y-1 text-legal-muted">
-                          <li>Right to know what personal information is collected</li>
-                          <li>Right to delete personal information</li>
-                          <li>Right to opt-out of the sale of personal information</li>
-                          <li>Right to non-discrimination for exercising rights</li>
-                          <li>Special protections for minors under 16</li>
-                          <li>Annual privacy policy updates</li>
+                          <li>Due diligence requirements for intermediaries</li>
+                          <li>Grievance redressal mechanism</li>
+                          <li>Traceability of first originator of information</li>
+                          <li>Compliance officers for significant social media intermediaries</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-medium">GDPR Applicability to Indian Entities</h3>
+                    <p className="text-legal-muted mt-1">
+                      Indian organizations may need to comply with the EU's GDPR if they:
+                    </p>
+                    
+                    <div className="mt-4 space-y-3">
+                      <div className="p-3 border border-legal-border dark:border-legal-slate/20 rounded-md">
+                        <ul className="list-disc pl-5 mt-2 space-y-1 text-legal-muted">
+                          <li>Have an establishment in the EU</li>
+                          <li>Offer goods or services to EU residents</li>
+                          <li>Monitor the behavior of EU residents</li>
+                          <li>Process data of EU residents on behalf of other organizations</li>
                         </ul>
                       </div>
                     </div>
@@ -607,14 +667,14 @@ You have the right to lodge a complaint with a supervisory authority.`;
                       <div className="p-3 border border-legal-border dark:border-legal-slate/20 rounded-md">
                         <h4 className="font-medium">Privacy Policy</h4>
                         <p className="text-legal-muted mt-1">
-                          A comprehensive document explaining what personal data you collect, how you use it, and the rights of your users.
+                          A comprehensive document explaining what personal data you collect, how you use it, and the rights of your data principals.
                         </p>
                       </div>
                       
                       <div className="p-3 border border-legal-border dark:border-legal-slate/20 rounded-md">
-                        <h4 className="font-medium">Cookie Policy</h4>
+                        <h4 className="font-medium">Consent Framework</h4>
                         <p className="text-legal-muted mt-1">
-                          Details about what cookies you use, their purpose, and how users can control them.
+                          Mechanisms to obtain, record, and manage consent for data processing, with clear opt-in procedures.
                         </p>
                       </div>
                       
@@ -626,9 +686,9 @@ You have the right to lodge a complaint with a supervisory authority.`;
                       </div>
                       
                       <div className="p-3 border border-legal-border dark:border-legal-slate/20 rounded-md">
-                        <h4 className="font-medium">Consent Forms</h4>
+                        <h4 className="font-medium">Data Breach Management Plan</h4>
                         <p className="text-legal-muted mt-1">
-                          Used to obtain explicit consent for specific processing activities.
+                          Procedures for handling and reporting data breaches as required by law.
                         </p>
                       </div>
                     </div>
@@ -639,7 +699,7 @@ You have the right to lodge a complaint with a supervisory authority.`;
                 <Button onClick={() => {
                   toast({
                     title: "Guide Downloaded",
-                    description: "The comprehensive GDPR compliance guide has been downloaded",
+                    description: "The comprehensive Indian data protection compliance guide has been downloaded",
                   });
                 }}>
                   Download Full Compliance Guide
@@ -653,4 +713,4 @@ You have the right to lodge a complaint with a supervisory authority.`;
   );
 };
 
-export default GdprCompliancePage;
+export default GDPRCompliancePage;

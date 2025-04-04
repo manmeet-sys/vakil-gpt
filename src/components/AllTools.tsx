@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
-  FileSearch, List, Clipboard, BarChart2, AlertTriangle } from 'lucide-react';
+  FileSearch, List, Clipboard, BarChart2, AlertTriangle, Landmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 
@@ -22,8 +22,8 @@ const AllTools = () => {
       id: 'legal-research',
       title: 'Indian Legal Research',
       tools: [
-        { name: 'Case Law Research', icon: <Scale className="h-5 w-5" />, path: '/case-law-research' },
-        { name: 'Statute Tracker', icon: <List className="h-5 w-5" />, path: '/statute-tracker' },
+        { name: 'Indian Case Law Research', icon: <Scale className="h-5 w-5" />, path: '/case-law-research' },
+        { name: 'Statute Tracker (BNS/BNSS/BSA)', icon: <List className="h-5 w-5" />, path: '/statute-tracker' },
         { name: 'Legal Knowledge Base', icon: <BookOpen className="h-5 w-5" />, path: '/knowledge' }
       ]
     },
@@ -31,17 +31,17 @@ const AllTools = () => {
       id: 'document-automation',
       title: 'Document & Compliance',
       tools: [
-        { name: 'Contract Drafting', icon: <Clipboard className="h-5 w-5" />, path: '/contract-drafting' },
-        { name: 'GDPR & DPDP Compliance', icon: <Shield className="h-5 w-5" />, path: '/gdpr-compliance' },
+        { name: 'Indian Contract Tools', icon: <Clipboard className="h-5 w-5" />, path: '/contract-drafting' },
+        { name: 'DPDP & Data Compliance', icon: <Shield className="h-5 w-5" />, path: '/gdpr-compliance' },
         { name: 'AML Compliance', icon: <AlertTriangle className="h-5 w-5" />, path: '/aml-compliance' }
       ]
     },
     {
       id: 'risk-assessment',
-      title: 'Risk Management',
+      title: 'Indian Legal Risk Management',
       tools: [
         { name: 'Legal Risk Assessment', icon: <BarChart2 className="h-5 w-5" />, path: '/legal-risk-assessment' },
-        { name: 'Litigation Prediction', icon: <TrendingUp className="h-5 w-5" />, path: '/litigation-prediction' },
+        { name: 'Indian Litigation Predictor', icon: <Landmark className="h-5 w-5" />, path: '/litigation-prediction' },
         { name: 'Legal Due Diligence', icon: <CheckCircle className="h-5 w-5" />, path: '/legal-due-diligence' }
       ]
     },
@@ -49,7 +49,7 @@ const AllTools = () => {
       id: 'business-tools',
       title: 'Business Legal Tools',
       tools: [
-        { name: 'Startup Toolkit', icon: <Briefcase className="h-5 w-5" />, path: '/startup-toolkit' },
+        { name: 'Startup Legal Toolkit', icon: <Briefcase className="h-5 w-5" />, path: '/startup-toolkit' },
         { name: 'M&A Due Diligence', icon: <Handshake className="h-5 w-5" />, path: '/m&a-due-diligence' },
         { name: 'IP Protection', icon: <Shield className="h-5 w-5" />, path: '/ip-protection' }
       ]
