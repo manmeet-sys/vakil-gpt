@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { FileText, CheckCircle, AlertTriangle, Send, User, Building, Tag, FileSearch, FilePlus, FileUp } from 'lucide-react';
@@ -727,4 +728,165 @@ ________________________`;
                       
                       <div>
                         <Label htmlFor="draft-party-a-type">Type</Label>
-                        <Select value={partyAT
+                        <Select value={partyAType} onValueChange={setPartyAType}>
+                          <SelectTrigger id="draft-party-a-type">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="individual">Individual</SelectItem>
+                            <SelectItem value="corporation">Corporation</SelectItem>
+                            <SelectItem value="llp">LLP</SelectItem>
+                            <SelectItem value="partnership">Partnership</SelectItem>
+                            <SelectItem value="huf">HUF</SelectItem>
+                            <SelectItem value="proprietorship">Proprietorship</SelectItem>
+                            <SelectItem value="trust">Trust</SelectItem>
+                            <SelectItem value="society">Society</SelectItem>
+                            <SelectItem value="government">Government Entity</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3 p-3 rounded-md border border-legal-border dark:border-legal-slate/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Building className="h-5 w-5 text-legal-slate dark:text-white" />
+                        <h4 className="font-medium">Second Party</h4>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="draft-party-b-name">Name</Label>
+                        <Input 
+                          id="draft-party-b-name" 
+                          placeholder="Full legal name" 
+                          value={partyB}
+                          onChange={(e) => setPartyB(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="draft-party-b-type">Type</Label>
+                        <Select value={partyBType} onValueChange={setPartyBType}>
+                          <SelectTrigger id="draft-party-b-type">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="individual">Individual</SelectItem>
+                            <SelectItem value="corporation">Corporation</SelectItem>
+                            <SelectItem value="llp">LLP</SelectItem>
+                            <SelectItem value="partnership">Partnership</SelectItem>
+                            <SelectItem value="huf">HUF</SelectItem>
+                            <SelectItem value="proprietorship">Proprietorship</SelectItem>
+                            <SelectItem value="trust">Trust</SelectItem>
+                            <SelectItem value="society">Society</SelectItem>
+                            <SelectItem value="government">Government Entity</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="pt-4 space-y-4">
+                  <div>
+                    <Label htmlFor="draft-purpose">Contract Purpose</Label>
+                    <Textarea 
+                      id="draft-purpose" 
+                      placeholder="Describe the primary purpose of this contract..." 
+                      value={contractPurpose}
+                      onChange={(e) => setContractPurpose(e.target.value)}
+                      className="min-h-24"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="draft-terms">Key Terms & Conditions</Label>
+                    <Textarea 
+                      id="draft-terms" 
+                      placeholder="Enter the key terms and conditions of this agreement..." 
+                      value={keyTerms}
+                      onChange={(e) => setKeyTerms(e.target.value)}
+                      className="min-h-24"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-end border-t border-legal-border dark:border-legal-slate/20 py-4">
+                <Button 
+                  onClick={handleDraftContract}
+                  disabled={isDrafting}
+                  className="w-full sm:w-auto"
+                >
+                  {isDrafting ? (
+                    <>Drafting Contract...</>
+                  ) : (
+                    <>
+                      Draft Contract
+                      <Send className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            {contractText && (
+              <Card className="mt-6 bg-white dark:bg-legal-slate/10 border-legal-border dark:border-legal-slate/20">
+                <CardHeader>
+                  <CardTitle>Generated Contract</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Textarea 
+                    value={contractText}
+                    onChange={(e) => setContractText(e.target.value)}
+                    className="min-h-[500px] font-mono text-sm"
+                  />
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2 border-t border-legal-border dark:border-legal-slate/20 py-4">
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      const blob = new Blob([contractText], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${contractType || 'contract'}_${new Date().toISOString().split('T')[0]}.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      
+                      toast({
+                        title: "Contract Downloaded",
+                        description: "Your contract has been downloaded as a text file.",
+                      });
+                    }}
+                  >
+                    Download as Text
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      // This would be replaced with actual PDF generation
+                      toast({
+                        title: "PDF Generation",
+                        description: "Your contract is being prepared as a PDF...",
+                      });
+                      
+                      setTimeout(() => {
+                        toast({
+                          title: "PDF Generated",
+                          description: "Your contract has been converted to PDF format.",
+                        });
+                      }, 2000);
+                    }}
+                  >
+                    Generate PDF
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </LegalToolLayout>
+  );
+};
+
+export default ContractDraftingPage;
