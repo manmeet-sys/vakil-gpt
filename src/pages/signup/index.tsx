@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -26,6 +27,16 @@ type SignupFormData = z.infer<typeof signupSchema>;
 const SignupPage = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { signUp, user } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
   
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -37,15 +48,30 @@ const SignupPage = () => {
     },
   });
 
-  const onSubmit = (data: SignupFormData) => {
-    console.log('Form submitted:', data);
-    // For now, just show a success toast
-    toast.success('Account created successfully', {
-      description: 'You can now login with your credentials',
-    });
-
-    // Reset form after submission
-    form.reset();
+  const onSubmit = async (data: SignupFormData) => {
+    setIsLoading(true);
+    
+    try {
+      const { error } = await signUp(data.email, data.password, {
+        full_name: data.name
+      });
+      
+      if (error) {
+        toast.error('Sign up failed', {
+          description: error.message,
+        });
+      } else {
+        toast.success('Account created successfully', {
+          description: 'Please check your email to confirm your account',
+        });
+        navigate('/login');
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred');
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -73,6 +99,7 @@ const SignupPage = () => {
                         <Input
                           placeholder="John Doe"
                           className="pl-10"
+                          disabled={isLoading}
                           {...field}
                         />
                       </div>
@@ -95,6 +122,7 @@ const SignupPage = () => {
                           type="email"
                           placeholder="your.email@example.com"
                           className="pl-10"
+                          disabled={isLoading}
                           {...field}
                         />
                       </div>
@@ -117,12 +145,14 @@ const SignupPage = () => {
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           className="pl-10"
+                          disabled={isLoading}
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                          disabled={isLoading}
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -150,12 +180,14 @@ const SignupPage = () => {
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="••••••••"
                           className="pl-10"
+                          disabled={isLoading}
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                          disabled={isLoading}
                         >
                           {showConfirmPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -170,8 +202,12 @@ const SignupPage = () => {
                 )}
               />
 
-              <Button type="submit" className="w-full">
-                Create Account
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>
           </Form>

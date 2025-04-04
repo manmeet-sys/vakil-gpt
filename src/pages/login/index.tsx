@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -20,6 +21,20 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { signIn, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get redirect path from location state or default to home
+  const from = location.state?.from || '/';
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
   
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -29,15 +44,26 @@ const LoginPage = () => {
     },
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log('Login form submitted:', data);
-    // For now, just show a success toast
-    toast.success('Login successful', {
-      description: 'Welcome back to VakilGPT',
-    });
-
-    // Reset form after submission
-    form.reset();
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+    
+    try {
+      const { error } = await signIn(data.email, data.password);
+      
+      if (error) {
+        toast.error('Login failed', {
+          description: error.message,
+        });
+      } else {
+        // Success toast is shown by the AuthContext
+        // Redirect happens automatically due to the useEffect above
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred');
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -66,6 +92,7 @@ const LoginPage = () => {
                           type="email"
                           placeholder="your.email@example.com"
                           className="pl-10 text-gray-800 dark:text-gray-100"
+                          disabled={isLoading}
                           {...field}
                         />
                       </div>
@@ -83,7 +110,7 @@ const LoginPage = () => {
                     <div className="flex items-center justify-between">
                       <FormLabel className="text-gray-700 dark:text-gray-200">Password</FormLabel>
                       <Link
-                        to="/forgot-password"
+                        to="/reset-password"
                         className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                       >
                         Forgot password?
@@ -96,12 +123,14 @@ const LoginPage = () => {
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           className="pl-10 text-gray-800 dark:text-gray-100"
+                          disabled={isLoading}
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                          disabled={isLoading}
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -116,8 +145,12 @@ const LoginPage = () => {
                 )}
               />
 
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                Sign In
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
           </Form>
