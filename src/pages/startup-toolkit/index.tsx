@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -695,4 +696,129 @@ const StartupToolkitPage: React.FC = () => {
                       {category.name}
                     </TabsTrigger>
                   ))}
-                </TabsList
+                </TabsList>
+                
+                <TabsContent value={selectedCategory} className="border-0 p-0">
+                  <div className="space-y-4">
+                    {filteredDocuments.map(document => (
+                      <Card key={document.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/10 transition-colors" onClick={() => setSelectedDocument(document)}>
+                        <CardHeader className="p-4">
+                          <div className="flex justify-between">
+                            <CardTitle className="text-lg">{document.title}</CardTitle>
+                            {document.indianContext && (
+                              <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
+                                Indian Compliant
+                              </Badge>
+                            )}
+                          </div>
+                          <CardDescription>{document.description}</CardDescription>
+                        </CardHeader>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="md:col-span-2">
+          {selectedDocument ? (
+            <Card>
+              <CardHeader className="flex flex-row items-start justify-between space-y-0">
+                <div>
+                  <CardTitle className="text-2xl">{selectedDocument.title}</CardTitle>
+                  <CardDescription className="mt-1">{selectedDocument.description}</CardDescription>
+                  {selectedDocument.indianContext && (
+                    <div className="mt-2">
+                      <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800">
+                        <IndianRupee className="mr-1 h-3 w-3" />
+                        Indian Context
+                      </Badge>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedDocument.indianContext}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleEdit}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  <Button size="sm" onClick={() => handleDownload(selectedDocument)}>
+                    <FileDown className="h-4 w-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Preview:</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedDocument.preview}</p>
+                </div>
+                <div className="border rounded-md overflow-hidden bg-gray-50 dark:bg-gray-900/50">
+                  <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 px-4 py-2">
+                    <div className="flex items-center">
+                      <FileText className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
+                      <span className="text-sm font-medium">Document Content</span>
+                    </div>
+                    <Button variant="ghost" size="sm">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <pre className="p-4 text-sm overflow-auto whitespace-pre-wrap font-mono text-gray-700 dark:text-gray-300 max-h-96">
+                    {selectedDocument.content}
+                  </pre>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center p-8">
+                <div className="mx-auto h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <FileText className="h-6 w-6 text-gray-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Select a document</h3>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  Choose a legal document from the left sidebar to view, edit, or download it.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <Dialog open={editingDocument} onOpenChange={setEditingDocument}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Document: {documentTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="documentTitle">Document Title</Label>
+              <Input 
+                id="documentTitle" 
+                value={documentTitle}
+                onChange={(e) => setDocumentTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="documentContent">Document Content</Label>
+              <Textarea 
+                id="documentContent" 
+                value={documentContent}
+                onChange={(e) => setDocumentContent(e.target.value)}
+                className="min-h-[50vh] font-mono"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingDocument(false)}>Cancel</Button>
+            <Button onClick={handleSaveEdit}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </LegalToolLayout>
+  );
+};
+
+export default StartupToolkitPage;
