@@ -35,7 +35,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <div className="flex items-center gap-3">
           <Link 
             to="/user-profile" 
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
           >
             <User className="h-4 w-4" />
             <span>Profile</span>

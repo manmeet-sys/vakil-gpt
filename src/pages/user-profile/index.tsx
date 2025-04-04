@@ -1,24 +1,33 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { CalendarClock, FileText, IndianRupee, User } from 'lucide-react';
+import { CalendarClock, FileText, IndianRupee, User, Bell, Shield, Settings, ChevronRight, BookOpen, Gavel, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 const UserProfilePage = () => {
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('dashboard');
+  
   const user = {
     name: "Advocate Sharma",
     email: "advocate.sharma@example.com",
     role: "Senior Advocate",
     barNumber: "KAR/123/2015",
     enrollmentDate: "15/05/2015",
-    jurisdiction: "Karnataka High Court"
+    jurisdiction: "Karnataka High Court",
+    stats: {
+      casesWon: 87,
+      totalCases: 124,
+      documentsCreated: 394,
+      upcomingDeadlines: 8
+    }
   };
 
   const recentCases = [
@@ -39,107 +48,177 @@ const UserProfilePage = () => {
         <title>Advocate Profile | VakilGPT</title>
       </Helmet>
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
+        {/* Profile Header - Apple-inspired design */}
+        <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 mb-8 border border-gray-100 dark:border-gray-800 backdrop-blur-sm">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+            <Avatar className="h-24 w-24 border-4 border-white dark:border-gray-800 shadow-lg">
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl">
+                {user.name.split(' ').map(n => n[0]).join('')}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user.name}</h1>
+              <div className="flex flex-col md:flex-row items-center gap-2 mt-1 text-sm text-gray-600 dark:text-gray-300">
+                <Badge variant="outline" className="font-medium bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/50">
+                  {user.role}
+                </Badge>
+                <span className="hidden md:block text-gray-400">•</span>
+                <span>{user.jurisdiction}</span>
+              </div>
+              
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white dark:bg-gray-800/50 rounded-xl p-3 backdrop-blur-sm border border-gray-100 dark:border-gray-700/30">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Cases Won</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{user.stats.casesWon}</p>
+                  <div className="mt-1">
+                    <Progress value={(user.stats.casesWon / user.stats.totalCases) * 100} className="h-1.5" />
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800/50 rounded-xl p-3 backdrop-blur-sm border border-gray-100 dark:border-gray-700/30">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Total Cases</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{user.stats.totalCases}</p>
+                  <div className="mt-1">
+                    <Progress value={100} className="h-1.5" />
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800/50 rounded-xl p-3 backdrop-blur-sm border border-gray-100 dark:border-gray-700/30">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Documents</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{user.stats.documentsCreated}</p>
+                  <div className="mt-1">
+                    <Progress value={80} className="h-1.5" />
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800/50 rounded-xl p-3 backdrop-blur-sm border border-gray-100 dark:border-gray-700/30">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Deadlines</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{user.stats.upcomingDeadlines}</p>
+                  <div className="mt-1">
+                    <Progress value={40} className="h-1.5" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <Button variant="outline" className="rounded-full" onClick={() => navigate('/settings')}>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </div>
+          </div>
+        </div>
+        
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Profile Sidebar */}
+          {/* Left Sidebar - Profile Info & Tools */}
           <div className="w-full md:w-1/3">
-            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-              <CardHeader className="flex flex-col items-center">
-                <Avatar className="h-24 w-24 mb-4">
-                  <AvatarFallback className="bg-legal-accent/10 text-legal-accent text-2xl">
-                    {user.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <CardTitle className="text-xl font-semibold text-center">{user.name}</CardTitle>
-                <div className="text-center mt-2">
-                  <Badge variant="outline" className="font-normal text-legal-muted dark:text-gray-400">
-                    {user.role}
-                  </Badge>
-                </div>
+            {/* Profile Info Card */}
+            <Card className="border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/30 shadow-sm backdrop-blur-sm overflow-hidden rounded-2xl mb-6">
+              <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 px-6">
+                <CardTitle className="text-lg font-semibold">Professional Information</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-legal-muted dark:text-gray-400">Email</h3>
-                    <p className="text-legal-slate dark:text-white">{user.email}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-legal-muted dark:text-gray-400">Bar Enrollment</h3>
-                    <p className="text-legal-slate dark:text-white">{user.barNumber}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-legal-muted dark:text-gray-400">Enrollment Date</h3>
-                    <p className="text-legal-slate dark:text-white">{user.enrollmentDate}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-legal-muted dark:text-gray-400">Primary Jurisdiction</h3>
-                    <p className="text-legal-slate dark:text-white">{user.jurisdiction}</p>
-                  </div>
-                  <Button variant="outline" className="w-full mt-4">
-                    <User className="mr-2 h-4 w-4" />
-                    Edit Profile
-                  </Button>
-                </div>
+              <CardContent className="p-0">
+                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <li className="px-6 py-4 flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Bar Enrollment</span>
+                    <span className="text-sm text-gray-900 dark:text-white">{user.barNumber}</span>
+                  </li>
+                  <li className="px-6 py-4 flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Enrollment Date</span>
+                    <span className="text-sm text-gray-900 dark:text-white">{user.enrollmentDate}</span>
+                  </li>
+                  <li className="px-6 py-4 flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</span>
+                    <span className="text-sm text-gray-900 dark:text-white">{user.email}</span>
+                  </li>
+                  <li className="px-6 py-4 flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Primary Jurisdiction</span>
+                    <span className="text-sm text-gray-900 dark:text-white">{user.jurisdiction}</span>
+                  </li>
+                </ul>
               </CardContent>
             </Card>
             
             {/* Legal Tools Section */}
-            <Card className="mt-6 border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-              <CardHeader>
+            <Card className="border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/30 shadow-sm backdrop-blur-sm overflow-hidden rounded-2xl">
+              <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 px-6">
                 <CardTitle className="text-lg font-semibold">Legal Practice Tools</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
+              <CardContent className="p-0">
+                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                   {legalTools.map((tool) => (
-                    <Button 
-                      key={tool.id} 
-                      variant="outline" 
-                      className="w-full justify-start text-left mb-2 border-legal-border dark:border-legal-slate/30"
-                      onClick={() => navigate(tool.path)}
-                    >
-                      <div className="flex items-center">
-                        <div className="p-2 rounded-full bg-legal-accent/10 text-legal-accent mr-3">
-                          {tool.icon}
+                    <li key={tool.id}>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-left rounded-none h-auto p-4"
+                        onClick={() => navigate(tool.path)}
+                      >
+                        <div className="flex items-center w-full">
+                          <div className="p-2 rounded-full bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 mr-3">
+                            {tool.icon}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 dark:text-white">{tool.name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{tool.description}</p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 ml-2" />
                         </div>
-                        <div>
-                          <div className="font-medium text-legal-slate dark:text-white">{tool.name}</div>
-                          <div className="text-xs text-legal-muted dark:text-gray-400 mt-1">{tool.description}</div>
-                        </div>
-                      </div>
-                    </Button>
+                      </Button>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </CardContent>
             </Card>
           </div>
           
-          {/* Main Content */}
+          {/* Main Content Area */}
           <div className="w-full md:w-2/3">
-            <Tabs defaultValue="dashboard" className="w-full">
-              <TabsList className="grid grid-cols-3 mb-6">
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="cases">Cases</TabsTrigger>
-                <TabsTrigger value="activity">Activity</TabsTrigger>
+            <Tabs defaultValue="dashboard" value={activeSection} onValueChange={setActiveSection} className="w-full">
+              <TabsList className="flex w-full rounded-xl p-1 bg-gray-100 dark:bg-gray-800 mb-6">
+                <TabsTrigger 
+                  value="dashboard" 
+                  className="flex-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg"
+                >
+                  Dashboard
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="cases" 
+                  className="flex-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg"
+                >
+                  Cases
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="activity" 
+                  className="flex-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm rounded-lg"
+                >
+                  Activity
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="dashboard">
-                <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold">Upcoming Hearings</CardTitle>
+                <Card className="border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/30 shadow-sm rounded-2xl overflow-hidden backdrop-blur-sm">
+                  <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 px-6">
+                    <CardTitle className="text-lg font-semibold flex items-center">
+                      <Gavel className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                      Upcoming Hearings
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
+                  <CardContent className="p-0">
+                    <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                       {recentCases.map((caseItem) => (
-                        <div key={caseItem.id} className="border-b border-legal-border dark:border-legal-slate/20 pb-4 last:border-0 last:pb-0">
+                        <li key={caseItem.id} className="px-6 py-4">
                           <div className="flex justify-between items-start">
                             <div>
-                              <h3 className="font-medium text-legal-slate dark:text-white">{caseItem.title}</h3>
-                              <p className="text-sm text-legal-muted dark:text-gray-400 mt-1">
+                              <h3 className="font-medium text-gray-900 dark:text-white">{caseItem.title}</h3>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 {caseItem.court} • {caseItem.type}
                               </p>
                             </div>
                             <div className="flex flex-col items-end">
-                              <span className="text-sm font-medium text-legal-slate dark:text-white">{caseItem.date}</span>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">{caseItem.date}</span>
                               <Badge 
                                 variant={caseItem.status === "Active" ? "default" : 
                                         caseItem.status === "Pending" ? "outline" : "secondary"}
@@ -149,23 +228,25 @@ const UserProfilePage = () => {
                               </Badge>
                             </div>
                           </div>
-                        </div>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </CardContent>
                 </Card>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-                  <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-                    <CardHeader>
-                      <CardTitle className="text-lg font-semibold">Pending Filings</CardTitle>
+                  <Card className="border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/30 shadow-sm rounded-2xl backdrop-blur-sm overflow-hidden">
+                    <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 px-6">
+                      <CardTitle className="text-lg font-semibold flex items-center">
+                        <FileText className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                        Pending Filings
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-legal-slate dark:text-white">5</div>
-                      <p className="text-sm text-legal-muted dark:text-gray-400 mt-1">Documents awaiting submission</p>
+                    <CardContent className="px-6 py-4">
+                      <div className="text-3xl font-bold text-gray-900 dark:text-white">5</div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Documents awaiting submission</p>
                       <Button 
-                        className="w-full mt-4" 
-                        variant="outline"
+                        className="w-full mt-4 rounded-xl bg-blue-500 hover:bg-blue-600" 
                         onClick={() => navigate('/court-filing')}
                       >
                         View Filings
@@ -173,16 +254,18 @@ const UserProfilePage = () => {
                     </CardContent>
                   </Card>
                   
-                  <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-                    <CardHeader>
-                      <CardTitle className="text-lg font-semibold">Upcoming Deadlines</CardTitle>
+                  <Card className="border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/30 shadow-sm rounded-2xl backdrop-blur-sm overflow-hidden">
+                    <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 px-6">
+                      <CardTitle className="text-lg font-semibold flex items-center">
+                        <CalendarClock className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                        Upcoming Deadlines
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-legal-slate dark:text-white">8</div>
-                      <p className="text-sm text-legal-muted dark:text-gray-400 mt-1">Tasks due this week</p>
+                    <CardContent className="px-6 py-4">
+                      <div className="text-3xl font-bold text-gray-900 dark:text-white">8</div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Tasks due this week</p>
                       <Button 
-                        className="w-full mt-4" 
-                        variant="outline"
+                        className="w-full mt-4 rounded-xl bg-blue-500 hover:bg-blue-600" 
                         onClick={() => navigate('/deadline-management')}
                       >
                         Manage Deadlines
@@ -193,22 +276,24 @@ const UserProfilePage = () => {
               </TabsContent>
               
               <TabsContent value="cases">
-                <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold">Your Active Cases</CardTitle>
+                <Card className="border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/30 shadow-sm rounded-2xl backdrop-blur-sm overflow-hidden">
+                  <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 px-6">
+                    <CardTitle className="text-lg font-semibold flex items-center">
+                      <BookOpen className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                      Your Active Cases
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-legal-muted dark:text-gray-400 mb-4">
+                  <CardContent className="p-6">
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
                       Manage your ongoing cases and legal matters
                     </p>
-                    <div className="border rounded-md border-legal-border dark:border-legal-slate/20">
-                      {/* Case list content would go here */}
-                      <div className="p-8 text-center text-legal-muted dark:text-gray-400">
-                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <h3 className="font-medium text-lg text-legal-slate dark:text-white mb-2">
+                    <div className="border rounded-xl border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                      <div className="p-8 text-center">
+                        <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                        <h3 className="font-medium text-lg text-gray-900 dark:text-white mb-2">
                           Case management coming soon
                         </h3>
-                        <p className="max-w-md mx-auto">
+                        <p className="max-w-md mx-auto text-gray-500 dark:text-gray-400">
                           We're developing a comprehensive case management system to help you track 
                           all your legal matters in one place.
                         </p>
@@ -219,22 +304,24 @@ const UserProfilePage = () => {
               </TabsContent>
               
               <TabsContent value="activity">
-                <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+                <Card className="border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/30 shadow-sm rounded-2xl backdrop-blur-sm overflow-hidden">
+                  <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 px-6">
+                    <CardTitle className="text-lg font-semibold flex items-center">
+                      <Activity className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                      Recent Activity
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-legal-muted dark:text-gray-400 mb-4">
+                  <CardContent className="p-6">
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
                       Track your recent actions and updates
                     </p>
-                    <div className="border rounded-md border-legal-border dark:border-legal-slate/20">
-                      {/* Activity log content would go here */}
-                      <div className="p-8 text-center text-legal-muted dark:text-gray-400">
-                        <CalendarClock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <h3 className="font-medium text-lg text-legal-slate dark:text-white mb-2">
+                    <div className="border rounded-xl border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                      <div className="p-8 text-center">
+                        <Activity className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                        <h3 className="font-medium text-lg text-gray-900 dark:text-white mb-2">
                           Activity tracking coming soon
                         </h3>
-                        <p className="max-w-md mx-auto">
+                        <p className="max-w-md mx-auto text-gray-500 dark:text-gray-400">
                           We're working on an activity log to help you keep track of all your interactions 
                           and changes across the platform.
                         </p>

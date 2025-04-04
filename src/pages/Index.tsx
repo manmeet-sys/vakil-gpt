@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -5,7 +6,7 @@ import Footer from '@/components/Footer';
 import ChatInterface from '@/components/ChatInterface';
 import FeatureCard from '@/components/FeatureCard';
 import AllTools from '@/components/AllTools';
-import { Gavel, Scale, FileText, Shield, BookOpen, CheckCircle, ArrowRight, Search, Settings } from 'lucide-react';
+import { Gavel, Scale, FileText, Shield, BookOpen, CheckCircle, ArrowRight, Search, Settings, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -116,9 +117,10 @@ const Index = () => {
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link to="/tools">
+              <Link to="/user-profile">
                 <Button variant="outline" className="border-legal-border hover:bg-legal-light dark:hover:bg-legal-slate/20 text-legal-slate dark:text-white/90 text-base px-6 py-6 w-full sm:w-auto">
-                  Explore All Tools
+                  <User className="mr-2 h-4 w-4" />
+                  My Profile
                 </Button>
               </Link>
             </div>
