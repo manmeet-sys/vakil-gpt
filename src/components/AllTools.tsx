@@ -2,52 +2,71 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
-  Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock } from 'lucide-react';
+  Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
+  FileSearch, List, Clipboard, BarChart2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 
 const AllTools = () => {
   const toolCategories = [
     {
-      id: 'legal-research',
-      title: 'Legal Research & Analysis',
+      id: 'ai-assistance',
+      title: 'AI Legal Assistant',
       tools: [
-        { name: 'AI Legal Brief Generation', icon: <BookOpen className="h-5 w-5" />, path: '/legal-brief-generation' },
+        { name: 'Legal Chat Bot', icon: <MessageSquare className="h-5 w-5" />, path: '/chat' },
+        { name: 'Legal Document Analyzer', icon: <FileSearch className="h-5 w-5" />, path: '/legal-document-analyzer' },
+        { name: 'Legal Brief Generation', icon: <BookOpen className="h-5 w-5" />, path: '/legal-brief-generation' }
+      ]
+    },
+    {
+      id: 'legal-research',
+      title: 'Legal Research',
+      tools: [
         { name: 'Case Law Research', icon: <Scale className="h-5 w-5" />, path: '/case-law-research' },
-        { name: 'Statute Tracker', icon: <FileText className="h-5 w-5" />, path: '/statute-tracker' }
+        { name: 'Statute Tracker', icon: <List className="h-5 w-5" />, path: '/statute-tracker' },
+        { name: 'Legal Knowledge Base', icon: <BookOpen className="h-5 w-5" />, path: '/knowledge' }
       ]
     },
     {
       id: 'document-automation',
       title: 'Document & Compliance',
       tools: [
-        { name: 'Legal Document Analyzer', icon: <ClipboardList className="h-5 w-5" />, path: '/legal-document-analyzer' },
-        { name: 'Contract Drafting & Review', icon: <FileText className="h-5 w-5" />, path: '/contract-drafting' },
-        { name: 'GDPR Compliance Checker', icon: <Shield className="h-5 w-5" />, path: '/gdpr-compliance' }
+        { name: 'Contract Drafting', icon: <Clipboard className="h-5 w-5" />, path: '/contract-drafting' },
+        { name: 'GDPR Compliance', icon: <Shield className="h-5 w-5" />, path: '/gdpr-compliance' },
+        { name: 'AML Compliance', icon: <AlertTriangle className="h-5 w-5" />, path: '/aml-compliance' }
+      ]
+    },
+    {
+      id: 'risk-assessment',
+      title: 'Risk Management',
+      tools: [
+        { name: 'Legal Risk Assessment', icon: <BarChart2 className="h-5 w-5" />, path: '/legal-risk-assessment' },
+        { name: 'Litigation Prediction', icon: <TrendingUp className="h-5 w-5" />, path: '/litigation-prediction' },
+        { name: 'Legal Due Diligence', icon: <CheckCircle className="h-5 w-5" />, path: '/legal-due-diligence' }
+      ]
+    },
+    {
+      id: 'business-tools',
+      title: 'Business Legal Tools',
+      tools: [
+        { name: 'Startup Toolkit', icon: <Briefcase className="h-5 w-5" />, path: '/startup-toolkit' },
+        { name: 'M&A Due Diligence', icon: <Handshake className="h-5 w-5" />, path: '/m&a-due-diligence' },
+        { name: 'IP Protection', icon: <Shield className="h-5 w-5" />, path: '/ip-protection' }
       ]
     },
     {
       id: 'financial-legal',
       title: 'Financial Legal Tools',
       tools: [
-        { name: 'Due Diligence Reports', icon: <CheckCircle className="h-5 w-5" />, path: '/legal-due-diligence' },
-        { name: 'Financial Fraud Detector', icon: <Lock className="h-5 w-5" />, path: '/fraud-detector' },
-        { name: 'M&A Analysis', icon: <Briefcase className="h-5 w-5" />, path: '/m&a-due-diligence' }
-      ]
-    },
-    {
-      id: 'other-tools',
-      title: 'Specialized Solutions',
-      tools: [
-        { name: 'Legal Risk Assessment', icon: <Shield className="h-5 w-5" />, path: '/legal-risk-assessment' },
-        { name: 'Client Management', icon: <UserPlus className="h-5 w-5" />, path: '/virtual-assistant' },
-        { name: 'Legal Education', icon: <BookOpen className="h-5 w-5" />, path: '/legal-education' }
+        { name: 'Billing Tracking', icon: <DollarSign className="h-5 w-5" />, path: '/billing-tracking' },
+        { name: 'Financial Obligations', icon: <FileText className="h-5 w-5" />, path: '/financial-obligations' },
+        { name: 'Financial Fraud Detector', icon: <Lock className="h-5 w-5" />, path: '/fraud-detector' }
       ]
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
       {toolCategories.map((category) => (
         <div 
           key={category.id}
@@ -79,7 +98,7 @@ const AllTools = () => {
           <div className="mt-4 pt-4 border-t border-legal-border dark:border-legal-slate/20">
             <Link to="/tools">
               <Button variant="ghost" className="text-legal-accent hover:text-legal-accent/90 hover:bg-legal-accent/10 p-0 h-8">
-                View All {category.title}
+                View All Tools
                 <ChevronRight className="ml-1 h-3.5 w-3.5" />
               </Button>
             </Link>
