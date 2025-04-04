@@ -23,13 +23,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </Link>
           
           <div className="hidden md:flex items-center space-x-6 ml-8">
-            <Link to="/tools" className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <Link to="/tools" className="text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
               Tools
             </Link>
-            <Link to="/chat" className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <Link to="/chat" className="text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
               Legal Chat
             </Link>
-            <Link to="/knowledge" className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <Link to="/knowledge" className="text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
               Knowledge
             </Link>
           </div>

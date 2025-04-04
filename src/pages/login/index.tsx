@@ -45,8 +45,8 @@ const LoginPage = () => {
       <div className="container mx-auto max-w-md px-4 py-8">
         <div className="space-y-6">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Welcome back</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-2">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Welcome back</h1>
+            <p className="text-gray-500 dark:text-gray-300 mt-2">
               Log in to your VakilGPT account
             </p>
           </div>
@@ -58,19 +58,19 @@ const LoginPage = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-gray-700 dark:text-gray-200">Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <Input
                           type="email"
                           placeholder="your.email@example.com"
-                          className="pl-10"
+                          className="pl-10 text-gray-800 dark:text-gray-100"
                           {...field}
                         />
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-red-500 dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -81,7 +81,7 @@ const LoginPage = () => {
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-200">Password</FormLabel>
                       <Link
                         to="/forgot-password"
                         className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
@@ -91,17 +91,17 @@ const LoginPage = () => {
                     </div>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className="pl-10"
+                          className="pl-10 text-gray-800 dark:text-gray-100"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -111,19 +111,19 @@ const LoginPage = () => {
                         </button>
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-red-500 dark:text-red-400" />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                 Sign In
               </Button>
             </form>
           </Form>
 
           <div className="text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-gray-300">
               Don't have an account?{" "}
               <Link
                 to="/signup"
@@ -139,13 +139,13 @@ const LoginPage = () => {
               <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-gray-500 dark:text-gray-400">
+              <span className="bg-background px-2 text-gray-500 dark:text-gray-300">
                 Coming Soon
               </span>
             </div>
           </div>
 
-          <Button variant="outline" className="w-full" disabled>
+          <Button variant="outline" className="w-full border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200" disabled>
             <svg
               className="mr-2 h-4 w-4"
               viewBox="0 0 48 48"
