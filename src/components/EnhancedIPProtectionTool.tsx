@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart2, Search, Check, X, Clock, Shield, FileUp, BookOpen, AlertTriangle, FileText, Download, ExternalLink, Globe, BookOpenCheck, ScrollText, LucideIcon } from 'lucide-react';
+import { BarChart2, Search, Check, X, Clock, Shield, FileUp, BookOpen, AlertTriangle, FileText, Download, ExternalLink, Globe, BookOpenCheck, ScrollText, FileCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import PdfFileUpload from '@/components/PdfFileUpload';
 import { extractTextFromPdf } from '@/utils/pdfExtraction';
