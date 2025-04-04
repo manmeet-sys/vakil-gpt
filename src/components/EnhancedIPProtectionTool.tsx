@@ -8,10 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart2, Search, Check, X, Clock, Shield, FileUp, BookOpen, AlertTriangle, FileText, Download } from 'lucide-react';
+import { BarChart2, Search, Check, X, Clock, Shield, FileUp, BookOpen, AlertTriangle, FileText, Download, ExternalLink, Globe, BookOpenCheck, ScrollText, LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import PdfFileUpload from '@/components/PdfFileUpload';
 import { extractTextFromPdf } from '@/utils/pdfExtraction';
+
+interface IPResource {
+  title: string;
+  url: string;
+  description: string;
+  icon: React.ReactNode;
+  organization: string;
+  category: 'trademark' | 'patent' | 'copyright' | 'design' | 'general';
+}
 
 const EnhancedIPProtectionTool = () => {
   const [activeTab, setActiveTab] = useState('trademark');
@@ -24,11 +33,137 @@ const EnhancedIPProtectionTool = () => {
   const [ipDescription, setIpDescription] = useState('');
   const [confidenceScore, setConfidenceScore] = useState(null);
   const [ipRiskLevel, setIpRiskLevel] = useState('');
-
-  // For contract tools
   const [contractText, setContractText] = useState('');
   const [fileUploaded, setFileUploaded] = useState(false);
   const [pdfFile, setPdfFile] = useState(null);
+  const [resourceCategory, setResourceCategory] = useState('all');
+
+  const indianIPResources: IPResource[] = [
+    {
+      title: "Indian Trademark Registry",
+      url: "https://ipindiaonline.gov.in/trademarkefiling/user/frmlogin.aspx",
+      description: "Official portal for trademark filing and search in India",
+      icon: <Search className="h-4 w-4 mr-2" />,
+      organization: "Controller General of Patents, Designs & Trade Marks",
+      category: "trademark"
+    },
+    {
+      title: "Public Search for Trademarks",
+      url: "https://ipindiaservices.gov.in/publicsearch",
+      description: "Search the Indian trademark database for existing marks",
+      icon: <Search className="h-4 w-4 mr-2" />,
+      organization: "Intellectual Property India",
+      category: "trademark"
+    },
+    {
+      title: "Trademarks Act, 1999",
+      url: "https://ipindia.gov.in/writereaddata/Portal/IPOAct/1_43_1_trade-marks-act.pdf",
+      description: "Full text of the Indian Trademarks Act, 1999",
+      icon: <ScrollText className="h-4 w-4 mr-2" />,
+      organization: "Intellectual Property India",
+      category: "trademark"
+    },
+    
+    {
+      title: "Indian Patent Office",
+      url: "https://ipindiaonline.gov.in/epatentfiling/goForLogin/doLogin",
+      description: "Official portal for patent filing and search in India",
+      icon: <FileText className="h-4 w-4 mr-2" />,
+      organization: "Controller General of Patents, Designs & Trade Marks",
+      category: "patent"
+    },
+    {
+      title: "InPASS - Indian Patent Advanced Search System",
+      url: "https://ipindiaservices.gov.in/PublicSearch/",
+      description: "Comprehensive patent search system for Indian patents",
+      icon: <Search className="h-4 w-4 mr-2" />,
+      organization: "Intellectual Property India",
+      category: "patent"
+    },
+    {
+      title: "Patents Act, 1970",
+      url: "https://ipindia.gov.in/writereaddata/Portal/IPOAct/1_31_1_patent-act-1970-11march2015.pdf",
+      description: "Full text of the Indian Patents Act, 1970 (as amended)",
+      icon: <ScrollText className="h-4 w-4 mr-2" />,
+      organization: "Intellectual Property India",
+      category: "patent"
+    },
+    
+    {
+      title: "Copyright Office India",
+      url: "https://copyright.gov.in/",
+      description: "Official portal for copyright registration and information in India",
+      icon: <BookOpenCheck className="h-4 w-4 mr-2" />,
+      organization: "Department for Promotion of Industry and Internal Trade",
+      category: "copyright"
+    },
+    {
+      title: "Copyright E-Filing",
+      url: "https://copyright.gov.in/e-Filing.aspx",
+      description: "Online portal for filing copyright applications in India",
+      icon: <FileUp className="h-4 w-4 mr-2" />,
+      organization: "Copyright Office, Government of India",
+      category: "copyright"
+    },
+    {
+      title: "Copyright Act, 1957",
+      url: "https://copyright.gov.in/documents/copyrightrules1957.pdf",
+      description: "Full text of the Indian Copyright Act, 1957 (as amended)",
+      icon: <ScrollText className="h-4 w-4 mr-2" />,
+      organization: "Copyright Office, Government of India",
+      category: "copyright"
+    },
+    
+    {
+      title: "Design Office India",
+      url: "https://ipindiaonline.gov.in/designefiling/user/frmLoginDesign.aspx",
+      description: "Official portal for industrial design registration in India",
+      icon: <FileCheck className="h-4 w-4 mr-2" />,
+      organization: "Controller General of Patents, Designs & Trade Marks",
+      category: "design"
+    },
+    {
+      title: "Design Public Search",
+      url: "https://ipindiaservices.gov.in/designsearch/",
+      description: "Search the Indian industrial designs database",
+      icon: <Search className="h-4 w-4 mr-2" />,
+      organization: "Intellectual Property India",
+      category: "design"
+    },
+    {
+      title: "Designs Act, 2000",
+      url: "https://ipindia.gov.in/writereaddata/Portal/IPOAct/1_48_1_design_act_1_.PDF",
+      description: "Full text of the Indian Designs Act, 2000",
+      icon: <ScrollText className="h-4 w-4 mr-2" />,
+      organization: "Intellectual Property India",
+      category: "design"
+    },
+    
+    {
+      title: "Intellectual Property India",
+      url: "https://ipindia.gov.in/",
+      description: "Official website of Indian IP office with comprehensive resources and guidelines",
+      icon: <Globe className="h-4 w-4 mr-2" />,
+      organization: "Controller General of Patents, Designs & Trade Marks",
+      category: "general"
+    },
+    {
+      title: "Cell for IPR Promotion & Management (CIPAM)",
+      url: "https://cipam.gov.in/",
+      description: "Indian government initiative for promoting IP awareness and protection",
+      icon: <Shield className="h-4 w-4 mr-2" />,
+      organization: "Department for Promotion of Industry and Internal Trade",
+      category: "general"
+    },
+    {
+      title: "National Intellectual Property Awareness Mission (NIPAM)",
+      url: "https://ipindia.gov.in/nipam.htm",
+      description: "Nation-wide IP awareness campaign by the Indian government",
+      icon: <BookOpen className="h-4 w-4 mr-2" />,
+      organization: "Intellectual Property India",
+      category: "general"
+    }
+  ];
 
   const handleSearch = () => {
     if (!searchQuery.trim()) {
@@ -38,7 +173,6 @@ const EnhancedIPProtectionTool = () => {
     
     setLoading(true);
     
-    // Simulate search delay
     setTimeout(() => {
       const mockResults = getMockResults(activeTab, searchQuery);
       setSearchResults(mockResults);
@@ -59,7 +193,6 @@ const EnhancedIPProtectionTool = () => {
       setContractText(extractedText);
       setFileUploaded(true);
       
-      // Simulate IP analysis
       setTimeout(() => {
         analyzeIPProtection(extractedText);
         setLoading(false);
@@ -72,7 +205,6 @@ const EnhancedIPProtectionTool = () => {
   };
 
   const analyzeIPProtection = (text) => {
-    // Simulate IP analysis
     setIpDescription('The document contains several intellectual property clauses related to ownership of trademarks, patents, and copyright materials. The contract appears to include provisions for IP licensing and transfer of rights.');
     setConfidenceScore(78);
     setIpRiskLevel('moderate');
@@ -194,6 +326,10 @@ const EnhancedIPProtectionTool = () => {
       </div>
     );
   };
+  
+  const filteredResources = resourceCategory === 'all' 
+    ? indianIPResources 
+    : indianIPResources.filter(resource => resource.category === resourceCategory || resource.category === 'general');
 
   return (
     <div className="space-y-6">
@@ -210,7 +346,6 @@ const EnhancedIPProtectionTool = () => {
           <TabsTrigger value="contract">Contract Analysis</TabsTrigger>
         </TabsList>
 
-        {/* Shared search tools for IP searches */}
         <TabsContent value="trademark">
           <IPSearchPanel 
             title="Indian Trademark Search" 
@@ -275,7 +410,6 @@ const EnhancedIPProtectionTool = () => {
           {renderSearchResults()}
         </TabsContent>
         
-        {/* Contract Analysis Tab */}
         <TabsContent value="contract">
           <Card>
             <CardHeader>
@@ -393,28 +527,141 @@ const EnhancedIPProtectionTool = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Tutorial and Resources Section */}
       <Card className="bg-muted/20">
         <CardHeader>
           <CardTitle className="text-lg flex items-center">
             <BookOpen className="h-5 w-5 mr-2" />
-            IP Protection Resources
+            Official Indian IP Resources
+          </CardTitle>
+          <CardDescription>
+            Access official government IP databases, registries, and legal resources for Indian intellectual property protection
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Button 
+              variant={resourceCategory === 'all' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => setResourceCategory('all')}
+            >
+              All Resources
+            </Button>
+            <Button 
+              variant={resourceCategory === 'trademark' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => setResourceCategory('trademark')}
+            >
+              Trademark
+            </Button>
+            <Button 
+              variant={resourceCategory === 'patent' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => setResourceCategory('patent')}
+            >
+              Patent
+            </Button>
+            <Button 
+              variant={resourceCategory === 'copyright' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => setResourceCategory('copyright')}
+            >
+              Copyright
+            </Button>
+            <Button 
+              variant={resourceCategory === 'design' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => setResourceCategory('design')}
+            >
+              Design
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredResources.map((resource, index) => (
+              <Card key={index} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-start">
+                    <div>
+                      <h3 className="font-medium text-base">{resource.title}</h3>
+                      <p className="text-xs text-muted-foreground mb-2">{resource.organization}</p>
+                      <p className="text-sm">{resource.description}</p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-3"
+                        onClick={() => window.open(resource.url, '_blank')}
+                      >
+                        {resource.icon}
+                        Access Resource <ExternalLink className="ml-1 h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center">
+            <Shield className="h-5 w-5 mr-2 text-blue-600" />
+            Indian IP Protection Best Practices
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="justify-start" onClick={() => window.open('/resources/ip-guide.pdf', '_blank')}>
-              <FileText className="h-4 w-4 mr-2" />
-              Indian IP Protection Guide
-            </Button>
-            <Button variant="outline" className="justify-start" onClick={() => window.open('https://ipindia.gov.in/', '_blank')}>
-              <Shield className="h-4 w-4 mr-2" />
-              Indian IP Office Website
-            </Button>
-            <Button variant="outline" className="justify-start" onClick={() => window.open('/tutorials/ip-search', '_blank')}>
-              <Search className="h-4 w-4 mr-2" />
-              IP Search Tutorial
-            </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-medium text-base mb-2">For Businesses</h3>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>File trademark applications as soon as possible under the Indian Trademarks Act, 1999</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>Conduct thorough prior art searches before patent filing to assess patentability under Indian Patents Act, 1970</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>Maintain proper documentation for copyright works though registration is voluntary under Indian Copyright Act, 1957</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>Register important designs before public disclosure under the Designs Act, 2000</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>Implement proper IP assignment clauses in all employment and contractor agreements</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-medium text-base mb-2">Legal Considerations</h3>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>Monitor trademark journals regularly to oppose conflicting applications</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>Renew IP registrations on time (10 years for trademarks, 20 years for patents)</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>Use proper trademark symbols (™ for unregistered marks, ® for registered marks)</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>Register with Indian Customs to prevent import/export of infringing goods</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                  <span>Consider licensing opportunities with proper contractual safeguards</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -422,7 +669,6 @@ const EnhancedIPProtectionTool = () => {
   );
 };
 
-// IP Search Panel Component
 const IPSearchPanel = ({ 
   title, 
   description, 
