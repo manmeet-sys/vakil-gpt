@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { 
   Search, FileText, Shield, Bookmark, Copyright, Hash, Database, 
   CheckCircle, AlertTriangle, Loader2, Download, Edit, Plus, Trash,
-  IndianRupee, FileCheck, BuildingLibrary
+  IndianRupee, FileCheck, Building, Landmark
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { getGeminiResponse } from './GeminiProIntegration';
@@ -435,7 +434,7 @@ Please structure your response with these sections:
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
             <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
-              <BuildingLibrary className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <Landmark className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <h2 className="text-xl font-semibold mb-2">Indian IP Protection Suite</h2>

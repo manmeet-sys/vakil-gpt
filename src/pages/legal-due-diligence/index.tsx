@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { Scale, FileText, Loader2, Upload, IndianRupee, BookOpen, BuildingLibrary, Gavel } from 'lucide-react';
+import { Scale, FileText, Loader2, Upload, IndianRupee, BookOpen, Building, Landmark, Gavel } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,7 +21,6 @@ const LegalDueDiligencePage = () => {
   const [industryType, setIndustryType] = useState<string>('');
   const [indianJurisdiction, setIndianJurisdiction] = useState<string>('national');
 
-  // Load API provider preference on component mount
   React.useEffect(() => {
     const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(storedApiProvider);
@@ -124,7 +122,6 @@ const LegalDueDiligencePage = () => {
     
     Format your response as a professional due diligence report with clear sections.`;
     
-    // For now, just use Gemini API since DeepSeek API key is not provided
     return await getGeminiResponse(systemPrompt);
   };
 
@@ -172,7 +169,7 @@ const LegalDueDiligencePage = () => {
           <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-t-lg pb-4">
             <div className="flex items-start gap-4">
               <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
-                <BuildingLibrary className="h-7 w-7 text-blue-600 dark:text-blue-400" />
+                <Landmark className="h-7 w-7 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <CardTitle className="text-xl">Indian Legal Due Diligence</CardTitle>
