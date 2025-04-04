@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
   FileSearch, List, Clipboard, BarChart2, AlertTriangle, User, CalendarClock,
-  IndianRupee } from 'lucide-react';
+  IndianRupee, Gavel } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,6 +85,16 @@ const ToolsPage = () => {
         { name: 'Billing Tracking', icon: IndianRupee, description: 'Track and manage legal billing for Indian law firms', path: '/billing-tracking' },
         { name: 'Financial Obligations', icon: FileText, description: 'Monitor financial obligations and deadlines under Indian regulations', path: '/financial-obligations' },
         { name: 'Financial Fraud Detector', icon: Lock, description: 'Detect potential financial fraud according to Indian banking regulations', path: '/fraud-detector' }
+      ]
+    },
+    {
+      id: 'criminal-legal',
+      title: 'Criminal Justice Tools',
+      description: 'Tools for criminal defense and litigation under Indian criminal codes',
+      tools: [
+        { name: 'Plea Bargain Assistant', icon: Gavel, description: 'Analyze plea bargain options under the Bharatiya Nyaya Sanhita', path: '/plea-bargain' },
+        { name: 'Sentencing Predictor', icon: Scale, description: 'Predict potential sentencing outcomes in Indian criminal cases', path: '/sentencing-predictor' },
+        { name: 'Tax Compliance', icon: FileText, description: 'Ensure compliance with Indian tax laws and regulations', path: '/tax-compliance' }
       ]
     }
   ];
