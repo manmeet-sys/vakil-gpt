@@ -6,11 +6,12 @@ import App from './App.tsx';
 import './index.css';
 
 // Replace with your actual Clerk publishable key
-// You'll need to create this as an environment variable
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+// For development, we'll provide a fallback value
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_placeholder_key';
 
-if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Clerk Publishable Key");
+// In production, we should still enforce having a valid key
+if (!PUBLISHABLE_KEY.startsWith('pk_') && process.env.NODE_ENV === 'production') {
+  throw new Error("Missing or invalid Clerk Publishable Key. Please set the VITE_CLERK_PUBLISHABLE_KEY environment variable.");
 }
 
 const rootElement = document.getElementById("root");
