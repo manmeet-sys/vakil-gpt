@@ -44,39 +44,39 @@ const EnhancedIPProtectionTool = () => {
   // Only include verified and working government resources
   const verifiedIndianIPResources: IPResource[] = [
     {
-      title: "Intellectual Property India",
+      title: "Intellectual Property India Portal",
       url: "https://ipindia.gov.in/",
-      description: "Official government portal for IP in India with comprehensive information on all types of IP",
+      description: "Official IP India portal with information on patents, trademarks, designs, and GI",
       icon: <Landmark className="h-4 w-4 mr-2" />,
-      organization: "Controller General of Patents, Designs & Trade Marks",
+      organization: "Office of the Controller General of Patents, Designs & Trade Marks",
       category: "general",
       isVerified: true
     },
     {
-      title: "Indian Patent Search",
-      url: "https://ipindiaservices.gov.in/publicsearch",
-      description: "Search Indian patents, applications, and related documents",
-      icon: <FileCheck className="h-4 w-4 mr-2" />,
-      organization: "Indian Patent Office",
+      title: "Indian Copyright Office",
+      url: "https://copyright.gov.in/",
+      description: "Official portal for copyright registration and information in India",
+      icon: <BookOpenCheck className="h-4 w-4 mr-2" />,
+      organization: "Copyright Office, Government of India",
+      category: "copyright",
+      isVerified: true
+    },
+    {
+      title: "Indian Patent Act & Rules",
+      url: "https://ipindia.gov.in/patents.htm",
+      description: "Information on patent laws, rules and procedures in India",
+      icon: <ScrollText className="h-4 w-4 mr-2" />,
+      organization: "Patent Office, CGPDTM",
       category: "patent",
       isVerified: true
     },
     {
-      title: "Trademark Registry E-Filing",
-      url: "https://ipindiaonline.gov.in/trademarkefiling/user/frmlogin.aspx",
-      description: "Portal for trademark filing and status checking",
-      icon: <FileText className="h-4 w-4 mr-2" />,
-      organization: "Indian Trademark Registry",
+      title: "Trade Marks Registry",
+      url: "https://ipindia.gov.in/trade-marks.htm",
+      description: "Official information on trademark filing and procedures in India",
+      icon: <FileCheck className="h-4 w-4 mr-2" />,
+      organization: "Trade Marks Registry, CGPDTM",
       category: "trademark",
-      isVerified: true
-    },
-    {
-      title: "Copyright Office",
-      url: "https://copyright.gov.in/",
-      description: "Official site for copyright registration and information",
-      icon: <BookOpenCheck className="h-4 w-4 mr-2" />,
-      organization: "Copyright Office, Government of India",
-      category: "copyright",
       isVerified: true
     },
     {
@@ -89,11 +89,11 @@ const EnhancedIPProtectionTool = () => {
       isVerified: true
     },
     {
-      title: "India Code - IP Laws",
-      url: "https://www.indiacode.nic.in/",
-      description: "Access to all Indian IP statutes and regulations",
-      icon: <ScrollText className="h-4 w-4 mr-2" />,
-      organization: "Government of India",
+      title: "E-Filing for Patents, Designs & Trademarks",
+      url: "https://ipindiaonline.gov.in/",
+      description: "Portal for e-filing applications for patents, designs and trademarks",
+      icon: <FileText className="h-4 w-4 mr-2" />,
+      organization: "IP India",
       category: "general",
       isVerified: true
     }
@@ -202,7 +202,7 @@ const EnhancedIPProtectionTool = () => {
                 Verified Indian IP Resources
               </CardTitle>
               <CardDescription>
-                Access official government IP databases, registries, and legal resources for Indian intellectual property protection
+                Access official government IP resources for Indian intellectual property protection
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -281,7 +281,7 @@ const EnhancedIPProtectionTool = () => {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Resource Access Note</AlertTitle>
                 <AlertDescription>
-                  Government websites may sometimes be unavailable due to maintenance. If a link doesn't work, please try again later or visit the parent government portal at <a href="https://ipindia.gov.in" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">ipindia.gov.in</a>.
+                  Government websites may occasionally experience downtime. If a link doesn't work, please try again later or visit the main IP India portal at <a href="https://ipindia.gov.in" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">ipindia.gov.in</a>.
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -415,10 +415,6 @@ const EnhancedIPProtectionTool = () => {
                   <li className="flex items-start">
                     <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
                     <span>Monitor Indian IP journals regularly for potential conflicting applications</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                    <span>Consider customs recordation to prevent import/export of infringing goods</span>
                   </li>
                 </ul>
               </div>
