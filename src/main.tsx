@@ -5,14 +5,18 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import App from './App.tsx';
 import './index.css';
 
-// Replace with your actual Clerk publishable key
-// For development, we'll provide a fallback value
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_placeholder_key';
+// Get the publishable key from environment variables
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-// In production, we should still enforce having a valid key
-if (!PUBLISHABLE_KEY.startsWith('pk_') && process.env.NODE_ENV === 'production') {
-  throw new Error("Missing or invalid Clerk Publishable Key. Please set the VITE_CLERK_PUBLISHABLE_KEY environment variable.");
-}
+// For development convenience, we'll create a simple way to bypass Clerk authentication
+// when a valid key isn't available
+const isDevelopment = import.meta.env.DEV;
+const useClerkMock = isDevelopment && (!PUBLISHABLE_KEY || PUBLISHABLE_KEY === 'pk_test_placeholder_key');
+
+// Simple mock of Clerk's authentication context for development
+const MockClerkProvider = ({ children }) => {
+  return <>{children}</>;
+};
 
 const rootElement = document.getElementById("root");
 
@@ -24,8 +28,16 @@ const root = createRoot(rootElement);
 
 root.render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <App />
-    </ClerkProvider>
+    {useClerkMock ? (
+      // Use the mock provider in development when no valid key is present
+      <MockClerkProvider>
+        <App />
+      </MockClerkProvider>
+    ) : (
+      // Use the real ClerkProvider when a valid key is available
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <App />
+      </ClerkProvider>
+    )}
   </React.StrictMode>
 );

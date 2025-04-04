@@ -59,6 +59,17 @@ const queryClient = new QueryClient({
 
 // Protect routes that require authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  // Check if we're in development mode with mock Clerk
+  const isDevelopment = import.meta.env.DEV;
+  const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  const useClerkMock = isDevelopment && (!clerkKey || clerkKey === 'pk_test_placeholder_key');
+  
+  if (useClerkMock) {
+    // In development with mock, allow access to all routes
+    return <>{children}</>;
+  }
+  
+  // Use Clerk's authentication in production or when a valid key is present
   const { isSignedIn, isLoaded } = useAuth();
 
   if (!isLoaded) {
