@@ -18,6 +18,10 @@ import LegalEducationPage from "./pages/legal-education";
 import ToolsPage from "./pages/tools";
 import PlaceholderToolPage from "./pages/placeholder-tool";
 
+// Auth pages
+import SignupPage from "./pages/signup";
+import LoginPage from "./pages/login";
+
 // Implemented tool pages
 import LegalBriefGenerationPage from "./pages/legal-brief-generation";
 import StatuteTrackerPage from "./pages/statute-tracker";
@@ -63,6 +67,10 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/tools" element={<ToolsPage />} />
+              
+              {/* Auth routes */}
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/login" element={<LoginPage />} />
               
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/legal-document-analyzer" element={<LegalDocumentAnalyzerPage />} />

@@ -2,14 +2,17 @@
 import React from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import BackButton from './BackButton';
-import { Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { LogIn, User } from 'lucide-react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+  const location = useLocation();
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
       <header className="border-b border-gray-200 dark:border-zinc-700/50 py-3 px-4 flex items-center justify-between">
@@ -29,20 +32,36 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <Link to="/knowledge" className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
               Knowledge
             </Link>
-            <Link to="/user-profile" className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-              Profile
-            </Link>
           </div>
         </div>
         
         <div className="flex items-center gap-3">
-          <Link 
-            to="/user-profile" 
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
-          >
-            <User className="h-4 w-4" />
-            <span>Profile</span>
-          </Link>
+          {isAuthPage ? (
+            <Link 
+              to={location.pathname === '/login' ? '/signup' : '/login'} 
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
+            >
+              <LogIn className="h-4 w-4" />
+              <span>{location.pathname === '/login' ? 'Sign Up' : 'Log In'}</span>
+            </Link>
+          ) : (
+            <>
+              <Link 
+                to="/login" 
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Log In</span>
+              </Link>
+              <Link 
+                to="/user-profile" 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
+              >
+                <User className="h-4 w-4" />
+                <span>Profile</span>
+              </Link>
+            </>
+          )}
           <ThemeToggle />
         </div>
       </header>
