@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,8 +20,28 @@ import ToolsPage from "./pages/tools";
 import PlaceholderToolPage from "./pages/placeholder-tool";
 import AuthPage from "./pages/auth";
 import SignUpPage from "./pages/auth/sign-up";
-
 import NotFound from "./pages/NotFound";
+
+// Import missing page components or use PlaceholderToolPage instead
+import { default as LegalBriefGenerationPage } from "./pages/placeholder-tool";
+import { default as StatuteTrackerPage } from "./pages/placeholder-tool";
+import { default as ContractDraftingPage } from "./pages/placeholder-tool";
+import { default as GdprCompliancePage } from "./pages/placeholder-tool";
+import AMLCompliancePage from "./pages/aml-compliance";
+import { default as LitigationPredictionPage } from "./pages/placeholder-tool";
+import { default as StartupToolkitPage } from "./pages/placeholder-tool";
+import MADueDiligencePage from "./pages/m&a-due-diligence";
+import IPProtectionPage from "./pages/ip-protection";
+import BillingTrackingPage from "./pages/billing-tracking";
+import FinancialObligationsPage from "./pages/financial-obligations";
+import FraudDetectorPage from "./pages/fraud-detector";
+import { default as ESignaturePage } from "./pages/placeholder-tool";
+import PleaBargainPage from "./pages/plea-bargain";
+import TaxCompliancePage from "./pages/tax-compliance";
+import SentencingPredictorPage from "./pages/sentencing-predictor";
+import { default as UserProfilePage } from "./pages/placeholder-tool";
+import { default as CourtFilingPage } from "./pages/court-filing";
+import { default as DeadlineManagementPage } from "./pages/deadline-management";
 
 const queryClient = new QueryClient({
   defaultOptions: {
