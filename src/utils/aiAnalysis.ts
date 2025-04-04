@@ -107,3 +107,141 @@ Format your response with clear sections and be thorough yet concise in your leg
   const data = await response.json();
   return data.choices[0].message.content;
 };
+
+/**
+ * Fetch the latest updates on Indian laws and precedents
+ * @returns A promise that resolves to the updates
+ */
+export const fetchIndianLegalUpdates = async (): Promise<{
+  statutes: Array<{id: number, name: string, date: string, description: string, type: string}>,
+  precedents: Array<{id: number, case: string, court: string, date: string, summary: string, impact: string}>
+}> => {
+  try {
+    // In a production environment, this would call an actual API endpoint
+    // For now, we'll return mock data that simulates recently updated laws
+    
+    // Simulating API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    return {
+      statutes: [
+        {
+          id: 1,
+          name: "Bharatiya Nyaya Sanhita, 2023",
+          date: "2024-03-15",
+          description: "Updated sections on cybercrime and mob lynching with new clarifications",
+          type: "Amendment"
+        },
+        {
+          id: 2,
+          name: "Bharatiya Nagarik Suraksha Sanhita, 2023",
+          date: "2024-03-10",
+          description: "New guidelines for electronic evidence handling and summons procedures",
+          type: "Rules"
+        },
+        {
+          id: 3,
+          name: "Digital Personal Data Protection Act, 2023",
+          date: "2024-03-05",
+          description: "Implementation timeline announced for key provisions",
+          type: "Notification"
+        },
+        {
+          id: 4,
+          name: "Bharatiya Sakshya Adhiniyam, 2023",
+          date: "2024-02-28",
+          description: "Clarifications on digital evidence admissibility standards",
+          type: "Clarification"
+        },
+        {
+          id: 5,
+          name: "Companies Act, 2013",
+          date: "2024-02-20",
+          description: "New compliance requirements for tech startups and digital businesses",
+          type: "Amendment"
+        }
+      ],
+      precedents: [
+        {
+          id: 1,
+          case: "Sharma v. Union of India",
+          court: "Supreme Court",
+          date: "2024-03-18",
+          summary: "Landmark judgment on privacy rights under the Digital Personal Data Protection Act",
+          impact: "High impact on data privacy cases and corporate compliance requirements"
+        },
+        {
+          id: 2,
+          case: "State of Maharashtra v. Deshmukh",
+          court: "Bombay High Court",
+          date: "2024-03-12",
+          summary: "First major interpretation of BNS provisions on cyberstalking",
+          impact: "Sets precedent for applying new criminal code to digital offenses"
+        },
+        {
+          id: 3,
+          case: "Tech Solutions Ltd. v. Commissioner of Income Tax",
+          court: "Delhi High Court",
+          date: "2024-03-05",
+          summary: "Ruling on taxation of international SaaS services",
+          impact: "Affects taxation of cloud-based service providers in India"
+        },
+        {
+          id: 4,
+          case: "Reddy v. State of Telangana",
+          court: "Supreme Court",
+          date: "2024-02-25",
+          summary: "Application of BNSS provisions on arrested persons' rights",
+          impact: "Clarifies procedural safeguards under the new criminal procedure code"
+        },
+        {
+          id: 5,
+          case: "Digital Rights Foundation v. Union of India",
+          court: "Supreme Court",
+          date: "2024-02-15",
+          summary: "Constitutional validity of automated decision-making in government services",
+          impact: "Affects AI implementation in public services and requires human oversight"
+        }
+      ]
+    };
+    
+  } catch (error) {
+    console.error("Error fetching Indian legal updates:", error);
+    throw new Error("Failed to fetch the latest Indian legal updates. Please try again later.");
+  }
+};
+
+/**
+ * Subscribe to automatic updates for specific laws or legal areas
+ * @param items Array of statute IDs or names to subscribe to
+ * @param email Email address for notifications
+ * @returns A promise that resolves to a success message
+ */
+export const subscribeToLegalUpdates = async (
+  items: Array<{id: number, name: string}>, 
+  email: string
+): Promise<string> => {
+  try {
+    // In a production environment, this would call an actual API endpoint
+    // For now, we'll simulate successful subscription
+    
+    // Simulating API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Store subscription in localStorage for demo purposes
+    const existingSubscriptions = JSON.parse(localStorage.getItem('vakilgpt-legal-subscriptions') || '[]');
+    
+    const newSubscription = {
+      email,
+      items,
+      timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem('vakilgpt-legal-subscriptions', JSON.stringify([...existingSubscriptions, newSubscription]));
+    
+    return "Successfully subscribed to updates for the selected laws and precedents.";
+  } catch (error) {
+    console.error("Error subscribing to legal updates:", error);
+    throw new Error("Failed to subscribe to legal updates. Please try again later.");
+  }
+};
