@@ -35,7 +35,6 @@ const RefinedIPProtectionTool = () => {
   const [draftDescription, setDraftDescription] = useState('');
   const [generatedDraft, setGeneratedDraft] = useState('');
 
-  // Updated list of verified working Indian IP resources
   const verifiedIPResources: IPResource[] = [
     {
       title: "Indian Intellectual Property Office",
@@ -136,7 +135,6 @@ const RefinedIPProtectionTool = () => {
     setLoading(true);
 
     setTimeout(() => {
-      // Generate mock draft based on selection
       let draft = '';
       
       if (draftType === 'trademark-assignment') {
@@ -744,4 +742,4 @@ Title: _______________________________`;
   );
 };
 
-export default RefinedIPProtection
+export default RefinedIPProtectionTool;
