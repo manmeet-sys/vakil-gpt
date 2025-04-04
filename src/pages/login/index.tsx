@@ -1,6 +1,5 @@
-
 import React, { useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,9 +24,20 @@ const LoginPage = () => {
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   
   // Get redirect path from location state or default to home
   const from = location.state?.from || '/';
+  
+  // Check if user has just verified email
+  useEffect(() => {
+    const verified = searchParams.get('verified');
+    if (verified === 'true') {
+      toast.success('Email verified successfully', {
+        description: 'You can now log in with your credentials',
+      });
+    }
+  }, [searchParams]);
   
   // Redirect if already logged in
   useEffect(() => {

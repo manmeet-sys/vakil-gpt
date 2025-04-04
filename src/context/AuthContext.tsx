@@ -43,6 +43,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (event === 'SIGNED_OUT') {
           toast.info('Successfully signed out');
         }
+        if (event === 'USER_UPDATED') {
+          if (currentSession?.user.email_confirmed_at) {
+            toast.success('Email verified successfully');
+          }
+        }
       }
     );
 
@@ -64,7 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          data: meta
+          data: meta,
+          // Don't redirect automatically as we want to show a confirmation message
+          emailRedirectTo: `${window.location.origin}/login?verified=true`
         }
       });
       

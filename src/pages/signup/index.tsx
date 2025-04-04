@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -64,7 +63,9 @@ const SignupPage = () => {
         toast.success('Account created successfully', {
           description: 'Please check your email to confirm your account',
         });
-        navigate('/login');
+        navigate('/signup/confirmation', { 
+          state: { email: data.email }
+        });
       }
     } catch (error) {
       toast.error('An unexpected error occurred');
