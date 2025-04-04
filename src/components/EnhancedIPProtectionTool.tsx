@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +28,7 @@ const EnhancedIPProtectionTool = () => {
   // For contract tools
   const [contractText, setContractText] = useState('');
   const [fileUploaded, setFileUploaded] = useState(false);
+  const [pdfFile, setPdfFile] = useState(null);
 
   const handleSearch = () => {
     if (!searchQuery.trim()) {
@@ -290,10 +290,8 @@ const EnhancedIPProtectionTool = () => {
                   <h3 className="text-lg font-semibold">Upload Contract</h3>
                   
                   <PdfFileUpload 
-                    onFileSelect={handleFileUpload}
-                    buttonText="Upload Contract" 
-                    acceptedFileTypes=".pdf"
-                    icon={<FileUp className="mr-2 h-4 w-4" />}
+                    onChange={handleFileUpload}
+                    pdfFile={pdfFile}
                   />
                   
                   {!fileUploaded && (
@@ -379,6 +377,7 @@ const EnhancedIPProtectionTool = () => {
                 setIpDescription('');
                 setConfidenceScore(null);
                 setIpRiskLevel('');
+                setPdfFile(null);
               }}>
                 Clear Results
               </Button>
