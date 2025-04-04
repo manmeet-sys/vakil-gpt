@@ -3,7 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
-  FileSearch, List, Clipboard, BarChart2, AlertTriangle, Landmark } from 'lucide-react';
+  FileSearch, List, Clipboard, BarChart2, AlertTriangle, Landmark, Calendar, 
+  Clock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 
@@ -58,9 +59,18 @@ const AllTools = () => {
       id: 'financial-legal',
       title: 'Financial Legal Tools',
       tools: [
-        { name: 'Billing Tracking', icon: <DollarSign className="h-5 w-5" />, path: '/billing-tracking' },
+        { name: 'Billing & Time Tracking', icon: <DollarSign className="h-5 w-5" />, path: '/billing-tracking' },
         { name: 'Financial Obligations', icon: <FileText className="h-5 w-5" />, path: '/financial-obligations' },
         { name: 'Financial Fraud Detector', icon: <Lock className="h-5 w-5" />, path: '/fraud-detector' }
+      ]
+    },
+    {
+      id: 'legal-practice',
+      title: 'Legal Practice Management',
+      tools: [
+        { name: 'Court Filing Automation', icon: <FileText className="h-5 w-5" />, path: '/court-filing' },
+        { name: 'Deadline Management', icon: <Calendar className="h-5 w-5" />, path: '/deadline-management' },
+        { name: 'User Profile & Tools', icon: <User className="h-5 w-5" />, path: '/auth' }
       ]
     }
   ];

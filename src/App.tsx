@@ -36,6 +36,12 @@ import MADueDiligencePage from "./pages/m&a-due-diligence";
 import FinancialObligationsPage from "./pages/financial-obligations";
 import FraudDetectorPage from "./pages/fraud-detector";
 
+// New pages
+import AuthPage from "./pages/auth";
+import ProfilePage from "./pages/profile";
+import CourtFilingPage from "./pages/court-filing";
+import DeadlineManagementPage from "./pages/deadline-management";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -59,6 +65,10 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/tools" element={<ToolsPage />} />
               
+              {/* Authentication & Profile Routes */}
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/legal-document-analyzer" element={<LegalDocumentAnalyzerPage />} />
               <Route path="/legal-brief-generation" element={<LegalBriefGenerationPage />} />
@@ -80,9 +90,12 @@ const App = () => (
               <Route path="/m&a-due-diligence" element={<MADueDiligencePage />} />
               <Route path="/ip-protection" element={<IPProtectionPage />} />
               
+              {/* Enhanced Billing & Legal Management Tools */}
               <Route path="/billing-tracking" element={<BillingTrackingPage />} />
               <Route path="/financial-obligations" element={<FinancialObligationsPage />} />
               <Route path="/fraud-detector" element={<FraudDetectorPage />} />
+              <Route path="/court-filing" element={<CourtFilingPage />} />
+              <Route path="/deadline-management" element={<DeadlineManagementPage />} />
               
               <Route path="/legal-education" element={<LegalEducationPage />} />
               <Route path="/e-signature" element={<ESignaturePage />} />
@@ -90,8 +103,6 @@ const App = () => (
               <Route path="/tax-compliance" element={<TaxCompliancePage />} />
               <Route path="/sentencing-predictor" element={<SentencingPredictorPage />} />
               
-              <Route path="/court-filing" element={<PlaceholderToolPage />} />
-              <Route path="/deadline-management" element={<PlaceholderToolPage />} />
               <Route path="/virtual-assistant" element={<PlaceholderToolPage />} />
               <Route path="/regulatory-reporting" element={<PlaceholderToolPage />} />
               
