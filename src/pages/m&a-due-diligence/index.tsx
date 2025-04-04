@@ -1,10 +1,22 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { TrendingUp, FileText, IndianRupee, Shield } from 'lucide-react';
 import MADueDiligenceTool from '@/components/MADueDiligenceTool';
+import MADueDiligenceSkeleton from '@/components/SkeletonLoaders/MADueDiligenceSkeleton';
 
 const MADueDiligencePage = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Simulate loading delay - in a real app, you would remove this
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <LegalToolLayout
       title="Indian M&A Due Diligence"
@@ -24,7 +36,7 @@ const MADueDiligencePage = () => {
         </div>
       </div>
       
-      <MADueDiligenceTool />
+      {isLoading ? <MADueDiligenceSkeleton /> : <MADueDiligenceTool />}
       
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-4 rounded-lg border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800/30">

@@ -1,10 +1,22 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Scale, FileText, BookOpen, Gavel } from 'lucide-react';
 import SentencingPredictorTool from '@/components/SentencingPredictorTool';
+import SentencingPredictorSkeleton from '@/components/SkeletonLoaders/SentencingPredictorSkeleton';
 
 const SentencingPredictorPage = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Simulate loading delay - in a real app, you would remove this
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <LegalToolLayout
       title="AI Indian Sentencing Predictor"
@@ -24,7 +36,7 @@ const SentencingPredictorPage = () => {
         </div>
       </div>
       
-      <SentencingPredictorTool />
+      {isLoading ? <SentencingPredictorSkeleton /> : <SentencingPredictorTool />}
       
       <div className="mt-8 p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
         <div className="flex space-x-2">
