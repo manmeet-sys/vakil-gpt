@@ -58,7 +58,7 @@ const EnhancedIPProtectionTool = () => {
     },
     {
       title: "Trademarks Act, 1999",
-      url: "https://ipindia.gov.in/writereaddata/Portal/IPOAct/1_43_1_trade-marks-act.pdf",
+      url: "https://ipindia.gov.in/acts-rules-tm.htm",
       description: "Full text of the Indian Trademarks Act, 1999",
       icon: <ScrollText className="h-4 w-4 mr-2" />,
       organization: "Intellectual Property India",
@@ -67,23 +67,23 @@ const EnhancedIPProtectionTool = () => {
     
     {
       title: "Indian Patent Office",
-      url: "https://ipindiaonline.gov.in/epatentfiling/goForLogin/doLogin",
-      description: "Official portal for patent filing and search in India",
+      url: "https://ipindia.gov.in/e-patentfiling.htm",
+      description: "Official portal for patent filing in India",
       icon: <FileText className="h-4 w-4 mr-2" />,
       organization: "Controller General of Patents, Designs & Trade Marks",
       category: "patent"
     },
     {
-      title: "InPASS - Indian Patent Advanced Search System",
-      url: "https://ipindiaservices.gov.in/PublicSearch/",
-      description: "Comprehensive patent search system for Indian patents",
+      title: "Patent Search",
+      url: "https://ipindia.gov.in/patents.htm",
+      description: "Information on patent searching in India",
       icon: <Search className="h-4 w-4 mr-2" />,
       organization: "Intellectual Property India",
       category: "patent"
     },
     {
       title: "Patents Act, 1970",
-      url: "https://ipindia.gov.in/writereaddata/Portal/IPOAct/1_31_1_patent-act-1970-11march2015.pdf",
+      url: "https://ipindia.gov.in/acts-rules-patents.htm",
       description: "Full text of the Indian Patents Act, 1970 (as amended)",
       icon: <ScrollText className="h-4 w-4 mr-2" />,
       organization: "Intellectual Property India",
@@ -100,7 +100,7 @@ const EnhancedIPProtectionTool = () => {
     },
     {
       title: "Copyright E-Filing",
-      url: "https://copyright.gov.in/e-Filing.aspx",
+      url: "https://copyright.gov.in/UserRegistration/frmLoginPage.aspx",
       description: "Online portal for filing copyright applications in India",
       icon: <FileUp className="h-4 w-4 mr-2" />,
       organization: "Copyright Office, Government of India",
@@ -108,7 +108,7 @@ const EnhancedIPProtectionTool = () => {
     },
     {
       title: "Copyright Act, 1957",
-      url: "https://copyright.gov.in/documents/copyrightrules1957.pdf",
+      url: "https://copyright.gov.in/Documents/CopyrightRules1957.pdf",
       description: "Full text of the Indian Copyright Act, 1957 (as amended)",
       icon: <ScrollText className="h-4 w-4 mr-2" />,
       organization: "Copyright Office, Government of India",
@@ -117,23 +117,23 @@ const EnhancedIPProtectionTool = () => {
     
     {
       title: "Design Office India",
-      url: "https://ipindiaonline.gov.in/designefiling/user/frmLoginDesign.aspx",
-      description: "Official portal for industrial design registration in India",
+      url: "https://ipindia.gov.in/designs.htm",
+      description: "Official information on industrial design registration in India",
       icon: <FileCheck className="h-4 w-4 mr-2" />,
       organization: "Controller General of Patents, Designs & Trade Marks",
       category: "design"
     },
     {
       title: "Design Public Search",
-      url: "https://ipindiaservices.gov.in/designsearch/",
-      description: "Search the Indian industrial designs database",
+      url: "https://ipindia.gov.in/designs.htm",
+      description: "Information on searching Indian industrial designs database",
       icon: <Search className="h-4 w-4 mr-2" />,
       organization: "Intellectual Property India",
       category: "design"
     },
     {
       title: "Designs Act, 2000",
-      url: "https://ipindia.gov.in/writereaddata/Portal/IPOAct/1_48_1_design_act_1_.PDF",
+      url: "https://ipindia.gov.in/acts-rules-designs.htm",
       description: "Full text of the Indian Designs Act, 2000",
       icon: <ScrollText className="h-4 w-4 mr-2" />,
       organization: "Intellectual Property India",
@@ -150,7 +150,7 @@ const EnhancedIPProtectionTool = () => {
     },
     {
       title: "Cell for IPR Promotion & Management (CIPAM)",
-      url: "https://cipam.gov.in/",
+      url: "https://dpiit.gov.in/sites/default/files/ciptam.pdf",
       description: "Indian government initiative for promoting IP awareness and protection",
       icon: <Shield className="h-4 w-4 mr-2" />,
       organization: "Department for Promotion of Industry and Internal Trade",
