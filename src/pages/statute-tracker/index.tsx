@@ -35,9 +35,25 @@ const StatuteTrackerPage = () => {
     },
     {
       id: 3,
-      name: "Indian Penal Code, 1860",
+      name: "Bharatiya Nyaya Sanhita, 2023",
       jurisdiction: "India",
-      lastUpdated: "2023-10-05",
+      lastUpdated: "2024-01-01",
+      recentChanges: 5,
+      notifications: true
+    },
+    {
+      id: 4,
+      name: "Bharatiya Nagarik Suraksha Sanhita, 2023",
+      jurisdiction: "India",
+      lastUpdated: "2024-01-01",
+      recentChanges: 4, 
+      notifications: true
+    },
+    {
+      id: 5,
+      name: "Bharatiya Sakshya Adhiniyam, 2023",
+      jurisdiction: "India",
+      lastUpdated: "2024-01-01",
       recentChanges: 3,
       notifications: false
     }
@@ -68,24 +84,45 @@ const StatuteTrackerPage = () => {
     },
     {
       id: 104,
-      statuteName: "Indian Penal Code, 1860",
-      updateDate: "2023-10-05",
-      description: "Introduction of Bharatiya Nyaya Sanhita to replace IPC",
+      statuteName: "Bharatiya Nyaya Sanhita, 2023",
+      updateDate: "2024-01-01",
+      description: "Implementation of BNS to replace Indian Penal Code, 1860",
       type: "Major Revision"
     },
     {
       id: 105,
-      statuteName: "Indian Penal Code, 1860",
-      updateDate: "2023-09-20",
-      description: "Changes to provisions related to cybercrime",
+      statuteName: "Bharatiya Nyaya Sanhita, 2023",
+      updateDate: "2024-01-15",
+      description: "Updated sections on cybercrime and digital fraud",
       type: "Amendment"
     },
     {
       id: 106,
-      statuteName: "Indian Penal Code, 1860",
-      updateDate: "2023-08-15",
-      description: "Supreme Court judgment clarifying sedition law application",
+      statuteName: "Bharatiya Nyaya Sanhita, 2023",
+      updateDate: "2024-02-10",
+      description: "Clarification on applicability of Section 103 (mob lynching)",
       type: "Judgment"
+    },
+    {
+      id: 107,
+      statuteName: "Bharatiya Nagarik Suraksha Sanhita, 2023",
+      updateDate: "2024-01-01",
+      description: "Implementation of BNSS to replace Code of Criminal Procedure, 1973",
+      type: "Major Revision"
+    },
+    {
+      id: 108,
+      statuteName: "Bharatiya Nagarik Suraksha Sanhita, 2023",
+      updateDate: "2024-01-20",
+      description: "Guidelines issued for recording of electronic evidence",
+      type: "Rules"
+    },
+    {
+      id: 109,
+      statuteName: "Bharatiya Sakshya Adhiniyam, 2023",
+      updateDate: "2024-01-01",
+      description: "Implementation of BSA to replace Indian Evidence Act, 1872",
+      type: "Major Revision"
     }
   ];
   
@@ -107,20 +144,34 @@ const StatuteTrackerPage = () => {
     },
     {
       id: 203,
-      name: "Bharatiya Nagarik Suraksha Sanhita, 2023",
+      name: "Bharatiya Nyaya Sanhita, 2023",
       jurisdiction: "India",
       relevance: "High",
-      reason: "Will replace CrPC and impact criminal procedure"
+      reason: "New criminal code replacing IPC with significant changes"
     },
     {
       id: 204,
+      name: "Bharatiya Nagarik Suraksha Sanhita, 2023",
+      jurisdiction: "India",
+      relevance: "High",
+      reason: "New criminal procedure code replacing CrPC"
+    },
+    {
+      id: 205,
+      name: "Bharatiya Sakshya Adhiniyam, 2023",
+      jurisdiction: "India",
+      relevance: "High", 
+      reason: "New evidence law replacing Indian Evidence Act"
+    },
+    {
+      id: 206,
       name: "The Digital Personal Data Protection Act, 2023",
       jurisdiction: "India",
       relevance: "High",
       reason: "Recent legislation affecting tech and privacy law"
     },
     {
-      id: 205,
+      id: 207,
       name: "The Arbitration and Conciliation Act, 1996",
       jurisdiction: "India",
       relevance: "Medium",
@@ -170,7 +221,7 @@ const StatuteTrackerPage = () => {
   return (
     <LegalToolLayout
       title="Indian Statute & Regulation Tracker"
-      description="Stay up-to-date with changes in Indian laws and regulations. Set up alerts for amendments to statutes, new Supreme Court interpretations, and regulatory changes relevant to your practice."
+      description="Stay up-to-date with changes in Indian laws and regulations including the new BNS, BNSS and BSA criminal laws. Set up alerts for amendments, Supreme Court interpretations, and regulatory changes relevant to your practice."
       icon={<Scale className="w-6 h-6 text-white" />}
     >
       <div className="max-w-5xl mx-auto">

@@ -14,7 +14,7 @@ const DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY_HERE";
  * @returns A promise that resolves to the analysis
  */
 export const generateGeminiAnalysis = async (text: string, filename: string): Promise<string> => {
-  const systemPrompt = `You are VakilGPT, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution.
+  const systemPrompt = `You are VakilGPT, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution and the new criminal law codes including Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS), and Bharatiya Sakshya Adhiniyam (BSA).
   
 I'm providing you with text extracted from a PDF document named "${filename}".
 
@@ -23,8 +23,9 @@ Please analyze this legal document and provide:
 2. Key legal provisions and terms identified under Indian law
 3. Potential legal implications in the Indian legal context
 4. Constitutional considerations with reference to specific articles
-5. Relevant Supreme Court and High Court judgments
-6. Recommendations or areas of concern for Indian practice
+5. If relevant, analysis of how the new criminal laws (BNS/BNSS/BSA) apply compared to the older laws they replaced (IPC/CrPC/Indian Evidence Act)
+6. Relevant Supreme Court and High Court judgments
+7. Recommendations or areas of concern for Indian practice
 
 Format your response with clear sections and be thorough yet concise in your legal analysis.`;
 
@@ -34,7 +35,7 @@ Format your response with clear sections and be thorough yet concise in your leg
     body: JSON.stringify({
       contents: [
         { role: 'user', parts: [{ text: systemPrompt }] },
-        { role: 'model', parts: [{ text: 'I will analyze the legal document as VakilGPT, with specific focus on Indian law and constitutional considerations.' }] },
+        { role: 'model', parts: [{ text: 'I will analyze the legal document as VakilGPT, with specific focus on Indian law, constitutional considerations, and the new criminal laws.' }] },
         { role: 'user', parts: [{ text }] }
       ],
       generationConfig: {
@@ -66,7 +67,7 @@ Format your response with clear sections and be thorough yet concise in your leg
  * @returns A promise that resolves to the analysis
  */
 export const generateDeepSeekAnalysis = async (text: string, filename: string): Promise<string> => {
-  const systemPrompt = `You are VakilGPT, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution.
+  const systemPrompt = `You are VakilGPT, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution and the new criminal law codes including Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS), and Bharatiya Sakshya Adhiniyam (BSA).
   
 I'm providing you with text extracted from a PDF document named "${filename}".
 
@@ -75,8 +76,9 @@ Please analyze this legal document and provide:
 2. Key legal provisions and terms identified under Indian law
 3. Potential legal implications in the Indian legal context
 4. Constitutional considerations with reference to specific articles
-5. Relevant Supreme Court and High Court judgments
-6. Recommendations or areas of concern for Indian practice
+5. If relevant, analysis of how the new criminal laws (BNS/BNSS/BSA) apply compared to the older laws they replaced (IPC/CrPC/Indian Evidence Act)
+6. Relevant Supreme Court and High Court judgments
+7. Recommendations or areas of concern for Indian practice
 
 Format your response with clear sections and be thorough yet concise in your legal analysis.`;
   

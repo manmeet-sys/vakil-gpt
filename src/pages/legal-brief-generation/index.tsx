@@ -55,10 +55,11 @@ const LegalBriefGenerationPage = () => {
       
       The brief should include:
       1. Introduction to the legal topic
-      2. Relevant statutes and sections from Indian law
+      2. Relevant statutes and sections from Indian law${jurisdiction === 'criminal' ? ', including the Bharatiya Nyaya Sanhita (BNS) and Bharatiya Nagarik Suraksha Sanhita (BNSS) where applicable' : ''}
       3. Key Supreme Court and High Court judgments
       4. Legal analysis with citations to precedents
       5. Practical recommendations
+      ${jurisdiction === 'criminal' ? '6. Comparison between the older laws (IPC/CrPC) and the new criminal codes (BNS/BNSS/BSA) if relevant' : ''}
       
       Additional context for consideration: ${context || 'None provided'}`;
       
@@ -166,7 +167,7 @@ const LegalBriefGenerationPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="constitutional">Constitutional</SelectItem>
-                    <SelectItem value="criminal">Criminal Law</SelectItem>
+                    <SelectItem value="criminal">Criminal Law (BNS & BNSS)</SelectItem>
                     <SelectItem value="civil">Civil Law</SelectItem>
                     <SelectItem value="corporate">Corporate Law</SelectItem>
                     <SelectItem value="taxation">Taxation</SelectItem>
