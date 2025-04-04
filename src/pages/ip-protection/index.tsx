@@ -2,7 +2,7 @@
 import React from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Shield } from 'lucide-react';
-import IPProtectionTool from '@/components/IPProtectionTool';
+import EnhancedIPProtectionTool from '@/components/EnhancedIPProtectionTool';
 
 const IPProtectionPage = () => {
   return (
@@ -11,7 +11,7 @@ const IPProtectionPage = () => {
       description="Search for trademarks, patents, copyrights, and designs to protect intellectual property under Indian law and monitor for potential infringements."
       icon={<Shield className="w-6 h-6 text-blue-600" />}
     >
-      <IPProtectionTool />
+      <EnhancedIPProtectionTool />
     </LegalToolLayout>
   );
 };

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -84,7 +83,8 @@ const ToolsPage = () => {
       tools: [
         { name: 'Billing Tracking', icon: IndianRupee, description: 'Track and manage legal billing for Indian law firms', path: '/billing-tracking' },
         { name: 'Financial Obligations', icon: FileText, description: 'Monitor financial obligations and deadlines under Indian regulations', path: '/financial-obligations' },
-        { name: 'Financial Fraud Detector', icon: Lock, description: 'Detect potential financial fraud according to Indian banking regulations', path: '/fraud-detector' }
+        { name: 'Financial Fraud Detector', icon: Lock, description: 'Detect potential financial fraud according to Indian banking regulations', path: '/fraud-detector' },
+        { name: 'Tax Compliance', icon: FileText, description: 'Ensure compliance with Indian tax laws and regulations', path: '/tax-compliance' }
       ]
     },
     {
@@ -93,8 +93,7 @@ const ToolsPage = () => {
       description: 'Tools for criminal defense and litigation under Indian criminal codes',
       tools: [
         { name: 'Plea Bargain Assistant', icon: Gavel, description: 'Analyze plea bargain options under the Bharatiya Nyaya Sanhita', path: '/plea-bargain' },
-        { name: 'Sentencing Predictor', icon: Scale, description: 'Predict potential sentencing outcomes in Indian criminal cases', path: '/sentencing-predictor' },
-        { name: 'Tax Compliance', icon: FileText, description: 'Ensure compliance with Indian tax laws and regulations', path: '/tax-compliance' }
+        { name: 'Sentencing Predictor', icon: Scale, description: 'Predict potential sentencing outcomes in Indian criminal cases', path: '/sentencing-predictor' }
       ]
     }
   ];

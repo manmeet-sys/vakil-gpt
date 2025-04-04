@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
@@ -70,7 +69,8 @@ const AllTools = () => {
       tools: [
         { name: 'Billing Tracking', icon: <IndianRupee className="h-5 w-5" />, path: '/billing-tracking' },
         { name: 'Financial Obligations', icon: <FileText className="h-5 w-5" />, path: '/financial-obligations' },
-        { name: 'Financial Fraud Detector', icon: <Lock className="h-5 w-5" />, path: '/fraud-detector' }
+        { name: 'Financial Fraud Detector', icon: <Lock className="h-5 w-5" />, path: '/fraud-detector' },
+        { name: 'Tax Compliance', icon: <FileText className="h-5 w-5" />, path: '/tax-compliance' }
       ]
     },
     {
@@ -78,8 +78,7 @@ const AllTools = () => {
       title: 'Criminal Justice Tools',
       tools: [
         { name: 'Plea Bargain Assistant', icon: <Gavel className="h-5 w-5" />, path: '/plea-bargain' },
-        { name: 'Sentencing Predictor', icon: <Scale className="h-5 w-5" />, path: '/sentencing-predictor' },
-        { name: 'Tax Compliance', icon: <FileText className="h-5 w-5" />, path: '/tax-compliance' }
+        { name: 'Sentencing Predictor', icon: <Scale className="h-5 w-5" />, path: '/sentencing-predictor' }
       ]
     }
   ];
