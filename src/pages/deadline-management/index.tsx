@@ -65,6 +65,23 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
+// Define deadline type for better type safety
+interface Deadline {
+  id: number;
+  title: string;
+  caseReference: string;
+  deadlineType: string;
+  date: Date;
+  time: string;
+  description: string;
+  priority: string;
+  notifyDaysBefore: number;
+  enableReminders: boolean;
+  courtFilingRequired: boolean;
+  jurisdiction: string;
+  completed: boolean;
+}
+
 // Define the form schema
 const deadlineFormSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
@@ -113,7 +130,7 @@ const indianJurisdictions = [
 ];
 
 // Mock data for deadlines
-const initialDeadlines = [
+const initialDeadlines: Deadline[] = [
   {
     id: 1,
     title: "File Counter-Affidavit in Mehta vs. Sharma",
@@ -193,9 +210,9 @@ const initialDeadlines = [
 
 const DeadlineManagementPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [deadlines, setDeadlines] = useState(initialDeadlines);
+  const [deadlines, setDeadlines] = useState<Deadline[]>(initialDeadlines);
   const [isAddingDeadline, setIsAddingDeadline] = useState(false);
-  const [editingDeadline, setEditingDeadline] = useState<any | null>(null);
+  const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null);
   const [activeTab, setActiveTab] = useState("upcoming");
   
   // Initialize the form
@@ -258,7 +275,7 @@ const DeadlineManagementPage = () => {
   };
   
   // Handle editing a deadline
-  const handleEditDeadline = (deadline: any) => {
+  const handleEditDeadline = (deadline: Deadline) => {
     setEditingDeadline(deadline);
     form.reset({
       title: deadline.title,
@@ -303,7 +320,20 @@ const DeadlineManagementPage = () => {
     if (editingDeadline) {
       // Update existing deadline
       setDeadlines(prev => prev.map(d => 
-        d.id === editingDeadline.id ? { ...d, ...data, id: d.id } : d
+        d.id === editingDeadline.id ? { 
+          ...d, 
+          title: data.title,
+          caseReference: data.caseReference || "",
+          deadlineType: data.deadlineType,
+          date: data.date,
+          time: data.time || "",
+          description: data.description || "",
+          priority: data.priority,
+          notifyDaysBefore: data.notifyDaysBefore,
+          enableReminders: data.enableReminders,
+          courtFilingRequired: data.courtFilingRequired,
+          jurisdiction: data.jurisdiction || ""
+        } : d
       ));
       
       toast({
@@ -311,10 +341,20 @@ const DeadlineManagementPage = () => {
         description: "The deadline has been successfully updated.",
       });
     } else {
-      // Add new deadline
-      const newDeadline = {
-        ...data,
+      // Add new deadline with all required fields
+      const newDeadline: Deadline = {
         id: Math.max(0, ...deadlines.map(d => d.id)) + 1,
+        title: data.title,
+        caseReference: data.caseReference || "",
+        deadlineType: data.deadlineType,
+        date: data.date,
+        time: data.time || "",
+        description: data.description || "",
+        priority: data.priority,
+        notifyDaysBefore: data.notifyDaysBefore,
+        enableReminders: data.enableReminders,
+        courtFilingRequired: data.courtFilingRequired,
+        jurisdiction: data.jurisdiction || "",
         completed: false
       };
       
