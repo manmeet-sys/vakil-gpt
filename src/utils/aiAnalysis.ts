@@ -1,6 +1,6 @@
 
 /**
- * Utility functions for AI analysis
+ * Utility functions for AI analysis with focus on Indian law
  */
 
 // Hardcoded API keys
@@ -109,6 +109,139 @@ Format your response with clear sections and be thorough yet concise in your leg
 };
 
 /**
+ * Generates contract analysis specific to Indian legal context
+ * @param text The contract text to analyze
+ * @param contractType The type of contract
+ * @param jurisdiction The Indian jurisdiction (e.g., Delhi, Mumbai)
+ * @returns A promise that resolves to the contract analysis
+ */
+export const generateIndianContractAnalysis = async (
+  text: string, 
+  contractType: string, 
+  jurisdiction: string
+): Promise<{
+  risks: Array<{issue: string, severity: 'high' | 'medium' | 'low', description: string}>,
+  suggestions: string[],
+  indianLawReferences: Array<{section: string, act: string, description: string}>,
+  score: number
+}> => {
+  try {
+    // In a production environment, this would call an AI API for real analysis
+    // For now, simulate an API call with realistic Indian legal context
+    
+    // Mock data based on common Indian contract issues
+    const mockRisks = [
+      {
+        issue: "Non-compliance with Indian Stamp Act",
+        severity: "high" as const,
+        description: "Contract may not comply with stamp duty requirements in " + jurisdiction
+      },
+      {
+        issue: "Inadequate Digital Signature Compliance",
+        severity: "medium" as const,
+        description: "Digital signature provisions do not fully comply with the Information Technology Act, 2000 requirements"
+      },
+      {
+        issue: "Arbitration Clause Issues",
+        severity: "medium" as const,
+        description: "Arbitration clause may not be enforceable under the Arbitration and Conciliation Act, 1996 as amended"
+      }
+    ];
+    
+    // Add contract-type specific risks
+    if (contractType === "employment") {
+      mockRisks.push({
+        issue: "Non-compliance with Labour Laws",
+        severity: "high" as const,
+        description: "Contract may not comply with state-specific labour regulations in " + jurisdiction
+      });
+    } else if (contractType === "rental") {
+      mockRisks.push({
+        issue: "Rent Control Act Issues",
+        severity: "high" as const,
+        description: "Terms may violate local rent control regulations in " + jurisdiction
+      });
+    }
+    
+    const mockSuggestions = [
+      "Update stamping provisions to comply with " + jurisdiction + " stamp duty requirements",
+      "Revise digital signature clauses to conform with the IT Act, 2000",
+      "Ensure arbitration clause specifies seat and venue in India",
+      "Add specific reference to relevant Indian statutes"
+    ];
+    
+    const mockIndianLawReferences = [
+      {
+        section: "Section 10",
+        act: "Indian Contract Act, 1872",
+        description: "Agreement must have all essential elements to be a valid contract"
+      },
+      {
+        section: "Section 5",
+        act: "Information Technology Act, 2000",
+        description: "Requirements for valid electronic signatures"
+      },
+      {
+        section: "Section 7",
+        act: "Arbitration and Conciliation Act, 1996",
+        description: "Requirements for a valid arbitration agreement"
+      }
+    ];
+    
+    // Add jurisdiction-specific references
+    if (jurisdiction === "delhi") {
+      mockIndianLawReferences.push({
+        section: "Section 3",
+        act: "Delhi Rent Control Act",
+        description: "Governs rental agreements in Delhi"
+      });
+    } else if (jurisdiction === "mumbai") {
+      mockIndianLawReferences.push({
+        section: "Section 5",
+        act: "Maharashtra Rent Control Act",
+        description: "Specific provisions for rental agreements in Mumbai"
+      });
+    }
+    
+    // Add BNS/BNSS references if relevant
+    if (text.toLowerCase().includes("criminal") || text.toLowerCase().includes("offense")) {
+      mockIndianLawReferences.push({
+        section: "Section 2(d)",
+        act: "Bharatiya Nyaya Sanhita, 2023",
+        description: "Definition of injury replaces old IPC definition"
+      });
+      mockIndianLawReferences.push({
+        section: "Section 4(d)",
+        act: "Bharatiya Nagarik Suraksha Sanhita, 2023",
+        description: "New procedural requirements replacing old CrPC provisions"
+      });
+    }
+    
+    // Calculate a realistic risk score
+    const riskScores = {
+      high: 20,
+      medium: 10,
+      low: 5
+    };
+    
+    const totalRiskScore = mockRisks.reduce((score, risk) => {
+      return score - riskScores[risk.severity];
+    }, 100);
+    
+    return {
+      risks: mockRisks,
+      suggestions: mockSuggestions,
+      indianLawReferences: mockIndianLawReferences,
+      score: Math.max(0, Math.min(100, totalRiskScore))
+    };
+    
+  } catch (error) {
+    console.error("Error generating Indian contract analysis:", error);
+    throw new Error("Failed to analyze contract under Indian law. Please try again later.");
+  }
+};
+
+/**
  * Fetch the latest updates on Indian laws and precedents
  * @returns A promise that resolves to the updates
  */
@@ -118,7 +251,7 @@ export const fetchIndianLegalUpdates = async (): Promise<{
 }> => {
   try {
     // In a production environment, this would call an actual API endpoint
-    // For now, we'll return mock data that simulates recently updated laws
+    // For now, we'll return mock data that simulates recently updated Indian laws
     
     // Simulating API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -239,7 +372,7 @@ export const subscribeToLegalUpdates = async (
     
     localStorage.setItem('vakilgpt-legal-subscriptions', JSON.stringify([...existingSubscriptions, newSubscription]));
     
-    return "Successfully subscribed to updates for the selected laws and precedents.";
+    return "Successfully subscribed to updates for the selected Indian laws and precedents.";
   } catch (error) {
     console.error("Error subscribing to legal updates:", error);
     throw new Error("Failed to subscribe to legal updates. Please try again later.");

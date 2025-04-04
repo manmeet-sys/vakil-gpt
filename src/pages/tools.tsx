@@ -19,61 +19,61 @@ const ToolsPage = () => {
     {
       id: 'ai-assistance',
       title: 'AI Legal Assistant',
-      description: 'AI-powered tools to assist with legal tasks and research',
+      description: 'AI-powered tools to assist with Indian legal tasks and research',
       tools: [
         { name: 'Legal Chat Bot', icon: MessageSquare, description: 'Chat with an AI legal assistant about Indian law', path: '/chat' },
-        { name: 'Legal Document Analyzer', icon: FileSearch, description: 'Analyze legal documents for key points and risks', path: '/legal-document-analyzer' },
-        { name: 'Legal Brief Generation', icon: BookOpen, description: 'Generate legal briefs and memos based on your inputs', path: '/legal-brief-generation' }
+        { name: 'Legal Document Analyzer', icon: FileSearch, description: 'Analyze Indian legal documents for key points and risks', path: '/legal-document-analyzer' },
+        { name: 'Legal Brief Generation', icon: BookOpen, description: 'Generate legal briefs for Indian courts based on your inputs', path: '/legal-brief-generation' }
       ]
     },
     {
       id: 'legal-research',
-      title: 'Legal Research',
-      description: 'Tools for researching case law, statutes, and legal knowledge',
+      title: 'Indian Legal Research',
+      description: 'Tools for researching Indian case law, statutes, and legal knowledge',
       tools: [
-        { name: 'Case Law Research', icon: Scale, description: 'Research relevant case law for your legal matters', path: '/case-law-research' },
-        { name: 'Statute Tracker', icon: List, description: 'Track changes and updates to relevant statutes', path: '/statute-tracker' },
-        { name: 'Legal Knowledge Base', icon: BookOpen, description: 'Access a comprehensive database of legal information', path: '/knowledge' }
+        { name: 'Case Law Research', icon: Scale, description: 'Research relevant Indian case law for your legal matters', path: '/case-law-research' },
+        { name: 'Statute Tracker', icon: List, description: 'Track changes and updates to Indian statutes including BNS, BNSS, and BSA', path: '/statute-tracker' },
+        { name: 'Legal Knowledge Base', icon: BookOpen, description: 'Access a comprehensive database of Indian legal information', path: '/knowledge' }
       ]
     },
     {
       id: 'document-automation',
       title: 'Document & Compliance',
-      description: 'Tools for document creation and regulatory compliance',
+      description: 'Tools for Indian legal document creation and regulatory compliance',
       tools: [
-        { name: 'Contract Drafting', icon: Clipboard, description: 'Draft and review legal contracts', path: '/contract-drafting' },
-        { name: 'GDPR Compliance', icon: Shield, description: 'Check compliance with data protection regulations', path: '/gdpr-compliance' },
-        { name: 'AML Compliance', icon: AlertTriangle, description: 'Anti-Money Laundering compliance tools', path: '/aml-compliance' }
+        { name: 'Contract Drafting', icon: Clipboard, description: 'Draft and review legal contracts under Indian law', path: '/contract-drafting' },
+        { name: 'GDPR & DPDP Compliance', icon: Shield, description: 'Check compliance with Indian and international data protection regulations', path: '/gdpr-compliance' },
+        { name: 'AML Compliance', icon: AlertTriangle, description: 'Anti-Money Laundering compliance tools for India', path: '/aml-compliance' }
       ]
     },
     {
       id: 'risk-assessment',
       title: 'Risk Management',
-      description: 'Tools for assessing and managing legal risks',
+      description: 'Tools for assessing and managing legal risks in the Indian context',
       tools: [
-        { name: 'Legal Risk Assessment', icon: BarChart2, description: 'Identify and assess legal risks in your business', path: '/legal-risk-assessment' },
-        { name: 'Litigation Prediction', icon: TrendingUp, description: 'Predictive analytics for litigation outcomes', path: '/litigation-prediction' },
-        { name: 'Legal Due Diligence', icon: CheckCircle, description: 'Thorough due diligence reports and analysis', path: '/legal-due-diligence' }
+        { name: 'Legal Risk Assessment', icon: BarChart2, description: 'Identify and assess legal risks in your business under Indian law', path: '/legal-risk-assessment' },
+        { name: 'Litigation Prediction', icon: TrendingUp, description: 'Predictive analytics for Indian litigation outcomes', path: '/litigation-prediction' },
+        { name: 'Legal Due Diligence', icon: CheckCircle, description: 'Thorough due diligence reports and analysis for Indian legal context', path: '/legal-due-diligence' }
       ]
     },
     {
       id: 'business-tools',
       title: 'Business Legal Tools',
-      description: 'Legal tools for business operations and transactions',
+      description: 'Legal tools for business operations and transactions in India',
       tools: [
-        { name: 'Startup Toolkit', icon: Briefcase, description: 'Essential legal tools for startups', path: '/startup-toolkit' },
-        { name: 'M&A Due Diligence', icon: Handshake, description: 'Mergers and acquisitions due diligence assistance', path: '/m&a-due-diligence' },
-        { name: 'IP Protection', icon: Shield, description: 'Intellectual property protection strategies', path: '/ip-protection' }
+        { name: 'Startup Toolkit', icon: Briefcase, description: 'Essential legal tools for startups in India', path: '/startup-toolkit' },
+        { name: 'M&A Due Diligence', icon: Handshake, description: 'Mergers and acquisitions due diligence assistance for Indian companies', path: '/m&a-due-diligence' },
+        { name: 'IP Protection', icon: Shield, description: 'Intellectual property protection strategies under Indian law', path: '/ip-protection' }
       ]
     },
     {
       id: 'financial-legal',
       title: 'Financial Legal Tools',
-      description: 'Tools for financial legal matters and compliance',
+      description: 'Tools for financial legal matters and compliance in India',
       tools: [
-        { name: 'Billing Tracking', icon: DollarSign, description: 'Track and manage legal billing', path: '/billing-tracking' },
-        { name: 'Financial Obligations', icon: FileText, description: 'Monitor financial obligations and deadlines', path: '/financial-obligations' },
-        { name: 'Financial Fraud Detector', icon: Lock, description: 'Detect potential financial fraud', path: '/fraud-detector' }
+        { name: 'Billing Tracking', icon: DollarSign, description: 'Track and manage legal billing for Indian law firms', path: '/billing-tracking' },
+        { name: 'Financial Obligations', icon: FileText, description: 'Monitor financial obligations and deadlines under Indian regulations', path: '/financial-obligations' },
+        { name: 'Financial Fraud Detector', icon: Lock, description: 'Detect potential financial fraud according to Indian banking regulations', path: '/fraud-detector' }
       ]
     }
   ];
@@ -81,14 +81,14 @@ const ToolsPage = () => {
   return (
     <AppLayout>
       <Helmet>
-        <title>Legal Tools | VakilGPT</title>
+        <title>Indian Legal Tools | VakilGPT</title>
       </Helmet>
       
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-legal-slate mb-2">Legal Tools</h1>
-            <p className="text-legal-muted">Access specialized legal tools for various aspects of law and practice</p>
+            <h1 className="text-3xl font-bold text-legal-slate mb-2">Indian Legal Tools</h1>
+            <p className="text-legal-muted">Access specialized legal tools for various aspects of Indian law and practice</p>
           </div>
           <AnimatedLogo />
         </div>

@@ -20,7 +20,7 @@ const AllTools = () => {
     },
     {
       id: 'legal-research',
-      title: 'Legal Research',
+      title: 'Indian Legal Research',
       tools: [
         { name: 'Case Law Research', icon: <Scale className="h-5 w-5" />, path: '/case-law-research' },
         { name: 'Statute Tracker', icon: <List className="h-5 w-5" />, path: '/statute-tracker' },
@@ -32,7 +32,7 @@ const AllTools = () => {
       title: 'Document & Compliance',
       tools: [
         { name: 'Contract Drafting', icon: <Clipboard className="h-5 w-5" />, path: '/contract-drafting' },
-        { name: 'GDPR Compliance', icon: <Shield className="h-5 w-5" />, path: '/gdpr-compliance' },
+        { name: 'GDPR & DPDP Compliance', icon: <Shield className="h-5 w-5" />, path: '/gdpr-compliance' },
         { name: 'AML Compliance', icon: <AlertTriangle className="h-5 w-5" />, path: '/aml-compliance' }
       ]
     },
