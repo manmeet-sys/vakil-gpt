@@ -3,12 +3,22 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
-  FileSearch, List, Clipboard, BarChart2, AlertTriangle, Landmark } from 'lucide-react';
+  FileSearch, List, Clipboard, BarChart2, AlertTriangle, Landmark, User,
+  CalendarClock, IndianRupee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 
 const AllTools = () => {
   const toolCategories = [
+    {
+      id: 'user-tools',
+      title: 'Advocate Tools',
+      tools: [
+        { name: 'Advocate Profile', icon: <User className="h-5 w-5" />, path: '/user-profile' },
+        { name: 'Court Filing Automation', icon: <FileText className="h-5 w-5" />, path: '/court-filing' },
+        { name: 'Deadline Management', icon: <CalendarClock className="h-5 w-5" />, path: '/deadline-management' }
+      ]
+    },
     {
       id: 'ai-assistance',
       title: 'AI Legal Assistant',
@@ -58,7 +68,7 @@ const AllTools = () => {
       id: 'financial-legal',
       title: 'Financial Legal Tools',
       tools: [
-        { name: 'Billing Tracking', icon: <DollarSign className="h-5 w-5" />, path: '/billing-tracking' },
+        { name: 'Billing Tracking', icon: <IndianRupee className="h-5 w-5" />, path: '/billing-tracking' },
         { name: 'Financial Obligations', icon: <FileText className="h-5 w-5" />, path: '/financial-obligations' },
         { name: 'Financial Fraud Detector', icon: <Lock className="h-5 w-5" />, path: '/fraud-detector' }
       ]

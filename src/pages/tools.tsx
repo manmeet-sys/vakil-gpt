@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
-  FileSearch, List, Clipboard, BarChart2, AlertTriangle } from 'lucide-react';
+  FileSearch, List, Clipboard, BarChart2, AlertTriangle, User, CalendarClock,
+  IndianRupee } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +17,16 @@ const ToolsPage = () => {
   const navigate = useNavigate();
   
   const toolCategories = [
+    {
+      id: 'user-tools',
+      title: 'Advocate Practice Tools',
+      description: 'Essential tools for Indian legal professionals to manage cases and deadlines',
+      tools: [
+        { name: 'Advocate Profile', icon: User, description: 'Manage your advocate profile and legal practice', path: '/user-profile' },
+        { name: 'Court Filing Automation', icon: FileText, description: 'Automate court filing processes for Indian courts', path: '/court-filing' },
+        { name: 'Deadline Management', icon: CalendarClock, description: 'Track legal deadlines and critical dates for Indian courts', path: '/deadline-management' }
+      ]
+    },
     {
       id: 'ai-assistance',
       title: 'AI Legal Assistant',
@@ -71,7 +82,7 @@ const ToolsPage = () => {
       title: 'Financial Legal Tools',
       description: 'Tools for financial legal matters and compliance in India',
       tools: [
-        { name: 'Billing Tracking', icon: DollarSign, description: 'Track and manage legal billing for Indian law firms', path: '/billing-tracking' },
+        { name: 'Billing Tracking', icon: IndianRupee, description: 'Track and manage legal billing for Indian law firms', path: '/billing-tracking' },
         { name: 'Financial Obligations', icon: FileText, description: 'Monitor financial obligations and deadlines under Indian regulations', path: '/financial-obligations' },
         { name: 'Financial Fraud Detector', icon: Lock, description: 'Detect potential financial fraud according to Indian banking regulations', path: '/fraud-detector' }
       ]
@@ -94,8 +105,9 @@ const ToolsPage = () => {
         </div>
         
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid grid-cols-7 mb-8">
+          <TabsList className="grid grid-cols-8 mb-8">
             <TabsTrigger value="all">All Tools</TabsTrigger>
+            <TabsTrigger value="user-tools">Practice</TabsTrigger>
             <TabsTrigger value="ai-assistance">AI Assistant</TabsTrigger>
             <TabsTrigger value="legal-research">Research</TabsTrigger>
             <TabsTrigger value="document-automation">Documents</TabsTrigger>

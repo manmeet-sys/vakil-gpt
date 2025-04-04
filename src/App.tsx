@@ -36,6 +36,11 @@ import MADueDiligencePage from "./pages/m&a-due-diligence";
 import FinancialObligationsPage from "./pages/financial-obligations";
 import FraudDetectorPage from "./pages/fraud-detector";
 
+// New tools added
+import UserProfilePage from "./pages/user-profile";
+import CourtFilingPage from "./pages/court-filing";
+import DeadlineManagementPage from "./pages/deadline-management";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -90,8 +95,11 @@ const App = () => (
               <Route path="/tax-compliance" element={<TaxCompliancePage />} />
               <Route path="/sentencing-predictor" element={<SentencingPredictorPage />} />
               
-              <Route path="/court-filing" element={<PlaceholderToolPage />} />
-              <Route path="/deadline-management" element={<PlaceholderToolPage />} />
+              {/* New tool pages */}
+              <Route path="/user-profile" element={<UserProfilePage />} />
+              <Route path="/court-filing" element={<CourtFilingPage />} />
+              <Route path="/deadline-management" element={<DeadlineManagementPage />} />
+              
               <Route path="/virtual-assistant" element={<PlaceholderToolPage />} />
               <Route path="/regulatory-reporting" element={<PlaceholderToolPage />} />
               

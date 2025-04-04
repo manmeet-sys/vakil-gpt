@@ -3,6 +3,7 @@ import React from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import BackButton from './BackButton';
 import { Link } from 'react-router-dom';
+import { User } from 'lucide-react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -21,6 +22,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <div className="flex items-center gap-3">
           <Link to="/tools" className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
             All Tools
+          </Link>
+          <Link to="/user-profile" className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center">
+            <User className="h-4 w-4 mr-1" />
+            Profile
           </Link>
           <ThemeToggle />
         </div>
