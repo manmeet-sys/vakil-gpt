@@ -29,6 +29,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <Link to="/knowledge" className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
               Knowledge
             </Link>
+            <Link to="/user-profile" className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              Profile
+            </Link>
           </div>
         </div>
         
