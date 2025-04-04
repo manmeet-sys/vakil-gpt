@@ -9,7 +9,7 @@ import './index.css';
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 // Check if we're in development and missing a valid key
-const isDevelopment = process.env.NODE_ENV !== 'production';
+const isDevelopment = import.meta.env.DEV || process.env.NODE_ENV !== 'production';
 const hasValidKey = PUBLISHABLE_KEY && PUBLISHABLE_KEY.startsWith('pk_') && PUBLISHABLE_KEY !== 'pk_test_placeholder_key';
 
 // In production, we should still enforce having a valid key
@@ -28,6 +28,7 @@ const root = createRoot(rootElement);
 // Create a mock auth provider for development when no valid key is present
 const MockClerkProvider = ({ children }: { children: React.ReactNode }) => {
   // This is only for development to bypass Clerk's key requirement
+  console.log("Using mock Clerk provider for development");
   return <>{children}</>;
 };
 

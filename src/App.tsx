@@ -22,26 +22,26 @@ import AuthPage from "./pages/auth";
 import SignUpPage from "./pages/auth/sign-up";
 import NotFound from "./pages/NotFound";
 
-// Import missing page components or use PlaceholderToolPage instead
-import { default as LegalBriefGenerationPage } from "./pages/placeholder-tool";
-import { default as StatuteTrackerPage } from "./pages/placeholder-tool";
-import { default as ContractDraftingPage } from "./pages/placeholder-tool";
-import { default as GdprCompliancePage } from "./pages/placeholder-tool";
-import AMLCompliancePage from "./pages/aml-compliance";
-import { default as LitigationPredictionPage } from "./pages/placeholder-tool";
-import { default as StartupToolkitPage } from "./pages/placeholder-tool";
-import MADueDiligencePage from "./pages/m&a-due-diligence";
-import IPProtectionPage from "./pages/ip-protection";
-import BillingTrackingPage from "./pages/billing-tracking";
-import FinancialObligationsPage from "./pages/financial-obligations";
-import FraudDetectorPage from "./pages/fraud-detector";
-import { default as ESignaturePage } from "./pages/placeholder-tool";
-import PleaBargainPage from "./pages/plea-bargain";
-import TaxCompliancePage from "./pages/tax-compliance";
-import SentencingPredictorPage from "./pages/sentencing-predictor";
-import { default as UserProfilePage } from "./pages/placeholder-tool";
-import { default as CourtFilingPage } from "./pages/court-filing";
-import { default as DeadlineManagementPage } from "./pages/deadline-management";
+// Import actual pages or use placeholders
+import LegalBriefGenerationPage from "./pages/legal-brief-generation";
+import PlaceholderStatuteTracker from "./pages/placeholder-tool";
+import PlaceholderContractDrafting from "./pages/placeholder-tool";
+import PlaceholderGdprCompliance from "./pages/placeholder-tool";
+import PlaceholderAMLCompliance from "./pages/placeholder-tool";
+import PlaceholderLitigationPrediction from "./pages/placeholder-tool";
+import PlaceholderStartupToolkit from "./pages/placeholder-tool";
+import PlaceholderMADueDiligence from "./pages/placeholder-tool";
+import PlaceholderIPProtection from "./pages/placeholder-tool";
+import PlaceholderBillingTracking from "./pages/placeholder-tool";
+import PlaceholderFinancialObligations from "./pages/placeholder-tool";
+import PlaceholderFraudDetector from "./pages/placeholder-tool";
+import PlaceholderESignature from "./pages/placeholder-tool";
+import PlaceholderPleaBargain from "./pages/placeholder-tool";
+import PlaceholderTaxCompliance from "./pages/placeholder-tool";
+import PlaceholderSentencingPredictor from "./pages/placeholder-tool";
+import PlaceholderUserProfile from "./pages/placeholder-tool";
+import PlaceholderCourtFiling from "./pages/placeholder-tool";
+import PlaceholderDeadlineManagement from "./pages/placeholder-tool";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -130,13 +130,13 @@ const App = ({ useMockAuth = false }: AppProps) => (
               
               <Route path="/statute-tracker" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <StatuteTrackerPage />
+                  <PlaceholderStatuteTracker />
                 </ProtectedRoute>
               } />
               
               <Route path="/contract-drafting" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <ContractDraftingPage />
+                  <PlaceholderContractDrafting />
                 </ProtectedRoute>
               } />
               
@@ -148,13 +148,13 @@ const App = ({ useMockAuth = false }: AppProps) => (
               
               <Route path="/gdpr-compliance" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <GdprCompliancePage />
+                  <PlaceholderGdprCompliance />
                 </ProtectedRoute>
               } />
               
               <Route path="/aml-compliance" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <AMLCompliancePage />
+                  <PlaceholderAMLCompliance />
                 </ProtectedRoute>
               } />
               
@@ -166,7 +166,7 @@ const App = ({ useMockAuth = false }: AppProps) => (
               
               <Route path="/litigation-prediction" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <LitigationPredictionPage />
+                  <PlaceholderLitigationPrediction />
                 </ProtectedRoute>
               } />
               
@@ -178,37 +178,37 @@ const App = ({ useMockAuth = false }: AppProps) => (
               
               <Route path="/startup-toolkit" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <StartupToolkitPage />
+                  <PlaceholderStartupToolkit />
                 </ProtectedRoute>
               } />
               
               <Route path="/m&a-due-diligence" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <MADueDiligencePage />
+                  <PlaceholderMADueDiligence />
                 </ProtectedRoute>
               } />
               
               <Route path="/ip-protection" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <IPProtectionPage />
+                  <PlaceholderIPProtection />
                 </ProtectedRoute>
               } />
               
               <Route path="/billing-tracking" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <BillingTrackingPage />
+                  <PlaceholderBillingTracking />
                 </ProtectedRoute>
               } />
               
               <Route path="/financial-obligations" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <FinancialObligationsPage />
+                  <PlaceholderFinancialObligations />
                 </ProtectedRoute>
               } />
               
               <Route path="/fraud-detector" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <FraudDetectorPage />
+                  <PlaceholderFraudDetector />
                 </ProtectedRoute>
               } />
               
@@ -220,44 +220,44 @@ const App = ({ useMockAuth = false }: AppProps) => (
               
               <Route path="/e-signature" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <ESignaturePage />
+                  <PlaceholderESignature />
                 </ProtectedRoute>
               } />
               
               <Route path="/plea-bargain" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <PleaBargainPage />
+                  <PlaceholderPleaBargain />
                 </ProtectedRoute>
               } />
               
               <Route path="/tax-compliance" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <TaxCompliancePage />
+                  <PlaceholderTaxCompliance />
                 </ProtectedRoute>
               } />
               
               <Route path="/sentencing-predictor" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <SentencingPredictorPage />
+                  <PlaceholderSentencingPredictor />
                 </ProtectedRoute>
               } />
               
               {/* New tool pages */}
               <Route path="/user-profile" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <UserProfilePage />
+                  <PlaceholderUserProfile />
                 </ProtectedRoute>
               } />
               
               <Route path="/court-filing" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <CourtFilingPage />
+                  <PlaceholderCourtFiling />
                 </ProtectedRoute>
               } />
               
               <Route path="/deadline-management" element={
                 <ProtectedRoute useMockAuth={useMockAuth}>
-                  <DeadlineManagementPage />
+                  <PlaceholderDeadlineManagement />
                 </ProtectedRoute>
               } />
               
