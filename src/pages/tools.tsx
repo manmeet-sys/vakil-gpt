@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -17,18 +18,22 @@ const ToolsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
+  // Ensure page scrolls to top on mount
   useEffect(() => {
+    window.scrollTo(0, 0);
+    
+    // Handle saved scroll position only when returning from a specific tool
     const savedScrollPosition = sessionStorage.getItem('scroll_/tools');
-    if (savedScrollPosition) {
+    if (savedScrollPosition && location.state?.fromTool) {
       setTimeout(() => {
         window.scrollTo(0, parseInt(savedScrollPosition));
       }, 100);
     }
-  }, []);
+  }, [location]);
   
   const navigateToTool = (path: string) => {
     sessionStorage.setItem('scroll_/tools', window.scrollY.toString());
-    navigate(path);
+    navigate(path, { state: { fromTool: false } });
   };
 
   const toolCategories = [

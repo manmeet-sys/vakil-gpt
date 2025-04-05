@@ -1,11 +1,16 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from '@/components/ThemeToggle';
 import KnowledgeManager from '@/components/KnowledgeManager';
 
 const KnowledgePage = () => {
   const { theme } = useTheme();
+  
+  // Ensure page scrolls to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">

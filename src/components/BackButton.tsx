@@ -25,8 +25,8 @@ const BackButton: React.FC<BackButtonProps> = ({
     // Store current scroll position for the destination page
     const scrollPosition = sessionStorage.getItem(`scroll_${to}`);
     
-    // Navigate back to the specified route
-    navigate(to, { state: { scrollPosition } });
+    // Navigate back to the specified route with fromTool flag
+    navigate(to, { state: { fromTool: true, scrollPosition } });
   };
   
   return (

@@ -1,11 +1,16 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import AppLayout from '@/components/AppLayout';
 import ChatInterface from '@/components/ChatInterface';
 import BackButton from '@/components/BackButton';
 
 const ChatPage = () => {
+  // Ensure page scrolls to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <AppLayout>
       <Helmet>

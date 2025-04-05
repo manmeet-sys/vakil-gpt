@@ -1,12 +1,12 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/context/AuthContext";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import ChatPage from "./pages/chat";
 import KnowledgePage from "./pages/knowledge";
@@ -51,6 +51,17 @@ import DeadlineManagementPage from "./pages/deadline-management";
 
 import NotFound from "./pages/NotFound";
 
+// ScrollToTop component to handle scrolling to top on route changes
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  
+  return null;
+};
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -69,6 +80,7 @@ const App = () => (
         <ThemeProvider defaultTheme="light">
           <AuthProvider>
             <TooltipProvider>
+              <ScrollToTop />
               <Routes>
                 <Route path="/" element={<Index />} />
                 
