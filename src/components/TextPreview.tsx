@@ -16,7 +16,7 @@ const TextPreview: React.FC<TextPreviewProps> = ({ text }) => {
       <Textarea
         value={text.substring(0, 300) + (text.length > 300 ? "..." : "")}
         readOnly
-        className="h-32 resize-none text-sm bg-white dark:bg-zinc-800/90 border-gray-300 dark:border-zinc-700 shadow-sm rounded-lg"
+        className="h-32 w-full resize-none text-sm bg-white dark:bg-zinc-800/90 border-gray-300 dark:border-zinc-700 shadow-sm rounded-lg"
       />
     </div>
   );

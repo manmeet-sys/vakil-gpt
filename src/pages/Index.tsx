@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -11,63 +10,69 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
-const features = [{
-  icon: FileText,
-  title: 'Legal Document Analysis',
-  description: 'Upload contracts, agreements, and legal documents for AI-powered insights. Our system identifies key clauses, potential risks, and provides plain-language explanations.'
-}, {
-  icon: Gavel,
-  title: 'Case Law Research',
-  description: 'Search across jurisdictions with intelligent filtering by court, date, topic, and relevance. Find precedents that strengthen your arguments and support your legal position.'
-}, {
-  icon: Shield,
-  title: 'Compliance Assistance',
-  description: 'Stay current with regulatory changes across industries. Receive personalized alerts, compliance checklists, and actionable recommendations to avoid legal pitfalls.'
-}, {
-  icon: Scale,
-  title: 'Legal Risk Assessment',
-  description: 'Our AI analyzes your business operations to identify potential legal exposures. Receive a comprehensive risk report with mitigation strategies and prioritized action items.'
-}, {
-  icon: BookOpen,
-  title: 'Legal Education',
-  description: 'Access a growing library of plain-language explanations of legal concepts, procedures, and terminology. Perfect for non-lawyers and legal professionals alike.'
-}, {
-  icon: CheckCircle,
-  title: 'Due Diligence Support',
-  description: 'Streamline due diligence with automated document review, entity extraction, and customizable report generation. Reduce review time by up to 80% while increasing accuracy.'
-}];
+const features = [
+  {
+    icon: FileText,
+    title: 'Legal Document Analysis',
+    description: 'Upload contracts, agreements, and legal documents for AI-powered insights. Our system identifies key clauses, potential risks, and provides plain-language explanations.'
+  }, {
+    icon: Gavel,
+    title: 'Case Law Research',
+    description: 'Search across jurisdictions with intelligent filtering by court, date, topic, and relevance. Find precedents that strengthen your arguments and support your legal position.'
+  }, {
+    icon: Shield,
+    title: 'Compliance Assistance',
+    description: 'Stay current with regulatory changes across industries. Receive personalized alerts, compliance checklists, and actionable recommendations to avoid legal pitfalls.'
+  }, {
+    icon: Scale,
+    title: 'Legal Risk Assessment',
+    description: 'Our AI analyzes your business operations to identify potential legal exposures. Receive a comprehensive risk report with mitigation strategies and prioritized action items.'
+  }, {
+    icon: BookOpen,
+    title: 'Legal Education',
+    description: 'Access a growing library of plain-language explanations of legal concepts, procedures, and terminology. Perfect for non-lawyers and legal professionals alike.'
+  }, {
+    icon: CheckCircle,
+    title: 'Due Diligence Support',
+    description: 'Streamline due diligence with automated document review, entity extraction, and customizable report generation. Reduce review time by up to 80% while increasing accuracy.'
+  }
+];
 
-const benefits = [{
-  title: 'Save Time',
-  description: 'Reduce legal research time by up to 70% with instant access to relevant information, automated document analysis, and AI-powered summaries.',
-  percentage: 70
-}, {
-  title: 'Reduce Costs',
-  description: 'Lower legal consultation costs by addressing preliminary questions through AI. Our clients report average savings of 40% on outside counsel expenses.',
-  percentage: 40
-}, {
-  title: 'Increase Accuracy',
-  description: 'Enhance accuracy with AI analysis trained on millions of legal documents and cases. Reduce human error and achieve consistent, data-driven results.',
-  percentage: 90
-}, {
-  title: 'Stay Informed',
-  description: 'Keep up with changing laws and regulations through real-time updates and alerts. Never miss an important regulatory change that affects your business.',
-  percentage: 95
-}];
+const benefits = [
+  {
+    title: 'Save Time',
+    description: 'Reduce legal research time by up to 70% with instant access to relevant information, automated document analysis, and AI-powered summaries.',
+    percentage: 70
+  }, {
+    title: 'Reduce Costs',
+    description: 'Lower legal consultation costs by addressing preliminary questions through AI. Our clients report average savings of 40% on outside counsel expenses.',
+    percentage: 40
+  }, {
+    title: 'Increase Accuracy',
+    description: 'Enhance accuracy with AI analysis trained on millions of legal documents and cases. Reduce human error and achieve consistent, data-driven results.',
+    percentage: 90
+  }, {
+    title: 'Stay Informed',
+    description: 'Keep up with changing laws and regulations through real-time updates and alerts. Never miss an important regulatory change that affects your business.',
+    percentage: 95
+  }
+];
 
-const howItWorks = [{
-  title: 'Ask Questions',
-  description: 'Simply type your legal question or upload a document. Our AI understands complex legal queries and provides relevant responses.',
-  icon: Search
-}, {
-  title: 'Review Analysis',
-  description: 'Receive detailed analysis with references to relevant statutes, case law, and legal principles. All information is cited for verification.',
-  icon: FileText
-}, {
-  title: 'Customize Experience',
-  description: 'Add your own documents to the knowledge base to make responses more relevant to your specific needs and jurisdiction.',
-  icon: Settings
-}];
+const howItWorks = [
+  {
+    title: 'Ask Questions',
+    description: 'Simply type your legal question or upload a document. Our AI understands complex legal queries and provides relevant responses.',
+    icon: Search
+  }, {
+    title: 'Review Analysis',
+    description: 'Receive detailed analysis with references to relevant statutes, case law, and legal principles. All information is cited for verification.',
+    icon: FileText
+  }, {
+    title: 'Customize Experience',
+    description: 'Add your own documents to the knowledge base to make responses more relevant to your specific needs and jurisdiction.',
+    icon: Settings
+  }
+];
 
 const Index = () => {
   useEffect(() => {
@@ -102,13 +107,13 @@ const Index = () => {
         <div className="container mx-auto grid gap-12 md:grid-cols-2 items-center z-10">
           <div className="max-w-xl space-y-6 fade-up-element">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-2">
-              AI-Powered Legal Assistance
+              AI-Powered Legal Assistance for India
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-legal-slate dark:text-white leading-tight text-balance">
               Transform Your Legal <span className="text-legal-accent">Research & Analysis</span>
             </h1>
             <p className="text-lg text-legal-muted dark:text-gray-300 max-w-lg">
-              PrecedentAI helps legal professionals work smarter with advanced document analysis, case research, and regulatory compliance tools powered by cutting-edge artificial intelligence.
+              PrecedentAI helps Indian legal professionals work smarter with advanced document analysis, case research, and regulatory compliance tools.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link to="/chat">
@@ -130,7 +135,7 @@ const Index = () => {
                     <div className={`w-full h-full bg-legal-accent/[0.${n * 2}]`}></div>
                   </div>)}
               </div>
-              <span>Trusted by <strong className="text-legal-slate dark:text-white/90">10,000+</strong> legal professionals worldwide</span>
+              <span>Trusted by <strong className="text-legal-slate dark:text-white/90">5,000+</strong> Indian legal professionals</span>
             </div>
           </div>
           
@@ -149,18 +154,59 @@ const Index = () => {
         </div>
       </section>
       
+      {/* Demo Section */}
+      <section id="demo" className="py-20 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
+        <div className="container mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
+              VakilGPT Demo
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4">
+              Experience Indian Legal AI in Action
+            </h2>
+            <p className="text-legal-muted dark:text-gray-300 text-lg">
+              Ask any question about Indian law, regulations, or legal procedures below and see how our AI provides relevant information.
+            </p>
+          </div>
+          
+          <div className="fade-up-element">
+            <div className="bg-white dark:bg-legal-slate/20 rounded-xl shadow-elegant overflow-hidden border border-legal-border dark:border-legal-slate/20">
+              <div className="p-4 bg-legal-accent/5 border-b border-legal-border dark:border-legal-slate/20 flex items-center">
+                <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                <span className="text-sm font-medium text-legal-slate dark:text-white/90 ml-2">VakilGPT Chat Interface</span>
+              </div>
+              <ChatInterface />
+            </div>
+          </div>
+          
+          <div className="mt-12 text-center fade-up-element">
+            <p className="text-legal-muted dark:text-gray-300 mb-6">
+              Ready to experience the full capabilities of VakilGPT for Indian legal research?
+            </p>
+            <Link to="/chat">
+              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-6 text-base group">
+                Start Using VakilGPT
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+      
       {/* How It Works Section */}
-      <section className="py-16 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
+      <section className="py-16 px-4 bg-legal-light dark:bg-legal-slate/10 transition-colors">
         <div className="container mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
               Simple Process
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-4">
-              How PrecedentAI Works
+              How VakilGPT Works
             </h2>
             <p className="text-legal-muted text-lg">
-              Our platform is designed to be intuitive and powerful, delivering valuable legal insights in seconds.
+              Our platform is designed to be intuitive and powerful, delivering valuable Indian legal insights in seconds.
             </p>
           </div>
           
@@ -192,17 +238,17 @@ const Index = () => {
       </section>
       
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 bg-legal-light dark:bg-legal-slate/10 transition-colors">
+      <section id="features" className="py-20 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
         <div className="container mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16 fade-up-element">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
               Powerful Capabilities
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-4">
-              Comprehensive Legal AI Services
+              Legal AI Services for Indian Professionals
             </h2>
             <p className="text-legal-muted text-lg">
-              PrecedentAI offers a suite of AI-powered tools designed specifically for legal professionals to streamline workflows and enhance decision-making.
+              VakilGPT offers a suite of AI-powered tools designed specifically for Indian legal professionals to streamline workflows and enhance decision-making.
             </p>
             <div className="mt-6">
               <Link to="/tools">
@@ -232,18 +278,18 @@ const Index = () => {
       </section>
       
       {/* Benefits Section */}
-      <section id="benefits" className="py-20 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
+      <section id="benefits" className="py-20 px-4 bg-legal-light dark:bg-legal-slate/10 transition-colors">
         <div className="container mx-auto">
           <div className="grid gap-12 md:grid-cols-2 items-center">
             <div className="fade-up-element">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
-                Why Choose PrecedentAI
+                Why Choose VakilGPT
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-6">
-                Transform Your Legal Practice
+                Transform Your Indian Legal Practice
               </h2>
               <p className="text-legal-muted text-lg mb-8">
-                Our AI-powered platform helps legal professionals work more efficiently, reduce costs, and deliver better results for their clients.
+                Our AI platform helps Indian legal professionals work more efficiently, reduce costs, and deliver better results tailored to India's complex legal landscape.
               </p>
               
               <div className="space-y-8">
@@ -271,51 +317,10 @@ const Index = () => {
               <div className="relative">
                 <div className="absolute inset-0 -left-6 -bottom-6 rounded-xl bg-legal-accent/10 transform -rotate-3" />
                 <div className="glass-container shadow-elegant rounded-xl overflow-hidden transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                  <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?ixlib=rb-4.0.3&auto=format&fit=crop&w=2371&q=80" alt="Legal professional with AI benefits" className="w-full h-auto object-cover" />
+                  <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?ixlib=rb-4.0.3&auto=format&fit=crop&w=2371&q=80" alt="Indian legal professional with AI benefits" className="w-full h-auto object-cover" />
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Demo Section */}
-      <section id="demo" className="py-20 px-4 bg-legal-light dark:bg-legal-slate/10 transition-colors">
-        <div className="container mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
-              Interactive Demo
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4">
-              Experience PrecedentAI in Action
-            </h2>
-            <p className="text-legal-muted dark:text-gray-300 text-lg">
-              Ask a legal question below and see how our AI can provide insightful, relevant information to assist your legal work.
-            </p>
-          </div>
-          
-          <div className="fade-up-element">
-            <div className="bg-white dark:bg-legal-slate/20 rounded-xl shadow-elegant overflow-hidden border border-legal-border dark:border-legal-slate/20">
-              <div className="p-4 bg-legal-accent/5 border-b border-legal-border dark:border-legal-slate/20 flex items-center">
-                <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                <span className="text-sm font-medium text-legal-slate dark:text-white/90 ml-2">PrecedentAI Chat Interface</span>
-              </div>
-              <ChatInterface />
-            </div>
-          </div>
-          
-          <div className="mt-12 text-center fade-up-element">
-            <p className="text-legal-muted dark:text-gray-300 mb-6">
-              Ready to experience the full capabilities of PrecedentAI?
-            </p>
-            <Link to="/chat">
-              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-6 text-base group">
-                Start Using PrecedentAI
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
@@ -325,45 +330,45 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Trusted by Legal Professionals
+              Trusted by Indian Legal Professionals
             </h2>
             <p className="text-white/80 text-lg">
-              See what legal experts are saying about our platform.
+              See what India's top legal experts say about our platform.
             </p>
           </div>
           
           <div className="grid gap-8 md:grid-cols-3">
             {[{
-            quote: "PrecedentAI has revolutionized how our firm handles research. What used to take hours now takes minutes, allowing us to focus on higher-value work for our clients.",
-            author: "Sarah Johnson",
-            role: "Senior Partner, Johnson & Associates",
-            rating: 5
-          }, {
-            quote: "The document analysis capabilities are exceptional. I've never seen AI so accurately parse complex legal language and extract key provisions from contracts.",
-            author: "Michael Chen",
-            role: "Corporate Counsel, Tech Innovations Inc.",
-            rating: 5
-          }, {
-            quote: "As a solo practitioner, PrecedentAI gives me the research capabilities of a large firm. The custom knowledge base feature is particularly valuable for my specialized practice.",
-            author: "Rebecca Martinez",
-            role: "Independent Attorney",
-            rating: 4
-          }].map((testimonial, index) => <div key={testimonial.author} className="bg-white/10 backdrop-blur-xs p-8 rounded-lg fade-up-element" style={{
-            animationDelay: `${index * 100}ms`
-          }}>
-                <div className="flex mb-2">
-                  {Array.from({
-                length: 5
-              }).map((_, i) => <svg key={i} className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-300' : 'text-white/20'}`} fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                    </svg>)}
-                </div>
-                <div className="text-xl font-serif mb-6">"{testimonial.quote}"</div>
-                <div className="mt-4">
-                  <div className="font-semibold">{testimonial.author}</div>
-                  <div className="text-white/70 text-sm">{testimonial.role}</div>
-                </div>
-              </div>)}
+              quote: "VakilGPT has revolutionized how our firm handles Indian case law research. What used to take hours now takes minutes, allowing us to focus on client consultations and court appearances.",
+              author: "Rajesh Sharma",
+              role: "Senior Advocate, Delhi High Court",
+              rating: 5
+            }, {
+              quote: "The document analysis capabilities are exceptional for Indian contracts. I've never seen AI so accurately parse complex legal language and extract key provisions while considering Indian contract law nuances.",
+              author: "Priya Patel",
+              role: "Corporate Counsel, Tech Mahindra",
+              rating: 5
+            }, {
+              quote: "As a solo practitioner in Mumbai, VakilGPT gives me access to research capabilities that were previously only available to large firms. The Supreme Court citation feature is particularly valuable.",
+              author: "Vikram Malhotra",
+              role: "Independent Advocate, Mumbai",
+              rating: 4
+            }].map((testimonial, index) => <div key={testimonial.author} className="bg-white/10 backdrop-blur-xs p-8 rounded-lg fade-up-element" style={{
+              animationDelay: `${index * 100}ms`
+            }}>
+              <div className="flex mb-2">
+                {Array.from({
+                  length: 5
+                }).map((_, i) => <svg key={i} className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-300' : 'text-white/20'}`} fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                </svg>)}
+              </div>
+              <div className="text-xl font-serif mb-6">"{testimonial.quote}"</div>
+              <div className="mt-4">
+                <div className="font-semibold">{testimonial.author}</div>
+                <div className="text-white/70 text-sm">{testimonial.role}</div>
+              </div>
+            </div>)}
           </div>
         </div>
       </section>
@@ -373,10 +378,10 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto text-center fade-up-element bg-legal-accent/5 dark:bg-legal-accent/10 rounded-xl p-10 border border-legal-border dark:border-legal-slate/20 shadow-elegant">
             <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-6">
-              Ready to Transform Your Legal Practice?
+              Ready to Transform Your Indian Legal Practice?
             </h2>
             <p className="text-legal-muted text-xl mb-8 max-w-2xl mx-auto">
-              Join thousands of legal professionals who are using PrecedentAI to work smarter, faster, and more effectively.
+              Join thousands of Indian legal professionals who are using VakilGPT to work smarter, faster, and more effectively with Indian law.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/chat">

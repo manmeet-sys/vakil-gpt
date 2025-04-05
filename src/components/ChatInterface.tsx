@@ -30,7 +30,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     {
       id: '1',
       role: 'assistant',
-      content: "Welcome to VakilGPT. I'm your AI legal assistant specializing in Indian law. I can help with legal questions, analyze documents, and provide information on constitutional matters. How can I assist you today?"
+      content: "नमस्ते! Welcome to VakilGPT. I'm your AI legal assistant specializing in Indian law. I can help with legal questions, analyze documents, and provide information on constitutional matters. How can I assist you today?"
     }
   ]);
   const [input, setInput] = useState('');
@@ -86,7 +86,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       if (selectedProvider === 'gemini') {
         response = await getGeminiResponse(
           `You are VakilGPT, a legal assistant specializing in Indian law. 
-          Respond to the following query with accurate legal information relevant to Indian law and the Indian Constitution:
+          Respond to the following query with accurate legal information relevant to Indian law, Indian legal procedures, Supreme Court and High Court decisions, and the Indian Constitution:
           
           ${input}`
         );
@@ -119,7 +119,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       {
         id: '1',
         role: 'assistant',
-        content: "Welcome to VakilGPT. I'm your AI legal assistant specializing in Indian law. I can help with legal questions, analyze documents, and provide information on constitutional matters. How can I assist you today?"
+        content: "नमस्ते! Welcome to VakilGPT. I'm your AI legal assistant specializing in Indian law. I can help with legal questions, analyze documents, and provide information on constitutional matters. How can I assist you today?"
       }
     ]);
     
@@ -141,12 +141,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
   const getPromptTemplate = (type: string, content: string): string => {
     const templates: Record<string, string> = {
-      'legal-brief': `Generate a comprehensive legal brief based on the following information. Include relevant legal principles, case citations, and structured arguments:\n\n${content}`,
-      'contract-analysis': `Analyze this contract text and identify key clauses, potential risks, obligations, and suggested modifications:\n\n${content}`,
-      'case-precedent': `Research and identify relevant case precedents related to this legal issue. Include case names, citations, and brief summaries of their relevance:\n\n${content}`,
-      'compliance-check': `Perform a compliance check on this text to identify potential regulatory issues, focusing on applicable laws and regulations:\n\n${content}`,
-      'risk-assessment': `Conduct a legal risk assessment based on this information. Identify potential legal risks, their likelihood, potential impact, and mitigation strategies:\n\n${content}`,
-      'document-summary': `Provide a comprehensive yet concise summary of this legal document, highlighting key points, implications, and important considerations:\n\n${content}`
+      'legal-brief': `Generate a comprehensive legal brief based on the following information, focusing on relevant Indian law. Include Supreme Court and High Court citations, and structured arguments according to Indian legal practice:\n\n${content}`,
+      'contract-analysis': `Analyze this contract text from an Indian legal perspective and identify key clauses, potential risks, obligations, and suggested modifications according to Indian contract law:\n\n${content}`,
+      'case-precedent': `Research and identify relevant Indian case precedents related to this legal issue. Include case names, citations from Supreme Court and High Courts, and brief summaries of their relevance:\n\n${content}`,
+      'compliance-check': `Perform a compliance check on this text to identify potential regulatory issues, focusing on applicable Indian laws and regulations:\n\n${content}`,
+      'risk-assessment': `Conduct a legal risk assessment based on this information in the context of Indian law. Identify potential legal risks, their likelihood, potential impact, and mitigation strategies:\n\n${content}`,
+      'document-summary': `Provide a comprehensive yet concise summary of this Indian legal document, highlighting key points, implications, and important considerations under Indian law:\n\n${content}`
     };
     
     return templates[type] || templates['document-summary'];
@@ -199,6 +199,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
             onClick={clearChat}
             className="text-xs flex items-center gap-1"
           >
+            <Trash className="h-3 w-3 mr-1" />
             Clear Chat
           </Button>
         </div>
@@ -240,7 +241,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
                 <Textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  className="min-h-[250px] resize-none dark:bg-zinc-800 dark:border-zinc-700"
+                  className="min-h-[250px] w-full resize-none dark:bg-zinc-800 dark:border-zinc-700"
                   placeholder={`Enter text for ${analysisOptions.find(opt => opt.value === analysisType)?.label}...`}
                 />
                 
@@ -307,9 +308,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask a legal question..."
+          placeholder="Ask about Indian law or legal procedures..."
           disabled={isLoading}
-          className="flex-1"
+          className="flex-1 w-full"
         />
         <Button type="submit" disabled={isLoading || !input.trim()}>
           {isLoading ? (
