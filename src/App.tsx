@@ -24,7 +24,6 @@ import OrientationMessage from "./components/OrientationMessage";
 
 // Auth pages
 import SignupPage from "./pages/signup";
-import SignupConfirmationPage from "./pages/signup/confirmation";
 import LoginPage from "./pages/login";
 import ResetPasswordPage from "./pages/reset-password";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -90,7 +89,6 @@ const App = () => (
                 
                 {/* Auth routes */}
                 <Route path="/signup" element={<SignupPage />} />
-                <Route path="/signup/confirmation" element={<SignupConfirmationPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 

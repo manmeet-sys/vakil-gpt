@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const navigationItems = [
   { name: "Home", path: "/", icon: Home },
@@ -71,7 +72,8 @@ export default function AppleMobileNav() {
               </Link>
             ))}
           </div>
-          <div className="p-4 border-t border-apple-light-gray dark:border-apple-gray/20 flex justify-center">
+          <div className="p-4 border-t border-apple-light-gray dark:border-apple-gray/20 flex justify-center space-x-4">
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </div>

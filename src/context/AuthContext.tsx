@@ -46,11 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (event === 'SIGNED_OUT') {
           toast.info('Successfully signed out');
         }
-        if (event === 'USER_UPDATED') {
-          if (currentSession?.user.email_confirmed_at) {
-            toast.success('Email verified successfully');
-          }
-        }
       }
     );
 
@@ -74,10 +69,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         options: {
           data: meta,
-          // Don't redirect automatically as we want to show a confirmation message
-          emailRedirectTo: `${window.location.origin}/login?verified=true`
+          // Skip email verification by auto-signing in
+          emailRedirectTo: undefined
         }
       });
+      
+      if (!error) {
+        // Auto-sign in after signup
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (signInError) {
+          console.error('Error auto-signing in after signup:', signInError);
+        }
+      }
       
       return { data, error };
     } catch (error) {

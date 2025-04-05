@@ -61,11 +61,9 @@ const SignupPage = () => {
         });
       } else {
         toast.success('Account created successfully', {
-          description: 'Please check your email to confirm your account',
+          description: 'Welcome to VakilGPT!',
         });
-        navigate('/signup/confirmation', { 
-          state: { email: data.email }
-        });
+        navigate('/', { replace: true });
       }
     } catch (error) {
       toast.error('An unexpected error occurred');

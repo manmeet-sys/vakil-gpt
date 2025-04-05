@@ -8,6 +8,7 @@ import { ThemeToggle } from './ThemeToggle';
 import AnimatedLogo from './AnimatedLogo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface HeaderProps {
   className?: string;
@@ -34,7 +35,10 @@ const SafeHeader: React.FC<HeaderProps> = (props) => {
               </span>
             </a>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
     );
@@ -102,6 +106,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
 
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center">
+          <LanguageSwitcher />
           <ThemeToggle />
           <Button
             variant="ghost"
@@ -119,6 +124,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
 
         {/* Auth Buttons & Theme Toggle (Desktop) */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageSwitcher />
           <ThemeToggle />
           
           {isAuthenticated ? (
