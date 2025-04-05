@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
@@ -53,7 +52,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-// Define the form schema
 const formSchema = z.object({
   caseTitle: z.string().min(5, { message: "Case title must be at least 5 characters" }),
   caseNumber: z.string().optional(),
@@ -69,7 +67,6 @@ const formSchema = z.object({
   filingNotes: z.string().optional(),
 });
 
-// Define Indian court types
 const indianCourtTypes = [
   "Supreme Court of India",
   "High Court",
@@ -82,7 +79,6 @@ const indianCourtTypes = [
   "Labor Court"
 ];
 
-// Define Indian jurisdictions
 const indianJurisdictions = [
   "Delhi",
   "Mumbai (Maharashtra)",
@@ -99,7 +95,6 @@ const indianJurisdictions = [
   "Jaipur (Rajasthan)"
 ];
 
-// Define filing types
 const filingTypes = [
   "Plaint",
   "Written Statement",
@@ -115,7 +110,6 @@ const filingTypes = [
   "Appeal"
 ];
 
-// Mock data for saved/recent filings
 const mockFilings = [
   {
     id: 1,
@@ -160,7 +154,6 @@ const CourtFilingPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeadlineWarning, setShowDeadlineWarning] = useState(false);
   
-  // Initialize the form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -177,11 +170,9 @@ const CourtFilingPage = () => {
     },
   });
 
-  // Handle file upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      // Simulate uploading
       setIsUploading(true);
       setUploadProgress(0);
       
@@ -200,43 +191,37 @@ const CourtFilingPage = () => {
     }
   };
 
-  // Remove a document
   const removeDocument = (index: number) => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Check if filing date is close to deadline
   const checkDeadlineProximity = (filingDate: Date, deadline?: Date) => {
     if (!deadline) return false;
     
     const diffTime = Math.abs(deadline.getTime() - filingDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    return diffDays <= 3; // Warning if 3 or fewer days before deadline
+    return diffDays <= 3;
   };
 
-  // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     
-    // Check if filing date is close to deadline
     if (data.filingDeadline && checkDeadlineProximity(data.filingDate, data.filingDeadline)) {
       setShowDeadlineWarning(true);
       toast({
         title: "Filing Deadline Warning",
-        description: "Your filing date is very close to the deadline. Please ensure timely submission.",
+        description: "Your filing date is very close to the deadline. Please ensure timely preparation.",
         variant: "destructive"
       });
     }
     
-    // Simulate API call
     setTimeout(() => {
       toast({
-        title: "Filing Saved",
-        description: "Your court filing has been saved successfully.",
+        title: "Filing Stored",
+        description: "Your court filing details have been stored successfully.",
       });
       
-      // Reset form and state
       if (activeTab === "new") {
         form.reset();
         setDocuments([]);
@@ -245,7 +230,6 @@ const CourtFilingPage = () => {
       
       setIsSubmitting(false);
       
-      // Switch to the drafts tab to show the newly saved filing
       setActiveTab("drafts");
     }, 1500);
   };
@@ -259,7 +243,7 @@ const CourtFilingPage = () => {
       <div className="container mx-auto px-4 py-6">
         <Alert className="mb-6 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
           <Info className="h-4 w-4 text-amber-600 dark:text-amber-500" />
-          <AlertTitle className="text-amber-800 dark:text-amber-500">Indian E-Filing Integration</AlertTitle>
+          <AlertTitle className="text-amber-800 dark:text-amber-500">Indian Court Filing Assistant</AlertTitle>
           <AlertDescription className="text-amber-700 dark:text-amber-400">
             This assistant helps you manage court filings with deadline tracking and location details for Indian courts.
             Store important case information and receive alerts for upcoming filing deadlines.
@@ -270,10 +254,9 @@ const CourtFilingPage = () => {
           <TabsList className="grid grid-cols-3 mb-8 w-full max-w-md mx-auto">
             <TabsTrigger value="new">New Filing</TabsTrigger>
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
-            <TabsTrigger value="submitted">Submitted</TabsTrigger>
+            <TabsTrigger value="stored">Stored</TabsTrigger>
           </TabsList>
           
-          {/* New Filing Tab */}
           <TabsContent value="new">
             <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
               <CardHeader>
@@ -680,7 +663,7 @@ const CourtFilingPage = () => {
                         type="submit" 
                         disabled={isSubmitting}
                       >
-                        {isSubmitting ? "Submitting..." : "Submit Filing"}
+                        {isSubmitting ? "Storing..." : "Store Filing"}
                       </Button>
                     </div>
                   </form>
@@ -689,7 +672,6 @@ const CourtFilingPage = () => {
             </Card>
           </TabsContent>
           
-          {/* Drafts Tab */}
           <TabsContent value="drafts">
             <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
               <CardHeader>
@@ -732,7 +714,7 @@ const CourtFilingPage = () => {
                         <TableCell>
                           <div className="flex space-x-2">
                             <Button size="sm" variant="outline">Edit</Button>
-                            <Button size="sm">Submit</Button>
+                            <Button size="sm">Store</Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -750,11 +732,10 @@ const CourtFilingPage = () => {
             </Card>
           </TabsContent>
           
-          {/* Submitted Tab */}
-          <TabsContent value="submitted">
+          <TabsContent value="stored">
             <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold">Submitted Filings</CardTitle>
+                <CardTitle className="text-xl font-semibold">Stored Filings</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -786,13 +767,13 @@ const CourtFilingPage = () => {
                           <Badge 
                             variant={filing.status === "Submitted" ? "default" : "secondary"}
                           >
-                            {filing.status}
+                            {filing.status === "Submitted" ? "Stored" : filing.status}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
                             <Button size="sm" variant="outline">View</Button>
-                            <Button size="sm" variant="outline">Track</Button>
+                            <Button size="sm" variant="outline">Print</Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -800,7 +781,7 @@ const CourtFilingPage = () => {
                     {mockFilings.filter(filing => filing.status !== "Draft").length === 0 && (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-6 text-legal-muted">
-                          No submitted filings available
+                          No stored filings available
                         </TableCell>
                       </TableRow>
                     )}
