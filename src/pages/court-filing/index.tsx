@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { Check, ChevronDown, FileText, Info, Plus, Upload, X } from 'lucide-react';
+import { Check, ChevronDown, FileText, Info, Plus, Upload, X, MapPin, Clock, Calendar } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { 
@@ -38,7 +38,7 @@ import {
   PopoverContent, 
   PopoverTrigger 
 } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -48,7 +48,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -61,9 +61,12 @@ const formSchema = z.object({
   jurisdiction: z.string().min(1, { message: "Jurisdiction is required" }),
   filingType: z.string().min(1, { message: "Filing type is required" }),
   filingDate: z.date({ required_error: "Filing date is required" }),
+  filingDeadline: z.date({ required_error: "Filing deadline is required" }).optional(),
   clientName: z.string().min(1, { message: "Client name is required" }),
   opposingParty: z.string().min(1, { message: "Opposing party is required" }),
   description: z.string().optional(),
+  courtLocation: z.string().optional(),
+  filingNotes: z.string().optional(),
 });
 
 // Define Indian court types
@@ -121,6 +124,8 @@ const mockFilings = [
     jurisdiction: "Bengaluru (Karnataka)",
     filingType: "Plaint",
     filingDate: new Date("2025-04-15"),
+    filingDeadline: new Date("2025-04-10"),
+    courtLocation: "City Civil Court Complex, K.G. Road, Bengaluru",
     status: "Pending"
   },
   {
@@ -130,6 +135,8 @@ const mockFilings = [
     jurisdiction: "Bengaluru (Karnataka)",
     filingType: "Counter Affidavit",
     filingDate: new Date("2025-04-10"),
+    filingDeadline: new Date("2025-04-05"),
+    courtLocation: "High Court of Karnataka, Bengaluru",
     status: "Submitted"
   },
   {
@@ -139,6 +146,8 @@ const mockFilings = [
     jurisdiction: "Delhi",
     filingType: "Appeal",
     filingDate: new Date("2025-04-20"),
+    filingDeadline: new Date("2025-04-15"),
+    courtLocation: "ITAT Building, I.P. Estate, New Delhi",
     status: "Draft"
   }
 ];
@@ -149,6 +158,7 @@ const CourtFilingPage = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeadlineWarning, setShowDeadlineWarning] = useState(false);
   
   // Initialize the form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -162,6 +172,8 @@ const CourtFilingPage = () => {
       clientName: "",
       opposingParty: "",
       description: "",
+      courtLocation: "",
+      filingNotes: "",
     },
   });
 
@@ -193,9 +205,29 @@ const CourtFilingPage = () => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Check if filing date is close to deadline
+  const checkDeadlineProximity = (filingDate: Date, deadline?: Date) => {
+    if (!deadline) return false;
+    
+    const diffTime = Math.abs(deadline.getTime() - filingDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays <= 3; // Warning if 3 or fewer days before deadline
+  };
+
   // Form submission handler
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
+    
+    // Check if filing date is close to deadline
+    if (data.filingDeadline && checkDeadlineProximity(data.filingDate, data.filingDeadline)) {
+      setShowDeadlineWarning(true);
+      toast({
+        title: "Filing Deadline Warning",
+        description: "Your filing date is very close to the deadline. Please ensure timely submission.",
+        variant: "destructive"
+      });
+    }
     
     // Simulate API call
     setTimeout(() => {
@@ -208,6 +240,7 @@ const CourtFilingPage = () => {
       if (activeTab === "new") {
         form.reset();
         setDocuments([]);
+        setShowDeadlineWarning(false);
       }
       
       setIsSubmitting(false);
@@ -219,8 +252,8 @@ const CourtFilingPage = () => {
 
   return (
     <LegalToolLayout
-      title="Court Filing Automation"
-      description="Automate and streamline your court filing process for Indian courts"
+      title="Court Filing Assistant"
+      description="Manage your court filing process and track deadlines for Indian courts"
       icon={<FileText className="w-6 h-6 text-white" />}
     >
       <div className="container mx-auto px-4 py-6">
@@ -228,8 +261,8 @@ const CourtFilingPage = () => {
           <Info className="h-4 w-4 text-amber-600 dark:text-amber-500" />
           <AlertTitle className="text-amber-800 dark:text-amber-500">Indian E-Filing Integration</AlertTitle>
           <AlertDescription className="text-amber-700 dark:text-amber-400">
-            This tool supports electronic filing for Indian courts through integration with the e-Courts Digital Services platform. 
-            All filings comply with Indian legal standards and jurisdictional requirements.
+            This assistant helps you manage court filings with deadline tracking and location details for Indian courts.
+            Store important case information and receive alerts for upcoming filing deadlines.
           </AlertDescription>
         </Alert>
         
@@ -245,6 +278,9 @@ const CourtFilingPage = () => {
             <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
               <CardHeader>
                 <CardTitle className="text-xl font-semibold">Create New Court Filing</CardTitle>
+                <CardDescription>
+                  Enter the case details, filing information, and set deadlines for your court filing
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -368,6 +404,114 @@ const CourtFilingPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
+                        name="courtLocation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Court Location (Where to File)</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+                                <Input 
+                                  placeholder="Enter specific court location" 
+                                  className="pl-10"
+                                  {...field} 
+                                />
+                              </div>
+                            </FormControl>
+                            <FormDescription>
+                              Specify the exact court/building where filing must be submitted
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="filingDate"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormLabel>Filing Date (When to File)</FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className={`w-full justify-start text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                    >
+                                      <Calendar className="mr-2 h-4 w-4 opacity-70" />
+                                      {field.value ? (
+                                        format(field.value, "dd MMM yyyy")
+                                      ) : (
+                                        <span>Select filing date</span>
+                                      )}
+                                      <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <CalendarComponent
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    disabled={(date) => date < new Date()}
+                                    initialFocus
+                                    className="p-3 pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="filingDeadline"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormLabel>Filing Deadline</FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className={`w-full justify-start text-left font-normal ${!field.value && "text-muted-foreground"} ${showDeadlineWarning ? "border-red-400 bg-red-50 dark:bg-red-950/20" : ""}`}
+                                    >
+                                      <Clock className="mr-2 h-4 w-4 opacity-70" />
+                                      {field.value ? (
+                                        format(field.value, "dd MMM yyyy")
+                                      ) : (
+                                        <span>Select deadline</span>
+                                      )}
+                                      <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <CalendarComponent
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    initialFocus
+                                    className="p-3 pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormDescription>
+                                Last date by which the filing must be submitted
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
                         name="clientName"
                         render={({ field }) => (
                           <FormItem>
@@ -397,47 +541,6 @@ const CourtFilingPage = () => {
                     
                     <FormField
                       control={form.control}
-                      name="filingDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Filing Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={`w-full justify-start text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Select a date</span>
-                                  )}
-                                  <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => date < new Date()}
-                                initialFocus
-                                className="p-3 pointer-events-auto"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormDescription>
-                            The date when this filing will be submitted to the court
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
                       name="description"
                       render={({ field }) => (
                         <FormItem>
@@ -449,6 +552,27 @@ const CourtFilingPage = () => {
                               {...field} 
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="filingNotes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Filing Notes & Special Instructions</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Any special instructions for filing or important notes" 
+                              className="min-h-[80px]"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Include any details about where to submit within the court complex, specific counters, or timing restrictions
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -579,7 +703,8 @@ const CourtFilingPage = () => {
                       <TableHead>Court & Jurisdiction</TableHead>
                       <TableHead>Filing Type</TableHead>
                       <TableHead>Filing Date</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>Deadline</TableHead>
+                      <TableHead>Location</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -589,9 +714,20 @@ const CourtFilingPage = () => {
                         <TableCell className="font-medium">{filing.caseTitle}</TableCell>
                         <TableCell>{filing.courtType} - {filing.jurisdiction}</TableCell>
                         <TableCell>{filing.filingType}</TableCell>
-                        <TableCell>{format(filing.filingDate, "PP")}</TableCell>
+                        <TableCell>{format(filing.filingDate, "dd MMM yyyy")}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">Draft</Badge>
+                          {filing.filingDeadline && (
+                            <span className={checkDeadlineProximity(filing.filingDate, filing.filingDeadline) ? 
+                              "text-red-600 font-medium" : ""}>
+                              {format(filing.filingDeadline, "dd MMM yyyy")}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <MapPin className="h-3 w-3 mr-1 text-gray-400" /> 
+                            <span className="text-xs truncate max-w-[120px]">{filing.courtLocation}</span>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
@@ -603,7 +739,7 @@ const CourtFilingPage = () => {
                     ))}
                     {mockFilings.filter(filing => filing.status === "Draft").length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-6 text-legal-muted">
+                        <TableCell colSpan={7} className="text-center py-6 text-legal-muted">
                           No draft filings available
                         </TableCell>
                       </TableRow>
@@ -628,6 +764,7 @@ const CourtFilingPage = () => {
                       <TableHead>Court & Jurisdiction</TableHead>
                       <TableHead>Filing Type</TableHead>
                       <TableHead>Filing Date</TableHead>
+                      <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -638,7 +775,13 @@ const CourtFilingPage = () => {
                         <TableCell className="font-medium">{filing.caseTitle}</TableCell>
                         <TableCell>{filing.courtType} - {filing.jurisdiction}</TableCell>
                         <TableCell>{filing.filingType}</TableCell>
-                        <TableCell>{format(filing.filingDate, "PP")}</TableCell>
+                        <TableCell>{format(filing.filingDate, "dd MMM yyyy")}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <MapPin className="h-3 w-3 mr-1 text-gray-400" /> 
+                            <span className="text-xs truncate max-w-[120px]">{filing.courtLocation}</span>
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <Badge 
                             variant={filing.status === "Submitted" ? "default" : "secondary"}
@@ -656,7 +799,7 @@ const CourtFilingPage = () => {
                     ))}
                     {mockFilings.filter(filing => filing.status !== "Draft").length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-6 text-legal-muted">
+                        <TableCell colSpan={7} className="text-center py-6 text-legal-muted">
                           No submitted filings available
                         </TableCell>
                       </TableRow>
