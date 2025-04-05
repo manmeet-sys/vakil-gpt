@@ -30,8 +30,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <header className="border-b border-gray-200 dark:border-zinc-700/50 py-3 px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-white">VakilGPT</h1>
-            <span className="text-orange-500 text-xs font-medium">IN</span>
+            <h1 className="text-xl font-semibold text-gray-800 dark:text-white">
+              VakilGPT
+              <span className="text-orange-500 text-xs font-medium ml-1">IN</span>
+              <span className="ml-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full">BETA</span>
+            </h1>
           </Link>
           
           <div className="hidden md:flex items-center space-x-6 ml-8">

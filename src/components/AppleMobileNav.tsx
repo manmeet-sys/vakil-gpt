@@ -37,7 +37,10 @@ export default function AppleMobileNav() {
       </DrawerTrigger>
       <DrawerContent className="p-0 max-h-[90vh] bg-white dark:bg-apple-dark-gray border-t border-apple-light-gray dark:border-apple-gray/20">
         <div className="px-4 py-3 border-b border-apple-light-gray dark:border-apple-gray/20 flex justify-between items-center">
-          <h2 className="text-sf-headline text-apple-dark-gray dark:text-white font-semibold">Menu</h2>
+          <h2 className="text-sf-headline text-apple-dark-gray dark:text-white font-semibold flex items-center">
+            Menu
+            <span className="ml-2 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full">BETA</span>
+          </h2>
           <Button 
             variant="ghost" 
             size="icon" 

@@ -20,6 +20,7 @@ import LegalEducationPage from "./pages/legal-education";
 import ToolsPage from "./pages/tools";
 import PlaceholderToolPage from "./pages/placeholder-tool";
 import PrivacyPolicyPage from "./pages/privacy-policy";
+import OrientationMessage from "./components/OrientationMessage";
 
 // Auth pages
 import SignupPage from "./pages/signup";
@@ -278,6 +279,7 @@ const App = () => (
               </Routes>
               <Toaster />
               <Sonner />
+              <OrientationMessage />
             </TooltipProvider>
           </AuthProvider>
         </ThemeProvider>
