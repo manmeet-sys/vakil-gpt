@@ -50,9 +50,9 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
 
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-1 container mx-auto py-10 px-4">
+      <main className="flex-1 container mx-auto py-6 sm:py-10 px-4">
         <motion.div 
-          className="mb-8"
+          className="mb-6 sm:mb-8"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
@@ -67,24 +67,25 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
             </TabsList>
             <TabsContent value="gemini">
               <Card>
-                <CardHeader>
-                  <CardTitle>Google Gemini API</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl">Google Gemini API</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Configure your Gemini AI API integration for this tool.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-2">
                   <div className="space-y-1">
-                    <Label htmlFor="gemini-api-key">Gemini API Key</Label>
-                    <div className="flex gap-2">
+                    <Label htmlFor="gemini-api-key" className="text-sm">Gemini API Key</Label>
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Input
                         id="gemini-api-key"
                         type="password"
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
                         placeholder="Enter your Gemini API key"
+                        className="text-sm"
                       />
-                      <Button onClick={handleSaveApiKey}>Save</Button>
+                      <Button onClick={handleSaveApiKey} className="sm:w-auto w-full mt-1 sm:mt-0">Save</Button>
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Your API key is stored locally in your browser.
@@ -95,24 +96,25 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
             </TabsContent>
             <TabsContent value="deepseek">
               <Card>
-                <CardHeader>
-                  <CardTitle>DeepSeek API</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl">DeepSeek API</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Configure your DeepSeek AI API integration for this tool.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-2">
                   <div className="space-y-1">
-                    <Label htmlFor="deepseek-api-key">DeepSeek API Key</Label>
-                    <div className="flex gap-2">
+                    <Label htmlFor="deepseek-api-key" className="text-sm">DeepSeek API Key</Label>
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Input
                         id="deepseek-api-key"
                         type="password"
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
                         placeholder="Enter your DeepSeek API key"
+                        className="text-sm"
                       />
-                      <Button onClick={handleSaveApiKey}>Save</Button>
+                      <Button onClick={handleSaveApiKey} className="sm:w-auto w-full mt-1 sm:mt-0">Save</Button>
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Your API key is stored locally in your browser.

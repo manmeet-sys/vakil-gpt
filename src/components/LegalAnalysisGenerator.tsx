@@ -125,30 +125,30 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
         <Button 
           variant="outline" 
           size="sm" 
-          className="text-xs flex items-center gap-1"
+          className="text-xs flex items-center gap-1 w-full sm:w-auto"
         >
           <BookOpen className="h-3 w-3" />
           Legal Analysis
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
+      <DialogContent className="sm:max-w-[600px] max-w-[90vw] mx-auto bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 p-4">
         <DialogHeader>
-          <DialogTitle>Generate Legal Analysis</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Generate Legal Analysis</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="grid gap-4 py-3">
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 break-words">
             Enter legal text, cases, or scenarios for detailed analysis based on Indian law.
           </p>
           <Textarea
             value={legalText}
             onChange={(e) => setLegalText(e.target.value)}
-            className="min-h-[200px] resize-none dark:bg-zinc-800 dark:border-zinc-700"
+            className="min-h-[150px] sm:min-h-[200px] resize-none dark:bg-zinc-800 dark:border-zinc-700 text-sm"
             placeholder="Enter legal text or case details for analysis..."
           />
           <Button 
             onClick={generateAnalysis} 
             disabled={isGenerating || !legalText.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 text-sm"
           >
             {isGenerating ? (
               <>

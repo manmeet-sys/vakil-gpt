@@ -49,20 +49,22 @@ export default function AppleMobileNav() {
           </Button>
         </div>
         <div className="overflow-y-auto">
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-1">
             {navigationItems.map((item) => (
               <Link 
                 key={item.name}
                 to={item.path}
-                className={`flex items-center px-4 py-3 rounded-xl transition-colors ${
+                className={`flex items-center px-3 py-2.5 rounded-xl transition-colors text-sm ${
                   location.pathname === item.path
                     ? "bg-apple-blue/10 text-apple-blue"
                     : "text-apple-dark-gray dark:text-white hover:bg-apple-light-gray dark:hover:bg-apple-gray/20"
                 }`}
                 onClick={() => setOpen(false)}
               >
-                <item.icon className="h-5 w-5 mr-3" />
-                <span className="text-sf-body font-medium">{item.name}</span>
+                <item.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                <span className="text-sf-body font-medium truncate">
+                  {item.name}
+                </span>
               </Link>
             ))}
           </div>
