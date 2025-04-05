@@ -71,11 +71,11 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
     Analyze the provided legal text and generate a comprehensive analysis that includes:
     1. Key legal principles and concepts identified
     2. Relevant constitutional provisions
-    3. Applicable case law or precedents
-    4. Potential legal arguments or interpretations
-    5. Practical implications or recommendations
+    3. Applicable case law or precedents from Indian courts
+    4. Potential legal arguments or interpretations under Indian jurisprudence
+    5. Practical implications or recommendations for Indian legal context
     
-    Format your response with clear sections and citations where applicable. Provide a thorough yet concise analysis.`;
+    Format your response with clear sections and citations where applicable. Include references to Indian statutes, landmark Supreme Court of India judgments, and High Court precedents where relevant. Provide a thorough yet concise analysis with particular attention to Indian legal nuances.`;
 
     const prompt = `${systemPrompt}\n\nText to analyze: ${text}`;
     return await getGeminiResponse(prompt);
@@ -85,13 +85,13 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
     const systemPrompt = `You are VakilGPT, a legal analysis system specialized in Indian law, especially the Indian Constitution.
     
     Analyze the provided legal text and generate a comprehensive analysis that includes:
-    1. Key legal principles and concepts identified
-    2. Relevant constitutional provisions
-    3. Applicable case law or precedents
-    4. Potential legal arguments or interpretations
-    5. Practical implications or recommendations
+    1. Key legal principles and concepts identified in Indian jurisprudence
+    2. Relevant constitutional provisions under the Constitution of India
+    3. Applicable case law or precedents from the Supreme Court and High Courts of India
+    4. Potential legal arguments or interpretations according to Indian legal standards
+    5. Practical implications or recommendations specific to Indian legal and business environment
     
-    Format your response with clear sections and citations where applicable. Provide a thorough yet concise analysis.`;
+    Format your response with clear sections and citations where applicable. Provide a thorough yet concise analysis with references to relevant Indian statutes, regulations, and judicial pronouncements.`;
     
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',

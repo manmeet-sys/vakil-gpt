@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { FileText, CheckCircle, AlertTriangle, Send, User, Building, Tag, FileSearch, FilePlus, FileUp } from 'lucide-react';
@@ -12,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PdfFileUpload from '@/components/PdfFileUpload';
 import { extractTextFromPdf } from '@/utils/pdfExtraction';
+import { generateEnhancedIndianContract } from '@/components/GeminiProIntegration';
 
 const ContractDraftingPage = () => {
   const [activeTab, setActiveTab] = useState('review');
@@ -198,47 +198,32 @@ const ContractDraftingPage = () => {
     setIsDrafting(true);
     
     try {
-      // Simulate API call with a timeout
-      setTimeout(() => {
-        const today = new Date().toISOString().split('T')[0];
-        
-        const draftedContract = `THIS AGREEMENT ("Agreement") is made and entered into as of ${effectiveDate || today}, by and between ${partyA || "PARTY A"} ("${partyAType === 'individual' ? 'Individual' : 'Company'}") and ${partyB || "PARTY B"} ("${partyBType === 'individual' ? 'Individual' : 'Company'}").
-
-WHEREAS, ${contractPurpose || "the parties wish to enter into this agreement for mutual benefit"};
-
-NOW, THEREFORE, in consideration of the mutual covenants contained herein, the parties agree as follows:
-
-1. SCOPE. ${keyTerms || "The parties agree to the following terms and conditions."}
-
-2. TERM AND TERMINATION. This Agreement shall commence on the Effective Date and continue until terminated in accordance with this clause. Either party may terminate this Agreement with thirty (30) days prior written notice to the other party.
-
-3. GOVERNING LAW. This Agreement shall be governed by and construed in accordance with the laws of India, specifically the jurisdiction of ${jurisdiction === 'delhi' ? 'Delhi' : jurisdiction === 'mumbai' ? 'Mumbai, Maharashtra' : jurisdiction === 'bangalore' ? 'Bangalore, Karnataka' : jurisdiction === 'chennai' ? 'Chennai, Tamil Nadu' : jurisdiction === 'kolkata' ? 'Kolkata, West Bengal' : jurisdiction} without regard to its conflict of law principles.
-
-4. DISPUTE RESOLUTION. Any dispute arising out of or in connection with this Agreement shall be referred to and finally resolved by arbitration in India in accordance with the Arbitration and Conciliation Act, 1996 as amended from time to time.
-
-5. DIGITAL SIGNATURES. The Parties acknowledge and agree that this Agreement may be executed by electronic signature, which shall be considered as an original signature for all purposes and shall have the same force and effect as an original signature. The Parties agree that the electronic signatures appearing on this Agreement are intended to authenticate this writing and to have the same force and effect as manual signatures in compliance with the Information Technology Act, 2000.
-
-6. FORCE MAJEURE. Neither Party shall be liable for any failure or delay in performance due to circumstances beyond its reasonable control, including but not limited to acts of God, natural disasters, pandemic, epidemic, or government restrictions.
-
-7. LIABILITY LIMITATION. Notwithstanding anything to the contrary, the maximum aggregate liability of either Party for any and all claims arising out of or related to this Agreement shall not exceed the total amount paid or payable under this Agreement in the twelve (12) months preceding the event giving rise to the claim.
-
-IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first above written.
-
-${partyA || "PARTY A"}
-________________________
-
-${partyB || "PARTY B"}
-________________________`;
-        
-        setContractText(draftedContract);
-        setIsDrafting(false);
-        
-        toast({
-          title: "Contract Drafted",
-          description: "Your contract has been generated according to Indian law. Review and customize as needed.",
-        });
-      }, 3000);
+      // Generate enhanced contract using our utility
+      const draftedContract = await generateEnhancedIndianContract(
+        contractType,
+        {
+          partyA,
+          partyAType,
+          partyB,
+          partyBType
+        },
+        {
+          jurisdiction,
+          effectiveDate: effectiveDate || new Date().toISOString().split('T')[0],
+          purpose: contractPurpose,
+          keyTerms
+        }
+      );
+      
+      setContractText(draftedContract);
+      setIsDrafting(false);
+      
+      toast({
+        title: "Contract Drafted",
+        description: "Your comprehensive Indian legal contract has been generated. Review and customize as needed.",
+      });
     } catch (error) {
+      console.error("Error drafting contract:", error);
       toast({
         title: "Drafting Failed",
         description: "There was an error drafting your contract. Please try again.",
