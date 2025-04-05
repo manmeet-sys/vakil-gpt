@@ -3,10 +3,11 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { LogIn, Menu, User, UserRound } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import AnimatedLogo from './AnimatedLogo';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   className?: string;
@@ -40,6 +41,7 @@ const SafeHeader: React.FC<HeaderProps> = (props) => {
 const Header: React.FC<HeaderProps> = ({ className }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <header
@@ -105,9 +107,36 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           </Button>
         </div>
 
-        {/* Theme Toggle (Desktop) */}
-        <div className="hidden md:flex items-center">
+        {/* Auth Buttons & Theme Toggle (Desktop) */}
+        <div className="hidden md:flex items-center gap-2">
           <ThemeToggle />
+          
+          {isAuthenticated ? (
+            <Link 
+              to="/user-profile" 
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
+            >
+              <UserRound className="h-4 w-4" />
+              <span>Profile</span>
+            </Link>
+          ) : (
+            <>
+              <Link 
+                to="/login" 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Log In</span>
+              </Link>
+              <Link 
+                to="/signup" 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
+              >
+                <User className="h-4 w-4" />
+                <span>Sign Up</span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -158,6 +187,49 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
               >
                 Knowledge
               </Link>
+              
+              {/* Auth Links for Mobile */}
+              {isAuthenticated ? (
+                <Link
+                  to="/user-profile"
+                  className={`block px-3 py-2 text-sm font-medium rounded-md ${
+                    location.pathname === "/user-profile" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <div className="flex items-center gap-2">
+                    <UserRound className="h-4 w-4" />
+                    <span>Profile</span>
+                  </div>
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className={`block px-3 py-2 text-sm font-medium rounded-md ${
+                      location.pathname === "/login" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <LogIn className="h-4 w-4" />
+                      <span>Log In</span>
+                    </div>
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className={`block px-3 py-2 text-sm font-medium rounded-md ${
+                      location.pathname === "/signup" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      <span>Sign Up</span>
+                    </div>
+                  </Link>
+                </>
+              )}
             </div>
           </motion.div>
         )}
