@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +19,7 @@ import LegalDueDiligencePage from "./pages/legal-due-diligence";
 import LegalEducationPage from "./pages/legal-education";
 import ToolsPage from "./pages/tools";
 import PlaceholderToolPage from "./pages/placeholder-tool";
+import PrivacyPolicyPage from "./pages/privacy-policy";
 
 // Auth pages
 import SignupPage from "./pages/signup";
@@ -83,6 +85,7 @@ const App = () => (
               <ScrollToTop />
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                 
                 {/* Auth routes */}
                 <Route path="/signup" element={<SignupPage />} />

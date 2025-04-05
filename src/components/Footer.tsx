@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { cn } from '@/lib/utils';
 import AnimatedLogo from './AnimatedLogo';
 import { Mail, Phone, Github, Linkedin, Twitter } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface FooterProps {
   className?: string;
@@ -55,8 +57,8 @@ const Footer: React.FC<FooterProps> = ({
             <div>
               <h4 className="font-semibold text-legal-slate mb-4">Legal</h4>
               <ul className="space-y-3">
+                <li><Link to="/privacy-policy" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Privacy Policy</Link></li>
                 <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Terms</a></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Privacy</a></li>
                 <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Cookies</a></li>
                 <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Licenses</a></li>
               </ul>
@@ -104,3 +106,4 @@ const Footer: React.FC<FooterProps> = ({
 };
 
 export default Footer;
+
