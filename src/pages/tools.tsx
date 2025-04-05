@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
@@ -11,10 +11,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChevronRight } from 'lucide-react';
 import AnimatedLogo from '@/components/AnimatedLogo';
+import { motion } from 'framer-motion';
 
 const ToolsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   
+  useEffect(() => {
+    const savedScrollPosition = sessionStorage.getItem('scroll_/tools');
+    if (savedScrollPosition) {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedScrollPosition));
+      }, 100);
+    }
+  }, []);
+  
+  const navigateToTool = (path: string) => {
+    sessionStorage.setItem('scroll_/tools', window.scrollY.toString());
+    navigate(path);
+  };
+
   const toolCategories = [
     {
       id: 'user-tools',
@@ -104,7 +120,12 @@ const ToolsPage = () => {
         <title>Indian Legal Tools | VakilGPT</title>
       </Helmet>
       
-      <div className="container mx-auto px-4 py-8">
+      <motion.div 
+        className="container mx-auto px-4 py-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-legal-slate mb-2">Indian Legal Tools</h1>
@@ -128,33 +149,40 @@ const ToolsPage = () => {
           <TabsContent value="all">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {toolCategories.map((category) => (
-                <Card key={category.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle>{category.title}</CardTitle>
-                    <CardDescription>{category.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3">
-                      {category.tools.map((tool) => (
-                        <li key={tool.name}>
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-start text-left"
-                            onClick={() => navigate(tool.path)}
-                          >
-                            <span className="flex items-center">
-                              <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent mr-3">
-                                <tool.icon className="h-5 w-5" />
+                <motion.div 
+                  key={category.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <CardTitle>{category.title}</CardTitle>
+                      <CardDescription>{category.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3">
+                        {category.tools.map((tool) => (
+                          <li key={tool.name}>
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start text-left hover:bg-legal-accent/5"
+                              onClick={() => navigateToTool(tool.path)}
+                            >
+                              <span className="flex items-center">
+                                <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent mr-3">
+                                  <tool.icon className="h-5 w-5" />
+                                </span>
+                                <span>{tool.name}</span>
                               </span>
-                              <span>{tool.name}</span>
-                            </span>
-                            <ChevronRight className="ml-auto h-4 w-4" />
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
+                              <ChevronRight className="ml-auto h-4 w-4" />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
             </div>
           </TabsContent>
@@ -163,32 +191,39 @@ const ToolsPage = () => {
             <TabsContent key={category.id} value={category.id}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {category.tools.map((tool) => (
-                  <Card key={tool.name} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent">
-                          <tool.icon className="h-5 w-5" />
-                        </span>
-                        <CardTitle className="text-xl">{tool.name}</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-legal-muted mb-4">{tool.description}</p>
-                      <Button 
-                        onClick={() => navigate(tool.path)}
-                        className="w-full bg-legal-accent/10 text-legal-accent hover:bg-legal-accent/20"
-                      >
-                        Open Tool
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <motion.div 
+                    key={tool.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.1 }}
+                  >
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent">
+                            <tool.icon className="h-5 w-5" />
+                          </span>
+                          <CardTitle className="text-xl">{tool.name}</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-legal-muted mb-4">{tool.description}</p>
+                        <Button 
+                          onClick={() => navigateToTool(tool.path)}
+                          className="w-full bg-legal-accent/10 text-legal-accent hover:bg-legal-accent/20"
+                        >
+                          Open Tool
+                          <ChevronRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             </TabsContent>
           ))}
         </Tabs>
-      </div>
+      </motion.div>
     </AppLayout>
   );
 };

@@ -1,14 +1,14 @@
 
 import React, { ReactNode } from 'react';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
 
 interface LegalToolLayoutProps {
   children: ReactNode;
@@ -50,20 +50,13 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
-      
       <main className="flex-1 container mx-auto py-10 px-4">
-        <div className="mb-8 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-full">
-              {icon}
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold mb-2">{title}</h1>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">{description}</p>
-        </div>
-        
-        <div className="mb-8">
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <Tabs defaultValue="gemini" onValueChange={(value) => {
             setApiProvider(value as 'deepseek' | 'gemini');
             loadApiKey(value as 'deepseek' | 'gemini');
@@ -129,7 +122,7 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
+        </motion.div>
         
         {children}
       </main>
@@ -140,4 +133,3 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
 };
 
 export default LegalToolLayout;
-
