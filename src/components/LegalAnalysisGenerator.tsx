@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -65,7 +66,7 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
   };
 
   const generateGeminiAnalysis = async (text: string): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI, a legal analysis system specialized in Indian law, especially the Indian Constitution. 
+    const systemPrompt = `You are VakilGPT, a legal analysis system specialized in Indian law, especially the Indian Constitution. 
     
     Analyze the provided legal text and generate a comprehensive analysis that includes:
     1. Key legal principles and concepts identified
@@ -81,7 +82,7 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
   };
 
   const generateDeepSeekAnalysis = async (text: string): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI, a legal analysis system specialized in Indian law, especially the Indian Constitution.
+    const systemPrompt = `You are VakilGPT, a legal analysis system specialized in Indian law, especially the Indian Constitution.
     
     Analyze the provided legal text and generate a comprehensive analysis that includes:
     1. Key legal principles and concepts identified

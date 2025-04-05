@@ -22,7 +22,6 @@ const LegalEducationPage = () => {
   const [apiKey, setApiKey] = useState<string>('');
   const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
 
-  // Load API key on component mount
   React.useEffect(() => {
     const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(storedApiProvider);
@@ -103,7 +102,7 @@ const LegalEducationPage = () => {
     let systemPrompt = '';
     
     if (activeTab === 'explain') {
-      systemPrompt = `You are PrecedentAI's legal education specialist focusing on Indian law.
+      systemPrompt = `You are VakilGPT's legal education specialist focusing on Indian law.
       
       Explain the following legal concept in a clear, educational way:
       "${prompt}"
@@ -117,7 +116,7 @@ const LegalEducationPage = () => {
       
       Format your explanation to be educational, accurate, and accessible to law students or professionals seeking to understand this concept better.`;
     } else if (activeTab === 'case-study') {
-      systemPrompt = `You are PrecedentAI's legal education specialist focusing on Indian law.
+      systemPrompt = `You are VakilGPT's legal education specialist focusing on Indian law.
       
       Create an educational case study on the following legal topic or case:
       "${prompt}"
@@ -132,7 +131,7 @@ const LegalEducationPage = () => {
       
       Format your case study to be educational, detailed, and useful for law students or professionals studying Indian law.`;
     } else if (activeTab === 'compare') {
-      systemPrompt = `You are PrecedentAI's legal education specialist focusing on Indian law.
+      systemPrompt = `You are VakilGPT's legal education specialist focusing on Indian law.
       
       Compare and contrast the following legal concepts or areas of law:
       "${prompt}"
@@ -176,7 +175,7 @@ const LegalEducationPage = () => {
       
       const specialist = specialistProfiles[specialistType as keyof typeof specialistProfiles];
       
-      systemPrompt = `You are PrecedentAI's virtual ${specialist.title}, an ${specialist.expertise} with focus on the Indian legal system.
+      systemPrompt = `You are VakilGPT's virtual ${specialist.title}, an ${specialist.expertise} with focus on the Indian legal system.
       
       Answer the following legal question with your specialized knowledge:
       "${prompt}"
@@ -224,7 +223,7 @@ const LegalEducationPage = () => {
     let systemPrompt = '';
     
     if (activeTab === 'explain') {
-      systemPrompt = `You are PrecedentAI's legal education specialist focusing on Indian law.
+      systemPrompt = `You are VakilGPT's legal education specialist focusing on Indian law.
       
       Explain the following legal concept in a clear, educational way:
       "${prompt}"
@@ -238,7 +237,7 @@ const LegalEducationPage = () => {
       
       Format your explanation to be educational, accurate, and accessible to law students or professionals seeking to understand this concept better.`;
     } else if (activeTab === 'case-study') {
-      systemPrompt = `You are PrecedentAI's legal education specialist focusing on Indian law.
+      systemPrompt = `You are VakilGPT's legal education specialist focusing on Indian law.
       
       Create an educational case study on the following legal topic or case:
       "${prompt}"
@@ -253,7 +252,7 @@ const LegalEducationPage = () => {
       
       Format your case study to be educational, detailed, and useful for law students or professionals studying Indian law.`;
     } else if (activeTab === 'compare') {
-      systemPrompt = `You are PrecedentAI's legal education specialist focusing on Indian law.
+      systemPrompt = `You are VakilGPT's legal education specialist focusing on Indian law.
       
       Compare and contrast the following legal concepts or areas of law:
       "${prompt}"
@@ -297,7 +296,7 @@ const LegalEducationPage = () => {
       
       const specialist = specialistProfiles[specialistType as keyof typeof specialistProfiles];
       
-      systemPrompt = `You are PrecedentAI's virtual ${specialist.title}, an ${specialist.expertise} with focus on the Indian legal system.
+      systemPrompt = `You are VakilGPT's virtual ${specialist.title}, an ${specialist.expertise} with focus on the Indian legal system.
       
       Answer the following legal question with your specialized knowledge:
       "${prompt}"

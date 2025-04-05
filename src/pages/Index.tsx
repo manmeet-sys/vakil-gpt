@@ -113,12 +113,12 @@ const Index = () => {
               Transform Your Legal <span className="text-legal-accent">Research & Analysis</span>
             </h1>
             <p className="text-lg text-legal-muted dark:text-gray-300 max-w-lg">
-              PrecedentAI helps Indian legal professionals work smarter with advanced document analysis, case research, and regulatory compliance tools.
+              VakilGPT helps Indian legal professionals work smarter with advanced document analysis, case research, and regulatory compliance tools.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link to="/chat">
                 <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white text-base px-6 py-6 w-full sm:w-auto group">
-                  Try PrecedentAI Now
+                  Try VakilGPT Now
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>

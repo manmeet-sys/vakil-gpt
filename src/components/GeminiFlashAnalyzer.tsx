@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -53,7 +54,7 @@ const GeminiFlashAnalyzer: React.FC<GeminiFlashAnalyzerProps> = ({
   };
 
   const generateGeminiFlashAnalysis = async (text: string): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI, a legal analysis system specialized in Indian law.
+    const systemPrompt = `You are VakilGPT, a legal analysis system specialized in Indian law.
     
     Analyze the provided legal text and generate a comprehensive structured analysis in JSON format that includes:
     1. A summary of the document or text
