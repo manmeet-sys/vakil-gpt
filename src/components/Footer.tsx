@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import AnimatedLogo from './AnimatedLogo';
@@ -33,6 +32,10 @@ const Footer: React.FC<FooterProps> = ({
                 <a href="tel:+919958580043" className="flex items-center text-legal-muted hover:text-legal-accent transition-colors text-sm">
                   <Phone className="h-4 w-4 mr-2" />
                   +91 9958580043
+                </a>
+                <a href="https://www.linkedin.com/in/manmeet-singh-272880326" target="_blank" rel="noopener noreferrer" className="flex items-center text-legal-muted hover:text-legal-accent transition-colors text-sm">
+                  <Linkedin className="h-4 w-4 mr-2" />
+                  Manmeet Singh
                 </a>
               </div>
             </div>
@@ -81,15 +84,15 @@ const Footer: React.FC<FooterProps> = ({
           </p>
           
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="text-legal-muted hover:text-legal-accent transition-colors">
+            <a href="https://twitter.com" className="text-legal-muted hover:text-legal-accent transition-colors">
               <span className="sr-only">Twitter</span>
               <Twitter className="h-5 w-5" />
             </a>
-            <a href="#" className="text-legal-muted hover:text-legal-accent transition-colors">
+            <a href="https://www.linkedin.com/company/preciselaw" target="_blank" rel="noopener noreferrer" className="text-legal-muted hover:text-legal-accent transition-colors">
               <span className="sr-only">LinkedIn</span>
               <Linkedin className="h-5 w-5" />
             </a>
-            <a href="#" className="text-legal-muted hover:text-legal-accent transition-colors">
+            <a href="https://github.com" className="text-legal-muted hover:text-legal-accent transition-colors">
               <span className="sr-only">GitHub</span>
               <Github className="h-5 w-5" />
             </a>
