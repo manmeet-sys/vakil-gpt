@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, Calendar, Calculator, Plus, Trash, FileCheck, X, AlertCircle, Loader2, Search, Download } from 'lucide-react';
+import { Clock, Calendar, IndianRupee, Plus, Trash, FileCheck, X, AlertCircle, Loader2, Search, Download } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 
@@ -52,7 +51,6 @@ const FinancialObligationsTool: React.FC = () => {
   
   const { toast } = useToast();
   
-  // Load saved obligations on initial render
   useEffect(() => {
     const savedObligations = localStorage.getItem('financialObligations');
     if (savedObligations) {
@@ -64,7 +62,6 @@ const FinancialObligationsTool: React.FC = () => {
     }
   }, []);
   
-  // Save obligations to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('financialObligations', JSON.stringify(obligations));
   }, [obligations]);
@@ -86,7 +83,6 @@ const FinancialObligationsTool: React.FC = () => {
     
     setObligations(prev => [...prev, obligation]);
     
-    // Reset the form
     setNewObligation({
       name: '',
       type: '',
@@ -171,7 +167,6 @@ const FinancialObligationsTool: React.FC = () => {
     return dueDate >= today && dueDate <= thirtyDaysFromNow && obligation.status === 'active';
   });
   
-  // Calculate total financial impact
   const calculateTotalAmount = (items: FinancialObligation[]) => {
     return items.reduce((total, obligation) => {
       const amount = parseFloat(obligation.amount.replace(/[^0-9.-]+/g, '')) || 0;
@@ -181,7 +176,6 @@ const FinancialObligationsTool: React.FC = () => {
   
   const totalActiveAmount = calculateTotalAmount(obligations.filter(o => o.status === 'active'));
   
-  // Group obligations by type for chart
   const obligationsByType = obligations.reduce<Record<string, number>>((acc, obligation) => {
     if (obligation.type && obligation.status === 'active') {
       const amount = parseFloat(obligation.amount.replace(/[^0-9.-]+/g, '')) || 0;
@@ -212,7 +206,11 @@ const FinancialObligationsTool: React.FC = () => {
   
   const formatCurrency = (value: string) => {
     const numericValue = parseFloat(value.replace(/[^0-9.-]+/g, '')) || 0;
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(numericValue);
+    return new Intl.NumberFormat('en-IN', { 
+      style: 'currency', 
+      currency: 'INR',
+      maximumFractionDigits: 0 
+    }).format(numericValue);
   };
   
   const getDaysUntilDue = (dueDate: string) => {
@@ -228,7 +226,7 @@ const FinancialObligationsTool: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 mb-8">
           <TabsTrigger value="overview">
-            <Calculator className="mr-2 h-4 w-4" />
+            <IndianRupee className="mr-2 h-4 w-4" />
             Overview
           </TabsTrigger>
           <TabsTrigger value="obligations">
@@ -246,7 +244,7 @@ const FinancialObligationsTool: React.FC = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Active Obligations</CardTitle>
-                <Calculator className="h-4 w-4 text-muted-foreground" />
+                <IndianRupee className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -398,11 +396,15 @@ const FinancialObligationsTool: React.FC = () => {
                   <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="loan">Loan</SelectItem>
                   <SelectItem value="lease">Lease</SelectItem>
-                  <SelectItem value="royalty">Royalty</SelectItem>
-                  <SelectItem value="subscription">Subscription</SelectItem>
+                  <SelectItem value="gst">GST</SelectItem>
+                  <SelectItem value="tds">TDS</SelectItem>
+                  <SelectItem value="advance-tax">Advance Tax</SelectItem>
+                  <SelectItem value="statutory">Statutory</SelectItem>
+                  <SelectItem value="esi">ESI</SelectItem>
+                  <SelectItem value="pf">PF</SelectItem>
                   <SelectItem value="maintenance">Maintenance</SelectItem>
-                  <SelectItem value="tax">Tax</SelectItem>
                   <SelectItem value="insurance">Insurance</SelectItem>
+                  <SelectItem value="royalty">Royalty</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -598,7 +600,6 @@ const FinancialObligationsTool: React.FC = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Add New Obligation Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -613,7 +614,7 @@ const FinancialObligationsTool: React.FC = () => {
                   id="obligation-name" 
                   value={newObligation.name}
                   onChange={(e) => handleNewObligationChange('name', e.target.value)}
-                  placeholder="e.g. Office Lease Payment"
+                  placeholder="e.g. Office Rent Payment"
                 />
               </div>
               
@@ -629,11 +630,15 @@ const FinancialObligationsTool: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="loan">Loan</SelectItem>
                     <SelectItem value="lease">Lease</SelectItem>
-                    <SelectItem value="royalty">Royalty</SelectItem>
-                    <SelectItem value="subscription">Subscription</SelectItem>
+                    <SelectItem value="gst">GST</SelectItem>
+                    <SelectItem value="tds">TDS</SelectItem>
+                    <SelectItem value="advance-tax">Advance Tax</SelectItem>
+                    <SelectItem value="statutory">Statutory</SelectItem>
+                    <SelectItem value="esi">ESI</SelectItem>
+                    <SelectItem value="pf">PF</SelectItem>
                     <SelectItem value="maintenance">Maintenance</SelectItem>
-                    <SelectItem value="tax">Tax</SelectItem>
                     <SelectItem value="insurance">Insurance</SelectItem>
+                    <SelectItem value="royalty">Royalty</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
@@ -645,7 +650,7 @@ const FinancialObligationsTool: React.FC = () => {
                   id="obligation-amount" 
                   value={newObligation.amount}
                   onChange={(e) => handleNewObligationChange('amount', e.target.value)}
-                  placeholder="e.g. $5,000"
+                  placeholder="e.g. ₹50,000"
                 />
               </div>
               
@@ -738,7 +743,6 @@ const FinancialObligationsTool: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* View/Edit Obligation Dialog */}
       {selectedObligation && (
         <Dialog open={true} onOpenChange={(open) => !open && setSelectedObligation(null)}>
           <DialogContent className="max-w-lg">
@@ -769,11 +773,15 @@ const FinancialObligationsTool: React.FC = () => {
                     <SelectContent>
                       <SelectItem value="loan">Loan</SelectItem>
                       <SelectItem value="lease">Lease</SelectItem>
-                      <SelectItem value="royalty">Royalty</SelectItem>
-                      <SelectItem value="subscription">Subscription</SelectItem>
+                      <SelectItem value="gst">GST</SelectItem>
+                      <SelectItem value="tds">TDS</SelectItem>
+                      <SelectItem value="advance-tax">Advance Tax</SelectItem>
+                      <SelectItem value="statutory">Statutory</SelectItem>
+                      <SelectItem value="esi">ESI</SelectItem>
+                      <SelectItem value="pf">PF</SelectItem>
                       <SelectItem value="maintenance">Maintenance</SelectItem>
-                      <SelectItem value="tax">Tax</SelectItem>
                       <SelectItem value="insurance">Insurance</SelectItem>
+                      <SelectItem value="royalty">Royalty</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
