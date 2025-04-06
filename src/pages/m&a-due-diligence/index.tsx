@@ -56,10 +56,10 @@ const MADueDiligencePage = () => {
           <div className="flex space-x-2">
             <FileText className="h-5 w-5 text-purple-600 dark:text-purple-500 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-medium text-purple-800 dark:text-purple-400">Indian Industry-Specific Analysis</h3>
+              <h3 className="font-medium text-purple-800 dark:text-purple-400">PDF Document Upload</h3>
               <p className="text-sm text-purple-700 dark:text-purple-500 mt-1">
-                The tool provides sector-specific due diligence requirements based on Indian regulations 
-                for IT, pharma, manufacturing, financial services, and other key industries.
+                Upload financial statements, contracts, and other due diligence documents for AI-powered analysis
+                according to Indian regulatory standards and sector-specific compliance requirements.
               </p>
             </div>
           </div>

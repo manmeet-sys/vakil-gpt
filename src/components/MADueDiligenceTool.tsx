@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,9 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { TrendingUp, FileText, AlertTriangle, Check, Building, ChevronRight, Info } from 'lucide-react';
+import { TrendingUp, FileText, AlertTriangle, Check, Building, ChevronRight, Info, Clock, CalendarDays, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getGeminiResponse } from '@/components/GeminiProIntegration';
+import PdfFileUpload from '@/components/PdfFileUpload';
+import { extractTextFromPdf } from '@/utils/pdfExtraction';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface DueDiligenceResult {
   summary: string;
@@ -23,6 +27,9 @@ interface DueDiligenceResult {
     name: string;
     description: string;
   }[];
+  timestamp?: string;
+  targetCompany?: string;
+  industry?: string;
 }
 
 const MADueDiligenceTool = () => {
@@ -33,6 +40,56 @@ const MADueDiligenceTool = () => {
   const [dueDiligenceResult, setDueDiligenceResult] = useState<DueDiligenceResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('input');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [isPdfProcessing, setIsPdfProcessing] = useState<boolean>(false);
+  const [previousAnalyses, setPreviousAnalyses] = useState<DueDiligenceResult[]>([]);
+
+  // Load prior records from localStorage
+  useEffect(() => {
+    const savedAnalyses = localStorage.getItem('maDueDiligenceHistory');
+    if (savedAnalyses) {
+      try {
+        setPreviousAnalyses(JSON.parse(savedAnalyses));
+      } catch (error) {
+        console.error('Error loading previous analyses:', error);
+      }
+    }
+  }, []);
+
+  const handlePdfUpload = async () => {
+    if (!pdfFile) {
+      toast({
+        title: "No PDF file selected",
+        description: "Please upload a PDF file containing financial data.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPdfProcessing(true);
+    
+    try {
+      const extractedText = await extractTextFromPdf(pdfFile);
+      setFinancialData(prev => {
+        const newData = prev ? `${prev}\n\n${extractedText}` : extractedText;
+        return newData;
+      });
+      
+      toast({
+        title: "PDF Processed Successfully",
+        description: "Financial data has been extracted from the PDF.",
+      });
+    } catch (error) {
+      console.error("Error extracting text from PDF:", error);
+      toast({
+        title: "PDF Processing Failed",
+        description: "Could not extract data from the PDF. Please try another file.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPdfProcessing(false);
+    }
+  };
 
   const generateDueDiligence = async () => {
     if (!targetCompany || !industry || !financialData.trim()) {
@@ -49,7 +106,7 @@ const MADueDiligenceTool = () => {
     try {
       // Create prompt for AI analysis
       const prompt = `
-        Act as a mergers and acquisitions (M&A) due diligence specialist. Based on the following information, provide a comprehensive risk assessment:
+        Act as a mergers and acquisitions (M&A) due diligence specialist focusing on Indian corporate and commercial laws. Based on the following information, provide a comprehensive risk assessment:
         
         Target Company: ${targetCompany}
         Industry: ${industry}
@@ -57,30 +114,47 @@ const MADueDiligenceTool = () => {
         
         Format your response exactly as follows (do not include any extra text except what fits in these sections):
         
-        SUMMARY: A brief summary of the due diligence findings and key observations.
+        SUMMARY: A brief summary of the due diligence findings and key observations under Indian law.
         
         RISKS:
-        - [HIGH/MEDIUM/LOW]: First risk and explanation
-        - [HIGH/MEDIUM/LOW]: Second risk and explanation
-        (Include at least 2 risks)
+        - [HIGH/MEDIUM/LOW]: First risk and explanation with reference to applicable Indian laws
+        - [HIGH/MEDIUM/LOW]: Second risk and explanation with reference to applicable Indian laws
+        (Include at least 3 risks)
         
         RECOMMENDATIONS:
-        - First recommendation
-        - Second recommendation
+        - First recommendation with reference to Indian legal requirements
+        - Second recommendation with reference to Indian legal requirements
         (Include at least 3 recommendations)
         
         APPLICABLE_LAWS:
-        - Law Name 1: Brief description of how it applies
-        - Law Name 2: Brief description of how it applies
-        (Include at least 2 applicable laws or regulations)
+        - Law Name 1: Brief description of how it applies to this M&A transaction in India
+        - Law Name 2: Brief description of how it applies to this M&A transaction in India
+        (Include at least 3 applicable Indian laws or regulations)
+        
+        Focus specifically on Indian regulatory framework including Companies Act 2013, SEBI regulations, Competition Act 2002, FEMA provisions if applicable, and any sector-specific regulations in India.
       `;
 
       const response = await getGeminiResponse(prompt);
       
       // Parse the AI response to extract structured data
       const result = parseAIResponse(response);
-      setDueDiligenceResult(result);
+      
+      // Add metadata to result
+      const timestamp = new Date().toISOString();
+      const resultWithMetadata = {
+        ...result,
+        timestamp,
+        targetCompany,
+        industry
+      };
+      
+      setDueDiligenceResult(resultWithMetadata);
       setActiveTab('results');
+      
+      // Save to history
+      const updatedHistory = [resultWithMetadata, ...previousAnalyses.slice(0, 9)]; // Keep only last 10 analyses
+      setPreviousAnalyses(updatedHistory);
+      localStorage.setItem('maDueDiligenceHistory', JSON.stringify(updatedHistory));
       
       toast({
         title: "Analysis Complete",
@@ -175,8 +249,14 @@ const MADueDiligenceTool = () => {
     setTargetCompany('');
     setIndustry('');
     setFinancialData('');
+    setPdfFile(null);
     setDueDiligenceResult(null);
     setActiveTab('input');
+  };
+
+  const loadPriorAnalysis = (analysis: DueDiligenceResult) => {
+    setDueDiligenceResult(analysis);
+    setActiveTab('results');
   };
 
   const getRiskBadgeColor = (level: string) => {
@@ -192,12 +272,29 @@ const MADueDiligenceTool = () => {
     }
   };
 
+  const formatDate = (isoString: string) => {
+    try {
+      const date = new Date(isoString);
+      return new Intl.DateTimeFormat('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }).format(date);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="input">Input Details</TabsTrigger>
           <TabsTrigger value="results" disabled={!dueDiligenceResult}>Results</TabsTrigger>
+          <TabsTrigger value="history">Prior Analyses ({previousAnalyses.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="input" className="mt-6">
@@ -232,20 +329,40 @@ const MADueDiligenceTool = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="technology">Technology</SelectItem>
-                    <SelectItem value="healthcare">Healthcare</SelectItem>
-                    <SelectItem value="finance">Finance</SelectItem>
+                    <SelectItem value="healthcare">Healthcare & Pharma</SelectItem>
+                    <SelectItem value="finance">Financial Services</SelectItem>
                     <SelectItem value="manufacturing">Manufacturing</SelectItem>
                     <SelectItem value="energy">Energy</SelectItem>
-                    <SelectItem value="retail">Retail</SelectItem>
+                    <SelectItem value="retail">Retail & E-commerce</SelectItem>
+                    <SelectItem value="realestate">Real Estate</SelectItem>
+                    <SelectItem value="hospitality">Hospitality & Tourism</SelectItem>
+                    <SelectItem value="telecom">Telecommunications</SelectItem>
+                    <SelectItem value="media">Media & Entertainment</SelectItem>
+                    <SelectItem value="automotive">Automotive</SelectItem>
+                    <SelectItem value="agriculture">Agriculture</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
+              
               <div className="space-y-3">
-                <Label htmlFor="financial-data">Key Financial Data</Label>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="financial-data">Key Financial Data</Label>
+                  <div className="flex items-center gap-2">
+                    <PdfFileUpload onChange={setPdfFile} pdfFile={pdfFile} />
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handlePdfUpload} 
+                      disabled={isPdfProcessing || !pdfFile}
+                      className="ml-2"
+                    >
+                      {isPdfProcessing ? "Processing..." : "Extract Data"}
+                    </Button>
+                  </div>
+                </div>
                 <Textarea
                   id="financial-data"
-                  placeholder="E.g., Revenue, Net Income, Debt, Assets, Liabilities, Cash Flow, etc..."
+                  placeholder="E.g., Revenue, Net Income, Debt, Assets, Liabilities, Cash Flow, etc... Or upload a PDF document containing financial information."
                   value={financialData}
                   onChange={(e) => setFinancialData(e.target.value)}
                   rows={6}
@@ -275,7 +392,12 @@ const MADueDiligenceTool = () => {
                     M&A Due Diligence Analysis
                   </CardTitle>
                   <CardDescription>
-                    Based on {targetCompany} operating in the {industry} sector
+                    Based on {dueDiligenceResult.targetCompany || targetCompany} operating in the {dueDiligenceResult.industry || industry} sector
+                    {dueDiligenceResult.timestamp && (
+                      <span className="block mt-1 text-xs flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> Analysis generated on {formatDate(dueDiligenceResult.timestamp)}
+                      </span>
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -354,6 +476,67 @@ const MADueDiligenceTool = () => {
               </Alert>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-blue-600" />
+                Prior Due Diligence Analyses
+              </CardTitle>
+              <CardDescription>
+                View and access your previous M&A due diligence analyses
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {previousAnalyses.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <FileText className="h-12 w-12 mx-auto mb-3 opacity-40" />
+                  <p>No prior analyses found. Complete your first analysis to see it here.</p>
+                </div>
+              ) : (
+                <Accordion type="single" collapsible className="w-full">
+                  {previousAnalyses.map((analysis, index) => (
+                    <AccordionItem value={`item-${index}`} key={index}>
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-start flex-col text-left">
+                          <span className="font-medium">{analysis.targetCompany}</span>
+                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <Badge variant="outline">{analysis.industry}</Badge>
+                            {analysis.timestamp && (
+                              <span className="flex items-center gap-1">
+                                <CalendarDays className="h-3 w-3" /> 
+                                {formatDate(analysis.timestamp)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3">
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{analysis.summary}</p>
+                          <div className="flex justify-between">
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3" /> {analysis.risks.length} risks identified
+                            </Badge>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => loadPriorAnalysis(analysis)}
+                              className="flex items-center gap-1"
+                            >
+                              <Eye className="h-3 w-3" /> View Full Analysis
+                            </Button>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
