@@ -75,7 +75,7 @@ const ToolsPage = () => {
       description: 'Tools for Indian legal document creation and regulatory compliance',
       tools: [
         { name: 'Contract Drafting', icon: Clipboard, description: 'Draft and review legal contracts under Indian law', path: '/contract-drafting' },
-        { name: 'GDPR & DPDP Compliance', icon: Shield, description: 'Check compliance with Indian and international data protection regulations', path: '/gdpr-compliance' },
+        { name: 'DPDP Compliance', icon: Shield, description: 'Check compliance with Indian Digital Personal Data Protection Act', path: '/gdpr-compliance' },
         { name: 'AML Compliance', icon: AlertTriangle, description: 'Anti-Money Laundering compliance tools for India', path: '/aml-compliance' }
       ]
     },

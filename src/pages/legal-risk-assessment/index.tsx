@@ -162,7 +162,7 @@ const LegalRiskAssessmentPage = () => {
   return (
     <LegalToolLayout 
       title="Legal Risk Assessment" 
-      description="Identify and evaluate potential legal risks for your business"
+      description="Identify and evaluate potential legal risks for your business under Indian law"
       icon={<Shield className="h-6 w-6 text-blue-600" />}
     >
       <div className="max-w-4xl mx-auto">
@@ -170,7 +170,7 @@ const LegalRiskAssessmentPage = () => {
           <CardHeader>
             <CardTitle>Business Risk Profile</CardTitle>
             <CardDescription>
-              Describe your business activities to receive a tailored legal risk assessment.
+              Describe your business activities to receive a tailored legal risk assessment for the Indian market.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -181,7 +181,7 @@ const LegalRiskAssessmentPage = () => {
                   id="business-desc"
                   value={businessDescription}
                   onChange={(e) => setBusinessDescription(e.target.value)}
-                  placeholder="Describe your business operations, industry, target market, and any specific concerns you have about legal risks."
+                  placeholder="Describe your business operations, industry, target market, and any specific concerns you have about legal risks in India."
                   className="min-h-[120px]"
                 />
               </div>
@@ -199,11 +199,11 @@ const LegalRiskAssessmentPage = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="regulatory" id="regulatory" />
-                    <Label htmlFor="regulatory">Regulatory Compliance Risks</Label>
+                    <Label htmlFor="regulatory">Indian Regulatory Compliance</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="intellectual" id="intellectual" />
-                    <Label htmlFor="intellectual">Intellectual Property Risks</Label>
+                    <Label htmlFor="intellectual">IP Rights & Protection in India</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="liability" id="liability" />
@@ -238,7 +238,7 @@ const LegalRiskAssessmentPage = () => {
             <CardHeader>
               <CardTitle>Risk Assessment Results</CardTitle>
               <CardDescription>
-                Identified legal risks and recommended mitigation strategies.
+                Identified legal risks and recommended mitigation strategies under Indian law.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -254,4 +254,3 @@ const LegalRiskAssessmentPage = () => {
 };
 
 export default LegalRiskAssessmentPage;
-
