@@ -247,7 +247,7 @@ p {
 .typing-indicator {
   width: 60px;
   display: flex;
-  justify-center;
+  justify-content: center;
 }
 
 .typing-indicator span {
