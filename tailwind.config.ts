@@ -64,29 +64,29 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				legal: {
-					'slate': '#37474F',
-					'accent': '#4CAF50',
-					'light': '#B0BEC5',
-					'muted': '#78909C',
+					'slate': '#2A3B4C',
+					'accent': '#0070C9',
+					'light': '#F5F5F7',
+					'muted': '#86868B',
 					'surface': '#FFFFFF',
-					'border': '#E0E0E0',
-					'success': '#4CAF50',
-					'warning': '#78909C',
-					'error': '#C0392B',
-					'info': '#37474F'
+					'border': '#D2D2D7',
+					'success': '#34C759',
+					'warning': '#FF9500',
+					'error': '#FF3B30',
+					'info': '#007AFF'
 				},
 				apple: {
-					'blue': '#4CAF50',
-					'gray': '#78909C',
-					'light-gray': '#B0BEC5',
-					'dark-gray': '#37474F',
-					'red': '#C0392B',
-					'green': '#4CAF50',
-					'orange': '#D35400',
-					'yellow': '#F39C12',
-					'purple': '#8E44AD',
-					'teal': '#16A085',
-					'indigo': '#2980B9'
+					'blue': '#0070C9',
+					'gray': '#86868B',
+					'light-gray': '#F5F5F7',
+					'dark-gray': '#1D1D1F',
+					'red': '#FF3B30',
+					'green': '#34C759',
+					'orange': '#FF9500',
+					'yellow': '#FFCC00',
+					'purple': '#5856D6',
+					'teal': '#5AC8FA',
+					'indigo': '#5E5CE6'
 				}
 			},
 			borderRadius: {
