@@ -72,7 +72,9 @@ export default {
 					'success': '#38A169',
 					'warning': '#F6AD55',
 					'error': '#E53E3E',
-					'info': '#2B6CB0'
+					'info': '#2B6CB0',
+					'dark-gray': '#1A202C',
+					'gray': '#718096'
 				},
 				apple: {
 					'blue': '#1E88E5',

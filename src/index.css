@@ -92,7 +92,7 @@ p {
 }
 
 .glass-container {
-  @apply backdrop-blur-lg bg-white/80 dark:bg-blue-dark-gray/80 border border-blue-light-gray dark:border-blue-gray/20 shadow-blue;
+  @apply backdrop-blur-lg bg-white/80 dark:bg-blue-dark-gray/80 border border-blue-light dark:border-blue-gray/20 shadow-blue;
 }
 
 .legal-gradient {
