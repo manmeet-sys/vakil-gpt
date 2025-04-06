@@ -109,7 +109,7 @@ const Index = () => {
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-2">
               AI-Powered Legal Assistance for India
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-legal-slate dark:text-white leading-tight text-balance">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-legal-slate dark:text-legal-light leading-tight text-balance">
               Transform Your Legal <span className="text-legal-accent">Research & Analysis</span>
             </h1>
             <p className="text-lg text-legal-muted dark:text-gray-300 max-w-lg">
@@ -353,7 +353,7 @@ const Index = () => {
               author: "Vikram Malhotra",
               role: "Independent Advocate, Mumbai",
               rating: 4
-            }].map((testimonial, index) => <div key={testimonial.author} className="bg-white/10 backdrop-blur-xs p-8 rounded-lg fade-up-element" style={{
+            }].map((testimonial, index) => <div key={testimonial.author} className="testimonial-card fade-up-element" style={{
               animationDelay: `${index * 100}ms`
             }}>
               <div className="flex mb-2">
