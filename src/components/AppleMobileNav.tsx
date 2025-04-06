@@ -30,17 +30,17 @@ export default function AppleMobileNav() {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="fixed top-4 right-4 z-50 rounded-full bg-white/80 dark:bg-apple-dark-gray/80 shadow-apple backdrop-blur-md border border-apple-light-gray dark:border-apple-gray/20 h-10 w-10"
+          className="fixed top-4 right-4 z-50 rounded-full bg-white/80 dark:bg-[#4A6572]/80 shadow-apple backdrop-blur-md border border-[#F0F0F0] dark:border-[#7F8C8D]/20 h-10 w-10"
         >
-          <Menu className="h-5 w-5 text-apple-dark-gray dark:text-white" />
+          <Menu className="h-5 w-5 text-[#4A6572] dark:text-white" />
           <span className="sr-only">Open menu</span>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="p-0 max-h-[90vh] bg-white dark:bg-apple-dark-gray border-t border-apple-light-gray dark:border-apple-gray/20">
-        <div className="px-4 py-3 border-b border-apple-light-gray dark:border-apple-gray/20 flex justify-between items-center">
-          <h2 className="text-sf-headline text-apple-dark-gray dark:text-white font-semibold flex items-center">
+      <DrawerContent className="p-0 max-h-[90vh] bg-white dark:bg-[#4A6572] border-t border-[#F0F0F0] dark:border-[#7F8C8D]/20">
+        <div className="px-4 py-3 border-b border-[#F0F0F0] dark:border-[#7F8C8D]/20 flex justify-between items-center">
+          <h2 className="text-sf-headline text-[#4A6572] dark:text-white font-semibold flex items-center">
             Menu
-            <span className="ml-2 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full">BETA</span>
+            <span className="ml-2 text-xs font-medium bg-[#006039]/10 dark:bg-[#006039]/30 text-[#006039] px-1.5 py-0.5 rounded-full">BETA</span>
           </h2>
           <Button 
             variant="ghost" 
@@ -48,7 +48,7 @@ export default function AppleMobileNav() {
             className="rounded-full h-9 w-9" 
             onClick={() => setOpen(false)}
           >
-            <X className="h-5 w-5 text-apple-dark-gray dark:text-white" />
+            <X className="h-5 w-5 text-[#4A6572] dark:text-white" />
             <span className="sr-only">Close menu</span>
           </Button>
         </div>
@@ -60,8 +60,8 @@ export default function AppleMobileNav() {
                 to={item.path}
                 className={`flex items-center px-3 py-2.5 rounded-xl transition-colors text-sm ${
                   location.pathname === item.path
-                    ? "bg-apple-blue/10 text-apple-blue"
-                    : "text-apple-dark-gray dark:text-white hover:bg-apple-light-gray dark:hover:bg-apple-gray/20"
+                    ? "bg-[#006039]/10 text-[#006039]"
+                    : "text-[#4A6572] dark:text-white hover:bg-[#F0F0F0] dark:hover:bg-[#7F8C8D]/20"
                 }`}
                 onClick={() => setOpen(false)}
               >
@@ -72,7 +72,7 @@ export default function AppleMobileNav() {
               </Link>
             ))}
           </div>
-          <div className="p-4 border-t border-apple-light-gray dark:border-apple-gray/20 flex justify-center space-x-4">
+          <div className="p-4 border-t border-[#F0F0F0] dark:border-[#7F8C8D]/20 flex justify-center space-x-4">
             <LanguageSwitcher />
             <ThemeToggle />
           </div>

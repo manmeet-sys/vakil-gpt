@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -64,29 +63,29 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				legal: {
-					'slate': '#2A3B4C',
-					'accent': '#0070C9',
-					'light': '#F5F5F7',
-					'muted': '#86868B',
+					'slate': '#4A6572',
+					'accent': '#006039',
+					'light': '#F0F0F0',
+					'muted': '#7F8C8D',
 					'surface': '#FFFFFF',
-					'border': '#D2D2D7',
-					'success': '#34C759',
-					'warning': '#FF9500',
-					'error': '#FF3B30',
-					'info': '#007AFF'
+					'border': '#E0E0E0',
+					'success': '#006039',
+					'warning': '#7F8C8D',
+					'error': '#C0392B',
+					'info': '#4A6572'
 				},
 				apple: {
-					'blue': '#0070C9',
-					'gray': '#86868B',
-					'light-gray': '#F5F5F7',
-					'dark-gray': '#1D1D1F',
-					'red': '#FF3B30',
-					'green': '#34C759',
-					'orange': '#FF9500',
-					'yellow': '#FFCC00',
-					'purple': '#5856D6',
-					'teal': '#5AC8FA',
-					'indigo': '#5E5CE6'
+					'blue': '#006039',
+					'gray': '#7F8C8D',
+					'light-gray': '#F0F0F0',
+					'dark-gray': '#4A6572',
+					'red': '#C0392B',
+					'green': '#006039',
+					'orange': '#D35400',
+					'yellow': '#F39C12',
+					'purple': '#8E44AD',
+					'teal': '#16A085',
+					'indigo': '#2980B9'
 				}
 			},
 			borderRadius: {
