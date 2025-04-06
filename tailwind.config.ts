@@ -62,30 +62,42 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				legal: {
-					'slate': '#2A2118',
-					'accent': '#8A6D3B',
-					'light': '#F5F3F0',
-					'muted': '#8A898C',
+				blue: {
+					'slate': '#1A365D',
+					'accent': '#1E88E5',
+					'light': '#EBF8FF',
+					'muted': '#718096',
 					'surface': '#FFFFFF',
-					'border': '#D2CBC0',
-					'success': '#3B7A57',
-					'warning': '#C19A6B',
-					'error': '#8B0000',
-					'info': '#4A3C30'
+					'border': '#BEE3F8',
+					'success': '#38A169',
+					'warning': '#F6AD55',
+					'error': '#E53E3E',
+					'info': '#2B6CB0'
 				},
 				apple: {
-					'blue': '#4A3C30',
-					'gray': '#8A898C',
-					'light-gray': '#F5F3F0',
-					'dark-gray': '#221F26',
-					'red': '#8B0000',
-					'green': '#3B7A57',
-					'orange': '#C19A6B',
-					'yellow': '#D4AF37',
-					'purple': '#614E41',
-					'teal': '#4A6572',
-					'indigo': '#403E43'
+					'blue': '#1E88E5',
+					'gray': '#718096',
+					'light-gray': '#EBF8FF',
+					'dark-gray': '#171923',
+					'red': '#E53E3E',
+					'green': '#38A169',
+					'orange': '#F6AD55',
+					'yellow': '#ECC94B',
+					'purple': '#805AD5',
+					'teal': '#319795',
+					'indigo': '#3182CE'
+				},
+				legal: {
+					'slate': '#1A365D',
+					'accent': '#1E88E5',
+					'light': '#EBF8FF',
+					'muted': '#718096',
+					'surface': '#FFFFFF',
+					'border': '#BEE3F8',
+					'success': '#38A169',
+					'warning': '#F6AD55',
+					'error': '#E53E3E',
+					'info': '#2B6CB0'
 				}
 			},
 			borderRadius: {
@@ -164,7 +176,9 @@ export default {
 				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
 				'apple': '0 2px 10px rgba(0, 0, 0, 0.05)',
 				'apple-hover': '0 4px 20px rgba(0, 0, 0, 0.1)',
-				'card': '0 2px 8px rgba(0, 0, 0, 0.04)'
+				'card': '0 2px 8px rgba(0, 0, 0, 0.04)',
+				'blue': '0 2px 10px rgba(29, 78, 216, 0.05)',
+				'blue-hover': '0 4px 20px rgba(29, 78, 216, 0.1)'
 			},
 			backdropBlur: {
 				'xs': '2px'

@@ -11,11 +11,11 @@ const AnimatedLogo: React.FC<AnimatedLogoProps> = ({ className }) => {
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <div className="relative flex items-center justify-center w-8 h-8">
-        <Scale className="w-6 h-6 text-legal-accent animate-pulse-subtle" />
+        <Scale className="w-6 h-6 text-blue-accent animate-pulse-subtle" />
       </div>
       <div className="font-serif font-semibold text-xl tracking-tight">
-        <span className="text-legal-slate">Vakil</span>
-        <span className="text-legal-accent">GPT</span>
+        <span className="text-blue-slate">Vakil</span>
+        <span className="text-blue-accent">GPT</span>
       </div>
     </div>
   );

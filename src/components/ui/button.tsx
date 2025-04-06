@@ -10,15 +10,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-legal-accent text-white hover:bg-legal-accent/90 shadow-sm",
+        default: "bg-blue-accent text-white hover:bg-blue-accent/90 shadow-sm",
         destructive:
-          "bg-legal-error text-white hover:bg-legal-error/90 shadow-sm",
+          "bg-blue-error text-white hover:bg-blue-error/90 shadow-sm",
         outline:
-          "border border-legal-border bg-background hover:bg-legal-light hover:text-accent-foreground dark:border-legal-muted/20 dark:hover:bg-legal-info/20",
+          "border border-blue-border bg-background hover:bg-blue-light hover:text-accent-foreground dark:border-blue-muted/20 dark:hover:bg-blue-info/20",
         secondary:
-          "bg-legal-light text-legal-slate hover:bg-legal-light/80 shadow-sm dark:bg-legal-info/20 dark:text-legal-light dark:hover:bg-legal-info/30",
-        ghost: "hover:bg-legal-light hover:text-legal-slate dark:hover:bg-legal-info/20 dark:hover:text-legal-light",
-        link: "text-legal-accent underline-offset-4 hover:underline",
+          "bg-blue-light text-blue-slate hover:bg-blue-light/80 shadow-sm dark:bg-blue-info/20 dark:text-blue-light dark:hover:bg-blue-info/30",
+        ghost: "hover:bg-blue-light hover:text-blue-slate dark:hover:bg-blue-info/20 dark:hover:text-blue-light",
+        link: "text-blue-accent underline-offset-4 hover:underline",
       },
       size: {
         default: "h-11 px-5 py-2.5",
