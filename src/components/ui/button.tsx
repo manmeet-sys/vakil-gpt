@@ -10,15 +10,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-apple-blue text-white hover:bg-apple-blue/90 shadow-sm",
+        default: "bg-legal-accent text-white hover:bg-legal-accent/90 shadow-sm",
         destructive:
-          "bg-apple-red text-white hover:bg-apple-red/90 shadow-sm",
+          "bg-legal-error text-white hover:bg-legal-error/90 shadow-sm",
         outline:
-          "border border-apple-gray/30 bg-background hover:bg-apple-light-gray hover:text-accent-foreground dark:border-apple-gray/20 dark:hover:bg-apple-gray/20",
+          "border border-legal-border bg-background hover:bg-legal-light hover:text-accent-foreground dark:border-legal-muted/20 dark:hover:bg-legal-info/20",
         secondary:
-          "bg-apple-light-gray text-apple-dark-gray hover:bg-apple-light-gray/80 shadow-sm dark:bg-apple-gray/20 dark:text-white dark:hover:bg-apple-gray/30",
-        ghost: "hover:bg-apple-light-gray hover:text-apple-dark-gray dark:hover:bg-apple-gray/20 dark:hover:text-white",
-        link: "text-apple-blue underline-offset-4 hover:underline",
+          "bg-legal-light text-legal-slate hover:bg-legal-light/80 shadow-sm dark:bg-legal-info/20 dark:text-legal-light dark:hover:bg-legal-info/30",
+        ghost: "hover:bg-legal-light hover:text-legal-slate dark:hover:bg-legal-info/20 dark:hover:text-legal-light",
+        link: "text-legal-accent underline-offset-4 hover:underline",
       },
       size: {
         default: "h-11 px-5 py-2.5",
