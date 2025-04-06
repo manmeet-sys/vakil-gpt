@@ -1,10 +1,11 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
   FileSearch, List, Clipboard, BarChart2, AlertTriangle, User, CalendarClock,
-  IndianRupee, Gavel } from 'lucide-react';
+  IndianRupee, Gavel, Calculator, Building, LandPlot } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -103,10 +104,13 @@ const ToolsPage = () => {
       title: 'Financial Legal Tools',
       description: 'Tools for financial legal matters and compliance in India',
       tools: [
-        { name: 'Billing Tracking', icon: IndianRupee, description: 'Track and manage legal billing for Indian law firms', path: '/billing-tracking' },
+        { name: 'GST Compliance', icon: IndianRupee, description: 'Ensure compliance with India\'s Goods and Services Tax laws', path: '/gst-compliance' },
+        { name: 'FEMA Regulations', icon: Building, description: 'Navigate Foreign Exchange Management Act regulations for Indian businesses', path: '/fema-regulations' },
         { name: 'Financial Obligations', icon: FileText, description: 'Monitor financial obligations and deadlines under Indian regulations', path: '/financial-obligations' },
         { name: 'Financial Fraud Detector', icon: Lock, description: 'Detect potential financial fraud according to Indian banking regulations', path: '/fraud-detector' },
-        { name: 'Tax Compliance', icon: FileText, description: 'Ensure compliance with Indian tax laws and regulations', path: '/tax-compliance' }
+        { name: 'Tax Compliance', icon: FileText, description: 'Ensure compliance with Indian tax laws and regulations', path: '/tax-compliance' },
+        { name: 'Real Estate Law', icon: LandPlot, description: 'Navigate real estate transactions and regulations in India', path: '/real-estate-law' },
+        { name: 'Investment Regulations', icon: Calculator, description: 'Understand SEBI and other investment regulations in India', path: '/investment-regulations' }
       ]
     }
   ];

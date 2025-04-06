@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
   FileSearch, List, Clipboard, BarChart2, AlertTriangle, Landmark, User,
-  CalendarClock, IndianRupee, Gavel } from 'lucide-react';
+  CalendarClock, IndianRupee, Gavel, Calculator, Building, LandPlot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 
@@ -69,10 +70,13 @@ const AllTools = () => {
       id: 'financial-legal',
       title: 'Financial Legal Tools',
       tools: [
-        { name: 'Billing Tracking', icon: <IndianRupee className="h-5 w-5" />, path: '/billing-tracking' },
+        { name: 'GST Compliance', icon: <IndianRupee className="h-5 w-5" />, path: '/gst-compliance' },
+        { name: 'FEMA Regulations', icon: <Building className="h-5 w-5" />, path: '/fema-regulations' },
         { name: 'Financial Obligations', icon: <FileText className="h-5 w-5" />, path: '/financial-obligations' },
         { name: 'Financial Fraud Detector', icon: <Lock className="h-5 w-5" />, path: '/fraud-detector' },
-        { name: 'Tax Compliance', icon: <FileText className="h-5 w-5" />, path: '/tax-compliance' }
+        { name: 'Tax Compliance', icon: <FileText className="h-5 w-5" />, path: '/tax-compliance' },
+        { name: 'Real Estate Law', icon: <LandPlot className="h-5 w-5" />, path: '/real-estate-law' },
+        { name: 'Investment Regulations', icon: <Calculator className="h-5 w-5" />, path: '/investment-regulations' }
       ]
     }
   ];
