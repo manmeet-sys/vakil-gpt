@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import BackButton from '@/components/BackButton';
 
 const LegalRiskAssessmentPage = () => {
   const [businessDescription, setBusinessDescription] = useState<string>('');
@@ -165,6 +166,8 @@ const LegalRiskAssessmentPage = () => {
       description="Identify and evaluate potential legal risks for your business under Indian law"
       icon={<Shield className="h-6 w-6 text-blue-600" />}
     >
+      <BackButton to="/tools" label="Back to Tools" />
+      
       <div className="max-w-4xl mx-auto">
         <Card className="mb-6">
           <CardHeader>

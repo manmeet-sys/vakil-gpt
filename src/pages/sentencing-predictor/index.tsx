@@ -4,6 +4,7 @@ import LegalToolLayout from '@/components/LegalToolLayout';
 import { Scale, FileText, BookOpen, Gavel } from 'lucide-react';
 import SentencingPredictorTool from '@/components/SentencingPredictorTool';
 import SentencingPredictorSkeleton from '@/components/SkeletonLoaders/SentencingPredictorSkeleton';
+import BackButton from '@/components/BackButton';
 
 const SentencingPredictorPage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +24,8 @@ const SentencingPredictorPage = () => {
       description="Analyze case specifics to predict sentencing outcomes based on Indian laws, including Bharatiya Nyaya Sanhita (BNS) provisions and precedents from Indian courts."
       icon={<Scale className="w-6 h-6 text-blue-600" />}
     >
+      <BackButton to="/tools" label="Back to Tools" />
+      
       <div className="mb-6 p-4 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800/30">
         <div className="flex space-x-2">
           <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5" />

@@ -4,6 +4,7 @@ import LegalToolLayout from '@/components/LegalToolLayout';
 import { Scale } from 'lucide-react';
 import PleaBargainTool from '@/components/PleaBargainTool';
 import PleaBargainSkeleton from '@/components/SkeletonLoaders/PleaBargainSkeleton';
+import BackButton from '@/components/BackButton';
 
 const PleaBargainPage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +24,7 @@ const PleaBargainPage = () => {
       description="AI-powered tool to analyze plea bargain options under the Bharatiya Nyaya Sanhita (BNS), compare potential outcomes, and provide guidance on criminal defense strategies in the Indian legal system."
       icon={<Scale className="w-6 h-6 text-blue-600" />}
     >
+      <BackButton to="/tools" label="Back to Tools" />
       {isLoading ? <PleaBargainSkeleton /> : <PleaBargainTool />}
     </LegalToolLayout>
   );

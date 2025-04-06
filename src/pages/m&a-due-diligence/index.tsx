@@ -4,6 +4,7 @@ import LegalToolLayout from '@/components/LegalToolLayout';
 import { TrendingUp, FileText, IndianRupee, Shield } from 'lucide-react';
 import MADueDiligenceTool from '@/components/MADueDiligenceTool';
 import MADueDiligenceSkeleton from '@/components/SkeletonLoaders/MADueDiligenceSkeleton';
+import BackButton from '@/components/BackButton';
 
 const MADueDiligencePage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +24,8 @@ const MADueDiligencePage = () => {
       description="AI-powered due diligence for mergers and acquisitions in India, analyzing financial statements, contracts, and compliance records according to Indian corporate law requirements."
       icon={<TrendingUp className="w-6 h-6 text-blue-600" />}
     >
+      <BackButton to="/tools" label="Back to Tools" />
+      
       <div className="mb-6 p-4 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800/30">
         <div className="flex space-x-2">
           <Shield className="h-5 w-5 text-blue-600 dark:text-blue-500 mt-0.5" />
