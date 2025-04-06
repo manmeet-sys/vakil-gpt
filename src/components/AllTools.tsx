@@ -47,11 +47,13 @@ const AllTools = () => {
     },
     {
       id: 'risk-assessment',
-      title: 'Indian Legal Risk Management',
+      title: 'Risk & Criminal Justice',
       tools: [
         { name: 'Legal Risk Assessment', icon: <BarChart2 className="h-5 w-5" />, path: '/legal-risk-assessment' },
         { name: 'Indian Litigation Predictor', icon: <Landmark className="h-5 w-5" />, path: '/litigation-prediction' },
-        { name: 'Legal Due Diligence', icon: <CheckCircle className="h-5 w-5" />, path: '/legal-due-diligence' }
+        { name: 'Legal Due Diligence', icon: <CheckCircle className="h-5 w-5" />, path: '/legal-due-diligence' },
+        { name: 'Plea Bargain Assistant', icon: <Gavel className="h-5 w-5" />, path: '/plea-bargain' },
+        { name: 'Sentencing Predictor', icon: <Scale className="h-5 w-5" />, path: '/sentencing-predictor' }
       ]
     },
     {
@@ -71,14 +73,6 @@ const AllTools = () => {
         { name: 'Financial Obligations', icon: <FileText className="h-5 w-5" />, path: '/financial-obligations' },
         { name: 'Financial Fraud Detector', icon: <Lock className="h-5 w-5" />, path: '/fraud-detector' },
         { name: 'Tax Compliance', icon: <FileText className="h-5 w-5" />, path: '/tax-compliance' }
-      ]
-    },
-    {
-      id: 'criminal-legal',
-      title: 'Criminal Justice Tools',
-      tools: [
-        { name: 'Plea Bargain Assistant', icon: <Gavel className="h-5 w-5" />, path: '/plea-bargain' },
-        { name: 'Sentencing Predictor', icon: <Scale className="h-5 w-5" />, path: '/sentencing-predictor' }
       ]
     }
   ];

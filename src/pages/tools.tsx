@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -79,12 +78,14 @@ const ToolsPage = () => {
     },
     {
       id: 'risk-assessment',
-      title: 'Risk Management',
-      description: 'Tools for assessing and managing legal risks in the Indian context',
+      title: 'Risk & Criminal Justice',
+      description: 'Tools for assessing legal risks and managing criminal cases in India',
       tools: [
         { name: 'Legal Risk Assessment', icon: BarChart2, description: 'Identify and assess legal risks in your business under Indian law', path: '/legal-risk-assessment' },
         { name: 'Litigation Prediction', icon: TrendingUp, description: 'Predictive analytics for Indian litigation outcomes', path: '/litigation-prediction' },
-        { name: 'Legal Due Diligence', icon: CheckCircle, description: 'Thorough due diligence reports and analysis for Indian legal context', path: '/legal-due-diligence' }
+        { name: 'Legal Due Diligence', icon: CheckCircle, description: 'Thorough due diligence reports and analysis for Indian legal context', path: '/legal-due-diligence' },
+        { name: 'Plea Bargain Assistant', icon: Gavel, description: 'Analyze plea bargain options under the Bharatiya Nyaya Sanhita', path: '/plea-bargain' },
+        { name: 'Sentencing Predictor', icon: Scale, description: 'Predict potential sentencing outcomes in Indian criminal cases', path: '/sentencing-predictor' }
       ]
     },
     {
@@ -106,15 +107,6 @@ const ToolsPage = () => {
         { name: 'Financial Obligations', icon: FileText, description: 'Monitor financial obligations and deadlines under Indian regulations', path: '/financial-obligations' },
         { name: 'Financial Fraud Detector', icon: Lock, description: 'Detect potential financial fraud according to Indian banking regulations', path: '/fraud-detector' },
         { name: 'Tax Compliance', icon: FileText, description: 'Ensure compliance with Indian tax laws and regulations', path: '/tax-compliance' }
-      ]
-    },
-    {
-      id: 'criminal-legal',
-      title: 'Criminal Justice Tools',
-      description: 'Tools for criminal defense and litigation under Indian criminal codes',
-      tools: [
-        { name: 'Plea Bargain Assistant', icon: Gavel, description: 'Analyze plea bargain options under the Bharatiya Nyaya Sanhita', path: '/plea-bargain' },
-        { name: 'Sentencing Predictor', icon: Scale, description: 'Predict potential sentencing outcomes in Indian criminal cases', path: '/sentencing-predictor' }
       ]
     }
   ];
@@ -146,7 +138,7 @@ const ToolsPage = () => {
             <TabsTrigger value="ai-assistance">AI Assistant</TabsTrigger>
             <TabsTrigger value="legal-research">Research</TabsTrigger>
             <TabsTrigger value="document-automation">Documents</TabsTrigger>
-            <TabsTrigger value="risk-assessment">Risk</TabsTrigger>
+            <TabsTrigger value="risk-assessment">Risk & Criminal</TabsTrigger>
             <TabsTrigger value="business-tools">Business</TabsTrigger>
             <TabsTrigger value="financial-legal">Financial</TabsTrigger>
           </TabsList>
