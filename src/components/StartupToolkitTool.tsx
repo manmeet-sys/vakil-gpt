@@ -1,13 +1,25 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building, File, FileCheck, Landmark, FilePlus, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Building, File, FileCheck, Landmark, FilePlus, ShieldCheck, HelpCircle, Save, Clock, Trash2, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+
+interface Draft {
+  id: string;
+  title: string;
+  date: string;
+  tab: string;
+  entityType: string;
+  query: string;
+  results: string | null;
+}
 
 const StartupToolkitTool: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('entity-formation');
@@ -15,7 +27,24 @@ const StartupToolkitTool: React.FC = () => {
   const [entityType, setEntityType] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [draftTitle, setDraftTitle] = useState('');
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showDraftsDialog, setShowDraftsDialog] = useState(false);
   const { toast } = useToast();
+
+  // Load saved drafts on component mount
+  useEffect(() => {
+    const savedDrafts = localStorage.getItem('startupToolkitDrafts');
+    if (savedDrafts) {
+      setDrafts(JSON.parse(savedDrafts));
+    }
+  }, []);
+
+  // Save drafts to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('startupToolkitDrafts', JSON.stringify(drafts));
+  }, [drafts]);
 
   const handleSubmit = async () => {
     try {
@@ -150,15 +179,82 @@ const StartupToolkitTool: React.FC = () => {
     }
   };
 
+  const saveDraft = () => {
+    if (!draftTitle.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a title for your draft.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newDraft: Draft = {
+      id: Date.now().toString(),
+      title: draftTitle,
+      date: new Date().toLocaleDateString(),
+      tab: selectedTab,
+      entityType,
+      query,
+      results
+    };
+
+    setDrafts([...drafts, newDraft]);
+    setShowSaveDialog(false);
+    setDraftTitle('');
+
+    toast({
+      title: "Draft Saved",
+      description: "Your draft has been saved successfully."
+    });
+  };
+
+  const loadDraft = (draft: Draft) => {
+    setSelectedTab(draft.tab);
+    setEntityType(draft.entityType);
+    setQuery(draft.query);
+    setResults(draft.results);
+    setShowDraftsDialog(false);
+
+    toast({
+      title: "Draft Loaded",
+      description: `"${draft.title}" has been loaded successfully.`
+    });
+  };
+
+  const deleteDraft = (id: string) => {
+    setDrafts(drafts.filter(draft => draft.id !== id));
+    
+    toast({
+      title: "Draft Deleted",
+      description: "Your draft has been deleted."
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-legal-slate">Indian Startup Legal Toolkit</CardTitle>
-          <CardDescription>
-            Access comprehensive legal resources for startups operating in India, covering entity formation, 
-            compliance requirements, funding documentation, and intellectual property protection strategies.
-          </CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="text-2xl font-bold text-legal-slate">Indian Startup Legal Toolkit</CardTitle>
+              <CardDescription>
+                Access comprehensive legal resources for startups operating in India, covering entity formation, 
+                compliance requirements, funding documentation, and intellectual property protection strategies.
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={() => setShowDraftsDialog(true)}
+              >
+                <Clock className="h-4 w-4" />
+                <span className="hidden sm:inline">Saved Drafts</span>
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         
         <CardContent>
@@ -267,14 +363,25 @@ const StartupToolkitTool: React.FC = () => {
             </TabsContent>
           </Tabs>
           
-          <div className="mt-6">
+          <div className="mt-6 flex gap-2">
             <Button 
               onClick={handleSubmit} 
-              className="w-full bg-legal-accent hover:bg-legal-accent/90"
+              className="flex-1 bg-legal-accent hover:bg-legal-accent/90"
               disabled={isGenerating}
             >
               {isGenerating ? "Generating..." : "Get Legal Guidance"}
             </Button>
+            {(query || results) && (
+              <Button
+                variant="outline"
+                onClick={() => setShowSaveDialog(true)}
+                className="flex items-center gap-1"
+              >
+                <Save className="h-4 w-4" />
+                <span className="hidden sm:inline">Save Draft</span>
+                <span className="sm:hidden">Save</span>
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -317,8 +424,82 @@ const StartupToolkitTool: React.FC = () => {
           </Card>
         </motion.div>
       )}
+
+      {/* Save Draft Dialog */}
+      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save Draft</DialogTitle>
+            <DialogDescription>
+              Give your draft a title to save it for later reference.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="Enter a title for your draft"
+              value={draftTitle}
+              onChange={(e) => setDraftTitle(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSaveDialog(false)}>Cancel</Button>
+            <Button onClick={saveDraft}>Save Draft</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Drafts List Dialog */}
+      <Dialog open={showDraftsDialog} onOpenChange={setShowDraftsDialog}>
+        <DialogContent className="sm:max-w-xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Saved Drafts</DialogTitle>
+            <DialogDescription>
+              View and manage your saved drafts
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {drafts.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No saved drafts yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {drafts.map((draft) => (
+                  <Card key={draft.id} className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">{draft.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {draft.date} • {draft.tab.replace('-', ' ')}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => deleteDraft(draft.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => loadDraft(draft)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Open
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default StartupToolkitTool;
+
