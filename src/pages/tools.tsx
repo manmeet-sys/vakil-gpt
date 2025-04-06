@@ -1,22 +1,24 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
   FileSearch, List, Clipboard, BarChart2, AlertTriangle, User, CalendarClock,
-  IndianRupee, Gavel, Calculator, Building, LandPlot } from 'lucide-react';
+  Gavel, Calculator } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Search } from 'lucide-react';
 import AnimatedLogo from '@/components/AnimatedLogo';
 import { motion } from 'framer-motion';
+import { Input } from '@/components/ui/input';
 
 const ToolsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Ensure page scrolls to top on mount
   useEffect(() => {
@@ -104,16 +106,23 @@ const ToolsPage = () => {
       title: 'Financial Legal Tools',
       description: 'Tools for financial legal matters and compliance in India',
       tools: [
-        { name: 'GST Compliance', icon: IndianRupee, description: 'Ensure compliance with India\'s Goods and Services Tax laws', path: '/gst-compliance' },
-        { name: 'FEMA Regulations', icon: Building, description: 'Navigate Foreign Exchange Management Act regulations for Indian businesses', path: '/fema-regulations' },
         { name: 'Financial Obligations', icon: FileText, description: 'Monitor financial obligations and deadlines under Indian regulations', path: '/financial-obligations' },
         { name: 'Financial Fraud Detector', icon: Lock, description: 'Detect potential financial fraud according to Indian banking regulations', path: '/fraud-detector' },
-        { name: 'Tax Compliance', icon: FileText, description: 'Ensure compliance with Indian tax laws and regulations', path: '/tax-compliance' },
-        { name: 'Real Estate Law', icon: LandPlot, description: 'Navigate real estate transactions and regulations in India', path: '/real-estate-law' },
-        { name: 'Investment Regulations', icon: Calculator, description: 'Understand SEBI and other investment regulations in India', path: '/investment-regulations' }
+        { name: 'Tax Compliance', icon: Calculator, description: 'Ensure compliance with Indian tax laws and regulations', path: '/tax-compliance' }
       ]
     }
   ];
+
+  // Filter tools based on search term
+  const filteredCategories = searchTerm 
+    ? toolCategories.map(category => ({
+        ...category,
+        tools: category.tools.filter(tool => 
+          tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          tool.description.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      })).filter(category => category.tools.length > 0)
+    : toolCategories;
 
   return (
     <AppLayout>
@@ -127,16 +136,28 @@ const ToolsPage = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-legal-slate mb-2">Indian Legal Tools</h1>
             <p className="text-legal-muted">Access specialized legal tools for various aspects of Indian law and practice</p>
           </div>
-          <AnimatedLogo />
+          <div className="flex items-center gap-4">
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search tools..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <AnimatedLogo />
+          </div>
         </div>
         
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid grid-cols-8 mb-8">
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 mb-8">
             <TabsTrigger value="all">All Tools</TabsTrigger>
             <TabsTrigger value="user-tools">Practice</TabsTrigger>
             <TabsTrigger value="ai-assistance">AI Assistant</TabsTrigger>
@@ -148,78 +169,101 @@ const ToolsPage = () => {
           </TabsList>
           
           <TabsContent value="all">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {toolCategories.map((category) => (
-                <motion.div 
-                  key={category.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <CardTitle>{category.title}</CardTitle>
-                      <CardDescription>{category.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3">
-                        {category.tools.map((tool) => (
-                          <li key={tool.name}>
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start text-left hover:bg-legal-accent/5"
-                              onClick={() => navigateToTool(tool.path)}
-                            >
-                              <span className="flex items-center">
-                                <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent mr-3">
-                                  <tool.icon className="h-5 w-5" />
+            {filteredCategories.length === 0 ? (
+              <div className="text-center p-8">
+                <p className="text-lg text-muted-foreground">No tools match your search. Try different keywords.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredCategories.map((category) => (
+                  <motion.div 
+                    key={category.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className="hover:shadow-md transition-shadow h-full">
+                      <CardHeader className="bg-legal-accent/5 dark:bg-legal-accent/10 rounded-t-lg">
+                        <CardTitle>{category.title}</CardTitle>
+                        <CardDescription>{category.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <ul className="space-y-3">
+                          {category.tools.map((tool) => (
+                            <li key={tool.name}>
+                              <Button 
+                                variant="ghost" 
+                                className="w-full justify-start text-left hover:bg-legal-accent/5"
+                                onClick={() => navigateToTool(tool.path)}
+                              >
+                                <span className="flex items-center">
+                                  <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent mr-3">
+                                    <tool.icon className="h-5 w-5" />
+                                  </span>
+                                  <span>{tool.name}</span>
                                 </span>
-                                <span>{tool.name}</span>
-                              </span>
-                              <ChevronRight className="ml-auto h-4 w-4" />
-                            </Button>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                                <ChevronRight className="ml-auto h-4 w-4" />
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </TabsContent>
           
           {toolCategories.map((category) => (
             <TabsContent key={category.id} value={category.id}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {category.tools.map((tool) => (
-                  <motion.div 
-                    key={tool.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.1 }}
-                  >
-                    <Card className="hover:shadow-md transition-shadow">
-                      <CardHeader>
-                        <div className="flex items-center gap-3">
-                          <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent">
-                            <tool.icon className="h-5 w-5" />
-                          </span>
-                          <CardTitle className="text-xl">{tool.name}</CardTitle>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-legal-muted mb-4">{tool.description}</p>
-                        <Button 
-                          onClick={() => navigateToTool(tool.path)}
-                          className="w-full bg-legal-accent/10 text-legal-accent hover:bg-legal-accent/20"
-                        >
-                          Open Tool
-                          <ChevronRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+                {category.tools
+                  .filter(tool => 
+                    !searchTerm || 
+                    tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    tool.description.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((tool) => (
+                    <motion.div 
+                      key={tool.name}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.1 }}
+                    >
+                      <Card className="hover:shadow-md transition-shadow h-full">
+                        <CardHeader className="bg-legal-accent/5 dark:bg-legal-accent/10 rounded-t-lg">
+                          <div className="flex items-center gap-3">
+                            <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent">
+                              <tool.icon className="h-5 w-5" />
+                            </span>
+                            <CardTitle className="text-xl">{tool.name}</CardTitle>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="py-4">
+                          <p className="text-legal-muted mb-4">{tool.description}</p>
+                        </CardContent>
+                        <CardFooter className="pt-0">
+                          <Button 
+                            onClick={() => navigateToTool(tool.path)}
+                            className="w-full bg-legal-accent/10 text-legal-accent hover:bg-legal-accent/20"
+                          >
+                            Open Tool
+                            <ChevronRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    </motion.div>
+                  ))}
+                {category.tools.filter(tool => 
+                  !searchTerm || 
+                  tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  tool.description.toLowerCase().includes(searchTerm.toLowerCase())
+                ).length === 0 && (
+                  <div className="col-span-3 text-center p-8">
+                    <p className="text-lg text-muted-foreground">No tools match your search in this category. Try different keywords.</p>
+                  </div>
+                )}
               </div>
             </TabsContent>
           ))}
