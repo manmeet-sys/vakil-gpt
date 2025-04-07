@@ -1,6 +1,16 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+// Define our analytics event type
+interface AnalyticsEvent {
+  user_id?: string | null;
+  event_name: string;
+  page_path: string;
+  event_data?: Record<string, any>;
+  user_agent?: string | null;
+  referrer?: string | null;
+}
+
 // Analytics tracking service
 export const trackEvent = async (eventName: string, eventData: Record<string, any> = {}) => {
   try {
@@ -13,8 +23,9 @@ export const trackEvent = async (eventName: string, eventData: Record<string, an
     const userId = session?.user?.id;
 
     // Insert the event into our analytics table
-    await supabase
-      .from('analytics_events')
+    // Use a type assertion to handle the type mismatch until types are regenerated
+    await (supabase
+      .from('analytics_events' as any)
       .insert({
         user_id: userId,
         event_name: eventName,
@@ -23,7 +34,7 @@ export const trackEvent = async (eventName: string, eventData: Record<string, an
         user_agent: userAgent,
         referrer: referrer,
         // IP address will be captured by Supabase RLS
-      });
+      } as any));
 
     console.log(`Analytics event tracked: ${eventName}`);
     return true;

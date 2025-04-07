@@ -12,6 +12,16 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
+interface UserProfile {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  updated_at: string | null;
+  bar_number?: string | null;
+  enrollment_date?: string | null;
+  jurisdiction?: string | null;
+}
+
 const UserProfilePage = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -50,19 +60,20 @@ const UserProfilePage = () => {
         }
 
         if (data) {
+          const profileData = data as UserProfile;
           setProfile({
-            name: data.full_name || "Advocate",
+            name: profileData.full_name || "Advocate",
             role: "Advocate",
-            barNumber: data.bar_number || "",
-            enrollmentDate: data.enrollment_date || "",
-            jurisdiction: data.jurisdiction || "",
+            barNumber: profileData.bar_number || "",
+            enrollmentDate: profileData.enrollment_date || "",
+            jurisdiction: profileData.jurisdiction || "",
             stats: {
               casesWon: 87,
               totalCases: 124,
               documentsCreated: 394,
               upcomingDeadlines: 8
             },
-            avatarUrl: data.avatar_url
+            avatarUrl: profileData.avatar_url
           });
         }
       } catch (error) {
@@ -102,7 +113,6 @@ const UserProfilePage = () => {
       </Helmet>
       
       <div className="container mx-auto px-4 py-6">
-        {/* Profile Header - Apple-inspired design */}
         <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 mb-8 border border-gray-100 dark:border-gray-800 backdrop-blur-sm">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <Avatar className="h-24 w-24 border-4 border-white dark:border-gray-800 shadow-lg">
@@ -186,9 +196,7 @@ const UserProfilePage = () => {
         </div>
         
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Left Sidebar - Profile Info & Tools */}
           <div className="w-full md:w-1/3">
-            {/* Profile Info Card */}
             <Card className="border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/30 shadow-sm backdrop-blur-sm overflow-hidden rounded-2xl mb-6">
               <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 px-6">
                 <CardTitle className="text-lg font-semibold">Professional Information</CardTitle>
@@ -223,7 +231,6 @@ const UserProfilePage = () => {
               </CardContent>
             </Card>
             
-            {/* Legal Tools Section */}
             <Card className="border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/30 shadow-sm backdrop-blur-sm overflow-hidden rounded-2xl">
               <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50 px-6">
                 <CardTitle className="text-lg font-semibold">Legal Practice Tools</CardTitle>
@@ -255,7 +262,6 @@ const UserProfilePage = () => {
             </Card>
           </div>
           
-          {/* Main Content Area */}
           <div className="w-full md:w-2/3">
             <Tabs defaultValue="dashboard" value={activeSection} onValueChange={setActiveSection} className="w-full">
               <TabsList className="flex w-full rounded-xl p-1 bg-gray-100 dark:bg-gray-800 mb-6">

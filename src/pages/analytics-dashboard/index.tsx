@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import AppLayout from '@/components/AppLayout';
@@ -110,8 +109,9 @@ const AnalyticsDashboard = () => {
           fromDate = subDays(new Date(), 7);
       }
       
+      // Use type assertion to handle the type mismatch until types are regenerated
       const { data, error } = await supabase
-        .from('analytics_events')
+        .from('analytics_events' as any)
         .select('*')
         .gte('created_at', fromDate.toISOString())
         .order('created_at', { ascending: false });
@@ -120,7 +120,8 @@ const AnalyticsDashboard = () => {
         throw error;
       }
 
-      setAnalyticsData(data || []);
+      // Type assertion to ensure compatibility
+      setAnalyticsData(data as unknown as AnalyticsEvent[] || []);
     } catch (error) {
       console.error('Error fetching analytics data:', error);
       toast.error('Failed to load analytics data');
@@ -415,14 +416,12 @@ const AnalyticsDashboard = () => {
             </TabsContent>
             
             <TabsContent value="pages">
-              {/* Page views specific content */}
               <Card>
                 <CardHeader>
                   <CardTitle>Page Views Analysis</CardTitle>
                   <CardDescription>Detailed breakdown of page views</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* More detailed page views analytics would go here */}
                   <div className="text-center py-6 text-muted-foreground">
                     Detailed page view analytics coming soon
                   </div>
@@ -431,14 +430,12 @@ const AnalyticsDashboard = () => {
             </TabsContent>
             
             <TabsContent value="events">
-              {/* Events specific content */}
               <Card>
                 <CardHeader>
                   <CardTitle>Events Analysis</CardTitle>
                   <CardDescription>Detailed breakdown of user events</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* More detailed events analytics would go here */}
                   <div className="text-center py-6 text-muted-foreground">
                     Detailed event analytics coming soon
                   </div>

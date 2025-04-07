@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +24,16 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAnalytics } from '@/hooks/use-analytics';
+
+interface UserProfile {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  updated_at: string | null;
+  bar_number?: string | null;
+  enrollment_date?: string | null;
+  jurisdiction?: string | null;
+}
 
 const formSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -71,13 +80,14 @@ const ProfileEditPage = () => {
         if (error) throw error;
 
         if (data) {
+          const profileData = data as UserProfile;
           form.reset({
-            full_name: data.full_name || '',
-            bar_number: data.bar_number || '',
-            enrollment_date: data.enrollment_date || '',
-            jurisdiction: data.jurisdiction || '',
+            full_name: profileData.full_name || '',
+            bar_number: profileData.bar_number || '',
+            enrollment_date: profileData.enrollment_date || '',
+            jurisdiction: profileData.jurisdiction || '',
           });
-          setAvatarUrl(data.avatar_url);
+          setAvatarUrl(profileData.avatar_url);
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
