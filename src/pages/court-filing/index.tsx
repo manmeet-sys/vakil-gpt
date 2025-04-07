@@ -51,6 +51,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import PdfUploader from '@/components/PdfUploader';
+import { extractTextFromPdf } from '@/utils/pdfExtraction';
 
 const formSchema = z.object({
   caseTitle: z.string().min(5, { message: "Case title must be at least 5 characters" }),
@@ -149,8 +151,9 @@ const mockFilings = [
 const CourtFilingPage = () => {
   const [activeTab, setActiveTab] = useState("new");
   const [documents, setDocuments] = useState<File[]>([]);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [extractedText, setExtractedText] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeadlineWarning, setShowDeadlineWarning] = useState(false);
   
@@ -170,29 +173,37 @@ const CourtFilingPage = () => {
     },
   });
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      setIsUploading(true);
-      setUploadProgress(0);
+  const handleDocumentsUpload = (files: File[], text?: string) => {
+    // Add the new files to the existing documents
+    setDocuments(prev => [...prev, ...files]);
+    
+    // If text extraction was successful, save it
+    if (text) {
+      setExtractedText(text);
       
-      const timer = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(timer);
-            setIsUploading(false);
-            const newFiles = Array.from(files);
-            setDocuments(prev => [...prev, ...newFiles]);
-            return 0;
-          }
-          return prev + 10;
-        });
-      }, 200);
+      // Optionally, you could use the extracted text to auto-fill form fields
+      // For example, trying to extract a case title or number
+      if (text.includes('Case No.') || text.includes('Case Number')) {
+        // Simple regex to find case numbers (this is a basic example)
+        const caseNumberMatch = text.match(/Case No\.?\s*([A-Z0-9\/-]+)/i) || 
+                               text.match(/Case Number:?\s*([A-Z0-9\/-]+)/i);
+        
+        if (caseNumberMatch && caseNumberMatch[1]) {
+          form.setValue('caseNumber', caseNumberMatch[1].trim());
+          toast.info('Case number extracted from PDF', {
+            description: 'The form has been updated with information from the document'
+          });
+        }
+      }
     }
   };
 
   const removeDocument = (index: number) => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
+    // If we're removing the last document, also clear the extracted text
+    if (documents.length === 1) {
+      setExtractedText(null);
+    }
   };
 
   const checkDeadlineProximity = (filingDate: Date, deadline?: Date) => {
@@ -240,6 +251,7 @@ const CourtFilingPage = () => {
       description="Manage your court filing process and track deadlines for Indian courts"
       icon={<FileText className="w-6 h-6 text-white" />}
     >
+      
       <div className="container mx-auto px-4 py-6">
         <Alert className="mb-6 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
           <Info className="h-4 w-4 text-amber-600 dark:text-amber-500" />
@@ -561,67 +573,22 @@ const CourtFilingPage = () => {
                       )}
                     />
                     
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-base font-medium mb-2">Attach Documents</h3>
-                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center">
-                          <Input
-                            type="file"
-                            id="file-upload"
-                            multiple
-                            className="hidden"
-                            onChange={handleFileUpload}
-                          />
-                          <label 
-                            htmlFor="file-upload" 
-                            className="cursor-pointer flex flex-col items-center justify-center"
-                          >
-                            <Upload className="h-8 w-8 text-gray-400 dark:text-gray-500 mb-2" />
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Click to upload documents
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              Supported formats: PDF, DOCX, XLSX (Max: 10MB)
-                            </span>
-                          </label>
-                        </div>
-                      </div>
-                      
-                      {isUploading && (
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                          <div 
-                            className="bg-legal-accent h-2.5 rounded-full transition-all duration-300" 
-                            style={{ width: `${uploadProgress}%` }}
-                          ></div>
-                        </div>
-                      )}
-                      
-                      {documents.length > 0 && (
-                        <div className="space-y-3 mt-4">
-                          <h4 className="text-sm font-medium">Attached Documents</h4>
-                          {documents.map((doc, index) => (
-                            <div 
-                              key={index}
-                              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md"
-                            >
-                              <div className="flex items-center">
-                                <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
-                                <span className="text-sm">{doc.name}</span>
-                              </div>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                onClick={() => removeDocument(index)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
                     
+                <PdfUploader 
+                  onUpload={handleDocumentsUpload}
+                  onRemove={removeDocument}
+                  documents={documents}
+                />
+                
+                {extractedText && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">Extracted Content</h4>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md text-sm max-h-40 overflow-y-auto">
+                      <pre className="whitespace-pre-wrap font-sans">{extractedText}</pre>
+                    </div>
+                  </div>
+                )}
+                
                     <div className="flex justify-end space-x-3 pt-4 border-t border-legal-border dark:border-legal-slate/20">
                       <Button 
                         type="button" 

@@ -25,7 +25,6 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAnalytics } from '@/hooks/use-analytics';
 
-// Define the user profile interface with all fields from the database
 interface UserProfile {
   id: string;
   full_name: string | null;
@@ -47,7 +46,7 @@ type ProfileFormValues = z.infer<typeof formSchema>;
 
 const ProfileEditPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -66,7 +65,6 @@ const ProfileEditPage = () => {
   useEffect(() => {
     if (!user) return;
 
-    // Track page view
     logPageView({ page: 'profile-edit' });
 
     const fetchUserProfile = async () => {
@@ -119,10 +117,11 @@ const ProfileEditPage = () => {
 
       if (error) throw error;
 
-      // Track profile update action
       logAction('profile_update', {
         fields_updated: Object.keys(form.formState.dirtyFields)
       });
+
+      await refreshProfile();
 
       toast.success('Profile updated successfully');
       navigate('/user-profile');
@@ -144,34 +143,29 @@ const ProfileEditPage = () => {
 
     setUploadingAvatar(true);
     try {
-      // Check if storage bucket exists, create if not
       const { data: bucketData, error: bucketError } = await supabase
         .storage
         .getBucket('avatars');
 
-      // If the bucket doesn't exist, we'll create it
       if (bucketError && bucketError.message.includes('not found')) {
         await supabase.storage.createBucket('avatars', {
           public: true,
-          fileSizeLimit: 1024 * 1024 * 2, // 2MB
+          fileSizeLimit: 1024 * 1024 * 2,
         });
       }
 
-      // Upload the file
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data: urlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
       const avatarUrl = urlData.publicUrl;
 
-      // Update the user profile with the avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: avatarUrl })
@@ -179,7 +173,6 @@ const ProfileEditPage = () => {
 
       if (updateError) throw updateError;
 
-      // Track avatar update
       logAction('avatar_update', {
         file_size: file.size,
         file_type: file.type

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +12,6 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-// Define the user profile interface with all fields from the database
 interface UserProfile {
   id: string;
   full_name: string | null;
@@ -27,7 +25,7 @@ interface UserProfile {
 const UserProfilePage = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [profile, setProfile] = useState({
     name: "Advocate",
     role: "Advocate",
@@ -47,46 +45,64 @@ const UserProfilePage = () => {
   useEffect(() => {
     if (!user) return;
 
-    const fetchUserProfile = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+    if (userProfile) {
+      setProfile({
+        name: userProfile.full_name || "Advocate",
+        role: "Advocate",
+        barNumber: userProfile.bar_number || "",
+        enrollmentDate: userProfile.enrollment_date || "",
+        jurisdiction: userProfile.jurisdiction || "",
+        stats: {
+          casesWon: 87,
+          totalCases: 124,
+          documentsCreated: 394,
+          upcomingDeadlines: 8
+        },
+        avatarUrl: userProfile.avatar_url
+      });
+      setIsLoading(false);
+    } else {
+      const fetchUserProfile = async () => {
+        setIsLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching profile:', error);
-          return;
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching profile:', error);
+            return;
+          }
+
+          if (data) {
+            const profileData = data as UserProfile;
+            setProfile({
+              name: profileData.full_name || "Advocate",
+              role: "Advocate",
+              barNumber: profileData.bar_number || "",
+              enrollmentDate: profileData.enrollment_date || "",
+              jurisdiction: profileData.jurisdiction || "",
+              stats: {
+                casesWon: 87,
+                totalCases: 124,
+                documentsCreated: 394,
+                upcomingDeadlines: 8
+              },
+              avatarUrl: profileData.avatar_url
+            });
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        } finally {
+          setIsLoading(false);
         }
+      };
 
-        if (data) {
-          const profileData = data as UserProfile;
-          setProfile({
-            name: profileData.full_name || "Advocate",
-            role: "Advocate",
-            barNumber: profileData.bar_number || "",
-            enrollmentDate: profileData.enrollment_date || "",
-            jurisdiction: profileData.jurisdiction || "",
-            stats: {
-              casesWon: 87,
-              totalCases: 124,
-              documentsCreated: 394,
-              upcomingDeadlines: 8
-            },
-            avatarUrl: profileData.avatar_url
-          });
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [user]);
+      fetchUserProfile();
+    }
+  }, [user, userProfile]);
 
   const recentCases = [
     { id: 1, title: "State of Karnataka vs. Reddy", type: "Criminal", court: "Karnataka High Court", date: "28/03/2025", status: "Active" },

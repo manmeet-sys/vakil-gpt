@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -65,8 +66,7 @@ const LoginPage = () => {
           description: error.message,
         });
       } else {
-        // Success toast is shown by the AuthContext
-        // Redirect happens automatically due to the useEffect above
+        // No need to manually redirect - handled by the useEffect
       }
     } catch (error) {
       toast.error('An unexpected error occurred');
