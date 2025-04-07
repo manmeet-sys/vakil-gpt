@@ -22,7 +22,7 @@ export const trackEvent = async (eventName: string, eventData: Record<string, an
     const { data: { session } } = await supabase.auth.getSession();
     const userId = session?.user?.id;
 
-    // Insert the event into our analytics table
+    // Insert the event into our analytics table using type assertion
     await supabase
       .from('analytics_events')
       .insert({
@@ -33,7 +33,7 @@ export const trackEvent = async (eventName: string, eventData: Record<string, an
         user_agent: userAgent,
         referrer: referrer,
         // IP address will be captured by Supabase RLS
-      } as any);
+      } as any); // Using type assertion as a temporary fix
 
     console.log(`Analytics event tracked: ${eventName}`);
     return true;

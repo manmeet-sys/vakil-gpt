@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
@@ -12,14 +13,15 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
+// Define the user profile interface with all fields from the database
 interface UserProfile {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
   updated_at: string | null;
-  bar_number?: string | null;
-  enrollment_date?: string | null;
-  jurisdiction?: string | null;
+  bar_number: string | null;
+  enrollment_date: string | null;
+  jurisdiction: string | null;
 }
 
 const UserProfilePage = () => {

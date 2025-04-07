@@ -25,14 +25,15 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAnalytics } from '@/hooks/use-analytics';
 
+// Define the user profile interface with all fields from the database
 interface UserProfile {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
   updated_at: string | null;
-  bar_number?: string | null;
-  enrollment_date?: string | null;
-  jurisdiction?: string | null;
+  bar_number: string | null;
+  enrollment_date: string | null;
+  jurisdiction: string | null;
 }
 
 const formSchema = z.object({
