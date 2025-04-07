@@ -15,7 +15,7 @@ const AllTools = () => {
       title: 'Advocate Tools',
       tools: [
         { name: 'Billing Tracking', icon: <IndianRupee className="h-5 w-5" />, path: '/billing-tracking' },
-        { name: 'Court Filing Automation', icon: <FileText className="h-5 w-5" />, path: '/court-filing' },
+        { name: 'Case Management', icon: <FileText className="h-5 w-5" />, path: '/court-filing' },
         { name: 'Deadline Management', icon: <CalendarClock className="h-5 w-5" />, path: '/deadline-management' }
       ]
     },

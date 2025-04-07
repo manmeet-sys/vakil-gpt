@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -20,11 +19,9 @@ const ToolsPage = () => {
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Ensure page scrolls to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Handle saved scroll position only when returning from a specific tool
     const savedScrollPosition = sessionStorage.getItem('scroll_/tools');
     if (savedScrollPosition && location.state?.fromTool) {
       setTimeout(() => {
@@ -42,11 +39,11 @@ const ToolsPage = () => {
     {
       id: 'user-tools',
       title: 'Advocate Practice Tools',
-      description: 'Essential tools for Indian legal professionals to manage cases and deadlines',
+      description: 'Essential tools for Indian legal professionals to manage cases, deadlines, and finances',
       tools: [
-        { name: 'Billing Tracking', icon: IndianRupee, description: 'Track billable hours and generate GST-compliant invoices', path: '/billing-tracking' },
-        { name: 'Court Filing Automation', icon: FileText, description: 'Automate court filing processes for Indian courts', path: '/court-filing' },
-        { name: 'Deadline Management', icon: CalendarClock, description: 'Track legal deadlines and critical dates for Indian courts', path: '/deadline-management' }
+        { name: 'Billing Tracking', icon: IndianRupee, description: 'Generate and manage GST-compliant invoices with hourly billing and expense tracking', path: '/billing-tracking' },
+        { name: 'Case Management', icon: FileText, description: 'Organize client cases, track court filings, and manage case documents efficiently', path: '/court-filing' },
+        { name: 'Deadline Management', icon: CalendarClock, description: 'Never miss critical court dates with automated reminders and calendar integration', path: '/deadline-management' }
       ]
     },
     {
@@ -113,7 +110,6 @@ const ToolsPage = () => {
     }
   ];
 
-  // Filter tools based on search term
   const filteredCategories = searchTerm 
     ? toolCategories.map(category => ({
         ...category,
