@@ -174,24 +174,20 @@ const CourtFilingPage = () => {
   });
 
   const handleDocumentsUpload = (files: File[], text?: string) => {
-    // Add the new files to the existing documents
     setDocuments(prev => [...prev, ...files]);
     
-    // If text extraction was successful, save it
     if (text) {
       setExtractedText(text);
       
-      // Optionally, you could use the extracted text to auto-fill form fields
-      // For example, trying to extract a case title or number
       if (text.includes('Case No.') || text.includes('Case Number')) {
-        // Simple regex to find case numbers (this is a basic example)
         const caseNumberMatch = text.match(/Case No\.?\s*([A-Z0-9\/-]+)/i) || 
                                text.match(/Case Number:?\s*([A-Z0-9\/-]+)/i);
         
         if (caseNumberMatch && caseNumberMatch[1]) {
           form.setValue('caseNumber', caseNumberMatch[1].trim());
-          toast.info('Case number extracted from PDF', {
-            description: 'The form has been updated with information from the document'
+          toast({
+            title: "Case number extracted from PDF",
+            description: "The form has been updated with information from the document"
           });
         }
       }
@@ -200,7 +196,6 @@ const CourtFilingPage = () => {
 
   const removeDocument = (index: number) => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
-    // If we're removing the last document, also clear the extracted text
     if (documents.length === 1) {
       setExtractedText(null);
     }
