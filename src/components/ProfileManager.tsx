@@ -23,7 +23,9 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import ClearAnalyticsButton from './ClearAnalyticsButton';
-import { UserCog, Upload } from 'lucide-react';
+import { UserCog, Upload, Shield, Info, Calendar, BadgeCheck } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 const indianJurisdictions = [
   "Delhi",
@@ -156,32 +158,50 @@ const ProfileManager: React.FC = () => {
 
   if (!user) {
     return (
-      <Card>
+      <Card className="shadow-md">
         <CardContent className="pt-6">
-          <p>Please sign in to manage your profile</p>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Shield className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium">Authentication Required</h3>
+            <p className="text-muted-foreground mt-2">Please sign in to manage your profile</p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UserCog size={20} />
-          Advocate Profile
-        </CardTitle>
+    <Card className="shadow-md overflow-hidden border-legal-border dark:border-legal-slate/20">
+      <CardHeader className="bg-legal-accent/5 border-b border-legal-border/20 dark:border-legal-slate/10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UserCog size={20} className="text-legal-accent" />
+            <CardTitle>Advocate Profile</CardTitle>
+          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="flex items-center gap-1 bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400">
+                  <Shield size={12} />
+                  <span>Private Data</span>
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs max-w-xs">This profile information is private and only visible to you</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <CardDescription>
-          Update your profile information for use with legal tools
+          Keep your professional information updated for use with legal tools
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="avatar">Profile Photo</Label>
-            <div className="flex items-end gap-4">
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col items-center md:w-1/3">
               <div 
-                className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden border"
+                className="w-32 h-32 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden border border-legal-border dark:border-legal-slate/20 mb-4 shadow-sm"
               >
                 {avatarUrl ? (
                   <img 
@@ -190,10 +210,10 @@ const ProfileManager: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <UserCog className="w-10 h-10 text-gray-400" />
+                  <UserCog className="w-16 h-16 text-gray-400" />
                 )}
               </div>
-              <div className="flex-1">
+              <div className="w-full">
                 <div className="relative">
                   <Input
                     id="avatar"
@@ -205,79 +225,148 @@ const ProfileManager: React.FC = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full"
+                    className="w-full border-dashed"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     {avatarUrl ? 'Change Photo' : 'Upload Photo'}
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground mt-2 text-center">Maximum size: 2MB</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 md:w-2/3">
+              <div className="space-y-2">
+                <div className="flex items-center gap-1">
+                  <Label htmlFor="full_name">Full Name</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info size={14} className="text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">Your name as registered with the Bar Council</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  id="full_name"
+                  name="full_name"
+                  value={formData.full_name}
+                  onChange={handleInputChange}
+                  placeholder="Enter your full legal name"
+                  className="border-legal-border/30"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-1">
+                  <Label htmlFor="bar_number">Bar Council Enrollment Number</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <BadgeCheck size={14} className="text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">Your unique Bar Council registration number</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  id="bar_number"
+                  name="bar_number"
+                  value={formData.bar_number}
+                  onChange={handleInputChange}
+                  placeholder="e.g., D/123/2020"
+                  className="border-legal-border/30"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-1">
+                  <Label htmlFor="enrollment_date">Enrollment Date</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Calendar size={14} className="text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">Date when you were enrolled with the Bar Council</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  id="enrollment_date"
+                  name="enrollment_date"
+                  type="date"
+                  value={formData.enrollment_date}
+                  onChange={handleInputChange}
+                  className="border-legal-border/30"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-1">
+                  <Label htmlFor="jurisdiction">Primary Jurisdiction</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info size={14} className="text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">The main jurisdiction where you practice</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Select 
+                  value={formData.jurisdiction} 
+                  onValueChange={handleSelectChange}
+                >
+                  <SelectTrigger id="jurisdiction" className="border-legal-border/30">
+                    <SelectValue placeholder="Select jurisdiction" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {indianJurisdictions.map((jurisdiction) => (
+                      <SelectItem key={jurisdiction} value={jurisdiction}>
+                        {jurisdiction}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="full_name">Full Name</Label>
-            <Input
-              id="full_name"
-              name="full_name"
-              value={formData.full_name}
-              onChange={handleInputChange}
-              placeholder="Enter your full legal name"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="bar_number">Bar Council Enrollment Number</Label>
-            <Input
-              id="bar_number"
-              name="bar_number"
-              value={formData.bar_number}
-              onChange={handleInputChange}
-              placeholder="e.g., D/123/2020"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="enrollment_date">Enrollment Date</Label>
-            <Input
-              id="enrollment_date"
-              name="enrollment_date"
-              type="date"
-              value={formData.enrollment_date}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="jurisdiction">Primary Jurisdiction</Label>
-            <Select 
-              value={formData.jurisdiction} 
-              onValueChange={handleSelectChange}
+          <div className="flex justify-end gap-3 pt-4 border-t border-legal-border/10 dark:border-legal-slate/10 mt-6">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleReset}
+              disabled={isLoading}
             >
-              <SelectTrigger id="jurisdiction">
-                <SelectValue placeholder="Select jurisdiction" />
-              </SelectTrigger>
-              <SelectContent>
-                {indianJurisdictions.map((jurisdiction) => (
-                  <SelectItem key={jurisdiction} value={jurisdiction}>
-                    {jurisdiction}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="pt-2">
-            <Button type="submit" disabled={isLoading}>
+              Reset
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="bg-legal-accent hover:bg-legal-accent/90 text-white"
+            >
               {isLoading ? 'Saving...' : 'Save Profile'}
             </Button>
           </div>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <p className="text-sm text-gray-500">
-          This information will be used across all legal tools
-        </p>
+      <CardFooter className="flex justify-between bg-muted/10 border-t border-legal-border/20 dark:border-legal-slate/10 px-6 py-4">
+        <div className="flex items-center gap-2">
+          <Shield size={14} className="text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            Your profile data is private and used only within tools
+          </p>
+        </div>
         <ClearAnalyticsButton 
           onClear={handleReset} 
           resetProfileData={true}
