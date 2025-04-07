@@ -71,7 +71,7 @@ const ClearAnalyticsButton: React.FC<ClearAnalyticsButtonProps> = ({
           <AlertDialogDescription>
             {resetProfileData 
               ? 'This will reset your profile information to default values. This action cannot be undone.'
-              : 'This will clear the analytics data from your current dashboard view. This action only affects your current view and doesn't delete any data from the database.'}
+              : 'This will clear the analytics data from your current dashboard view. This action only affects your current view and doesn\'t delete any data from the database.'}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
