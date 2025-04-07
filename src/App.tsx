@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +20,8 @@ import ToolsPage from "./pages/tools";
 import PlaceholderToolPage from "./pages/placeholder-tool";
 import PrivacyPolicyPage from "./pages/privacy-policy";
 import OrientationMessage from "./components/OrientationMessage";
+import AnalyticsWrapper from "./components/AnalyticsWrapper";
+import AnalyticsDashboard from "./pages/analytics-dashboard";
 
 // Auth pages
 import SignupPage from "./pages/signup";
@@ -83,208 +84,217 @@ const App = () => (
         <ThemeProvider defaultTheme="light">
           <AuthProvider>
             <TooltipProvider>
-              <ScrollToTop />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                
-                {/* Auth routes */}
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                
-                {/* Protected routes - wrap all tool pages */}
-                <Route path="/tools" element={
-                  <ProtectedRoute>
-                    <ToolsPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/chat" element={
-                  <ProtectedRoute>
-                    <ChatPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/knowledge" element={
-                  <ProtectedRoute>
-                    <KnowledgePage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/legal-document-analyzer" element={
-                  <ProtectedRoute>
-                    <LegalDocumentAnalyzerPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/legal-brief-generation" element={
-                  <ProtectedRoute>
-                    <LegalBriefGenerationPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/case-law-research" element={
-                  <ProtectedRoute>
-                    <CaseLawResearchPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/statute-tracker" element={
-                  <ProtectedRoute>
-                    <StatuteTrackerPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/contract-drafting" element={
-                  <ProtectedRoute>
-                    <ContractDraftingPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/compliance-assistance" element={
-                  <ProtectedRoute>
-                    <ComplianceAssistancePage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/gdpr-compliance" element={
-                  <ProtectedRoute>
-                    <GdprCompliancePage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/aml-compliance" element={
-                  <ProtectedRoute>
-                    <AMLCompliancePage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/legal-risk-assessment" element={
-                  <ProtectedRoute>
-                    <LegalRiskAssessmentPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/litigation-prediction" element={
-                  <ProtectedRoute>
-                    <LitigationPredictionPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/legal-due-diligence" element={
-                  <ProtectedRoute>
-                    <LegalDueDiligencePage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/startup-toolkit" element={
-                  <ProtectedRoute>
-                    <StartupToolkitPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/m&a-due-diligence" element={
-                  <ProtectedRoute>
-                    <MADueDiligencePage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/ip-protection" element={
-                  <ProtectedRoute>
-                    <IPProtectionPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/billing-tracking" element={
-                  <ProtectedRoute>
-                    <BillingTrackingPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/financial-obligations" element={
-                  <ProtectedRoute>
-                    <FinancialObligationsPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/fraud-detector" element={
-                  <ProtectedRoute>
-                    <FraudDetectorPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/legal-education" element={
-                  <ProtectedRoute>
-                    <LegalEducationPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/e-signature" element={
-                  <ProtectedRoute>
-                    <ESignaturePage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/plea-bargain" element={
-                  <ProtectedRoute>
-                    <PleaBargainPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/tax-compliance" element={
-                  <ProtectedRoute>
-                    <TaxCompliancePage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/sentencing-predictor" element={
-                  <ProtectedRoute>
-                    <SentencingPredictorPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/user-profile" element={
-                  <ProtectedRoute>
-                    <UserProfilePage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/profile-edit" element={
-                  <ProtectedRoute>
-                    <ProfileEditPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/court-filing" element={
-                  <ProtectedRoute>
-                    <CourtFilingPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/deadline-management" element={
-                  <ProtectedRoute>
-                    <DeadlineManagementPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/virtual-assistant" element={
-                  <ProtectedRoute>
-                    <PlaceholderToolPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/regulatory-reporting" element={
-                  <ProtectedRoute>
-                    <PlaceholderToolPage />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Toaster />
-              <Sonner />
-              <OrientationMessage />
+              <AnalyticsWrapper>
+                <ScrollToTop />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  
+                  {/* Auth routes */}
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  
+                  {/* Analytics Dashboard */}
+                  <Route path="/analytics-dashboard" element={
+                    <ProtectedRoute>
+                      <AnalyticsDashboard />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Protected routes - wrap all tool pages */}
+                  <Route path="/tools" element={
+                    <ProtectedRoute>
+                      <ToolsPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/chat" element={
+                    <ProtectedRoute>
+                      <ChatPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/knowledge" element={
+                    <ProtectedRoute>
+                      <KnowledgePage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/legal-document-analyzer" element={
+                    <ProtectedRoute>
+                      <LegalDocumentAnalyzerPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/legal-brief-generation" element={
+                    <ProtectedRoute>
+                      <LegalBriefGenerationPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/case-law-research" element={
+                    <ProtectedRoute>
+                      <CaseLawResearchPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/statute-tracker" element={
+                    <ProtectedRoute>
+                      <StatuteTrackerPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/contract-drafting" element={
+                    <ProtectedRoute>
+                      <ContractDraftingPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/compliance-assistance" element={
+                    <ProtectedRoute>
+                      <ComplianceAssistancePage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/gdpr-compliance" element={
+                    <ProtectedRoute>
+                      <GdprCompliancePage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/aml-compliance" element={
+                    <ProtectedRoute>
+                      <AMLCompliancePage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/legal-risk-assessment" element={
+                    <ProtectedRoute>
+                      <LegalRiskAssessmentPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/litigation-prediction" element={
+                    <ProtectedRoute>
+                      <LitigationPredictionPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/legal-due-diligence" element={
+                    <ProtectedRoute>
+                      <LegalDueDiligencePage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/startup-toolkit" element={
+                    <ProtectedRoute>
+                      <StartupToolkitPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/m&a-due-diligence" element={
+                    <ProtectedRoute>
+                      <MADueDiligencePage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/ip-protection" element={
+                    <ProtectedRoute>
+                      <IPProtectionPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/billing-tracking" element={
+                    <ProtectedRoute>
+                      <BillingTrackingPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/financial-obligations" element={
+                    <ProtectedRoute>
+                      <FinancialObligationsPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/fraud-detector" element={
+                    <ProtectedRoute>
+                      <FraudDetectorPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/legal-education" element={
+                    <ProtectedRoute>
+                      <LegalEducationPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/e-signature" element={
+                    <ProtectedRoute>
+                      <ESignaturePage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/plea-bargain" element={
+                    <ProtectedRoute>
+                      <PleaBargainPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/tax-compliance" element={
+                    <ProtectedRoute>
+                      <TaxCompliancePage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/sentencing-predictor" element={
+                    <ProtectedRoute>
+                      <SentencingPredictorPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/user-profile" element={
+                    <ProtectedRoute>
+                      <UserProfilePage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/profile-edit" element={
+                    <ProtectedRoute>
+                      <ProfileEditPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/court-filing" element={
+                    <ProtectedRoute>
+                      <CourtFilingPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/deadline-management" element={
+                    <ProtectedRoute>
+                      <DeadlineManagementPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/virtual-assistant" element={
+                    <ProtectedRoute>
+                      <PlaceholderToolPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/regulatory-reporting" element={
+                    <ProtectedRoute>
+                      <PlaceholderToolPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Toaster />
+                <Sonner />
+                <OrientationMessage />
+              </AnalyticsWrapper>
             </TooltipProvider>
           </AuthProvider>
         </ThemeProvider>

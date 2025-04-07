@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { BookOpen, Search, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { useAnalytics } from '@/hooks/use-analytics';
 
 const CaseLawResearchPage = () => {
   const [isSearching, setIsSearching] = useState(false);
@@ -22,14 +22,19 @@ const CaseLawResearchPage = () => {
   const [jurisdiction, setJurisdiction] = useState<string>('all');
   const [timeframe, setTimeframe] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('case-search');
+  const { logPageView, logSearch, logAction, logError } = useAnalytics();
 
-  // Load API key on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(storedApiProvider);
     const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
     setApiKey(storedApiKey);
-  }, []);
+    
+    logPageView({
+      tool: 'case-law-research',
+      provider: storedApiProvider
+    });
+  }, [logPageView]);
 
   const handleSearch = async () => {
     if (!query.trim()) {
@@ -53,7 +58,13 @@ const CaseLawResearchPage = () => {
     setIsSearching(true);
 
     try {
-      // Simulate API call to search for case law
+      logSearch(query, {
+        court,
+        jurisdiction,
+        timeframe,
+        provider: apiProvider
+      });
+
       let caseResults = '';
       
       if (apiProvider === 'gemini') {
@@ -63,12 +74,26 @@ const CaseLawResearchPage = () => {
       }
 
       setResults(caseResults);
+      
+      logAction('search_complete', {
+        query_length: query.length,
+        result_length: caseResults.length,
+        provider: apiProvider
+      });
+      
       toast({
         title: "Research Complete",
         description: "Indian case law research results have been generated",
       });
     } catch (error) {
       console.error('Error searching case law:', error);
+      
+      logError('search_failed', {
+        query,
+        provider: apiProvider,
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+      
       toast({
         variant: "destructive",
         title: "Search Failed",
@@ -76,6 +101,41 @@ const CaseLawResearchPage = () => {
       });
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    logAction('tab_change', { tab: value });
+  };
+
+  const handleExportCitations = () => {
+    logAction('export_citations', { query });
+    toast({
+      title: "Citation Export",
+      description: "Indian legal citations have been copied to clipboard",
+    });
+  };
+
+  const handleSettingChange = (setting: string, value: string) => {
+    logAction('setting_change', { setting, value });
+    
+    switch(setting) {
+      case 'court':
+        setCourt(value);
+        break;
+      case 'jurisdiction':
+        setJurisdiction(value);
+        break;
+      case 'timeframe':
+        setTimeframe(value);
+        break;
+      case 'apiProvider':
+        setApiProvider(value as 'deepseek' | 'gemini');
+        localStorage.setItem('preferredApiProvider', value);
+        const storedApiKey = localStorage.getItem(`${value}ApiKey`) || '';
+        setApiKey(storedApiKey);
+        break;
     }
   };
 
@@ -162,7 +222,6 @@ const CaseLawResearchPage = () => {
     return data.choices[0].message.content;
   };
 
-  // Sample list of landmark cases (for the database tab)
   const landmarkCases = [
     {
       name: "Kesavananda Bharati v. State of Kerala",
@@ -208,7 +267,7 @@ const CaseLawResearchPage = () => {
       icon={<BookOpen className="h-6 w-6 text-blue-600" />}
     >
       <div className="max-w-4xl mx-auto">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-6">
             <TabsTrigger value="case-search">
               <Search className="h-4 w-4 mr-2" />
@@ -233,7 +292,7 @@ const CaseLawResearchPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Court</label>
-                      <Select value={court} onValueChange={setCourt}>
+                      <Select value={court} onValueChange={(value) => handleSettingChange('court', value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select Court" />
                         </SelectTrigger>
@@ -249,7 +308,7 @@ const CaseLawResearchPage = () => {
                     
                     <div>
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Jurisdiction</label>
-                      <Select value={jurisdiction} onValueChange={setJurisdiction}>
+                      <Select value={jurisdiction} onValueChange={(value) => handleSettingChange('jurisdiction', value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select Jurisdiction" />
                         </SelectTrigger>
@@ -270,7 +329,7 @@ const CaseLawResearchPage = () => {
                     
                     <div>
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Timeframe</label>
-                      <Select value={timeframe} onValueChange={setTimeframe}>
+                      <Select value={timeframe} onValueChange={(value) => handleSettingChange('timeframe', value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select Timeframe" />
                         </SelectTrigger>
@@ -337,12 +396,7 @@ const CaseLawResearchPage = () => {
                 <CardFooter className="flex justify-end pt-2">
                   <Button 
                     variant="outline" 
-                    onClick={() => {
-                      toast({
-                        title: "Citation Export",
-                        description: "Indian legal citations have been copied to clipboard",
-                      });
-                    }}
+                    onClick={handleExportCitations}
                   >
                     Export Citations
                   </Button>

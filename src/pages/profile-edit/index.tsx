@@ -24,6 +24,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAnalytics } from '@/hooks/use-analytics';
 
 const formSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -40,6 +41,7 @@ const ProfileEditPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const { logPageView, logAction } = useAnalytics();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(formSchema),
@@ -53,6 +55,9 @@ const ProfileEditPage = () => {
 
   useEffect(() => {
     if (!user) return;
+
+    // Track page view
+    logPageView({ page: 'profile-edit' });
 
     const fetchUserProfile = async () => {
       setIsLoading(true);
@@ -83,7 +88,7 @@ const ProfileEditPage = () => {
     };
 
     fetchUserProfile();
-  }, [user, form]);
+  }, [user, form, logPageView]);
 
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user) return;
@@ -102,6 +107,11 @@ const ProfileEditPage = () => {
         .eq('id', user.id);
 
       if (error) throw error;
+
+      // Track profile update action
+      logAction('profile_update', {
+        fields_updated: Object.keys(form.formState.dirtyFields)
+      });
 
       toast.success('Profile updated successfully');
       navigate('/user-profile');
@@ -157,6 +167,12 @@ const ProfileEditPage = () => {
         .eq('id', user.id);
 
       if (updateError) throw updateError;
+
+      // Track avatar update
+      logAction('avatar_update', {
+        file_size: file.size,
+        file_type: file.type
+      });
 
       setAvatarUrl(avatarUrl);
       toast.success('Avatar updated successfully');
