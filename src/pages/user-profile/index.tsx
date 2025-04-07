@@ -1,17 +1,62 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { UserCircle, BarChart3, FileText, Scale, Clock } from 'lucide-react';
+import { UserCircle, BarChart3, FileText, Scale, Clock, File } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import ProfileManager from '@/components/ProfileManager';
 import BackButton from '@/components/BackButton';
 import ClearAnalyticsButton from '@/components/ClearAnalyticsButton';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface Case {
+  id: string;
+  title: string;
+  court: string;
+  category: string;
+  updated_at: string;
+}
 
 const UserProfilePage = () => {
   const { user, userProfile } = useAuth();
+  const [userCases, setUserCases] = useState<Case[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserCases();
+    }
+  }, [user]);
+
+  const fetchUserCases = async () => {
+    setIsLoading(true);
+    try {
+      // In a real app, this would query the user's cases from the database
+      // For now, we'll simulate this with a mock empty array
+      // In a production app you would use:
+      // const { data, error } = await supabase
+      //   .from('cases')
+      //   .select('*')
+      //   .eq('user_id', user.id)
+      //   .order('updated_at', { ascending: false })
+      //   .limit(3);
+      
+      // if (error) throw error;
+      
+      // Simulate an empty dataset for now
+      const data: Case[] = [];
+      setUserCases(data);
+    } catch (error) {
+      console.error('Error fetching cases:', error);
+      toast.error('Failed to load cases');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleClearDashboard = () => {
     console.log('Dashboard cleared');
@@ -48,8 +93,12 @@ const UserProfilePage = () => {
                   <FileText className="h-4 w-4 text-blue-accent" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">12</div>
-                  <p className="text-xs text-muted-foreground">+2 from last month</p>
+                  <div className="text-2xl font-bold">{userCases.length || 0}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {userCases.length > 0 
+                      ? '+' + userCases.length + ' from last month' 
+                      : 'No active cases'}
+                  </p>
                 </CardContent>
               </Card>
               
@@ -59,8 +108,8 @@ const UserProfilePage = () => {
                   <Scale className="h-4 w-4 text-blue-accent" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">4</div>
-                  <p className="text-xs text-muted-foreground">Next on 15 April 2025</p>
+                  <div className="text-2xl font-bold">0</div>
+                  <p className="text-xs text-muted-foreground">No upcoming hearings</p>
                 </CardContent>
               </Card>
               
@@ -70,8 +119,8 @@ const UserProfilePage = () => {
                   <Clock className="h-4 w-4 text-blue-accent" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">7</div>
-                  <p className="text-xs text-muted-foreground">3 high priority</p>
+                  <div className="text-2xl font-bold">0</div>
+                  <p className="text-xs text-muted-foreground">No upcoming deadlines</p>
                 </CardContent>
               </Card>
               
@@ -90,7 +139,11 @@ const UserProfilePage = () => {
                 </CardContent>
                 <CardFooter className="flex justify-between">
                   <p className="text-sm text-muted-foreground">
-                    Data updated 7 Apr 2025
+                    Data updated {new Date().toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    })}
                   </p>
                   <ClearAnalyticsButton 
                     onClear={handleClearDashboard} 
@@ -100,31 +153,78 @@ const UserProfilePage = () => {
               </Card>
               
               <Card className="md:col-span-2 lg:col-span-3">
-                <CardHeader>
-                  <CardTitle>Recent Cases</CardTitle>
-                  <CardDescription>
-                    Your most recently updated legal cases
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Recent Cases</CardTitle>
+                    <CardDescription>
+                      Your most recently updated legal cases
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      // This would navigate to a case creation page in a real app
+                      toast.info('Case creation feature would open here');
+                    }}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Add Case
+                  </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                        <div>
-                          <p className="font-medium">State vs. Sharma {i}</p>
-                          <p className="text-sm text-muted-foreground">Criminal Procedure • Delhi High Court</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">Last Updated</p>
-                          <p className="text-xs text-muted-foreground">{7-i} Apr 2025</p>
-                        </div>
+                  {isLoading ? (
+                    <div className="py-8 flex items-center justify-center">
+                      <div className="animate-pulse flex flex-col w-full space-y-4">
+                        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ) : userCases.length > 0 ? (
+                    <div className="space-y-4">
+                      {userCases.map((caseItem) => (
+                        <div key={caseItem.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+                          <div>
+                            <p className="font-medium">{caseItem.title}</p>
+                            <p className="text-sm text-muted-foreground">{caseItem.category} • {caseItem.court}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">Last Updated</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(caseItem.updated_at).toLocaleDateString('en-IN', {
+                                day: 'numeric', 
+                                month: 'short'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-12 flex flex-col items-center justify-center text-center">
+                      <File className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No cases found</h3>
+                      <p className="text-sm text-muted-foreground mb-6 max-w-md">
+                        You haven't added any cases yet. Start by creating your first case to track all your legal matters in one place.
+                      </p>
+                      <Button 
+                        onClick={() => {
+                          // This would navigate to a case creation page in a real app
+                          toast.info('Case creation feature would open here');
+                        }}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Create Your First Case
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter>
                   <p className="text-sm text-muted-foreground">
-                    Showing 3 of 12 active cases
+                    {userCases.length > 0 
+                      ? `Showing ${userCases.length} of ${userCases.length} active cases` 
+                      : 'No cases to display'}
                   </p>
                 </CardFooter>
               </Card>
