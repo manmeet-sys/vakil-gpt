@@ -4,8 +4,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
-  FileSearch, List, Clipboard, BarChart2, AlertTriangle, User, CalendarClock,
-  Gavel, Calculator } from 'lucide-react';
+  FileSearch, List, Clipboard, BarChart2, AlertTriangle, CalendarClock,
+  Gavel, Calculator, IndianRupee } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -44,7 +44,7 @@ const ToolsPage = () => {
       title: 'Advocate Practice Tools',
       description: 'Essential tools for Indian legal professionals to manage cases and deadlines',
       tools: [
-        { name: 'Advocate Profile', icon: User, description: 'Manage your advocate profile and legal practice', path: '/user-profile' },
+        { name: 'Billing Tracking', icon: IndianRupee, description: 'Track billable hours and generate GST-compliant invoices', path: '/billing-tracking' },
         { name: 'Court Filing Automation', icon: FileText, description: 'Automate court filing processes for Indian courts', path: '/court-filing' },
         { name: 'Deadline Management', icon: CalendarClock, description: 'Track legal deadlines and critical dates for Indian courts', path: '/deadline-management' }
       ]

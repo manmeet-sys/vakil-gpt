@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { UserCircle, BarChart3, FileText, Scale, Clock, File } from 'lucide-react';
@@ -12,6 +11,7 @@ import BackButton from '@/components/BackButton';
 import ClearAnalyticsButton from '@/components/ClearAnalyticsButton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface Case {
   id: string;
@@ -25,6 +25,7 @@ const UserProfilePage = () => {
   const { user, userProfile } = useAuth();
   const [userCases, setUserCases] = useState<Case[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -61,6 +62,10 @@ const UserProfilePage = () => {
   const handleClearDashboard = () => {
     console.log('Dashboard cleared');
     // In a real app, this would reset the dashboard data
+  };
+
+  const navigateToCourtFiling = () => {
+    navigate('/court-filing');
   };
 
   return (
@@ -163,10 +168,7 @@ const UserProfilePage = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => {
-                      // This would navigate to a case creation page in a real app
-                      toast.info('Case creation feature would open here');
-                    }}
+                    onClick={navigateToCourtFiling}
                   >
                     <FileText className="h-4 w-4 mr-2" />
                     Add Case
@@ -209,10 +211,7 @@ const UserProfilePage = () => {
                         You haven't added any cases yet. Start by creating your first case to track all your legal matters in one place.
                       </p>
                       <Button 
-                        onClick={() => {
-                          // This would navigate to a case creation page in a real app
-                          toast.info('Case creation feature would open here');
-                        }}
+                        onClick={navigateToCourtFiling}
                       >
                         <FileText className="h-4 w-4 mr-2" />
                         Create Your First Case

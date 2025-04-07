@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
   FileSearch, List, Clipboard, BarChart2, AlertTriangle, Landmark, User,
-  CalendarClock, Gavel, Calculator } from 'lucide-react';
+  CalendarClock, Gavel, Calculator, IndianRupee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 
@@ -14,7 +14,7 @@ const AllTools = () => {
       id: 'user-tools',
       title: 'Advocate Tools',
       tools: [
-        { name: 'Advocate Profile', icon: <User className="h-5 w-5" />, path: '/user-profile' },
+        { name: 'Billing Tracking', icon: <IndianRupee className="h-5 w-5" />, path: '/billing-tracking' },
         { name: 'Court Filing Automation', icon: <FileText className="h-5 w-5" />, path: '/court-filing' },
         { name: 'Deadline Management', icon: <CalendarClock className="h-5 w-5" />, path: '/deadline-management' }
       ]
