@@ -109,9 +109,8 @@ const AnalyticsDashboard = () => {
           fromDate = subDays(new Date(), 7);
       }
       
-      // Use type assertion to handle the type mismatch until types are regenerated
       const { data, error } = await supabase
-        .from('analytics_events' as any)
+        .from('analytics_events')
         .select('*')
         .gte('created_at', fromDate.toISOString())
         .order('created_at', { ascending: false });
@@ -120,8 +119,7 @@ const AnalyticsDashboard = () => {
         throw error;
       }
 
-      // Type assertion to ensure compatibility
-      setAnalyticsData(data as unknown as AnalyticsEvent[] || []);
+      setAnalyticsData(data as AnalyticsEvent[] || []);
     } catch (error) {
       console.error('Error fetching analytics data:', error);
       toast.error('Failed to load analytics data');
