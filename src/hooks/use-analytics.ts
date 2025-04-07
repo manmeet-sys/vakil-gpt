@@ -1,6 +1,7 @@
 
 import { useCallback } from 'react';
 import { trackEvent, trackPageView, trackAction, trackError, trackSearch } from '@/services/analytics';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useAnalytics = () => {
   const logEvent = useCallback((eventName: string, eventData: Record<string, any> = {}) => {
@@ -30,12 +31,70 @@ export const useAnalytics = () => {
     return true;
   }, []);
 
+  const resetProfileData = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('No authenticated user found');
+      }
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: null,
+          avatar_url: null,
+          bar_number: null,
+          enrollment_date: null,
+          jurisdiction: null
+        })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      return true;
+    } catch (error) {
+      console.error('Error resetting profile data:', error);
+      return false;
+    }
+  }, []);
+
+  const updateProfileData = useCallback(async (profileData: {
+    full_name?: string;
+    avatar_url?: string;
+    bar_number?: string;
+    enrollment_date?: string;
+    jurisdiction?: string;
+  }) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('No authenticated user found');
+      }
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating profile data:', error);
+      return false;
+    }
+  }, []);
+
   return {
     logEvent,
     logPageView,
     logAction,
     logError,
     logSearch,
-    clearData
+    clearData,
+    resetProfileData,
+    updateProfileData
   };
 };

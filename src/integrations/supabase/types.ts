@@ -45,6 +45,163 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_entries: {
+        Row: {
+          activity_type: string
+          amount: number | null
+          case_id: string | null
+          client_name: string | null
+          created_at: string | null
+          date: string | null
+          description: string | null
+          hourly_rate: number | null
+          hours_spent: number
+          id: string
+          invoice_number: string | null
+          invoice_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          amount?: number | null
+          case_id?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          description?: string | null
+          hourly_rate?: number | null
+          hours_spent: number
+          id?: string
+          invoice_number?: string | null
+          invoice_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          amount?: number | null
+          case_id?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          date?: string | null
+          description?: string | null
+          hourly_rate?: number | null
+          hours_spent?: number
+          id?: string
+          invoice_number?: string | null
+          invoice_status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_entries_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "court_filings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      court_filings: {
+        Row: {
+          case_number: string | null
+          case_title: string | null
+          court_name: string | null
+          created_at: string | null
+          description: string | null
+          documents: Json | null
+          filing_date: string | null
+          filing_type: string | null
+          hearing_date: string | null
+          id: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          case_number?: string | null
+          case_title?: string | null
+          court_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          documents?: Json | null
+          filing_date?: string | null
+          filing_type?: string | null
+          hearing_date?: string | null
+          id?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          case_number?: string | null
+          case_title?: string | null
+          court_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          documents?: Json | null
+          filing_date?: string | null
+          filing_type?: string | null
+          hearing_date?: string | null
+          id?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      deadlines: {
+        Row: {
+          case_id: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string
+          id: string
+          priority: string | null
+          reminder_date: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          case_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date: string
+          id?: string
+          priority?: string | null
+          reminder_date?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          case_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string
+          id?: string
+          priority?: string | null
+          reminder_date?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deadlines_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "court_filings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
