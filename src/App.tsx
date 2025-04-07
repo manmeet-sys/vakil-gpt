@@ -48,6 +48,7 @@ import FraudDetectorPage from "./pages/fraud-detector";
 
 // New tools added
 import UserProfilePage from "./pages/user-profile";
+import ProfileEditPage from "./pages/profile-edit";
 import CourtFilingPage from "./pages/court-filing";
 import DeadlineManagementPage from "./pages/deadline-management";
 
@@ -246,6 +247,12 @@ const App = () => (
                 <Route path="/user-profile" element={
                   <ProtectedRoute>
                     <UserProfilePage />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/profile-edit" element={
+                  <ProtectedRoute>
+                    <ProfileEditPage />
                   </ProtectedRoute>
                 } />
                 

@@ -1,34 +1,79 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { CalendarClock, FileText, IndianRupee, User, Bell, Shield, Settings, ChevronRight, BookOpen, Gavel, Activity } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CalendarClock, FileText, IndianRupee, User, Bell, Shield, Settings, ChevronRight, BookOpen, Gavel, Activity, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const UserProfilePage = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
-  
-  const user = {
-    name: "Advocate Sharma",
-    email: "advocate.sharma@example.com",
-    role: "Senior Advocate",
-    barNumber: "KAR/123/2015",
-    enrollmentDate: "15/05/2015",
-    jurisdiction: "Karnataka High Court",
+  const { user } = useAuth();
+  const [profile, setProfile] = useState({
+    name: "Advocate",
+    role: "Advocate",
+    barNumber: "",
+    enrollmentDate: "",
+    jurisdiction: "",
     stats: {
-      casesWon: 87,
-      totalCases: 124,
-      documentsCreated: 394,
-      upcomingDeadlines: 8
-    }
-  };
+      casesWon: 0,
+      totalCases: 0,
+      documentsCreated: 0,
+      upcomingDeadlines: 0
+    },
+    avatarUrl: null
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchUserProfile = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching profile:', error);
+          return;
+        }
+
+        if (data) {
+          setProfile({
+            name: data.full_name || "Advocate",
+            role: "Advocate",
+            barNumber: data.bar_number || "",
+            enrollmentDate: data.enrollment_date || "",
+            jurisdiction: data.jurisdiction || "",
+            stats: {
+              casesWon: 87,
+              totalCases: 124,
+              documentsCreated: 394,
+              upcomingDeadlines: 8
+            },
+            avatarUrl: data.avatar_url
+          });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   const recentCases = [
     { id: 1, title: "State of Karnataka vs. Reddy", type: "Criminal", court: "Karnataka High Court", date: "28/03/2025", status: "Active" },
@@ -42,6 +87,14 @@ const UserProfilePage = () => {
     { id: 3, name: "Billing & Time Tracking", icon: <IndianRupee className="h-5 w-5" />, path: "/billing-tracking", description: "Track billable hours and manage invoices" }
   ];
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <AppLayout>
       <Helmet>
@@ -53,33 +106,41 @@ const UserProfilePage = () => {
         <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 mb-8 border border-gray-100 dark:border-gray-800 backdrop-blur-sm">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <Avatar className="h-24 w-24 border-4 border-white dark:border-gray-800 shadow-lg">
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl">
-                {user.name.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
+              {profile.avatarUrl ? (
+                <AvatarImage src={profile.avatarUrl} alt={profile.name} />
+              ) : (
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl">
+                  {getInitials(profile.name)}
+                </AvatarFallback>
+              )}
             </Avatar>
             
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user.name}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.name}</h1>
               <div className="flex flex-col md:flex-row items-center gap-2 mt-1 text-sm text-gray-600 dark:text-gray-300">
                 <Badge variant="outline" className="font-medium bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/50">
-                  {user.role}
+                  {profile.role}
                 </Badge>
-                <span className="hidden md:block text-gray-400">•</span>
-                <span>{user.jurisdiction}</span>
+                {profile.jurisdiction && (
+                  <>
+                    <span className="hidden md:block text-gray-400">•</span>
+                    <span>{profile.jurisdiction}</span>
+                  </>
+                )}
               </div>
               
               <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-gray-800/50 rounded-xl p-3 backdrop-blur-sm border border-gray-100 dark:border-gray-700/30">
                   <p className="text-sm text-gray-500 dark:text-gray-400">Cases Won</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{user.stats.casesWon}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats.casesWon}</p>
                   <div className="mt-1">
-                    <Progress value={(user.stats.casesWon / user.stats.totalCases) * 100} className="h-1.5" />
+                    <Progress value={(profile.stats.casesWon / profile.stats.totalCases) * 100} className="h-1.5" />
                   </div>
                 </div>
                 
                 <div className="bg-white dark:bg-gray-800/50 rounded-xl p-3 backdrop-blur-sm border border-gray-100 dark:border-gray-700/30">
                   <p className="text-sm text-gray-500 dark:text-gray-400">Total Cases</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{user.stats.totalCases}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats.totalCases}</p>
                   <div className="mt-1">
                     <Progress value={100} className="h-1.5" />
                   </div>
@@ -87,7 +148,7 @@ const UserProfilePage = () => {
                 
                 <div className="bg-white dark:bg-gray-800/50 rounded-xl p-3 backdrop-blur-sm border border-gray-100 dark:border-gray-700/30">
                   <p className="text-sm text-gray-500 dark:text-gray-400">Documents</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{user.stats.documentsCreated}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats.documentsCreated}</p>
                   <div className="mt-1">
                     <Progress value={80} className="h-1.5" />
                   </div>
@@ -95,7 +156,7 @@ const UserProfilePage = () => {
                 
                 <div className="bg-white dark:bg-gray-800/50 rounded-xl p-3 backdrop-blur-sm border border-gray-100 dark:border-gray-700/30">
                   <p className="text-sm text-gray-500 dark:text-gray-400">Deadlines</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{user.stats.upcomingDeadlines}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats.upcomingDeadlines}</p>
                   <div className="mt-1">
                     <Progress value={40} className="h-1.5" />
                   </div>
@@ -104,7 +165,19 @@ const UserProfilePage = () => {
             </div>
             
             <div className="flex flex-col gap-2">
-              <Button variant="outline" className="rounded-full" onClick={() => navigate('/settings')}>
+              <Button 
+                variant="outline" 
+                className="rounded-full" 
+                onClick={() => navigate('/profile-edit')}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Profile
+              </Button>
+              <Button 
+                variant="outline" 
+                className="rounded-full" 
+                onClick={() => navigate('/settings')}
+              >
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
@@ -122,22 +195,30 @@ const UserProfilePage = () => {
               </CardHeader>
               <CardContent className="p-0">
                 <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-                  <li className="px-6 py-4 flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Bar Enrollment</span>
-                    <span className="text-sm text-gray-900 dark:text-white">{user.barNumber}</span>
-                  </li>
-                  <li className="px-6 py-4 flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Enrollment Date</span>
-                    <span className="text-sm text-gray-900 dark:text-white">{user.enrollmentDate}</span>
-                  </li>
-                  <li className="px-6 py-4 flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</span>
-                    <span className="text-sm text-gray-900 dark:text-white">{user.email}</span>
-                  </li>
-                  <li className="px-6 py-4 flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Primary Jurisdiction</span>
-                    <span className="text-sm text-gray-900 dark:text-white">{user.jurisdiction}</span>
-                  </li>
+                  {profile.barNumber && (
+                    <li className="px-6 py-4 flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Bar Enrollment</span>
+                      <span className="text-sm text-gray-900 dark:text-white">{profile.barNumber}</span>
+                    </li>
+                  )}
+                  {profile.enrollmentDate && (
+                    <li className="px-6 py-4 flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Enrollment Date</span>
+                      <span className="text-sm text-gray-900 dark:text-white">{profile.enrollmentDate}</span>
+                    </li>
+                  )}
+                  {user?.email && (
+                    <li className="px-6 py-4 flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</span>
+                      <span className="text-sm text-gray-900 dark:text-white">{user.email}</span>
+                    </li>
+                  )}
+                  {profile.jurisdiction && (
+                    <li className="px-6 py-4 flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Primary Jurisdiction</span>
+                      <span className="text-sm text-gray-900 dark:text-white">{profile.jurisdiction}</span>
+                    </li>
+                  )}
                 </ul>
               </CardContent>
             </Card>
