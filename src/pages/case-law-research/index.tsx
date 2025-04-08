@@ -3,7 +3,6 @@ import LegalToolLayout from '@/components/LegalToolLayout';
 import { BookOpen, Search, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -16,7 +15,6 @@ const CaseLawResearchPage = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>('');
   const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
   const [court, setCourt] = useState<string>('all');
   const [jurisdiction, setJurisdiction] = useState<string>('all');
@@ -27,8 +25,6 @@ const CaseLawResearchPage = () => {
   useEffect(() => {
     const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(storedApiProvider);
-    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
-    setApiKey(storedApiKey);
     
     logPageView({
       tool: 'case-law-research',
@@ -46,15 +42,6 @@ const CaseLawResearchPage = () => {
       return;
     }
 
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key first`,
-      });
-      return;
-    }
-
     setIsSearching(true);
 
     try {
@@ -65,12 +52,13 @@ const CaseLawResearchPage = () => {
         provider: apiProvider
       });
 
+      const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
       let caseResults = '';
       
       if (apiProvider === 'gemini') {
-        caseResults = await generateGeminiCaseLawResults(query);
+        caseResults = await generateGeminiCaseLawResults(query, apiKey);
       } else if (apiProvider === 'deepseek') {
-        caseResults = await generateDeepSeekCaseLawResults(query);
+        caseResults = await generateDeepSeekCaseLawResults(query, apiKey);
       }
 
       setResults(caseResults);
@@ -133,13 +121,11 @@ const CaseLawResearchPage = () => {
       case 'apiProvider':
         setApiProvider(value as 'deepseek' | 'gemini');
         localStorage.setItem('preferredApiProvider', value);
-        const storedApiKey = localStorage.getItem(`${value}ApiKey`) || '';
-        setApiKey(storedApiKey);
         break;
     }
   };
 
-  const generateGeminiCaseLawResults = async (query: string): Promise<string> => {
+  const generateGeminiCaseLawResults = async (query: string, apiKey: string): Promise<string> => {
     const systemPrompt = `You are VakilGPT's case law research assistant specialized in Indian law. 
     
     For the provided query, find and summarize relevant case law precedents from Indian courts, including:
@@ -183,7 +169,7 @@ const CaseLawResearchPage = () => {
     }
   };
 
-  const generateDeepSeekCaseLawResults = async (query: string): Promise<string> => {
+  const generateDeepSeekCaseLawResults = async (query: string, apiKey: string): Promise<string> => {
     const systemPrompt = `You are VakilGPT's case law research assistant specialized in Indian law. 
     
     For the provided query, find and summarize relevant case law precedents from Indian courts, including:

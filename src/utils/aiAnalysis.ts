@@ -3,9 +3,14 @@
  * Utility functions for AI analysis with focus on Indian law
  */
 
-// Hardcoded API keys
-const GEMINI_API_KEY = "AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc";
-const DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY_HERE";
+/**
+ * Gets the appropriate API key based on the provider
+ * @returns API key for the selected provider
+ */
+const getApiKey = (provider: 'gemini' | 'deepseek' = 'gemini'): string => {
+  return localStorage.getItem(`${provider}ApiKey`) || 
+    (provider === 'gemini' ? 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc' : 'YOUR_DEEPSEEK_API_KEY_HERE');
+};
 
 /**
  * Generates analysis using Gemini API
@@ -29,7 +34,7 @@ Please analyze this legal document and provide:
 
 Format your response with clear sections and be thorough yet concise in your legal analysis.`;
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`, {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${getApiKey('gemini')}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -86,7 +91,7 @@ Format your response with clear sections and be thorough yet concise in your leg
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+      'Authorization': `Bearer ${getApiKey('deepseek')}`
     },
     body: JSON.stringify({
       model: 'deepseek-chat',

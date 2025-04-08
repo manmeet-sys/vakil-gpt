@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Zap, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -11,13 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getGeminiResponse } from './GeminiProIntegration';
 
 interface GeminiProIntegrationProps {
-  apiKey: string;
   onAnalysisComplete: (analysis: string) => void;
   className?: string;
 }
 
 const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({ 
-  apiKey, 
   onAnalysisComplete,
   className
 }) => {
@@ -59,14 +56,8 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
       return;
     }
 
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: "Please set your API key first",
-      });
-      return;
-    }
+    const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
 
     setIsGenerating(true);
 
@@ -150,14 +141,9 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
           </TabsContent>
           
           <TabsContent value="url" className="mt-0">
-            <Input
-              placeholder="Enter URL to analyze (e.g., legal document, case law, etc.)"
-              className="dark:bg-zinc-800 dark:border-zinc-700"
-              disabled
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
               URL analysis coming soon
-            </p>
+            </div>
           </TabsContent>
           
           <Button 
