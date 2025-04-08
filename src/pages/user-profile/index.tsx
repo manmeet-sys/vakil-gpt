@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { UserCircle, BarChart3, FileText, Scale, Clock, File, Shield, Settings, Key } from 'lucide-react';
+import { UserCircle, BarChart3, FileText, Scale, Clock, File, Shield, Settings, Key, Edit } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -71,6 +71,10 @@ const UserProfilePage = () => {
 
   const navigateToCourtFiling = () => {
     navigate('/court-filing');
+  };
+  
+  const navigateToProfileEdit = () => {
+    navigate('/profile-edit');
   };
 
   const handleSignOut = async () => {
@@ -361,6 +365,18 @@ const UserProfilePage = () => {
                             : 'Information not available'}
                         </p>
                       </div>
+
+                      <div className="pt-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={navigateToProfileEdit}
+                          className="flex items-center gap-1"
+                        >
+                          <Edit className="h-4 w-4" />
+                          Edit Profile
+                        </Button>
+                      </div>
                     </div>
                     
                     <div className="space-y-4">
@@ -393,6 +409,28 @@ const UserProfilePage = () => {
                           Sign Out
                         </Button>
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-6 border-t">
+                    <h3 className="font-medium text-sm mb-4">AI Provider Settings</h3>
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800/30 rounded-lg border border-gray-200 dark:border-gray-700/50">
+                      <p className="text-sm font-medium mb-2">Default AI Providers</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                          <h4 className="text-sm font-medium">Gemini AI</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Default provider configured</p>
+                          <Badge variant="outline" className="mt-2 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 text-xs">Active</Badge>
+                        </div>
+                        <div className="p-3 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                          <h4 className="text-sm font-medium">DeepSeek AI</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Alternative provider configured</p>
+                          <Badge variant="outline" className="mt-2 bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300 text-xs">Available</Badge>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-4">
+                        AI providers are pre-configured for optimal performance with legal tools
+                      </p>
                     </div>
                   </div>
                 </CardContent>

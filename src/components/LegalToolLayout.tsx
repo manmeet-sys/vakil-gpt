@@ -20,13 +20,9 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
     const provider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     setApiProvider(provider);
     
-    // Set default API keys if not already set
-    if (!localStorage.getItem('geminiApiKey')) {
-      localStorage.setItem('geminiApiKey', 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc');
-    }
-    if (!localStorage.getItem('deepseekApiKey')) {
-      localStorage.setItem('deepseekApiKey', 'sk-default-deepseek-key');
-    }
+    // Set default API keys - these will be used across the application
+    localStorage.setItem('geminiApiKey', 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc');
+    localStorage.setItem('deepseekApiKey', 'sk-default-deepseek-key');
   }, []);
 
   return (

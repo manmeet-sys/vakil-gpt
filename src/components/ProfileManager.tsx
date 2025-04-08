@@ -23,13 +23,14 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import ClearAnalyticsButton from './ClearAnalyticsButton';
-import { UserCog, Upload, Shield, Info, Calendar, BadgeCheck, Check, X, AlertCircle, Loader2 } from 'lucide-react';
+import { UserCog, Upload, Shield, Info, Calendar, BadgeCheck, Check, X, AlertCircle, Loader2, Edit, Eye } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 const indianJurisdictions = [
   "Delhi",
@@ -55,6 +56,9 @@ const ProfileManager: React.FC = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     full_name: '',
     bar_number: '',
@@ -213,6 +217,7 @@ const ProfileManager: React.FC = () => {
         });
         // Refresh profile data to reflect changes
         await refreshProfile();
+        setIsEditMode(false);
       } else {
         throw new Error('Failed to update profile');
       }
@@ -227,9 +232,31 @@ const ProfileManager: React.FC = () => {
     }
   };
 
-  const handleReset = () => {
-    refreshProfile();
-    toast.info('Profile reset to saved values');
+  const handleCancel = () => {
+    // Reset form to current profile data
+    if (userProfile) {
+      setFormData({
+        full_name: userProfile.full_name || '',
+        bar_number: userProfile.bar_number || '',
+        enrollment_date: userProfile.enrollment_date || '',
+        jurisdiction: userProfile.jurisdiction || ''
+      });
+      setAvatarUrl(userProfile.avatar_url);
+    }
+    
+    setIsEditMode(false);
+    setValidationErrors({});
+    setAvatarFile(null);
+    
+    toast.info('Editing cancelled');
+  };
+
+  const handleEditClick = () => {
+    setIsEditMode(true);
+  };
+
+  const navigateToEditProfile = () => {
+    navigate('/profile-edit');
   };
 
   if (!user) {
@@ -274,234 +301,309 @@ const ProfileManager: React.FC = () => {
             </TooltipProvider>
           </div>
           <CardDescription>
-            Keep your professional information updated for use with legal tools
+            Your professional information for use with legal tools
+            {!isEditMode && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="ml-3 h-7 px-2 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+                onClick={handleEditClick}
+              >
+                <Edit className="h-3.5 w-3.5 mr-1" />
+                Edit
+              </Button>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex flex-col items-center md:w-1/3">
-                <div 
-                  className="relative w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border border-legal-border dark:border-legal-slate/20 mb-4 shadow-sm group"
-                >
-                  {avatarUrl ? (
-                    <img 
-                      src={avatarUrl} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <UserCog className="w-16 h-16 text-gray-400" />
-                  )}
-                  
-                  {isUploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-5/6">
-                        <Progress value={uploadProgress} className="h-2 bg-gray-300" />
-                        <p className="text-xs text-white text-center mt-1">Uploading...</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="w-full">
-                  <div className="relative">
-                    <Input
-                      id="avatar"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      disabled={isLoading}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-dashed hover:bg-legal-accent/5"
-                      disabled={isLoading || isUploading}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {avatarUrl ? 'Change Photo' : 'Upload Photo'}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">Maximum size: 2MB</p>
-                </div>
-              </div>
-
-              <div className="space-y-5 md:w-2/3">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <Label htmlFor="full_name" className={cn(validationErrors.full_name && "text-destructive")}>Full Name</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info size={14} className="text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Your name as registered with the Bar Council</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Input
-                    id="full_name"
-                    name="full_name"
-                    value={formData.full_name}
-                    onChange={handleInputChange}
-                    placeholder="Enter your full legal name"
-                    className={cn(
-                      "border-legal-border/30",
-                      validationErrors.full_name && "border-destructive focus-visible:ring-destructive"
-                    )}
-                    disabled={isLoading}
-                  />
-                  {validationErrors.full_name && (
-                    <p className="text-xs text-destructive mt-1">{validationErrors.full_name}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <Label htmlFor="bar_number" className={cn(validationErrors.bar_number && "text-destructive")}>Bar Council Enrollment Number</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <BadgeCheck size={14} className="text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Your unique Bar Council registration number (e.g., D/123/2020)</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Input
-                    id="bar_number"
-                    name="bar_number"
-                    value={formData.bar_number}
-                    onChange={handleInputChange}
-                    placeholder="e.g., D/123/2020"
-                    className={cn(
-                      "border-legal-border/30",
-                      validationErrors.bar_number && "border-destructive focus-visible:ring-destructive"
-                    )}
-                    disabled={isLoading}
-                  />
-                  {validationErrors.bar_number && (
-                    <p className="text-xs text-destructive mt-1">{validationErrors.bar_number}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <Label htmlFor="enrollment_date" className={cn(validationErrors.enrollment_date && "text-destructive")}>Enrollment Date</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Calendar size={14} className="text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Date when you were enrolled with the Bar Council</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Input
-                    id="enrollment_date"
-                    name="enrollment_date"
-                    type="date"
-                    value={formData.enrollment_date}
-                    onChange={handleInputChange}
-                    className={cn(
-                      "border-legal-border/30",
-                      validationErrors.enrollment_date && "border-destructive focus-visible:ring-destructive"
-                    )}
-                    disabled={isLoading}
-                  />
-                  {validationErrors.enrollment_date && (
-                    <p className="text-xs text-destructive mt-1">{validationErrors.enrollment_date}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <Label htmlFor="jurisdiction" className={cn(validationErrors.jurisdiction && "text-destructive")}>Primary Jurisdiction</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info size={14} className="text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">The main jurisdiction where you practice</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Select 
-                    value={formData.jurisdiction} 
-                    onValueChange={handleSelectChange}
-                    disabled={isLoading}
+          {isEditMode ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col items-center md:w-1/3">
+                  <div 
+                    className="relative w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border border-legal-border dark:border-legal-slate/20 mb-4 shadow-sm group"
                   >
-                    <SelectTrigger 
-                      id="jurisdiction" 
+                    {avatarUrl ? (
+                      <img 
+                        src={avatarUrl} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserCog className="w-16 h-16 text-gray-400" />
+                    )}
+                    
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="w-5/6">
+                          <Progress value={uploadProgress} className="h-2 bg-gray-300" />
+                          <p className="text-xs text-white text-center mt-1">Uploading...</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-full">
+                    <div className="relative">
+                      <Input
+                        id="avatar"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        disabled={isLoading}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full border-dashed hover:bg-legal-accent/5"
+                        disabled={isLoading || isUploading}
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        {avatarUrl ? 'Change Photo' : 'Upload Photo'}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2 text-center">Maximum size: 2MB</p>
+                  </div>
+                </div>
+
+                <div className="space-y-5 md:w-2/3">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor="full_name" className={cn(validationErrors.full_name && "text-destructive")}>Full Name</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info size={14} className="text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Your name as registered with the Bar Council</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <Input
+                      id="full_name"
+                      name="full_name"
+                      value={formData.full_name}
+                      onChange={handleInputChange}
+                      placeholder="Enter your full legal name"
                       className={cn(
                         "border-legal-border/30",
-                        validationErrors.jurisdiction && "border-destructive focus-visible:ring-destructive"
+                        validationErrors.full_name && "border-destructive focus-visible:ring-destructive"
                       )}
+                      disabled={isLoading}
+                    />
+                    {validationErrors.full_name && (
+                      <p className="text-xs text-destructive mt-1">{validationErrors.full_name}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor="bar_number" className={cn(validationErrors.bar_number && "text-destructive")}>Bar Council Enrollment Number</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <BadgeCheck size={14} className="text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Your unique Bar Council registration number (e.g., D/123/2020)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <Input
+                      id="bar_number"
+                      name="bar_number"
+                      value={formData.bar_number}
+                      onChange={handleInputChange}
+                      placeholder="e.g., D/123/2020"
+                      className={cn(
+                        "border-legal-border/30",
+                        validationErrors.bar_number && "border-destructive focus-visible:ring-destructive"
+                      )}
+                      disabled={isLoading}
+                    />
+                    {validationErrors.bar_number && (
+                      <p className="text-xs text-destructive mt-1">{validationErrors.bar_number}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor="enrollment_date" className={cn(validationErrors.enrollment_date && "text-destructive")}>Enrollment Date</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Calendar size={14} className="text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Date when you were enrolled with the Bar Council</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <Input
+                      id="enrollment_date"
+                      name="enrollment_date"
+                      type="date"
+                      value={formData.enrollment_date}
+                      onChange={handleInputChange}
+                      className={cn(
+                        "border-legal-border/30",
+                        validationErrors.enrollment_date && "border-destructive focus-visible:ring-destructive"
+                      )}
+                      disabled={isLoading}
+                    />
+                    {validationErrors.enrollment_date && (
+                      <p className="text-xs text-destructive mt-1">{validationErrors.enrollment_date}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor="jurisdiction" className={cn(validationErrors.jurisdiction && "text-destructive")}>Primary Jurisdiction</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info size={14} className="text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">The main jurisdiction where you practice</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <Select 
+                      value={formData.jurisdiction} 
+                      onValueChange={handleSelectChange}
+                      disabled={isLoading}
                     >
-                      <SelectValue placeholder="Select jurisdiction" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[300px]">
-                      {indianJurisdictions.map((jurisdiction) => (
-                        <SelectItem key={jurisdiction} value={jurisdiction}>
-                          {jurisdiction}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {validationErrors.jurisdiction && (
-                    <p className="text-xs text-destructive mt-1">{validationErrors.jurisdiction}</p>
-                  )}
+                      <SelectTrigger 
+                        id="jurisdiction" 
+                        className={cn(
+                          "border-legal-border/30",
+                          validationErrors.jurisdiction && "border-destructive focus-visible:ring-destructive"
+                        )}
+                      >
+                        <SelectValue placeholder="Select jurisdiction" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {indianJurisdictions.map((jurisdiction) => (
+                          <SelectItem key={jurisdiction} value={jurisdiction}>
+                            {jurisdiction}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {validationErrors.jurisdiction && (
+                      <p className="text-xs text-destructive mt-1">{validationErrors.jurisdiction}</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/30 text-blue-800 dark:text-blue-300">
-              <Info className="h-4 w-4" />
-              <AlertTitle>Professional Information</AlertTitle>
-              <AlertDescription className="text-sm text-blue-700 dark:text-blue-300">
-                Your profile information enhances AI-powered legal tools and is kept private for your use only.
-              </AlertDescription>
-            </Alert>
+              <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/30 text-blue-800 dark:text-blue-300">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Professional Information</AlertTitle>
+                <AlertDescription className="text-sm text-blue-700 dark:text-blue-300">
+                  Your profile information enhances AI-powered legal tools and is kept private for your use only.
+                </AlertDescription>
+              </Alert>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-legal-border/10 dark:border-legal-slate/10 mt-6">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleReset}
-                disabled={isLoading}
-                className="gap-1"
-              >
-                <X className="h-4 w-4" />
-                Reset
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading}
-                className="bg-legal-accent hover:bg-legal-accent/90 text-white gap-1"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-4 w-4" />
-                    Save Profile
-                  </>
-                )}
-              </Button>
+              <div className="flex justify-end gap-3 pt-4 border-t border-legal-border/10 dark:border-legal-slate/10 mt-6">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                  className="gap-1"
+                >
+                  <X className="h-4 w-4" />
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="bg-legal-accent hover:bg-legal-accent/90 text-white gap-1"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Save Profile
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            // View mode (not edit mode)
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col items-center md:w-1/3">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border border-legal-border dark:border-legal-slate/20 mb-4 shadow-md">
+                    {avatarUrl ? (
+                      <img 
+                        src={avatarUrl} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserCog className="w-16 h-16 text-gray-400" />
+                    )}
+                  </div>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 px-3 py-1">
+                    Advocate
+                  </Badge>
+                </div>
+
+                <div className="space-y-4 md:w-2/3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-700/30">
+                      <p className="text-xs text-muted-foreground font-medium">Full Name</p>
+                      <p className="font-medium">{formData.full_name || "Not provided"}</p>
+                    </div>
+                    
+                    <div className="space-y-1 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-700/30">
+                      <p className="text-xs text-muted-foreground font-medium">Bar Council Enrollment</p>
+                      <p className="font-medium">{formData.bar_number || "Not provided"}</p>
+                    </div>
+                    
+                    <div className="space-y-1 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-700/30">
+                      <p className="text-xs text-muted-foreground font-medium">Enrollment Date</p>
+                      <p className="font-medium">
+                        {formData.enrollment_date 
+                          ? new Date(formData.enrollment_date).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric'
+                            })
+                          : "Not provided"}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-1 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-700/30">
+                      <p className="text-xs text-muted-foreground font-medium">Primary Jurisdiction</p>
+                      <p className="font-medium">{formData.jurisdiction || "Not provided"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/30 text-green-800 dark:text-green-300">
+                <Shield className="h-4 w-4" />
+                <AlertTitle className="text-green-800 dark:text-green-300">Privacy Protection</AlertTitle>
+                <AlertDescription className="text-sm text-green-700 dark:text-green-300">
+                  Your professional profile is stored securely and is only visible to you.
+                </AlertDescription>
+              </Alert>
             </div>
-          </form>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/10 border-t border-legal-border/20 dark:border-legal-slate/10 px-6 py-4">
           <div className="flex items-center gap-2">
@@ -510,10 +612,17 @@ const ProfileManager: React.FC = () => {
               Your profile data is private and used only within tools
             </p>
           </div>
-          <ClearAnalyticsButton 
-            onClear={handleReset} 
-            resetProfileData={true}
-          />
+          {!isEditMode && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs gap-1 bg-white dark:bg-gray-800"
+              onClick={handleEditClick}
+            >
+              <Edit className="h-3 w-3" />
+              Edit Profile
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </motion.div>
