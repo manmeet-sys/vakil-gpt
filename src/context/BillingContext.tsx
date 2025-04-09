@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -255,7 +256,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         date: entry.date,
         description: entry.description,
         hourly_rate: entry.hourly_rate,
-        amount: entry.amount,
+        // Remove amount to let it be calculated by the database if it's a generated column
         case_id: entry.case_id,
         invoice_number: entry.invoice_number,
         invoice_status: entry.invoice_status || 'unbilled',
