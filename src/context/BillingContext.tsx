@@ -10,14 +10,25 @@ interface Client {
   email: string | null;
   phone: string | null;
   address: string | null;
+  notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  user_id: string;
 }
 
 interface Matter {
   id: string;
   title: string;
   client_id: string | null;
-  status: string | null;
   description: string | null;
+  status: string | null;
+  matter_number: string | null;
+  practice_area: string | null;
+  opened_date: string | null;
+  closed_date: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  user_id: string;
 }
 
 interface BillingEntry {
@@ -31,6 +42,12 @@ interface BillingEntry {
   amount: number | null;
   matter_id: string | null;
   invoice_id: string | null;
+  case_id: string | null;
+  invoice_number: string | null;
+  invoice_status: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  user_id: string;
 }
 
 interface Invoice {
@@ -44,6 +61,11 @@ interface Invoice {
   status: string | null;
   issue_date: string | null;
   due_date: string | null;
+  paid_date: string | null;
+  notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  user_id: string;
 }
 
 interface BillingContextType {
@@ -57,10 +79,10 @@ interface BillingContextType {
   fetchMatters: () => Promise<void>;
   fetchBillingEntries: () => Promise<void>;
   fetchInvoices: () => Promise<void>;
-  addClient: (client: Omit<Client, 'id'>) => Promise<void>;
-  addMatter: (matter: Omit<Matter, 'id'>) => Promise<void>;
-  addBillingEntry: (entry: Omit<BillingEntry, 'id'>) => Promise<void>;
-  addInvoice: (invoice: Omit<Invoice, 'id'>) => Promise<void>;
+  addClient: (client: Omit<Client, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => Promise<void>;
+  addMatter: (matter: Omit<Matter, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => Promise<void>;
+  addBillingEntry: (entry: Partial<Omit<BillingEntry, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => Promise<void>;
+  addInvoice: (invoice: Omit<Invoice, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => Promise<void>;
   updateBillingEntry: (id: string, entry: Partial<BillingEntry>) => Promise<void>;
   deleteBillingEntry: (id: string) => Promise<void>;
 }
@@ -87,7 +109,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         .order('name');
       
       if (error) throw error;
-      setClients(data || []);
+      setClients(data as Client[] || []);
     } catch (err) {
       console.error('Error fetching clients:', err);
       setError(err as Error);
@@ -108,7 +130,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         .order('title');
       
       if (error) throw error;
-      setMatters(data || []);
+      setMatters(data as Matter[] || []);
     } catch (err) {
       console.error('Error fetching matters:', err);
       setError(err as Error);
@@ -129,7 +151,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         .order('date', { ascending: false });
       
       if (error) throw error;
-      setBillingEntries(data || []);
+      setBillingEntries(data as BillingEntry[] || []);
     } catch (err) {
       console.error('Error fetching billing entries:', err);
       setError(err as Error);
@@ -150,7 +172,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         .order('issue_date', { ascending: false });
       
       if (error) throw error;
-      setInvoices(data || []);
+      setInvoices(data as Invoice[] || []);
     } catch (err) {
       console.error('Error fetching invoices:', err);
       setError(err as Error);
@@ -160,7 +182,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addClient = async (client: Omit<Client, 'id'>) => {
+  const addClient = async (client: Omit<Client, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     if (!user) return;
     
     try {
@@ -185,7 +207,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addMatter = async (matter: Omit<Matter, 'id'>) => {
+  const addMatter = async (matter: Omit<Matter, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     if (!user) return;
     
     try {
@@ -210,7 +232,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addBillingEntry = async (entry: Omit<BillingEntry, 'id'>) => {
+  const addBillingEntry = async (entry: Partial<Omit<BillingEntry, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
     if (!user) return;
     
     try {
@@ -235,7 +257,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addInvoice = async (invoice: Omit<Invoice, 'id'>) => {
+  const addInvoice = async (invoice: Omit<Invoice, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     if (!user) return;
     
     try {
