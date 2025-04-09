@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { BillingProvider } from './BillingContext';
 
 // Define the UserProfile interface
 interface UserProfile {
@@ -201,7 +202,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={contextValue}>
-      {children}
+      <BillingProvider>
+        {children}
+      </BillingProvider>
     </AuthContext.Provider>
   );
 }
