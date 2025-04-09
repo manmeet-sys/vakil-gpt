@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
@@ -143,7 +142,6 @@ const CourtFilingPage = () => {
     },
   });
 
-  // Fetch user's court filings from Supabase
   useEffect(() => {
     const fetchFilings = async () => {
       setIsLoading(true);
@@ -227,7 +225,11 @@ const CourtFilingPage = () => {
     }
     
     try {
-      // Store filing in Supabase
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        throw new Error("You must be logged in to store filings");
+      }
+      
       const filingData = {
         case_title: data.caseTitle,
         case_number: data.caseNumber || null,
@@ -243,6 +245,7 @@ const CourtFilingPage = () => {
         filing_notes: data.filingNotes || null,
         status: activeTab === "drafts" ? "draft" : "submitted",
         documents: documents.map(doc => ({ name: doc.name, size: doc.size, type: doc.type })),
+        user_id: userData.user.id,
       };
 
       const { data: filing, error } = await supabase
@@ -264,7 +267,6 @@ const CourtFilingPage = () => {
         setShowDeadlineWarning(false);
       }
       
-      // Refresh the filings lists
       setActiveTab(filing.status === "draft" ? "drafts" : "stored");
     } catch (error) {
       console.error('Error storing filing:', error);
@@ -311,7 +313,6 @@ const CourtFilingPage = () => {
         description: "The filing has been deleted successfully.",
       });
 
-      // Update the filing lists
       setUserFilings(userFilings.filter(filing => filing.id !== id));
       setDraftFilings(draftFilings.filter(filing => filing.id !== id));
       setStoredFilings(storedFilings.filter(filing => filing.id !== id));
@@ -339,7 +340,6 @@ const CourtFilingPage = () => {
         description: `The filing status has been updated to ${status}.`,
       });
 
-      // Refresh the filing lists based on the new status
       if (status === 'draft') {
         setActiveTab('drafts');
       } else {
@@ -350,6 +350,104 @@ const CourtFilingPage = () => {
       toast({
         title: "Error",
         description: "Failed to update filing status. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSaveAsDraft = async () => {
+    const values = form.getValues();
+    if (!values.caseTitle) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter at least a case title before saving",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        throw new Error("You must be logged in to save drafts");
+      }
+      
+      const draftData = {
+        case_title: values.caseTitle,
+        case_number: values.caseNumber || null,
+        court_type: values.courtType || null,
+        jurisdiction: values.jurisdiction || null,
+        filing_type: values.filingType || null,
+        filing_date: new Date().toISOString(),
+        status: "draft",
+        user_id: userData.user.id,
+      };
+      
+      const { error } = await supabase
+        .from('court_filings')
+        .insert(draftData);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Saved as Draft",
+        description: "Your filing has been saved as a draft."
+      });
+      
+      setActiveTab("drafts");
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save draft. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSaveAsTemplate = async () => {
+    const values = form.getValues();
+    if (!values.caseTitle) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter at least a case title before saving",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        throw new Error("You must be logged in to save templates");
+      }
+      
+      const templateData = {
+        case_title: values.caseTitle,
+        case_number: values.caseNumber || null,
+        court_type: values.courtType || null,
+        jurisdiction: values.jurisdiction || null,
+        filing_type: values.filingType || null,
+        filing_date: new Date().toISOString(),
+        status: "template",
+        user_id: userData.user.id,
+      };
+      
+      const { error } = await supabase
+        .from('court_filings')
+        .insert(templateData);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Template Created",
+        description: "Your filing has been saved as a template."
+      });
+    } catch (error) {
+      console.error('Error saving template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save template. Please try again.",
         variant: "destructive"
       });
     }
@@ -717,92 +815,10 @@ const CourtFilingPage = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem onClick={async () => {
-                            const values = form.getValues();
-                            if (!values.caseTitle) {
-                              toast({
-                                title: "Missing Information",
-                                description: "Please enter at least a case title before saving",
-                                variant: "destructive"
-                              });
-                              return;
-                            }
-                            
-                            try {
-                              const draftData = {
-                                case_title: values.caseTitle,
-                                case_number: values.caseNumber || null,
-                                court_type: values.courtType || null,
-                                jurisdiction: values.jurisdiction || null,
-                                filing_type: values.filingType || null,
-                                filing_date: new Date().toISOString(),
-                                status: "draft"
-                              };
-                              
-                              const { error } = await supabase
-                                .from('court_filings')
-                                .insert(draftData);
-                                
-                              if (error) throw error;
-                              
-                              toast({
-                                title: "Saved as Draft",
-                                description: "Your filing has been saved as a draft."
-                              });
-                              
-                              setActiveTab("drafts");
-                            } catch (error) {
-                              console.error('Error saving draft:', error);
-                              toast({
-                                title: "Error",
-                                description: "Failed to save draft. Please try again.",
-                                variant: "destructive"
-                              });
-                            }
-                          }}>
+                          <DropdownMenuItem onClick={handleSaveAsDraft}>
                             Save as Draft
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={async () => {
-                            const values = form.getValues();
-                            if (!values.caseTitle) {
-                              toast({
-                                title: "Missing Information",
-                                description: "Please enter at least a case title before saving",
-                                variant: "destructive"
-                              });
-                              return;
-                            }
-                            
-                            try {
-                              const templateData = {
-                                case_title: values.caseTitle,
-                                case_number: values.caseNumber || null,
-                                court_type: values.courtType || null,
-                                jurisdiction: values.jurisdiction || null,
-                                filing_type: values.filingType || null,
-                                filing_date: new Date().toISOString(),
-                                status: "template"
-                              };
-                              
-                              const { error } = await supabase
-                                .from('court_filings')
-                                .insert(templateData);
-                                
-                              if (error) throw error;
-                              
-                              toast({
-                                title: "Template Created",
-                                description: "Your filing has been saved as a template."
-                              });
-                            } catch (error) {
-                              console.error('Error saving template:', error);
-                              toast({
-                                title: "Error",
-                                description: "Failed to save template. Please try again.",
-                                variant: "destructive"
-                              });
-                            }
-                          }}>
+                          <DropdownMenuItem onClick={handleSaveAsTemplate}>
                             Save as Template
                           </DropdownMenuItem>
                         </DropdownMenuContent>
