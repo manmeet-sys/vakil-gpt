@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { IndianRupee, Plus, Pencil, Trash2 } from 'lucide-react';
@@ -48,12 +47,22 @@ const BillingTrackingPage = () => {
   const onSubmit = async (values: z.infer<typeof timeEntrySchema>) => {
     try {
       const amount = values.hourly_rate ? values.hourly_rate * values.hours_spent : undefined;
+      
       await addBillingEntry({
-        ...values,
+        client_name: values.client_name,
+        activity_type: values.activity_type,
+        hours_spent: values.hours_spent,
+        date: values.date,
+        description: values.description,
+        hourly_rate: values.hourly_rate,
         amount,
         matter_id: null,
         invoice_id: null,
+        case_id: null,
+        invoice_number: null,
+        invoice_status: 'unbilled'
       });
+      
       form.reset();
       setIsNewEntryDialogOpen(false);
     } catch (error) {
@@ -152,7 +161,8 @@ const BillingTrackingPage = () => {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {activityTypes.map((type) => (
+                                {['Research', 'Drafting', 'Client Meeting', 'Court Appearance', 'Mediation', 
+                                  'Phone Call', 'Email Communication', 'Document Review', 'Case Planning', 'Other'].map((type) => (
                                   <SelectItem key={type} value={type}>
                                     {type}
                                   </SelectItem>

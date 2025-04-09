@@ -109,7 +109,9 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         .order('name');
       
       if (error) throw error;
-      setClients(data as Client[] || []);
+      
+      // Use type assertion with proper casting
+      setClients((data || []) as unknown as Client[]);
     } catch (err) {
       console.error('Error fetching clients:', err);
       setError(err as Error);
@@ -130,7 +132,9 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         .order('title');
       
       if (error) throw error;
-      setMatters(data as Matter[] || []);
+      
+      // Use type assertion with proper casting
+      setMatters((data || []) as unknown as Matter[]);
     } catch (err) {
       console.error('Error fetching matters:', err);
       setError(err as Error);
@@ -151,7 +155,9 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         .order('date', { ascending: false });
       
       if (error) throw error;
-      setBillingEntries(data as BillingEntry[] || []);
+      
+      // Use type assertion with proper casting
+      setBillingEntries((data || []) as unknown as BillingEntry[]);
     } catch (err) {
       console.error('Error fetching billing entries:', err);
       setError(err as Error);
@@ -172,7 +178,9 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         .order('issue_date', { ascending: false });
       
       if (error) throw error;
-      setInvoices(data as Invoice[] || []);
+      
+      // Use type assertion with proper casting
+      setInvoices((data || []) as unknown as Invoice[]);
     } catch (err) {
       console.error('Error fetching invoices:', err);
       setError(err as Error);
@@ -195,7 +203,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setClients(prev => [...prev, data[0] as Client]);
+        setClients(prev => [...prev, data[0] as unknown as Client]);
         toast.success('Client added successfully');
       }
     } catch (err) {
@@ -220,7 +228,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setMatters(prev => [...prev, data[0] as Matter]);
+        setMatters(prev => [...prev, data[0] as unknown as Matter]);
         toast.success('Matter added successfully');
       }
     } catch (err) {
@@ -237,15 +245,25 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setLoading(true);
+      
+      // Make sure required fields are present or set defaults
+      const completeEntry = {
+        activity_type: entry.activity_type || 'Other',
+        hours_spent: entry.hours_spent || 0,
+        // Add other fields from entry
+        ...entry,
+        user_id: user.id
+      };
+      
       const { data, error } = await supabase
         .from('billing_entries')
-        .insert([{ ...entry, user_id: user.id }])
+        .insert([completeEntry])
         .select();
       
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setBillingEntries(prev => [...prev, data[0] as BillingEntry]);
+        setBillingEntries(prev => [...prev, data[0] as unknown as BillingEntry]);
         toast.success('Billing entry added successfully');
       }
     } catch (err) {
@@ -270,7 +288,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setInvoices(prev => [...prev, data[0] as Invoice]);
+        setInvoices(prev => [...prev, data[0] as unknown as Invoice]);
         toast.success('Invoice created successfully');
       }
     } catch (err) {
