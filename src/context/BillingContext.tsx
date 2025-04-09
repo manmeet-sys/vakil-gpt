@@ -103,15 +103,15 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('clients')
+      // Use type assertion to bypass TypeScript errors
+      const { data, error } = await (supabase
+        .from('clients') as any)
         .select('*')
         .order('name');
       
       if (error) throw error;
       
-      // Use type assertion with proper casting
-      setClients((data || []) as unknown as Client[]);
+      setClients(data || []);
     } catch (err) {
       console.error('Error fetching clients:', err);
       setError(err as Error);
@@ -126,15 +126,15 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('matters')
+      // Use type assertion to bypass TypeScript errors
+      const { data, error } = await (supabase
+        .from('matters') as any)
         .select('*')
         .order('title');
       
       if (error) throw error;
       
-      // Use type assertion with proper casting
-      setMatters((data || []) as unknown as Matter[]);
+      setMatters(data || []);
     } catch (err) {
       console.error('Error fetching matters:', err);
       setError(err as Error);
@@ -172,15 +172,15 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('invoices')
+      // Use type assertion to bypass TypeScript errors
+      const { data, error } = await (supabase
+        .from('invoices') as any)
         .select('*')
         .order('issue_date', { ascending: false });
       
       if (error) throw error;
       
-      // Use type assertion with proper casting
-      setInvoices((data || []) as unknown as Invoice[]);
+      setInvoices(data || []);
     } catch (err) {
       console.error('Error fetching invoices:', err);
       setError(err as Error);
@@ -195,15 +195,16 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('clients')
+      // Use type assertion to bypass TypeScript errors
+      const { data, error } = await (supabase
+        .from('clients') as any)
         .insert([{ ...client, user_id: user.id }])
         .select();
       
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setClients(prev => [...prev, data[0] as unknown as Client]);
+        setClients(prev => [...prev, data[0]]);
         toast.success('Client added successfully');
       }
     } catch (err) {
@@ -220,15 +221,16 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('matters')
+      // Use type assertion to bypass TypeScript errors
+      const { data, error } = await (supabase
+        .from('matters') as any)
         .insert([{ ...matter, user_id: user.id }])
         .select();
       
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setMatters(prev => [...prev, data[0] as unknown as Matter]);
+        setMatters(prev => [...prev, data[0]]);
         toast.success('Matter added successfully');
       }
     } catch (err) {
@@ -280,15 +282,16 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('invoices')
+      // Use type assertion to bypass TypeScript errors
+      const { data, error } = await (supabase
+        .from('invoices') as any)
         .insert([{ ...invoice, user_id: user.id }])
         .select();
       
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setInvoices(prev => [...prev, data[0] as unknown as Invoice]);
+        setInvoices(prev => [...prev, data[0]]);
         toast.success('Invoice created successfully');
       }
     } catch (err) {
