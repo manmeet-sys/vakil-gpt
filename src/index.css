@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap');
 
@@ -81,6 +82,7 @@ html {
 
 body {
   @apply bg-background text-foreground font-sans antialiased;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -89,6 +91,11 @@ h1, h2, h3, h4, h5, h6 {
 
 p {
   @apply leading-relaxed;
+}
+
+/* Card and container styles */
+.card-container {
+  @apply grid gap-6;
 }
 
 .glass-container {
@@ -103,6 +110,46 @@ p {
   text-wrap: balance;
 }
 
+/* Dropdown styling */
+.dropdown-content {
+  @apply bg-popover border border-border shadow-md rounded-md z-50;
+}
+
+/* Form elements consistent styling */
+.form-field {
+  @apply mb-4;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-foreground mb-1;
+}
+
+.form-input {
+  @apply w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring;
+}
+
+.form-error {
+  @apply text-destructive text-xs mt-1;
+}
+
+/* Consistent card styling */
+.ui-card {
+  @apply bg-card text-card-foreground rounded-lg border border-border overflow-hidden;
+}
+
+.ui-card-header {
+  @apply p-6 border-b border-border;
+}
+
+.ui-card-content {
+  @apply p-6;
+}
+
+.ui-card-footer {
+  @apply p-6 border-t border-border;
+}
+
+/* Typing animation */
 .typing-indicator {
   width: 60px;
   display: flex;
@@ -137,6 +184,7 @@ p {
   }
 }
 
+/* Chat animation */
 .chat-transition-enter {
   opacity: 0;
   transform: translateY(10px);
@@ -148,6 +196,7 @@ p {
   transition: opacity 300ms, transform 300ms;
 }
 
+/* Pattern backgrounds */
 .hero-pattern {
   background-color: #ffffff;
   background-image: radial-gradient(#E2E8F0 0.5px, transparent 0.5px), radial-gradient(#E2E8F0 0.5px, #ffffff 0.5px);
@@ -158,6 +207,11 @@ p {
 .dark .hero-pattern {
   background-color: #171923;
   background-image: radial-gradient(rgba(134, 134, 139, 0.1) 0.5px, transparent 0.5px), radial-gradient(rgba(134, 134, 139, 0.1) 0.5px, #171923 0.5px);
+}
+
+/* Tooltips and popovers consistent styling */
+.tooltip {
+  @apply px-3 py-1.5 bg-popover text-popover-foreground text-xs rounded shadow-md border border-border z-50;
 }
 
 /* Dark mode styles for prose content */
@@ -193,7 +247,7 @@ p {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Add new styles for ChatGPT-like formatting */
+/* Consistent prose styling */
 .prose pre {
   @apply bg-gray-100 dark:bg-zinc-800 p-3 rounded-md my-2 overflow-x-auto font-mono text-sm;
 }
@@ -243,23 +297,6 @@ p {
 }
 
 /* Improved typing indicator for dark mode */
-.typing-indicator {
-  width: 60px;
-  display: flex;
-  justify-content: center;
-}
-
-.typing-indicator span {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background-color: #4299E1;
-  border-radius: 50%;
-  opacity: 0.6;
-  animation: typing 1.5s infinite ease-in-out;
-  margin: 0 2px;
-}
-
 .dark .typing-indicator span {
   background-color: #4299E1;
 }
@@ -280,6 +317,17 @@ p {
   @apply hover:shadow-blue-hover dark:border dark:border-blue-muted/20;
 }
 
+/* Consistent form elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+  @apply form-input;
+}
+
 /* Mobile-optimized styles */
 @media (max-width: 768px) {
   .apple-button, .apple-button-secondary {
@@ -288,6 +336,16 @@ p {
   
   .apple-card {
     @apply rounded-xl p-4;
+  }
+  
+  .container {
+    @apply px-4;
+  }
+  
+  .ui-card-header,
+  .ui-card-content,
+  .ui-card-footer {
+    @apply p-4;
   }
 }
 
@@ -354,4 +412,21 @@ p {
 .dark .text-sf-largetitle {
   @apply text-blue-light;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Z-index consistency */
+.z-dropdown {
+  z-index: 50;
+}
+
+.z-tooltip {
+  z-index: 60;
+}
+
+.z-modal {
+  z-index: 70;
+}
+
+.z-toast {
+  z-index: 80;
 }

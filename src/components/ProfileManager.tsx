@@ -280,7 +280,7 @@ const ProfileManager: React.FC = () => {
       transition={{ duration: 0.3 }}
     >
       <Card className="shadow-md overflow-hidden border-legal-border dark:border-legal-slate/20">
-        <CardHeader className="bg-gradient-to-r from-legal-accent/10 to-legal-light dark:from-legal-slate/30 dark:to-legal-slate/10 border-b border-legal-border/20 dark:border-legal-slate/10">
+        <CardHeader className="bg-gradient-to-r from-legal-accent/10 to-legal-light dark:from-legal-slate/30 dark:to-legal-slate/10 border-b border-legal-border/20 dark:border-legal-slate/10 px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <UserCog size={20} className="text-legal-accent" />
@@ -300,8 +300,8 @@ const ProfileManager: React.FC = () => {
               </Tooltip>
             </TooltipProvider>
           </div>
-          <CardDescription>
-            Your professional information for use with legal tools
+          <CardDescription className="mt-1 flex items-center">
+            <span>Your professional information for use with legal tools</span>
             {!isEditMode && (
               <Button 
                 variant="outline" 
@@ -319,7 +319,7 @@ const ProfileManager: React.FC = () => {
           {isEditMode ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex flex-col items-center md:w-1/3">
+                <div className="flex flex-col items-center md:w-1/3 lg:w-1/4">
                   <div 
                     className="relative w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border border-legal-border dark:border-legal-slate/20 mb-4 shadow-sm group"
                   >
@@ -366,7 +366,7 @@ const ProfileManager: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-5 md:w-2/3">
+                <div className="space-y-5 md:w-2/3 lg:w-3/4">
                   <div className="space-y-2">
                     <div className="flex items-center gap-1">
                       <Label htmlFor="full_name" className={cn(validationErrors.full_name && "text-destructive")}>Full Name</Label>
@@ -398,66 +398,68 @@ const ProfileManager: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1">
-                      <Label htmlFor="bar_number" className={cn(validationErrors.bar_number && "text-destructive")}>Bar Council Enrollment Number</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <BadgeCheck size={14} className="text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">Your unique Bar Council registration number (e.g., D/123/2020)</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <Input
-                      id="bar_number"
-                      name="bar_number"
-                      value={formData.bar_number}
-                      onChange={handleInputChange}
-                      placeholder="e.g., D/123/2020"
-                      className={cn(
-                        "border-legal-border/30",
-                        validationErrors.bar_number && "border-destructive focus-visible:ring-destructive"
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1">
+                        <Label htmlFor="bar_number" className={cn(validationErrors.bar_number && "text-destructive")}>Bar Council Enrollment Number</Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <BadgeCheck size={14} className="text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">Your unique Bar Council registration number (e.g., D/123/2020)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <Input
+                        id="bar_number"
+                        name="bar_number"
+                        value={formData.bar_number}
+                        onChange={handleInputChange}
+                        placeholder="e.g., D/123/2020"
+                        className={cn(
+                          "border-legal-border/30",
+                          validationErrors.bar_number && "border-destructive focus-visible:ring-destructive"
+                        )}
+                        disabled={isLoading}
+                      />
+                      {validationErrors.bar_number && (
+                        <p className="text-xs text-destructive mt-1">{validationErrors.bar_number}</p>
                       )}
-                      disabled={isLoading}
-                    />
-                    {validationErrors.bar_number && (
-                      <p className="text-xs text-destructive mt-1">{validationErrors.bar_number}</p>
-                    )}
-                  </div>
+                    </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1">
-                      <Label htmlFor="enrollment_date" className={cn(validationErrors.enrollment_date && "text-destructive")}>Enrollment Date</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Calendar size={14} className="text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">Date when you were enrolled with the Bar Council</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <Input
-                      id="enrollment_date"
-                      name="enrollment_date"
-                      type="date"
-                      value={formData.enrollment_date}
-                      onChange={handleInputChange}
-                      className={cn(
-                        "border-legal-border/30",
-                        validationErrors.enrollment_date && "border-destructive focus-visible:ring-destructive"
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1">
+                        <Label htmlFor="enrollment_date" className={cn(validationErrors.enrollment_date && "text-destructive")}>Enrollment Date</Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Calendar size={14} className="text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">Date when you were enrolled with the Bar Council</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <Input
+                        id="enrollment_date"
+                        name="enrollment_date"
+                        type="date"
+                        value={formData.enrollment_date}
+                        onChange={handleInputChange}
+                        className={cn(
+                          "border-legal-border/30",
+                          validationErrors.enrollment_date && "border-destructive focus-visible:ring-destructive"
+                        )}
+                        disabled={isLoading}
+                      />
+                      {validationErrors.enrollment_date && (
+                        <p className="text-xs text-destructive mt-1">{validationErrors.enrollment_date}</p>
                       )}
-                      disabled={isLoading}
-                    />
-                    {validationErrors.enrollment_date && (
-                      <p className="text-xs text-destructive mt-1">{validationErrors.enrollment_date}</p>
-                    )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -503,7 +505,7 @@ const ProfileManager: React.FC = () => {
                 </div>
               </div>
 
-              <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/30 text-blue-800 dark:text-blue-300">
+              <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/30 text-blue-800 dark:text-blue-300 mt-6">
                 <Info className="h-4 w-4" />
                 <AlertTitle>Professional Information</AlertTitle>
                 <AlertDescription className="text-sm text-blue-700 dark:text-blue-300">
@@ -545,7 +547,7 @@ const ProfileManager: React.FC = () => {
             // View mode (not edit mode)
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex flex-col items-center md:w-1/3">
+                <div className="flex flex-col items-center md:w-1/3 lg:w-1/4">
                   <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border border-legal-border dark:border-legal-slate/20 mb-4 shadow-md">
                     {avatarUrl ? (
                       <img 
@@ -562,7 +564,7 @@ const ProfileManager: React.FC = () => {
                   </Badge>
                 </div>
 
-                <div className="space-y-4 md:w-2/3">
+                <div className="space-y-4 md:w-2/3 lg:w-3/4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-700/30">
                       <p className="text-xs text-muted-foreground font-medium">Full Name</p>
@@ -595,7 +597,7 @@ const ProfileManager: React.FC = () => {
                 </div>
               </div>
 
-              <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/30 text-green-800 dark:text-green-300">
+              <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/30 text-green-800 dark:text-green-300 mt-4">
                 <Shield className="h-4 w-4" />
                 <AlertTitle className="text-green-800 dark:text-green-300">Privacy Protection</AlertTitle>
                 <AlertDescription className="text-sm text-green-700 dark:text-green-300">

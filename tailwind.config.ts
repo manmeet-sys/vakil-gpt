@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -14,6 +15,10 @@ export default {
 			center: true,
 			padding: '2rem',
 			screens: {
+				'sm': '640px',
+				'md': '768px',
+				'lg': '1024px',
+				'xl': '1280px',
 				'2xl': '1400px'
 			}
 		},
@@ -102,6 +107,25 @@ export default {
 					'info': '#2B6CB0'
 				}
 			},
+			spacing: {
+				'1': '0.25rem',
+				'2': '0.5rem',
+				'3': '0.75rem',
+				'4': '1rem',
+				'5': '1.25rem',
+				'6': '1.5rem',
+				'8': '2rem',
+				'10': '2.5rem',
+				'12': '3rem',
+				'16': '4rem',
+				'20': '5rem',
+				'24': '6rem',
+				'32': '8rem',
+				'40': '10rem',
+				'48': '12rem',
+				'56': '14rem',
+				'64': '16rem',
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
@@ -184,7 +208,33 @@ export default {
 			},
 			backdropBlur: {
 				'xs': '2px'
-			}
+			},
+			typography: {
+				DEFAULT: {
+					css: {
+						maxWidth: '65ch',
+						color: 'var(--foreground)',
+						a: {
+							color: 'var(--primary)',
+							textDecoration: 'underline',
+							fontWeight: '500',
+						},
+						'h1, h2, h3, h4': {
+							color: 'var(--foreground)',
+							fontWeight: '600',
+						},
+						code: {
+							color: 'var(--primary)',
+							backgroundColor: 'var(--muted)',
+							borderRadius: '0.25rem',
+							paddingLeft: '0.25rem',
+							paddingRight: '0.25rem',
+							paddingTop: '0.125rem',
+							paddingBottom: '0.125rem',
+						},
+					},
+				},
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
