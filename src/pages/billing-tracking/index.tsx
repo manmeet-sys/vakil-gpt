@@ -49,6 +49,8 @@ const BillingTrackingPage = () => {
     try {
       const amount = values.hourly_rate ? values.hourly_rate * values.hours_spent : undefined;
       
+      console.log("Submitting time entry:", values);
+      
       await addBillingEntry({
         client_name: values.client_name,
         activity_type: values.activity_type,
@@ -57,8 +59,7 @@ const BillingTrackingPage = () => {
         description: values.description,
         hourly_rate: values.hourly_rate,
         amount,
-        matter_id: null,
-        // Remove invoice_id which isn't in our schema
+        // Removed matter_id as it doesn't exist in the database schema
         case_id: null,
         invoice_number: null,
         invoice_status: 'unbilled'

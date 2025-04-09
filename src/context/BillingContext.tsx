@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -40,8 +39,6 @@ interface BillingEntry {
   description: string | null;
   hourly_rate: number | null;
   amount: number | null;
-  matter_id: string | null;
-  invoice_id: string | null;
   case_id: string | null;
   invoice_number: string | null;
   invoice_status: string | null;
@@ -248,22 +245,24 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       
+      console.log("Adding billing entry:", entry);
+      
       // Make sure required fields are present or set defaults
       const completeEntry = {
         activity_type: entry.activity_type || 'Other',
         hours_spent: entry.hours_spent || 0,
-        // Add other fields from entry, but exclude invoice_id which isn't in our schema
         client_name: entry.client_name,
         date: entry.date,
         description: entry.description,
         hourly_rate: entry.hourly_rate,
         amount: entry.amount,
-        matter_id: entry.matter_id,
         case_id: entry.case_id,
         invoice_number: entry.invoice_number,
         invoice_status: entry.invoice_status || 'unbilled',
         user_id: user.id
       };
+      
+      console.log("Complete entry to be submitted:", completeEntry);
       
       // Ensure we're only sending one object, not an array
       const { data, error } = await supabase
@@ -271,7 +270,12 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         .insert(completeEntry)
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+      
+      console.log("Response data:", data);
       
       if (data && data.length > 0) {
         setBillingEntries(prev => [...prev, data[0] as unknown as BillingEntry]);
