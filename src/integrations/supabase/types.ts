@@ -108,14 +108,20 @@ export type Database = {
         Row: {
           case_number: string | null
           case_title: string | null
+          client_name: string | null
           court_name: string | null
+          court_type: string | null
           created_at: string | null
           description: string | null
           documents: Json | null
           filing_date: string | null
+          filing_deadline: string | null
+          filing_notes: string | null
           filing_type: string | null
           hearing_date: string | null
           id: string
+          jurisdiction: string | null
+          opposing_party: string | null
           status: string | null
           updated_at: string | null
           user_id: string
@@ -123,14 +129,20 @@ export type Database = {
         Insert: {
           case_number?: string | null
           case_title?: string | null
+          client_name?: string | null
           court_name?: string | null
+          court_type?: string | null
           created_at?: string | null
           description?: string | null
           documents?: Json | null
           filing_date?: string | null
+          filing_deadline?: string | null
+          filing_notes?: string | null
           filing_type?: string | null
           hearing_date?: string | null
           id?: string
+          jurisdiction?: string | null
+          opposing_party?: string | null
           status?: string | null
           updated_at?: string | null
           user_id: string
@@ -138,14 +150,20 @@ export type Database = {
         Update: {
           case_number?: string | null
           case_title?: string | null
+          client_name?: string | null
           court_name?: string | null
+          court_type?: string | null
           created_at?: string | null
           description?: string | null
           documents?: Json | null
           filing_date?: string | null
+          filing_deadline?: string | null
+          filing_notes?: string | null
           filing_type?: string | null
           hearing_date?: string | null
           id?: string
+          jurisdiction?: string | null
+          opposing_party?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Check, ChevronDown, FileText, Info, Plus, Upload, X, MapPin, Clock, Calendar } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import LegalToolLayout from '@/components/LegalToolLayout';
@@ -53,6 +54,7 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import PdfUploader from '@/components/PdfUploader';
 import { extractTextFromPdf } from '@/utils/pdfExtraction';
+import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
   caseTitle: z.string().min(5, { message: "Case title must be at least 5 characters" }),
@@ -112,42 +114,6 @@ const filingTypes = [
   "Appeal"
 ];
 
-const mockFilings = [
-  {
-    id: 1,
-    caseTitle: "Mehta vs. Sharma Property Dispute",
-    courtType: "District Court",
-    jurisdiction: "Bengaluru (Karnataka)",
-    filingType: "Plaint",
-    filingDate: new Date("2025-04-15"),
-    filingDeadline: new Date("2025-04-10"),
-    courtLocation: "City Civil Court Complex, K.G. Road, Bengaluru",
-    status: "Pending"
-  },
-  {
-    id: 2,
-    caseTitle: "State of Karnataka vs. Reddy",
-    courtType: "High Court",
-    jurisdiction: "Bengaluru (Karnataka)",
-    filingType: "Counter Affidavit",
-    filingDate: new Date("2025-04-10"),
-    filingDeadline: new Date("2025-04-05"),
-    courtLocation: "High Court of Karnataka, Bengaluru",
-    status: "Submitted"
-  },
-  {
-    id: 3,
-    caseTitle: "ABC Ltd. vs. Tax Authority",
-    courtType: "Income Tax Appellate Tribunal",
-    jurisdiction: "Delhi",
-    filingType: "Appeal",
-    filingDate: new Date("2025-04-20"),
-    filingDeadline: new Date("2025-04-15"),
-    courtLocation: "ITAT Building, I.P. Estate, New Delhi",
-    status: "Draft"
-  }
-];
-
 const CourtFilingPage = () => {
   const [activeTab, setActiveTab] = useState("new");
   const [documents, setDocuments] = useState<File[]>([]);
@@ -156,6 +122,10 @@ const CourtFilingPage = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeadlineWarning, setShowDeadlineWarning] = useState(false);
+  const [userFilings, setUserFilings] = useState<any[]>([]);
+  const [draftFilings, setDraftFilings] = useState<any[]>([]);
+  const [storedFilings, setStoredFilings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -172,6 +142,40 @@ const CourtFilingPage = () => {
       filingNotes: "",
     },
   });
+
+  // Fetch user's court filings from Supabase
+  useEffect(() => {
+    const fetchFilings = async () => {
+      setIsLoading(true);
+      try {
+        const { data: filings, error } = await supabase
+          .from('court_filings')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+
+        if (filings) {
+          setUserFilings(filings);
+          setDraftFilings(filings.filter(filing => filing.status === 'draft'));
+          setStoredFilings(filings.filter(filing => filing.status === 'submitted' || filing.status === 'pending'));
+        }
+      } catch (error) {
+        console.error('Error fetching court filings:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load your filings. Please try again later.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFilings();
+  }, [activeTab]);
 
   const handleDocumentsUpload = (files: File[], text?: string) => {
     setDocuments(prev => [...prev, ...files]);
@@ -210,7 +214,7 @@ const CourtFilingPage = () => {
     return diffDays <= 3;
   };
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     
     if (data.filingDeadline && checkDeadlineProximity(data.filingDate, data.filingDeadline)) {
@@ -222,7 +226,33 @@ const CourtFilingPage = () => {
       });
     }
     
-    setTimeout(() => {
+    try {
+      // Store filing in Supabase
+      const filingData = {
+        case_title: data.caseTitle,
+        case_number: data.caseNumber || null,
+        court_type: data.courtType,
+        jurisdiction: data.jurisdiction,
+        filing_type: data.filingType,
+        filing_date: data.filingDate.toISOString(),
+        filing_deadline: data.filingDeadline ? data.filingDeadline.toISOString() : null,
+        client_name: data.clientName,
+        opposing_party: data.opposingParty,
+        description: data.description || null,
+        court_name: data.courtLocation || null,
+        filing_notes: data.filingNotes || null,
+        status: activeTab === "drafts" ? "draft" : "submitted",
+        documents: documents.map(doc => ({ name: doc.name, size: doc.size, type: doc.type })),
+      };
+
+      const { data: filing, error } = await supabase
+        .from('court_filings')
+        .insert(filingData)
+        .select()
+        .single();
+
+      if (error) throw error;
+
       toast({
         title: "Filing Stored",
         description: "Your court filing details have been stored successfully.",
@@ -234,10 +264,95 @@ const CourtFilingPage = () => {
         setShowDeadlineWarning(false);
       }
       
+      // Refresh the filings lists
+      setActiveTab(filing.status === "draft" ? "drafts" : "stored");
+    } catch (error) {
+      console.error('Error storing filing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to store filing. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsSubmitting(false);
-      
-      setActiveTab("drafts");
-    }, 1500);
+    }
+  };
+
+  const handleEditFiling = (filing: any) => {
+    form.reset({
+      caseTitle: filing.case_title || "",
+      caseNumber: filing.case_number || "",
+      courtType: filing.court_type || "",
+      jurisdiction: filing.jurisdiction || "",
+      filingType: filing.filing_type || "",
+      filingDate: filing.filing_date ? new Date(filing.filing_date) : new Date(),
+      filingDeadline: filing.filing_deadline ? new Date(filing.filing_deadline) : undefined,
+      clientName: filing.client_name || "",
+      opposingParty: filing.opposing_party || "",
+      description: filing.description || "",
+      courtLocation: filing.court_name || "",
+      filingNotes: filing.filing_notes || "",
+    });
+
+    setActiveTab("new");
+  };
+
+  const handleDeleteFiling = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('court_filings')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Filing Deleted",
+        description: "The filing has been deleted successfully.",
+      });
+
+      // Update the filing lists
+      setUserFilings(userFilings.filter(filing => filing.id !== id));
+      setDraftFilings(draftFilings.filter(filing => filing.id !== id));
+      setStoredFilings(storedFilings.filter(filing => filing.id !== id));
+    } catch (error) {
+      console.error('Error deleting filing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete filing. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleUpdateStatus = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('court_filings')
+        .update({ status })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Status Updated",
+        description: `The filing status has been updated to ${status}.`,
+      });
+
+      // Refresh the filing lists based on the new status
+      if (status === 'draft') {
+        setActiveTab('drafts');
+      } else {
+        setActiveTab('stored');
+      }
+    } catch (error) {
+      console.error('Error updating filing status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update filing status. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -315,6 +430,7 @@ const CourtFilingPage = () => {
                             <Select 
                               onValueChange={field.onChange} 
                               defaultValue={field.value}
+                              value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -343,6 +459,7 @@ const CourtFilingPage = () => {
                             <Select 
                               onValueChange={field.onChange} 
                               defaultValue={field.value}
+                              value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -371,6 +488,7 @@ const CourtFilingPage = () => {
                             <Select 
                               onValueChange={field.onChange} 
                               defaultValue={field.value}
+                              value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -445,7 +563,6 @@ const CourtFilingPage = () => {
                                     mode="single"
                                     selected={field.value}
                                     onSelect={field.onChange}
-                                    disabled={(date) => date < new Date()}
                                     initialFocus
                                     className="p-3 pointer-events-auto"
                                   />
@@ -600,21 +717,91 @@ const CourtFilingPage = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => {
-                            form.setValue("filingDate", new Date());
-                            toast({
-                              title: "Saved as Draft",
-                              description: "Your filing has been saved as a draft."
-                            });
+                          <DropdownMenuItem onClick={async () => {
+                            const values = form.getValues();
+                            if (!values.caseTitle) {
+                              toast({
+                                title: "Missing Information",
+                                description: "Please enter at least a case title before saving",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            try {
+                              const draftData = {
+                                case_title: values.caseTitle,
+                                case_number: values.caseNumber || null,
+                                court_type: values.courtType || null,
+                                jurisdiction: values.jurisdiction || null,
+                                filing_type: values.filingType || null,
+                                filing_date: new Date().toISOString(),
+                                status: "draft"
+                              };
+                              
+                              const { error } = await supabase
+                                .from('court_filings')
+                                .insert(draftData);
+                                
+                              if (error) throw error;
+                              
+                              toast({
+                                title: "Saved as Draft",
+                                description: "Your filing has been saved as a draft."
+                              });
+                              
+                              setActiveTab("drafts");
+                            } catch (error) {
+                              console.error('Error saving draft:', error);
+                              toast({
+                                title: "Error",
+                                description: "Failed to save draft. Please try again.",
+                                variant: "destructive"
+                              });
+                            }
                           }}>
                             Save as Draft
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {
-                            form.setValue("filingDate", new Date());
-                            toast({
-                              title: "Template Created",
-                              description: "Your filing has been saved as a template."
-                            });
+                          <DropdownMenuItem onClick={async () => {
+                            const values = form.getValues();
+                            if (!values.caseTitle) {
+                              toast({
+                                title: "Missing Information",
+                                description: "Please enter at least a case title before saving",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            try {
+                              const templateData = {
+                                case_title: values.caseTitle,
+                                case_number: values.caseNumber || null,
+                                court_type: values.courtType || null,
+                                jurisdiction: values.jurisdiction || null,
+                                filing_type: values.filingType || null,
+                                filing_date: new Date().toISOString(),
+                                status: "template"
+                              };
+                              
+                              const { error } = await supabase
+                                .from('court_filings')
+                                .insert(templateData);
+                                
+                              if (error) throw error;
+                              
+                              toast({
+                                title: "Template Created",
+                                description: "Your filing has been saved as a template."
+                              });
+                            } catch (error) {
+                              console.error('Error saving template:', error);
+                              toast({
+                                title: "Error",
+                                description: "Failed to save template. Please try again.",
+                                variant: "destructive"
+                              });
+                            }
                           }}>
                             Save as Template
                           </DropdownMenuItem>
@@ -640,56 +827,79 @@ const CourtFilingPage = () => {
                 <CardTitle className="text-xl font-semibold">Draft Filings</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Case Title</TableHead>
-                      <TableHead>Court & Jurisdiction</TableHead>
-                      <TableHead>Filing Type</TableHead>
-                      <TableHead>Filing Date</TableHead>
-                      <TableHead>Deadline</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockFilings.filter(filing => filing.status === "Draft").map((filing) => (
-                      <TableRow key={filing.id}>
-                        <TableCell className="font-medium">{filing.caseTitle}</TableCell>
-                        <TableCell>{filing.courtType} - {filing.jurisdiction}</TableCell>
-                        <TableCell>{filing.filingType}</TableCell>
-                        <TableCell>{format(filing.filingDate, "dd MMM yyyy")}</TableCell>
-                        <TableCell>
-                          {filing.filingDeadline && (
-                            <span className={checkDeadlineProximity(filing.filingDate, filing.filingDeadline) ? 
-                              "text-red-600 font-medium" : ""}>
-                              {format(filing.filingDeadline, "dd MMM yyyy")}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <MapPin className="h-3 w-3 mr-1 text-gray-400" /> 
-                            <span className="text-xs truncate max-w-[120px]">{filing.courtLocation}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button size="sm" variant="outline">Edit</Button>
-                            <Button size="sm">Store</Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {mockFilings.filter(filing => filing.status === "Draft").length === 0 && (
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-10">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-6 text-legal-muted">
-                          No draft filings available
-                        </TableCell>
+                        <TableHead>Case Title</TableHead>
+                        <TableHead>Court & Jurisdiction</TableHead>
+                        <TableHead>Filing Type</TableHead>
+                        <TableHead>Filing Date</TableHead>
+                        <TableHead>Deadline</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {draftFilings.length > 0 ? draftFilings.map((filing) => (
+                        <TableRow key={filing.id}>
+                          <TableCell className="font-medium">{filing.case_title}</TableCell>
+                          <TableCell>{filing.court_type || 'N/A'} - {filing.jurisdiction || 'N/A'}</TableCell>
+                          <TableCell>{filing.filing_type || 'N/A'}</TableCell>
+                          <TableCell>
+                            {filing.filing_date ? format(new Date(filing.filing_date), "dd MMM yyyy") : 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {filing.filing_deadline && (
+                              <span className={checkDeadlineProximity(
+                                new Date(filing.filing_date), 
+                                new Date(filing.filing_deadline)
+                              ) ? "text-red-600 font-medium" : ""}>
+                                {format(new Date(filing.filing_deadline), "dd MMM yyyy")}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <MapPin className="h-3 w-3 mr-1 text-gray-400" />
+                              <span className="text-xs truncate max-w-[120px]">
+                                {filing.court_name || 'Not specified'}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button size="sm" variant="outline" onClick={() => handleEditFiling(filing)}>Edit</Button>
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleUpdateStatus(filing.id, "submitted")}
+                              >
+                                Submit
+                              </Button>
+                              <Button 
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteFiling(filing.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )) : (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-6 text-gray-500">
+                            No draft filings available
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -700,55 +910,73 @@ const CourtFilingPage = () => {
                 <CardTitle className="text-xl font-semibold">Stored Filings</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Case Title</TableHead>
-                      <TableHead>Court & Jurisdiction</TableHead>
-                      <TableHead>Filing Type</TableHead>
-                      <TableHead>Filing Date</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockFilings.filter(filing => filing.status !== "Draft").map((filing) => (
-                      <TableRow key={filing.id}>
-                        <TableCell className="font-medium">{filing.caseTitle}</TableCell>
-                        <TableCell>{filing.courtType} - {filing.jurisdiction}</TableCell>
-                        <TableCell>{filing.filingType}</TableCell>
-                        <TableCell>{format(filing.filingDate, "dd MMM yyyy")}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <MapPin className="h-3 w-3 mr-1 text-gray-400" /> 
-                            <span className="text-xs truncate max-w-[120px]">{filing.courtLocation}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={filing.status === "Submitted" ? "default" : "secondary"}
-                          >
-                            {filing.status === "Submitted" ? "Stored" : filing.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button size="sm" variant="outline">View</Button>
-                            <Button size="sm" variant="outline">Print</Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {mockFilings.filter(filing => filing.status !== "Draft").length === 0 && (
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-10">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-6 text-legal-muted">
-                          No stored filings available
-                        </TableCell>
+                        <TableHead>Case Title</TableHead>
+                        <TableHead>Court & Jurisdiction</TableHead>
+                        <TableHead>Filing Type</TableHead>
+                        <TableHead>Filing Date</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {storedFilings.length > 0 ? storedFilings.map((filing) => (
+                        <TableRow key={filing.id}>
+                          <TableCell className="font-medium">{filing.case_title}</TableCell>
+                          <TableCell>{filing.court_type || 'N/A'} - {filing.jurisdiction || 'N/A'}</TableCell>
+                          <TableCell>{filing.filing_type || 'N/A'}</TableCell>
+                          <TableCell>
+                            {filing.filing_date ? format(new Date(filing.filing_date), "dd MMM yyyy") : 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <MapPin className="h-3 w-3 mr-1 text-gray-400" /> 
+                              <span className="text-xs truncate max-w-[120px]">
+                                {filing.court_name || 'Not specified'}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={filing.status === "submitted" ? "default" : "secondary"}
+                            >
+                              {filing.status === "submitted" ? "Stored" : filing.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button size="sm" variant="outline" onClick={() => handleEditFiling(filing)}>
+                                View/Edit
+                              </Button>
+                              <Button size="sm" variant="outline">Print</Button>
+                              <Button 
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteFiling(filing.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )) : (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-6 text-gray-500">
+                            No stored filings available
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

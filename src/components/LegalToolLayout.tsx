@@ -21,8 +21,11 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
     setApiProvider(provider);
     
     // Set default API keys - these will be used across the application
-    localStorage.setItem('geminiApiKey', 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc');
-    localStorage.setItem('deepseekApiKey', 'sk-default-deepseek-key');
+    const geminiKey = 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc';
+    const deepseekKey = 'sk-default-deepseek-key';
+    
+    localStorage.setItem('geminiApiKey', geminiKey);
+    localStorage.setItem('deepseekApiKey', deepseekKey);
   }, []);
 
   return (
@@ -34,7 +37,7 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <Tabs defaultValue="gemini" onValueChange={(value) => {
+          <Tabs defaultValue={apiProvider} onValueChange={(value) => {
             setApiProvider(value as 'deepseek' | 'gemini');
             localStorage.setItem('preferredApiProvider', value);
           }}>
