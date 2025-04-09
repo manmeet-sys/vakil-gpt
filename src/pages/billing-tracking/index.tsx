@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { IndianRupee, Plus, Pencil, Trash2 } from 'lucide-react';
@@ -57,7 +58,7 @@ const BillingTrackingPage = () => {
         hourly_rate: values.hourly_rate,
         amount,
         matter_id: null,
-        invoice_id: null,
+        // Remove invoice_id which isn't in our schema
         case_id: null,
         invoice_number: null,
         invoice_status: 'unbilled'

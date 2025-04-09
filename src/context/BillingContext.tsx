@@ -252,8 +252,16 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       const completeEntry = {
         activity_type: entry.activity_type || 'Other',
         hours_spent: entry.hours_spent || 0,
-        // Add other fields from entry
-        ...entry,
+        // Add other fields from entry, but exclude invoice_id which isn't in our schema
+        client_name: entry.client_name,
+        date: entry.date,
+        description: entry.description,
+        hourly_rate: entry.hourly_rate,
+        amount: entry.amount,
+        matter_id: entry.matter_id,
+        case_id: entry.case_id,
+        invoice_number: entry.invoice_number,
+        invoice_status: entry.invoice_status || 'unbilled',
         user_id: user.id
       };
       
