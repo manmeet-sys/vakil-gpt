@@ -88,7 +88,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         if (event === 'SIGNED_IN') {
-          toast.success('Successfully signed in');
+          const provider = currentSession?.user?.app_metadata?.provider;
+          if (provider === 'google') {
+            toast.success('Successfully signed in with Google');
+          } else {
+            toast.success('Successfully signed in');
+          }
         }
         if (event === 'SIGNED_OUT') {
           toast.info('Successfully signed out');

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -27,6 +29,7 @@ const SignupPage = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [googleLoading, setGoogleLoading] = React.useState(false);
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
   
@@ -70,6 +73,29 @@ const SignupPage = () => {
       console.error(error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setGoogleLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/signup`
+        }
+      });
+      
+      if (error) {
+        toast.error('Google sign up failed', {
+          description: error.message,
+        });
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred');
+      console.error(error);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -229,12 +255,17 @@ const SignupPage = () => {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-gray-500 dark:text-gray-400">
-                Coming Soon
+                Or continue with
               </span>
             </div>
           </div>
 
-          <Button variant="outline" className="w-full" disabled>
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            onClick={handleGoogleSignUp}
+            disabled={googleLoading}
+          >
             <svg
               className="mr-2 h-4 w-4"
               viewBox="0 0 48 48"
@@ -257,7 +288,7 @@ const SignupPage = () => {
                 d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
               />
             </svg>
-            Sign up with Google
+            {googleLoading ? 'Signing up...' : 'Sign up with Google'}
           </Button>
         </div>
       </div>
