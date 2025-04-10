@@ -325,6 +325,132 @@ export type Database = {
           },
         ]
       }
+      ma_applicable_laws: {
+        Row: {
+          created_at: string
+          description: string
+          diligence_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          diligence_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          diligence_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ma_applicable_laws_diligence_id_fkey"
+            columns: ["diligence_id"]
+            isOneToOne: false
+            referencedRelation: "ma_due_diligence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ma_due_diligence: {
+        Row: {
+          created_at: string
+          financial_data: string
+          id: string
+          industry: string
+          summary: string | null
+          target_company: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          financial_data: string
+          id?: string
+          industry: string
+          summary?: string | null
+          target_company: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          financial_data?: string
+          id?: string
+          industry?: string
+          summary?: string | null
+          target_company?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ma_recommendations: {
+        Row: {
+          created_at: string
+          description: string
+          diligence_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          diligence_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          diligence_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ma_recommendations_diligence_id_fkey"
+            columns: ["diligence_id"]
+            isOneToOne: false
+            referencedRelation: "ma_due_diligence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ma_risks: {
+        Row: {
+          created_at: string
+          description: string
+          diligence_id: string
+          id: string
+          level: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          diligence_id: string
+          id?: string
+          level: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          diligence_id?: string
+          id?: string
+          level?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ma_risks_diligence_id_fkey"
+            columns: ["diligence_id"]
+            isOneToOne: false
+            referencedRelation: "ma_due_diligence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matters: {
         Row: {
           client_id: string | null

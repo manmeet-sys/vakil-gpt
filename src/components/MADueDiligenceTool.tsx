@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,8 @@ import { getGeminiResponse } from '@/components/GeminiProIntegration';
 import PdfFileUpload from '@/components/PdfFileUpload';
 import { extractTextFromPdf } from '@/utils/pdfExtraction';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface DueDiligenceResult {
   summary: string;
@@ -30,10 +33,13 @@ interface DueDiligenceResult {
   timestamp?: string;
   targetCompany?: string;
   industry?: string;
+  id?: string;
 }
 
 const MADueDiligenceTool = () => {
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [targetCompany, setTargetCompany] = useState<string>('');
   const [industry, setIndustry] = useState<string>('');
   const [financialData, setFinancialData] = useState<string>('');
@@ -43,18 +49,97 @@ const MADueDiligenceTool = () => {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isPdfProcessing, setIsPdfProcessing] = useState<boolean>(false);
   const [previousAnalyses, setPreviousAnalyses] = useState<DueDiligenceResult[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load prior records from localStorage
+  // Load prior records from Supabase
   useEffect(() => {
-    const savedAnalyses = localStorage.getItem('maDueDiligenceHistory');
-    if (savedAnalyses) {
+    if (!isAuthenticated || !user) {
+      return;
+    }
+    
+    const fetchPreviousAnalyses = async () => {
       try {
-        setPreviousAnalyses(JSON.parse(savedAnalyses));
+        setIsLoading(true);
+        const { data: dueDiligenceData, error: dueDiligenceError } = await supabase
+          .from('ma_due_diligence')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (dueDiligenceError) {
+          console.error('Error fetching due diligence data:', dueDiligenceError);
+          toast({
+            title: "Failed to load previous analyses",
+            description: dueDiligenceError.message,
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        const analysesPromises = dueDiligenceData.map(async (diligence) => {
+          // Fetch risks
+          const { data: risksData, error: risksError } = await supabase
+            .from('ma_risks')
+            .select('*')
+            .eq('diligence_id', diligence.id);
+            
+          if (risksError) {
+            console.error('Error fetching risks:', risksError);
+          }
+          
+          // Fetch recommendations
+          const { data: recommendationsData, error: recommendationsError } = await supabase
+            .from('ma_recommendations')
+            .select('*')
+            .eq('diligence_id', diligence.id);
+            
+          if (recommendationsError) {
+            console.error('Error fetching recommendations:', recommendationsError);
+          }
+          
+          // Fetch applicable laws
+          const { data: lawsData, error: lawsError } = await supabase
+            .from('ma_applicable_laws')
+            .select('*')
+            .eq('diligence_id', diligence.id);
+            
+          if (lawsError) {
+            console.error('Error fetching applicable laws:', lawsError);
+          }
+          
+          return {
+            id: diligence.id,
+            summary: diligence.summary || '',
+            targetCompany: diligence.target_company,
+            industry: diligence.industry,
+            timestamp: diligence.created_at,
+            risks: risksData?.map(risk => ({
+              level: risk.level as 'low' | 'medium' | 'high',
+              description: risk.description
+            })) || [],
+            recommendations: recommendationsData?.map(rec => rec.description) || [],
+            applicableLaws: lawsData?.map(law => ({
+              name: law.name,
+              description: law.description
+            })) || []
+          };
+        });
+        
+        const analyses = await Promise.all(analysesPromises);
+        setPreviousAnalyses(analyses);
       } catch (error) {
         console.error('Error loading previous analyses:', error);
+        toast({
+          title: "Error Loading Data",
+          description: "Could not load your previous analyses. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, []);
+    };
+    
+    fetchPreviousAnalyses();
+  }, [isAuthenticated, user, toast]);
 
   const handlePdfUpload = async () => {
     if (!pdfFile) {
@@ -92,6 +177,15 @@ const MADueDiligenceTool = () => {
   };
 
   const generateDueDiligence = async () => {
+    if (!isAuthenticated || !user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to generate a due diligence analysis.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (!targetCompany || !industry || !financialData.trim()) {
       toast({
         title: "Missing information",
@@ -147,18 +241,86 @@ const MADueDiligenceTool = () => {
         targetCompany,
         industry
       };
+
+      // Save to Supabase
+      const { data: dueDiligence, error: dueDiligenceError } = await supabase
+        .from('ma_due_diligence')
+        .insert({
+          target_company: targetCompany,
+          industry: industry,
+          financial_data: financialData,
+          summary: result.summary,
+          user_id: user.id
+        })
+        .select()
+        .single();
+        
+      if (dueDiligenceError) {
+        throw new Error(`Error saving due diligence: ${dueDiligenceError.message}`);
+      }
+      
+      const diligenceId = dueDiligence.id;
+      resultWithMetadata.id = diligenceId;
+      
+      // Save risks
+      if (result.risks && result.risks.length > 0) {
+        const risksToInsert = result.risks.map(risk => ({
+          diligence_id: diligenceId,
+          level: risk.level,
+          description: risk.description
+        }));
+        
+        const { error: risksError } = await supabase
+          .from('ma_risks')
+          .insert(risksToInsert);
+          
+        if (risksError) {
+          console.error("Error saving risks:", risksError);
+        }
+      }
+      
+      // Save recommendations
+      if (result.recommendations && result.recommendations.length > 0) {
+        const recommendationsToInsert = result.recommendations.map(rec => ({
+          diligence_id: diligenceId,
+          description: rec
+        }));
+        
+        const { error: recommendationsError } = await supabase
+          .from('ma_recommendations')
+          .insert(recommendationsToInsert);
+          
+        if (recommendationsError) {
+          console.error("Error saving recommendations:", recommendationsError);
+        }
+      }
+      
+      // Save applicable laws
+      if (result.applicableLaws && result.applicableLaws.length > 0) {
+        const lawsToInsert = result.applicableLaws.map(law => ({
+          diligence_id: diligenceId,
+          name: law.name,
+          description: law.description
+        }));
+        
+        const { error: lawsError } = await supabase
+          .from('ma_applicable_laws')
+          .insert(lawsToInsert);
+          
+        if (lawsError) {
+          console.error("Error saving applicable laws:", lawsError);
+        }
+      }
       
       setDueDiligenceResult(resultWithMetadata);
       setActiveTab('results');
       
-      // Save to history
-      const updatedHistory = [resultWithMetadata, ...previousAnalyses.slice(0, 9)]; // Keep only last 10 analyses
-      setPreviousAnalyses(updatedHistory);
-      localStorage.setItem('maDueDiligenceHistory', JSON.stringify(updatedHistory));
+      // Update local state with the new analysis
+      setPreviousAnalyses(prev => [resultWithMetadata, ...prev]);
       
       toast({
         title: "Analysis Complete",
-        description: "M&A due diligence analysis has been generated successfully.",
+        description: "M&A due diligence analysis has been generated and saved successfully.",
       });
     } catch (error) {
       console.error("Error generating due diligence analysis:", error);
@@ -288,13 +450,29 @@ const MADueDiligenceTool = () => {
     }
   };
 
+  // Check if user is authenticated before rendering the tool
+  useEffect(() => {
+    if (!isAuthenticated && !isLoading) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to use the M&A Due Diligence tool.",
+        variant: "destructive",
+      });
+      navigate('/login', { state: { from: '/m&a-due-diligence' } });
+    }
+  }, [isAuthenticated, isLoading, navigate, toast]);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="input">Input Details</TabsTrigger>
           <TabsTrigger value="results" disabled={!dueDiligenceResult}>Results</TabsTrigger>
-          <TabsTrigger value="history">Prior Analyses ({previousAnalyses.length})</TabsTrigger>
+          <TabsTrigger value="history">Prior Analyses ({isLoading ? '...' : previousAnalyses.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="input" className="mt-6">
@@ -486,11 +664,15 @@ const MADueDiligenceTool = () => {
                 Prior Due Diligence Analyses
               </CardTitle>
               <CardDescription>
-                View and access your previous M&A due diligence analyses
+                View and access your previously saved M&A due diligence analyses
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {previousAnalyses.length === 0 ? (
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <p>Loading your previous analyses...</p>
+                </div>
+              ) : previousAnalyses.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <FileText className="h-12 w-12 mx-auto mb-3 opacity-40" />
                   <p>No prior analyses found. Complete your first analysis to see it here.</p>
