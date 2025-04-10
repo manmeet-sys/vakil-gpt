@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Shield, Upload, Check, AlertTriangle, FileText, ChevronDown, ChevronUp, Search, Send, Info, Copy, Download, Pen } from 'lucide-react';
@@ -662,13 +661,13 @@ Date: __________________________`;
 
   const downloadDocument = () => {
     if (document) {
-      const element = document.createElement('a');
+      const element = window.document.createElement('a');
       const file = new Blob([document], {type: 'text/plain'});
       element.href = URL.createObjectURL(file);
       element.download = `${documentType}-${new Date().toISOString().split('T')[0]}.txt`;
-      document.body.appendChild(element);
+      window.document.body.appendChild(element);
       element.click();
-      document.body.removeChild(element);
+      window.document.body.removeChild(element);
       
       toast({
         title: "Document Downloaded",
