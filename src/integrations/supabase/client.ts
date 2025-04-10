@@ -107,15 +107,15 @@ export type Tables = Database['public']['Tables'] & {
 // Type-safe helper functions
 export const fromMA = {
   dueDiligence() {
-    return supabase.from('ma_due_diligence') as unknown as ReturnType<typeof supabase.from<Tables["ma_due_diligence"]["Row"]>>;
+    return supabase.from('ma_due_diligence');
   },
   risks() {
-    return supabase.from('ma_risks') as unknown as ReturnType<typeof supabase.from<Tables["ma_risks"]["Row"]>>;
+    return supabase.from('ma_risks');
   },
   recommendations() {
-    return supabase.from('ma_recommendations') as unknown as ReturnType<typeof supabase.from<Tables["ma_recommendations"]["Row"]>>;
+    return supabase.from('ma_recommendations');
   },
   applicableLaws() {
-    return supabase.from('ma_applicable_laws') as unknown as ReturnType<typeof supabase.from<Tables["ma_applicable_laws"]["Row"]>>;
+    return supabase.from('ma_applicable_laws');
   }
 };
