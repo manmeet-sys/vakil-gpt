@@ -107,11 +107,11 @@ const LoginPage = () => {
   return (
     <AppLayout>
       <div className="flex min-h-[80vh] items-center justify-center">
-        <div className="w-full max-w-md px-6 py-12 bg-white/80 dark:bg-zinc-800/90 backdrop-blur-lg rounded-2xl shadow-elegant border border-gray-200 dark:border-zinc-700/40">
+        <div className="w-full max-w-md px-6 py-12 bg-white/40 dark:bg-zinc-800/30 backdrop-blur-xl rounded-2xl shadow-elegant border border-gray-100/70 dark:border-zinc-700/30">
           <div className="space-y-8">
             <div className="text-center">
-              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white font-sans tracking-tight">Welcome back</h1>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 font-sans">
+              <h1 className="text-3xl font-medium text-gray-900 dark:text-white tracking-tight">Welcome back</h1>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 Sign in to your VakilGPT account
               </p>
             </div>
@@ -123,14 +123,14 @@ const LoginPage = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium text-sm">Email</FormLabel>
+                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm">Email</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <Input
                             type="email"
                             placeholder="Your email address"
-                            className="pl-10 text-gray-800 dark:text-gray-100 h-10 bg-gray-50 dark:bg-zinc-800/90 border-gray-200 dark:border-zinc-700"
+                            className="pl-10 text-gray-800 dark:text-gray-100 h-10 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
                             disabled={isLoading}
                             {...field}
                           />
@@ -147,10 +147,10 @@ const LoginPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center justify-between">
-                        <FormLabel className="text-gray-700 dark:text-gray-300 font-medium text-sm">Password</FormLabel>
+                        <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm">Password</FormLabel>
                         <Link
                           to="/reset-password"
-                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                          className="text-xs text-blue-500 dark:text-blue-400 hover:underline font-medium"
                         >
                           Forgot password?
                         </Link>
@@ -161,7 +161,7 @@ const LoginPage = () => {
                           <Input
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10 text-gray-800 dark:text-gray-100 h-10 bg-gray-50 dark:bg-zinc-800/90 border-gray-200 dark:border-zinc-700"
+                            className="pl-10 text-gray-800 dark:text-gray-100 h-10 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
                             disabled={isLoading}
                             {...field}
                           />
@@ -196,7 +196,7 @@ const LoginPage = () => {
                           className="rounded-sm data-[state=checked]:bg-blue-500 dark:data-[state=checked]:bg-blue-400"
                         />
                       </FormControl>
-                      <FormLabel className="text-xs text-gray-600 dark:text-gray-400 font-medium cursor-pointer">
+                      <FormLabel className="text-xs text-gray-500 dark:text-gray-400 font-medium cursor-pointer">
                         Remember me
                       </FormLabel>
                     </FormItem>
@@ -205,7 +205,7 @@ const LoginPage = () => {
 
                 <Button 
                   type="submit" 
-                  className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all"
+                  className="w-full h-11 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-all"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Signing in...' : 'Sign In'}
@@ -214,11 +214,11 @@ const LoginPage = () => {
             </Form>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Don't have an account?{" "}
                 <Link
                   to="/signup"
-                  className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                  className="text-blue-500 dark:text-blue-400 hover:underline font-medium"
                 >
                   Sign up
                 </Link>
@@ -227,10 +227,10 @@ const LoginPage = () => {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-gray-700/50"></div>
+                <div className="w-full border-t border-gray-200 dark:border-gray-700/30"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-white dark:bg-zinc-800/90 px-4 text-gray-500 dark:text-gray-400 font-medium">
+                <span className="bg-white/40 dark:bg-zinc-800/30 backdrop-blur-sm px-4 text-gray-500 dark:text-gray-400 font-medium">
                   Or continue with
                 </span>
               </div>
@@ -238,12 +238,12 @@ const LoginPage = () => {
 
             <Button 
               variant="outline" 
-              className="w-full h-10 border-gray-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/60 backdrop-blur-sm text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-zinc-700/50" 
+              className="w-full h-11 bg-white/70 dark:bg-zinc-800/50 backdrop-blur-sm text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-zinc-700/40 border border-gray-200/70 dark:border-zinc-700/30 rounded-lg" 
               onClick={handleGoogleSignIn}
               disabled={googleLoading}
             >
               <svg
-                className="mr-2 h-4 w-4"
+                className="mr-2 h-5 w-5"
                 viewBox="0 0 48 48"
                 xmlns="http://www.w3.org/2000/svg"
               >
