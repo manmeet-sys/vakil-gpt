@@ -58,36 +58,64 @@ export type Tables = Database['public']['Tables'] & {
     Row: MADueDiligence;
     Insert: Omit<MADueDiligence, 'id' | 'created_at' | 'updated_at'>;
     Update: Partial<Omit<MADueDiligence, 'id' | 'created_at' | 'updated_at'>>;
+    Relationships: [];
   };
   ma_risks: {
     Row: MARisk;
     Insert: Omit<MARisk, 'id' | 'created_at'>;
     Update: Partial<Omit<MARisk, 'id' | 'created_at'>>;
+    Relationships: [
+      {
+        foreignKeyName: "ma_risks_diligence_id_fkey";
+        columns: ["diligence_id"];
+        isOneToOne: false;
+        referencedRelation: "ma_due_diligence";
+        referencedColumns: ["id"];
+      }
+    ];
   };
   ma_recommendations: {
     Row: MARecommendation;
     Insert: Omit<MARecommendation, 'id' | 'created_at'>;
     Update: Partial<Omit<MARecommendation, 'id' | 'created_at'>>;
+    Relationships: [
+      {
+        foreignKeyName: "ma_recommendations_diligence_id_fkey";
+        columns: ["diligence_id"];
+        isOneToOne: false;
+        referencedRelation: "ma_due_diligence";
+        referencedColumns: ["id"];
+      }
+    ];
   };
   ma_applicable_laws: {
     Row: MAApplicableLaw;
     Insert: Omit<MAApplicableLaw, 'id' | 'created_at'>;
     Update: Partial<Omit<MAApplicableLaw, 'id' | 'created_at'>>;
+    Relationships: [
+      {
+        foreignKeyName: "ma_applicable_laws_diligence_id_fkey";
+        columns: ["diligence_id"];
+        isOneToOne: false;
+        referencedRelation: "ma_due_diligence";
+        referencedColumns: ["id"];
+      }
+    ];
   };
 };
 
 // Type-safe helper functions
 export const fromMA = {
   dueDiligence() {
-    return supabase.from('ma_due_diligence') as unknown as ReturnType<typeof supabase.from<'ma_due_diligence', Tables['ma_due_diligence']['Row']>>;
+    return supabase.from('ma_due_diligence') as unknown as ReturnType<typeof supabase.from<Tables["ma_due_diligence"]["Row"]>>;
   },
   risks() {
-    return supabase.from('ma_risks') as unknown as ReturnType<typeof supabase.from<'ma_risks', Tables['ma_risks']['Row']>>;
+    return supabase.from('ma_risks') as unknown as ReturnType<typeof supabase.from<Tables["ma_risks"]["Row"]>>;
   },
   recommendations() {
-    return supabase.from('ma_recommendations') as unknown as ReturnType<typeof supabase.from<'ma_recommendations', Tables['ma_recommendations']['Row']>>;
+    return supabase.from('ma_recommendations') as unknown as ReturnType<typeof supabase.from<Tables["ma_recommendations"]["Row"]>>;
   },
   applicableLaws() {
-    return supabase.from('ma_applicable_laws') as unknown as ReturnType<typeof supabase.from<'ma_applicable_laws', Tables['ma_applicable_laws']['Row']>>;
+    return supabase.from('ma_applicable_laws') as unknown as ReturnType<typeof supabase.from<Tables["ma_applicable_laws"]["Row"]>>;
   }
 };
