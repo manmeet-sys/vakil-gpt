@@ -106,27 +106,27 @@ const LoginPage = () => {
 
   return (
     <AppLayout>
-      <div className="flex min-h-[80vh] items-center justify-center">
-        <div className="w-full max-w-md px-6 py-12 bg-white/40 dark:bg-zinc-800/30 backdrop-blur-xl rounded-2xl shadow-elegant border border-gray-100/70 dark:border-zinc-700/30">
-          <div className="space-y-8">
-            <div className="text-center">
-              <h1 className="text-3xl font-medium text-gray-900 dark:text-white tracking-tight">Welcome back</h1>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex min-h-[80vh] items-center justify-center py-10 px-4">
+        <div className="w-full max-w-md px-6 py-10 bg-white/40 dark:bg-zinc-800/30 backdrop-blur-xl rounded-2xl shadow-elegant border border-gray-100/70 dark:border-zinc-700/30">
+          <div className="space-y-6">
+            <div className="text-center mb-2">
+              <h1 className="text-2xl font-medium text-gray-900 dark:text-white tracking-tight">Welcome back</h1>
+              <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
                 Sign in to your VakilGPT account
               </p>
             </div>
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-1.5">
                       <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm">Email</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <Input
                             type="email"
                             placeholder="Your email address"
@@ -145,7 +145,7 @@ const LoginPage = () => {
                   control={form.control}
                   name="password"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-1.5">
                       <div className="flex items-center justify-between">
                         <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm">Password</FormLabel>
                         <Link
@@ -157,18 +157,18 @@ const LoginPage = () => {
                       </div>
                       <FormControl>
                         <div className="relative">
-                          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <Input
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10 text-gray-800 dark:text-gray-100 h-10 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
+                            className="pl-10 pr-10 text-gray-800 dark:text-gray-100 h-10 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
                             disabled={isLoading}
                             {...field}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                            className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                             disabled={isLoading}
                           >
                             {showPassword ? (
@@ -213,7 +213,7 @@ const LoginPage = () => {
               </form>
             </Form>
 
-            <div className="text-center">
+            <div className="text-center pt-1">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Don't have an account?{" "}
                 <Link
@@ -225,7 +225,7 @@ const LoginPage = () => {
               </p>
             </div>
 
-            <div className="relative">
+            <div className="relative mt-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200 dark:border-gray-700/30"></div>
               </div>
