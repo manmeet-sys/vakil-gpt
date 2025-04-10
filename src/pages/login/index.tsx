@@ -106,37 +106,37 @@ const LoginPage = () => {
 
   return (
     <AppLayout>
-      <div className="flex min-h-[80vh] items-center justify-center py-10 px-4">
-        <div className="w-full max-w-md px-6 py-10 bg-white/40 dark:bg-zinc-800/30 backdrop-blur-xl rounded-2xl shadow-elegant border border-gray-100/70 dark:border-zinc-700/30">
-          <div className="space-y-6">
+      <div className="flex min-h-[80vh] items-center justify-center py-12 px-4">
+        <div className="w-full max-w-md px-8 py-12 bg-white/40 dark:bg-zinc-800/30 backdrop-blur-xl rounded-2xl shadow-elegant border border-gray-100/70 dark:border-zinc-700/30">
+          <div className="space-y-7">
             <div className="text-center mb-2">
               <h1 className="text-2xl font-medium text-gray-900 dark:text-white tracking-tight">Welcome back</h1>
-              <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 Sign in to your VakilGPT account
               </p>
             </div>
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm">Email</FormLabel>
+                    <FormItem className="space-y-2.5">
+                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm block">Email</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <Input
                             type="email"
                             placeholder="Your email address"
-                            className="pl-10 text-gray-800 dark:text-gray-100 h-10 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
+                            className="pl-10 text-gray-800 dark:text-gray-100 h-11 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
                             disabled={isLoading}
                             {...field}
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-red-500 dark:text-red-400 text-xs" />
+                      <FormMessage className="text-red-500 dark:text-red-400 text-xs mt-1" />
                     </FormItem>
                   )}
                 />
@@ -145,9 +145,9 @@ const LoginPage = () => {
                   control={form.control}
                   name="password"
                   render={({ field }) => (
-                    <FormItem className="space-y-1.5">
+                    <FormItem className="space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm">Password</FormLabel>
+                        <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm block">Password</FormLabel>
                         <Link
                           to="/reset-password"
                           className="text-xs text-blue-500 dark:text-blue-400 hover:underline font-medium"
@@ -157,18 +157,18 @@ const LoginPage = () => {
                       </div>
                       <FormControl>
                         <div className="relative">
-                          <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <Input
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10 pr-10 text-gray-800 dark:text-gray-100 h-10 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
+                            className="pl-10 pr-10 text-gray-800 dark:text-gray-100 h-11 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
                             disabled={isLoading}
                             {...field}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                             disabled={isLoading}
                           >
                             {showPassword ? (
@@ -179,7 +179,7 @@ const LoginPage = () => {
                           </button>
                         </div>
                       </FormControl>
-                      <FormMessage className="text-red-500 dark:text-red-400 text-xs" />
+                      <FormMessage className="text-red-500 dark:text-red-400 text-xs mt-1" />
                     </FormItem>
                   )}
                 />
@@ -205,7 +205,7 @@ const LoginPage = () => {
 
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-all"
+                  className="w-full h-11 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-all mt-2"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Signing in...' : 'Sign In'}
