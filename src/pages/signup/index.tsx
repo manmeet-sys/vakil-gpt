@@ -1,10 +1,9 @@
-
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, Mail, User, Lock } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,6 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 const signupSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
   confirmPassword: z.string(),
@@ -43,7 +41,6 @@ const SignupPage = () => {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      name: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -104,7 +101,7 @@ const SignupPage = () => {
       <div className="flex min-h-[80vh] items-center justify-center py-12 px-4">
         <div className="w-full max-w-md px-8 py-12 bg-white/40 dark:bg-zinc-800/30 backdrop-blur-xl rounded-2xl shadow-elegant border border-gray-100/70 dark:border-zinc-700/30">
           <div className="space-y-7">
-            <div className="text-center mb-2">
+            <div className="text-center mb-4">
               <h1 className="text-2xl font-medium text-gray-900 dark:text-white tracking-tight">Create your account</h1>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 Join VakilGPT to access all legal tools and services
@@ -115,39 +112,22 @@ const SignupPage = () => {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2.5">
-                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm block">Full Name</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
-                          <Input
-                            placeholder="John Doe"
-                            className="pl-10 h-11 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-red-500 dark:text-red-400 text-xs mt-1" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem className="space-y-2.5">
-                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm block">Email</FormLabel>
+                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-base block">Email</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                              <rect width="20" height="16" x="2" y="4" rx="2" />
+                              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                            </svg>
+                          </div>
                           <Input
                             type="email"
                             placeholder="your.email@example.com"
-                            className="pl-10 h-11 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
+                            className="pl-12 h-14 text-gray-800 dark:text-gray-100"
                             disabled={isLoading}
                             {...field}
                           />
@@ -163,27 +143,32 @@ const SignupPage = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem className="space-y-2.5">
-                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm block">Password</FormLabel>
+                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-base block">Password</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                              <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                          </div>
                           <Input
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10 pr-10 h-11 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
+                            className="pl-12 pr-12 h-14 text-gray-800 dark:text-gray-100"
                             disabled={isLoading}
                             {...field}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                             disabled={isLoading}
                           >
                             {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
+                              <EyeOff className="h-5 w-5" />
                             ) : (
-                              <Eye className="h-4 w-4" />
+                              <Eye className="h-5 w-5" />
                             )}
                           </button>
                         </div>
@@ -198,27 +183,32 @@ const SignupPage = () => {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem className="space-y-2.5">
-                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-sm block">Confirm Password</FormLabel>
+                      <FormLabel className="text-gray-600 dark:text-gray-300 font-medium text-base block">Confirm Password</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                              <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                          </div>
                           <Input
                             type={showConfirmPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10 pr-10 h-11 bg-gray-50/70 dark:bg-zinc-800/70 border-0 shadow-sm"
+                            className="pl-12 pr-12 h-14 text-gray-800 dark:text-gray-100"
                             disabled={isLoading}
                             {...field}
                           />
                           <button
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                             disabled={isLoading}
                           >
                             {showConfirmPassword ? (
-                              <EyeOff className="h-4 w-4" />
+                              <EyeOff className="h-5 w-5" />
                             ) : (
-                              <Eye className="h-4 w-4" />
+                              <Eye className="h-5 w-5" />
                             )}
                           </button>
                         </div>
@@ -230,7 +220,7 @@ const SignupPage = () => {
 
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-all mt-2"
+                  className="w-full h-14 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-all mt-4"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Creating Account...' : 'Create Account'}
@@ -238,8 +228,8 @@ const SignupPage = () => {
               </form>
             </Form>
 
-            <div className="text-center pt-1">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-center">
+              <p className="text-base text-gray-500 dark:text-gray-400">
                 Already have an account?{" "}
                 <Link
                   to="/login"
@@ -254,7 +244,7 @@ const SignupPage = () => {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200 dark:border-gray-700/30"></div>
               </div>
-              <div className="relative flex justify-center text-xs">
+              <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white/40 dark:bg-zinc-800/30 backdrop-blur-sm px-4 text-gray-500 dark:text-gray-400 font-medium">
                   Or continue with
                 </span>
@@ -263,7 +253,7 @@ const SignupPage = () => {
 
             <Button 
               variant="outline" 
-              className="w-full h-11 bg-white/70 dark:bg-zinc-800/50 backdrop-blur-sm text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-zinc-700/40 border border-gray-200/70 dark:border-zinc-700/30 rounded-lg" 
+              className="w-full h-14 flex items-center justify-center bg-white/70 dark:bg-zinc-800/50 backdrop-blur-sm text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-zinc-700/40 border border-gray-200/70 dark:border-zinc-700/30 rounded-xl" 
               onClick={handleGoogleSignUp}
               disabled={googleLoading}
             >
