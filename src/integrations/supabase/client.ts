@@ -16,3 +16,78 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage
   }
 });
+
+// Define temporary types for our custom tables until the types.ts is regenerated
+export type MADueDiligence = {
+  id: string;
+  user_id: string;
+  target_company: string;
+  industry: string;
+  financial_data: string;
+  summary: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MARisk = {
+  id: string;
+  diligence_id: string;
+  level: 'low' | 'medium' | 'high';
+  description: string;
+  created_at: string;
+};
+
+export type MARecommendation = {
+  id: string;
+  diligence_id: string;
+  description: string;
+  created_at: string;
+};
+
+export type MAApplicableLaw = {
+  id: string;
+  diligence_id: string;
+  name: string;
+  description: string;
+  created_at: string;
+};
+
+// Extra type safety for our tables
+export type Tables = Database['public']['Tables'] & {
+  ma_due_diligence: {
+    Row: MADueDiligence;
+    Insert: Omit<MADueDiligence, 'id' | 'created_at' | 'updated_at'>;
+    Update: Partial<Omit<MADueDiligence, 'id' | 'created_at' | 'updated_at'>>;
+  };
+  ma_risks: {
+    Row: MARisk;
+    Insert: Omit<MARisk, 'id' | 'created_at'>;
+    Update: Partial<Omit<MARisk, 'id' | 'created_at'>>;
+  };
+  ma_recommendations: {
+    Row: MARecommendation;
+    Insert: Omit<MARecommendation, 'id' | 'created_at'>;
+    Update: Partial<Omit<MARecommendation, 'id' | 'created_at'>>;
+  };
+  ma_applicable_laws: {
+    Row: MAApplicableLaw;
+    Insert: Omit<MAApplicableLaw, 'id' | 'created_at'>;
+    Update: Partial<Omit<MAApplicableLaw, 'id' | 'created_at'>>;
+  };
+};
+
+// Type-safe helper functions
+export const fromMA = {
+  dueDiligence() {
+    return supabase.from('ma_due_diligence') as unknown as ReturnType<typeof supabase.from<'ma_due_diligence', Tables['ma_due_diligence']['Row']>>;
+  },
+  risks() {
+    return supabase.from('ma_risks') as unknown as ReturnType<typeof supabase.from<'ma_risks', Tables['ma_risks']['Row']>>;
+  },
+  recommendations() {
+    return supabase.from('ma_recommendations') as unknown as ReturnType<typeof supabase.from<'ma_recommendations', Tables['ma_recommendations']['Row']>>;
+  },
+  applicableLaws() {
+    return supabase.from('ma_applicable_laws') as unknown as ReturnType<typeof supabase.from<'ma_applicable_laws', Tables['ma_applicable_laws']['Row']>>;
+  }
+};

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -16,7 +15,7 @@ import { getGeminiResponse } from '@/components/GeminiProIntegration';
 import PdfFileUpload from '@/components/PdfFileUpload';
 import { extractTextFromPdf } from '@/utils/pdfExtraction';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, fromMA } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
 interface DueDiligenceResult {
@@ -51,7 +50,6 @@ const MADueDiligenceTool = () => {
   const [previousAnalyses, setPreviousAnalyses] = useState<DueDiligenceResult[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load prior records from Supabase
   useEffect(() => {
     if (!isAuthenticated || !user) {
       return;
@@ -60,8 +58,7 @@ const MADueDiligenceTool = () => {
     const fetchPreviousAnalyses = async () => {
       try {
         setIsLoading(true);
-        const { data: dueDiligenceData, error: dueDiligenceError } = await supabase
-          .from('ma_due_diligence')
+        const { data: dueDiligenceData, error: dueDiligenceError } = await fromMA.dueDiligence()
           .select('*')
           .order('created_at', { ascending: false });
           
@@ -76,9 +73,7 @@ const MADueDiligenceTool = () => {
         }
         
         const analysesPromises = dueDiligenceData.map(async (diligence) => {
-          // Fetch risks
-          const { data: risksData, error: risksError } = await supabase
-            .from('ma_risks')
+          const { data: risksData, error: risksError } = await fromMA.risks()
             .select('*')
             .eq('diligence_id', diligence.id);
             
@@ -86,9 +81,7 @@ const MADueDiligenceTool = () => {
             console.error('Error fetching risks:', risksError);
           }
           
-          // Fetch recommendations
-          const { data: recommendationsData, error: recommendationsError } = await supabase
-            .from('ma_recommendations')
+          const { data: recommendationsData, error: recommendationsError } = await fromMA.recommendations()
             .select('*')
             .eq('diligence_id', diligence.id);
             
@@ -96,9 +89,7 @@ const MADueDiligenceTool = () => {
             console.error('Error fetching recommendations:', recommendationsError);
           }
           
-          // Fetch applicable laws
-          const { data: lawsData, error: lawsError } = await supabase
-            .from('ma_applicable_laws')
+          const { data: lawsData, error: lawsError } = await fromMA.applicableLaws()
             .select('*')
             .eq('diligence_id', diligence.id);
             
@@ -198,7 +189,6 @@ const MADueDiligenceTool = () => {
     setIsAnalyzing(true);
     
     try {
-      // Create prompt for AI analysis
       const prompt = `
         Act as a mergers and acquisitions (M&A) due diligence specialist focusing on Indian corporate and commercial laws. Based on the following information, provide a comprehensive risk assessment:
         
@@ -230,10 +220,8 @@ const MADueDiligenceTool = () => {
 
       const response = await getGeminiResponse(prompt);
       
-      // Parse the AI response to extract structured data
       const result = parseAIResponse(response);
       
-      // Add metadata to result
       const timestamp = new Date().toISOString();
       const resultWithMetadata = {
         ...result,
@@ -242,9 +230,7 @@ const MADueDiligenceTool = () => {
         industry
       };
 
-      // Save to Supabase
-      const { data: dueDiligence, error: dueDiligenceError } = await supabase
-        .from('ma_due_diligence')
+      const { data: dueDiligence, error: dueDiligenceError } = await fromMA.dueDiligence()
         .insert({
           target_company: targetCompany,
           industry: industry,
@@ -262,7 +248,6 @@ const MADueDiligenceTool = () => {
       const diligenceId = dueDiligence.id;
       resultWithMetadata.id = diligenceId;
       
-      // Save risks
       if (result.risks && result.risks.length > 0) {
         const risksToInsert = result.risks.map(risk => ({
           diligence_id: diligenceId,
@@ -270,8 +255,7 @@ const MADueDiligenceTool = () => {
           description: risk.description
         }));
         
-        const { error: risksError } = await supabase
-          .from('ma_risks')
+        const { error: risksError } = await fromMA.risks()
           .insert(risksToInsert);
           
         if (risksError) {
@@ -279,15 +263,13 @@ const MADueDiligenceTool = () => {
         }
       }
       
-      // Save recommendations
       if (result.recommendations && result.recommendations.length > 0) {
         const recommendationsToInsert = result.recommendations.map(rec => ({
           diligence_id: diligenceId,
           description: rec
         }));
         
-        const { error: recommendationsError } = await supabase
-          .from('ma_recommendations')
+        const { error: recommendationsError } = await fromMA.recommendations()
           .insert(recommendationsToInsert);
           
         if (recommendationsError) {
@@ -295,7 +277,6 @@ const MADueDiligenceTool = () => {
         }
       }
       
-      // Save applicable laws
       if (result.applicableLaws && result.applicableLaws.length > 0) {
         const lawsToInsert = result.applicableLaws.map(law => ({
           diligence_id: diligenceId,
@@ -303,8 +284,7 @@ const MADueDiligenceTool = () => {
           description: law.description
         }));
         
-        const { error: lawsError } = await supabase
-          .from('ma_applicable_laws')
+        const { error: lawsError } = await fromMA.applicableLaws()
           .insert(lawsToInsert);
           
         if (lawsError) {
@@ -315,7 +295,6 @@ const MADueDiligenceTool = () => {
       setDueDiligenceResult(resultWithMetadata);
       setActiveTab('results');
       
-      // Update local state with the new analysis
       setPreviousAnalyses(prev => [resultWithMetadata, ...prev]);
       
       toast({
@@ -335,7 +314,6 @@ const MADueDiligenceTool = () => {
   };
 
   const parseAIResponse = (response: string): DueDiligenceResult => {
-    // Initialize result with default values
     const result: DueDiligenceResult = {
       summary: '',
       risks: [],
@@ -344,13 +322,11 @@ const MADueDiligenceTool = () => {
     };
 
     try {
-      // Extract summary
       const summaryMatch = response.match(/SUMMARY:(.*?)(?=RISKS:|$)/s);
       if (summaryMatch && summaryMatch[1]) {
         result.summary = summaryMatch[1].trim();
       }
 
-      // Extract risks
       const risksMatch = response.match(/RISKS:(.*?)(?=RECOMMENDATIONS:|$)/s);
       if (risksMatch && risksMatch[1]) {
         const risksText = risksMatch[1].trim();
@@ -366,7 +342,6 @@ const MADueDiligenceTool = () => {
         });
       }
 
-      // Extract recommendations
       const recommendationsMatch = response.match(/RECOMMENDATIONS:(.*?)(?=APPLICABLE_LAWS:|$)/s);
       if (recommendationsMatch && recommendationsMatch[1]) {
         const recsText = recommendationsMatch[1].trim();
@@ -376,7 +351,6 @@ const MADueDiligenceTool = () => {
           .map(item => item.replace(/^-\s*/, ''));
       }
 
-      // Extract applicable laws
       const lawsMatch = response.match(/APPLICABLE_LAWS:(.*?)(?=$)/s);
       if (lawsMatch && lawsMatch[1]) {
         const lawsText = lawsMatch[1].trim();
@@ -397,7 +371,6 @@ const MADueDiligenceTool = () => {
       return result;
     } catch (error) {
       console.error("Error parsing AI response:", error);
-      // If parsing fails, return a default error result
       return {
         summary: "Unable to parse the analysis results. Please try again.",
         risks: [{ level: 'medium', description: 'Analysis parsing error' }],
@@ -450,7 +423,6 @@ const MADueDiligenceTool = () => {
     }
   };
 
-  // Check if user is authenticated before rendering the tool
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
       toast({
