@@ -7,13 +7,15 @@ import { toast } from 'sonner';
 interface ShareButtonProps {
   url?: string;
   title?: string;
+  description?: string;
   className?: string;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 }
 
 const ShareButton = ({ 
   url = window.location.href,
-  title = "Check out VakilGPT - AI-Powered Legal Assistance",
+  title = "VakilGPT - AI-Powered Legal Assistance",
+  description = "Advanced legal assistance powered by artificial intelligence",
   className = "",
   variant = "outline"
 }: ShareButtonProps) => {
@@ -23,6 +25,7 @@ const ShareButton = ({
       if (navigator.share) {
         await navigator.share({
           title,
+          text: description,
           url
         });
         toast.success("Shared successfully");

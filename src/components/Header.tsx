@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown, Share2 } from 'lucide-react';
+import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/context/AuthContext';
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
+import ShareButton from './ShareButton';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,24 +29,6 @@ const Header = () => {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
-  };
-
-  const handleShare = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: 'VakilGPT - AI-Powered Legal Assistance',
-          url: window.location.href,
-        });
-        toast.success('Shared successfully');
-      } else {
-        navigator.clipboard.writeText(window.location.href);
-        toast.success('Link copied to clipboard');
-      }
-    } catch (error) {
-      console.error('Error sharing:', error);
-      toast.error('Failed to share');
-    }
   };
 
   useEffect(() => {
@@ -149,14 +131,12 @@ const Header = () => {
             </Button>
             
             {/* Share Button */}
-            <Button 
+            <ShareButton 
               variant="ghost" 
-              size="icon" 
-              onClick={handleShare}
-              className="text-legal-slate dark:text-white/90"
-            >
-              <Share2 className="h-5 w-5" />
-            </Button>
+              className="text-legal-slate dark:text-white/90" 
+              title="VakilGPT - AI-Powered Legal Assistance"
+              description="Advanced legal assistance powered by artificial intelligence"
+            />
 
             {/* User Menu or Auth Buttons */}
             {isAuthenticated ? (
