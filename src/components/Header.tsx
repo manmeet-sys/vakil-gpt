@@ -1,249 +1,257 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { LogIn, Menu, User, UserRound, X } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
-import AnimatedLogo from './AnimatedLogo';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { toast } from 'sonner';
 
-interface HeaderProps {
-  className?: string;
-}
-
-// Safe wrapper component to handle potential router context issues
-const SafeHeader: React.FC<HeaderProps> = (props) => {
-  try {
-    return <Header {...props} />;
-  } catch (error) {
-    // Fallback simple header when outside router context
-    return (
-      <header className={cn(
-        "sticky top-0 z-50 w-full bg-white/90 dark:bg-legal-slate/90 backdrop-blur-md border-b border-legal-border dark:border-legal-slate/20",
-        props.className
-      )}>
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <a href="/" className="flex items-center gap-2">
-              <AnimatedLogo />
-              <span className="font-bold text-lg text-legal-slate dark:text-white">
-                VakilGPT <span className="text-apple-orange text-xs align-top">IN</span>
-                <span className="ml-1 text-xs font-medium bg-legal-accent/20 text-legal-accent px-1.5 py-0.5 rounded-full">BETA</span>
-              </span>
-            </a>
-          </div>
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher />
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-    );
-  }
-};
-
-const Header: React.FC<HeaderProps> = ({ className }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const { user, userProfile, signOut, isAuthenticated } = useAuth();
   const location = useLocation();
-  const { user, isAuthenticated } = useAuth();
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'VakilGPT - AI-Powered Legal Assistance',
+          url: window.location.href,
+        });
+        toast.success('Shared successfully');
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        toast.success('Link copied to clipboard');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      toast.error('Failed to share');
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Close menu when location changes
+  useEffect(() => {
+    closeMenu();
+  }, [location]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase();
+  };
+
+  const userInitials = userProfile?.full_name 
+    ? getInitials(userProfile.full_name) 
+    : user?.email 
+      ? user.email.substring(0, 2).toUpperCase() 
+      : 'U';
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 w-full bg-white/90 dark:bg-legal-slate/90 backdrop-blur-md border-b border-legal-border/60 dark:border-legal-slate/20 shadow-sm",
-        className
-      )}
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? 'bg-white/80 dark:bg-legal-slate/80 backdrop-blur-md shadow-sm' 
+          : 'bg-transparent'
+      }`}
     >
-      <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-2">
-            <AnimatedLogo />
-            <span className="font-bold text-lg text-legal-slate dark:text-white">
-              VakilGPT <span className="text-apple-orange text-xs align-top">IN</span>
-              <span className="ml-1 text-xs font-medium bg-legal-accent/20 text-legal-accent px-1.5 py-0.5 rounded-full">BETA</span>
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16 md:h-20">
+          {/* Logo */}
+          <Link to="/" className="flex items-center">
+            <span className="text-xl font-bold text-legal-slate dark:text-white">
+              Vakil<span className="text-legal-accent">GPT</span>
             </span>
           </Link>
-        </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-2">
-          <Link
-            to="/"
-            className={`px-4 py-2 text-sm font-medium rounded-md text-legal-slate hover:text-legal-accent dark:text-gray-200 dark:hover:text-white transition-colors ${
-              location.pathname === "/" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : ""
-            }`}
-          >
-            Home
-          </Link>
-          <Link
-            to="/chat"
-            className={`px-4 py-2 text-sm font-medium rounded-md text-legal-slate hover:text-legal-accent dark:text-gray-200 dark:hover:text-white transition-colors ${
-              location.pathname === "/chat" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : ""
-            }`}
-          >
-            Chat
-          </Link>
-          <Link
-            to="/tools"
-            className={`px-4 py-2 text-sm font-medium rounded-md text-legal-slate hover:text-legal-accent dark:text-gray-200 dark:hover:text-white transition-colors ${
-              location.pathname === "/tools" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : ""
-            }`}
-          >
-            Tools
-          </Link>
-          <Link
-            to="/knowledge"
-            className={`px-4 py-2 text-sm font-medium rounded-md text-legal-slate hover:text-legal-accent dark:text-gray-200 dark:hover:text-white transition-colors ${
-              location.pathname === "/knowledge" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : ""
-            }`}
-          >
-            Knowledge
-          </Link>
-        </nav>
-
-        {/* Mobile Menu Button */}
-        <div className="md:hidden flex items-center">
-          <LanguageSwitcher />
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            className="h-10 w-10 p-0 ml-2 rounded-full"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-            <span className="sr-only">Toggle menu</span>
-          </Button>
-        </div>
-
-        {/* Auth Buttons & Theme Toggle (Desktop) */}
-        <div className="hidden md:flex items-center gap-3">
-          <LanguageSwitcher />
-          <ThemeToggle />
-          
-          {isAuthenticated ? (
-            <Link 
-              to="/user-profile" 
-              className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all shadow-sm"
-            >
-              <UserRound className="h-4 w-4" />
-              <span>Profile</span>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-1">
+            <Link to="/" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Home
             </Link>
-          ) : (
-            <>
-              <Link 
-                to="/login" 
-                className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all shadow-sm"
-              >
-                <LogIn className="h-4 w-4" />
-                <span>Log In</span>
-              </Link>
-              <Link 
-                to="/signup" 
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-legal-accent hover:bg-legal-accent/90 text-white text-sm font-medium transition-all shadow-sm"
-              >
-                <User className="h-4 w-4" />
-                <span>Sign Up</span>
-              </Link>
-            </>
-          )}
+            <Link to="/chat" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Chat
+            </Link>
+            <Link to="/tools" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Tools
+            </Link>
+            <Link to="/pricing" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Pricing
+            </Link>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+                  Resources
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to="/blog" className="w-full cursor-pointer">Blog</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/guides" className="w-full cursor-pointer">Guides</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/faq" className="w-full cursor-pointer">FAQ</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
+
+          {/* Right Side Actions */}
+          <div className="flex items-center space-x-2">
+            {/* Theme Toggle */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="text-legal-slate dark:text-white/90"
+            >
+              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+            
+            {/* Share Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleShare}
+              className="text-legal-slate dark:text-white/90"
+            >
+              <Share2 className="h-5 w-5" />
+            </Button>
+
+            {/* User Menu or Auth Buttons */}
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={userProfile?.avatar_url || ''} alt={userProfile?.full_name || 'User'} />
+                      <AvatarFallback className="bg-legal-accent/10 text-legal-accent">
+                        {userInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    {userProfile?.full_name || user?.email || 'My Account'}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/user-profile" className="w-full cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="w-full cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="text-red-500 focus:text-red-500 cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link to="/login">
+                  <Button variant="ghost" className="text-legal-slate dark:text-white/90">
+                    Log in
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white">
+                    Sign up
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile Menu Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden text-legal-slate dark:text-white/90"
+              onClick={toggleMenu}
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden absolute top-16 inset-x-0 bg-white dark:bg-legal-slate border-b border-legal-border dark:border-legal-slate/20 shadow-lg overflow-hidden"
-          >
-            <div className="px-4 py-4 space-y-3">
-              <Link
-                to="/"
-                className={`block px-4 py-3 text-sm font-medium rounded-lg ${
-                  location.pathname === "/" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
-                to="/chat"
-                className={`block px-4 py-3 text-sm font-medium rounded-lg ${
-                  location.pathname === "/chat" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                Chat
-              </Link>
-              <Link
-                to="/tools"
-                className={`block px-4 py-3 text-sm font-medium rounded-lg ${
-                  location.pathname === "/tools" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                Tools
-              </Link>
-              <Link
-                to="/knowledge"
-                className={`block px-4 py-3 text-sm font-medium rounded-lg ${
-                  location.pathname === "/knowledge" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                Knowledge
-              </Link>
-              
-              {/* Auth Links for Mobile */}
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                {isAuthenticated ? (
-                  <Link
-                    to="/user-profile"
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-lg ${
-                      location.pathname === "/user-profile" ? "bg-legal-accent/10 text-legal-accent dark:bg-legal-accent/20 dark:text-white" : "text-legal-slate dark:text-gray-200"
-                    }`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <UserRound className="h-5 w-5" />
-                    <span>Profile</span>
-                  </Link>
-                ) : (
-                  <div className="space-y-3">
-                    <Link
-                      to="/login"
-                      className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 text-legal-slate dark:text-gray-200"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <LogIn className="h-5 w-5" />
-                      <span>Log In</span>
-                    </Link>
-                    <Link
-                      to="/signup"
-                      className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-lg bg-legal-accent text-white"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <User className="h-5 w-5" />
-                      <span>Sign Up</span>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-white dark:bg-legal-slate border-t border-legal-border dark:border-legal-slate/20 p-4">
+          <nav className="flex flex-col space-y-4">
+            <Link to="/" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Home
+            </Link>
+            <Link to="/chat" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Chat
+            </Link>
+            <Link to="/tools" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Tools
+            </Link>
+            <Link to="/pricing" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Pricing
+            </Link>
+            <Link to="/blog" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Blog
+            </Link>
+            <Link to="/guides" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Guides
+            </Link>
+            <Link to="/faq" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              FAQ
+            </Link>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
 
-export default SafeHeader;
+export default Header;
