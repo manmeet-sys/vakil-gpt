@@ -101,71 +101,15 @@ const Index = () => {
   return <>
       <Header />
       
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center py-20 px-4 overflow-hidden hero-pattern">
-        <div className="absolute inset-0 z-0 hero-pattern opacity-50" />
-        <div className="container mx-auto grid gap-12 md:grid-cols-2 items-center z-10">
-          <div className="max-w-xl space-y-6 fade-up-element">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-2">
-              AI-Powered Legal Assistance for India
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-legal-slate dark:text-legal-light leading-tight text-balance">
-              Transform Your Legal <span className="text-legal-accent">Research & Analysis</span>
-            </h1>
-            <p className="text-lg text-legal-muted dark:text-gray-300 max-w-lg">
-              VakilGPT helps Indian legal professionals work smarter with advanced document analysis, case research, and regulatory compliance tools.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <Link to="/chat">
-                <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white text-base px-6 py-6 w-full sm:w-auto group">
-                  Try VakilGPT Now
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link to="/user-profile">
-                <Button variant="outline" className="border-legal-border hover:bg-legal-light dark:hover:bg-legal-slate/20 text-legal-slate dark:text-white/90 text-base px-6 py-6 w-full sm:w-auto">
-                  <User className="mr-2 h-4 w-4" />
-                  My Profile
-                </Button>
-              </Link>
-            </div>
-            <div className="pt-4 flex items-center space-x-4 text-sm text-legal-muted dark:text-gray-400">
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map(n => <div key={n} className="w-8 h-8 rounded-full border-2 border-white dark:border-legal-slate/20 bg-legal-light dark:bg-legal-slate/40 overflow-hidden">
-                    <div className={`w-full h-full bg-legal-accent/[0.${n * 2}]`}></div>
-                  </div>)}
-              </div>
-              <span>Trusted by <strong className="text-legal-slate dark:text-white/90">5,000+</strong> Indian legal professionals</span>
-            </div>
-          </div>
-          
-          <div className="fade-up-element delay-200 order-first md:order-last">
-            <div className="relative">
-              <div className="absolute inset-0 -right-6 -bottom-6 rounded-xl bg-legal-accent/10 transform rotate-3" />
-              <div className="glass-container shadow-elegant rounded-xl overflow-hidden transform -rotate-3 hover:rotate-0 transition-transform duration-500">
-                <img src="https://images.unsplash.com/photo-1589578527966-fdac0f44566c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2852&q=80" alt="Legal professional with AI assistant" className="w-full h-auto object-cover" />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-          
-        </div>
-      </section>
-      
-      {/* Demo Section */}
-      <section id="demo" className="py-20 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
-        <div className="container mx-auto">
+      {/* Hero Section with Chat Interface */}
+      <section className="relative min-h-screen flex items-center justify-center py-20 px-4 overflow-hidden">
+        <div className="container mx-auto max-w-6xl mt-16">
           <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
-              VakilGPT Demo
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4">
-              Experience Indian Legal AI in Action
-            </h2>
-            <p className="text-legal-muted dark:text-gray-300 text-lg">
-              Ask any question about Indian law, regulations, or legal procedures below and see how our AI provides relevant information.
+            <h1 className="text-4xl sm:text-5xl font-bold text-legal-slate dark:text-white mb-4">
+              AI-Powered Legal Assistance for <span className="text-legal-accent">Indian Law</span>
+            </h1>
+            <p className="text-lg text-legal-muted dark:text-gray-300">
+              VakilGPT helps Indian legal professionals with document analysis, case research, and regulatory compliance.
             </p>
           </div>
           
@@ -181,56 +125,14 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="mt-12 text-center fade-up-element">
-            <p className="text-legal-muted dark:text-gray-300 mb-6">
+          <div className="mt-10 text-center fade-up-element">
+            <p className="text-legal-muted dark:text-gray-300 mb-4">
               Ready to experience the full capabilities of VakilGPT for Indian legal research?
             </p>
             <Link to="/chat">
-              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-6 text-base group">
+              <Button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-6 text-base rounded-full group">
                 Start Using VakilGPT
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-      
-      {/* How It Works Section */}
-      <section className="py-16 px-4 bg-legal-light dark:bg-legal-slate/10 transition-colors">
-        <div className="container mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
-              Simple Process
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-4">
-              How VakilGPT Works
-            </h2>
-            <p className="text-legal-muted text-lg">
-              Our platform is designed to be intuitive and powerful, delivering valuable Indian legal insights in seconds.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {howItWorks.map((step, index) => <Card key={step.title} className="fade-up-element border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-elegant hover:shadow-elevated transition-all duration-300" style={{
-            animationDelay: `${index * 100}ms`
-          }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-legal-accent/10 flex items-center justify-center mb-4">
-                    <step.icon className="w-6 h-6 text-legal-accent" />
-                  </div>
-                  <CardTitle className="text-xl font-semibold text-legal-slate">{`${index + 1}. ${step.title}`}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-legal-muted">{step.description}</p>
-                </CardContent>
-              </Card>)}
-          </div>
-          
-          <div className="text-center fade-up-element">
-            <Link to="/chat">
-              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-6 py-3">
-                Get Started Now
-                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
