@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, MessageSquare, User, Filter, Clock, ThumbsUp, ChevronDown, CheckSquare, ArrowDownAZ } from 'lucide-react';
@@ -14,17 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import AddReviewSection from './AddReviewSection';
 import { supabase } from '@/integrations/supabase/client';
+import { UserReview } from '@/types/UserReviews';
 
-// Define the review type
-interface Review {
-  id: string;
-  name: string;
-  role: string;
-  rating: number;
-  comment: string;
+interface Review extends UserReview {
   date?: string;
-  helpfulCount: number;
-  created_at?: string;
 }
 
 const ReviewSection = () => {
@@ -53,7 +45,6 @@ const ReviewSection = () => {
     }
   };
 
-  // Fetch reviews from Supabase
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -62,7 +53,7 @@ const ReviewSection = () => {
         const { data, error } = await supabase
           .from('user_reviews')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false }) as { data: UserReview[] | null, error: any };
         
         if (error) {
           console.error("Error fetching reviews:", error);
@@ -70,15 +61,15 @@ const ReviewSection = () => {
           return;
         }
         
-        // Format the reviews data for our component
-        const formattedReviews = data.map(review => ({
+        const formattedReviews: Review[] = (data || []).map(review => ({
           id: review.id,
+          user_id: review.user_id,
           name: review.name,
           role: review.role,
           rating: review.rating,
           comment: review.comment,
           date: formatDate(review.created_at),
-          helpfulCount: review.helpful_count,
+          helpful_count: review.helpful_count,
           created_at: review.created_at
         }));
         
@@ -95,7 +86,6 @@ const ReviewSection = () => {
     fetchReviews();
   }, []);
 
-  // Helper function to format date
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     const now = new Date();
@@ -147,7 +137,7 @@ const ReviewSection = () => {
         result = [...result].sort((a, b) => a.rating - b.rating);
         break;
       case 'helpful':
-        result = [...result].sort((a, b) => b.helpfulCount - a.helpfulCount);
+        result = [...result].sort((a, b) => b.helpful_count - a.helpful_count);
         break;
     }
     
@@ -169,10 +159,12 @@ const ReviewSection = () => {
         return;
       }
       
-      // Update the review's helpful count in the database
+      const reviewToUpdate = reviews.find(r => r.id === id);
+      if (!reviewToUpdate) return;
+      
       const { error } = await supabase
         .from('user_reviews')
-        .update({ helpful_count: reviews.find(r => r.id === id)?.helpfulCount + 1 || 1 })
+        .update({ helpful_count: reviewToUpdate.helpful_count + 1 } as any)
         .eq('id', id);
       
       if (error) {
@@ -181,11 +173,10 @@ const ReviewSection = () => {
         return;
       }
       
-      // Update the local state
       setReviews(prev => 
         prev.map(review => 
           review.id === id 
-            ? { ...review, helpfulCount: review.helpfulCount + 1 } 
+            ? { ...review, helpful_count: review.helpful_count + 1 } 
             : review
         )
       );
@@ -411,7 +402,7 @@ const ReviewSection = () => {
                             className="text-legal-muted hover:text-legal-accent group-hover:bg-indigo-50/50 dark:group-hover:bg-indigo-900/10"
                           >
                             <ThumbsUp className="w-4 h-4 mr-2" />
-                            Helpful ({review.helpfulCount})
+                            Helpful ({review.helpful_count})
                           </Button>
                           <ShareButton 
                             title={`Review by ${review.name} - VakilGPT`}
@@ -451,7 +442,6 @@ const ReviewSection = () => {
           )}
         </div>
         
-        {/* Add Review Section */}
         <AddReviewSection />
       </div>
     </section>

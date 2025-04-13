@@ -17,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { UserReviewInsert } from '@/types/UserReviews';
 
 const AddReviewSection = () => {
   const [rating, setRating] = useState<number>(0);
@@ -52,16 +53,19 @@ const AddReviewSection = () => {
         return;
       }
 
-      // Add review to database
+      // Prepare the review data
+      const reviewData: UserReviewInsert = {
+        user_id: session.user.id,
+        name,
+        role,
+        rating,
+        comment,
+      };
+
+      // Add review to database with explicit typing
       const { error } = await supabase
         .from('user_reviews')
-        .insert({
-          user_id: session.user.id,
-          name,
-          role,
-          rating,
-          comment,
-        });
+        .insert(reviewData as any);
 
       if (error) {
         console.error("Error submitting review:", error);
