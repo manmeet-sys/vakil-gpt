@@ -15,6 +15,8 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 const AddReviewSection = () => {
   const [rating, setRating] = useState<number>(0);
@@ -23,8 +25,10 @@ const AddReviewSection = () => {
   const [role, setRole] = useState('');
   const [comment, setComment] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form
@@ -33,18 +37,57 @@ const AddReviewSection = () => {
       return;
     }
 
-    // In a real app, this would send data to a backend
-    console.log({ name, role, comment, rating });
-    
-    // Success message
-    toast.success("Thank you for your review!");
-    
-    // Reset form
-    setName('');
-    setRole('');
-    setComment('');
-    setRating(0);
-    setIsDialogOpen(false);
+    setIsSubmitting(true);
+
+    try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("You need to be signed in to submit a review");
+        // Redirect to login page or handle accordingly
+        setIsSubmitting(false);
+        setIsDialogOpen(false);
+        // You might want to add login redirection here
+        return;
+      }
+
+      // Add review to database
+      const { error } = await supabase
+        .from('user_reviews')
+        .insert({
+          user_id: session.user.id,
+          name,
+          role,
+          rating,
+          comment,
+        });
+
+      if (error) {
+        console.error("Error submitting review:", error);
+        toast.error("Failed to submit review. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Success message
+      toast.success("Thank you for your review!");
+      
+      // Reset form
+      setName('');
+      setRole('');
+      setComment('');
+      setRating(0);
+      setIsDialogOpen(false);
+      
+      // Refresh the reviews section
+      window.location.reload();
+    } catch (error) {
+      console.error("Error in submit process:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -139,9 +182,22 @@ const AddReviewSection = () => {
                 <Button 
                   type="submit" 
                   className="bg-gradient-to-r from-legal-accent to-purple-600 hover:from-legal-accent/90 hover:to-purple-600/90 text-white"
+                  disabled={isSubmitting}
                 >
-                  <Send className="mr-2 h-4 w-4" />
-                  Submit Review
+                  {isSubmitting ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Submitting...
+                    </span>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Submit Review
+                    </>
+                  )}
                 </Button>
               </DialogFooter>
             </form>
