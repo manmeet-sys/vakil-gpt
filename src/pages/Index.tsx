@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ChatInterface from '@/components/ChatInterface';
 import FeatureCard from '@/components/FeatureCard';
 import ExploreToolsSection from '@/components/ExploreToolsSection';
-import { Gavel, Scale, FileText, Shield, BookOpen, CheckCircle, ArrowRight, Search, Settings, User } from 'lucide-react';
+import ReviewSection from '@/components/ReviewSection';
+import { Gavel, Scale, FileText, Shield, BookOpen, CheckCircle, ArrowRight, Search, Settings, User, Users, Sparkle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -42,19 +43,23 @@ const benefits = [
   {
     title: 'Save Time',
     description: 'Reduce legal research time by up to 70% with instant access to relevant information, automated document analysis, and AI-powered summaries.',
-    percentage: 70
+    percentage: 70,
+    icon: ArrowRight
   }, {
     title: 'Reduce Costs',
     description: 'Lower legal consultation costs by addressing preliminary questions through AI. Our clients report average savings of 40% on outside counsel expenses.',
-    percentage: 40
+    percentage: 40,
+    icon: Scale
   }, {
     title: 'Increase Accuracy',
     description: 'Enhance accuracy with AI analysis trained on millions of legal documents and cases. Reduce human error and achieve consistent, data-driven results.',
-    percentage: 90
+    percentage: 90,
+    icon: CheckCircle
   }, {
     title: 'Stay Informed',
     description: 'Keep up with changing laws and regulations through real-time updates and alerts. Never miss an important regulatory change that affects your business.',
-    percentage: 95
+    percentage: 95,
+    icon: Shield
   }
 ];
 
@@ -278,52 +283,65 @@ const Index = () => {
       </section>
       
       {/* Benefits Section */}
-      <section id="benefits" className="py-20 px-4 bg-legal-light dark:bg-legal-slate/10 transition-colors">
+      <section id="benefits" className="py-20 px-4 bg-gradient-to-br from-legal-light via-white to-legal-light dark:from-legal-slate/20 dark:via-legal-slate/5 dark:to-legal-slate/20 transition-colors">
         <div className="container mx-auto">
-          <div className="grid gap-12 md:grid-cols-2 items-center">
-            <div className="fade-up-element">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
-                Why Choose VakilGPT
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-6">
-                Transform Your Indian Legal Practice
-              </h2>
-              <p className="text-legal-muted text-lg mb-8">
-                Our AI platform helps Indian legal professionals work more efficiently, reduce costs, and deliver better results tailored to India's complex legal landscape.
-              </p>
-              
-              <div className="space-y-8">
-                {benefits.map((benefit, index) => <div key={benefit.title} className="fade-up-element" style={{
-                animationDelay: `${index * 100}ms`
-              }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-legal-slate">{benefit.title}</h3>
-                      <span className="text-legal-accent font-bold">{benefit.percentage}%</span>
+          <div className="text-center max-w-3xl mx-auto mb-16 fade-up-element">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
+              <Users className="h-4 w-4 mr-2" />
+              <span>The VakilGPT Advantage</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4 font-playfair">
+              Transform Your <span className="text-legal-accent">Indian Legal Practice</span>
+            </h2>
+            <p className="text-legal-muted dark:text-gray-300 text-lg">
+              Discover how VakilGPT can revolutionize your legal workflow with these powerful advantages
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            {benefits.map((benefit, index) => (
+              <div key={benefit.title} 
+                className="fade-up-element" 
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <Card className="relative overflow-hidden h-full transition-all duration-300 hover:shadow-elevated border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
+                  <CardHeader className="pb-2">
+                    <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-legal-accent/5"></div>
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-legal-accent to-purple-600 flex items-center justify-center mb-4">
+                      <benefit.icon className="w-8 h-8 text-white" />
                     </div>
-                    <Progress value={benefit.percentage} className="h-2 mb-2" />
-                    <p className="text-legal-muted">{benefit.description}</p>
-                  </div>)}
+                    <CardTitle className="text-2xl font-bold text-legal-slate dark:text-white">
+                      {benefit.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-legal-muted dark:text-gray-300 mb-4">{benefit.description}</p>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-medium text-legal-slate dark:text-white">Efficiency</span>
+                        <span className="text-legal-accent font-bold">{benefit.percentage}%</span>
+                      </div>
+                      <Progress value={benefit.percentage} className="h-2 bg-legal-border dark:bg-legal-slate/20" />
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              
-              <div className="mt-10">
-                <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white group">
-                  Explore Benefits
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="fade-up-element">
-              <div className="relative">
-                <div className="absolute inset-0 -left-6 -bottom-6 rounded-xl bg-legal-accent/10 transform -rotate-3" />
-                <div className="glass-container shadow-elegant rounded-xl overflow-hidden transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                  <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?ixlib=rb-4.0.3&auto=format&fit=crop&w=2371&q=80" alt="Indian legal professional with AI benefits" className="w-full h-auto object-cover" />
-                </div>
-              </div>
-            </div>
+            ))}
+          </div>
+          
+          <div className="text-center fade-up-element mt-8">
+            <Link to="/tools">
+              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white group">
+                Explore All Benefits
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
+      
+      {/* Review Section */}
+      <ReviewSection />
       
       {/* Testimonials Section */}
       <section className="py-20 px-4 legal-gradient text-white">
