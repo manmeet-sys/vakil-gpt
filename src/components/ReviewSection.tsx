@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, MessageSquare, User, Filter, Clock, ThumbsUp, ChevronDown, CheckSquare, ArrowDownAZ } from 'lucide-react';
@@ -53,7 +54,7 @@ const ReviewSection = () => {
         const { data, error } = await supabase
           .from('user_reviews')
           .select('*')
-          .order('created_at', { ascending: false }) as { data: UserReview[] | null, error: any };
+          .order('created_at', { ascending: false });
         
         if (error) {
           console.error("Error fetching reviews:", error);
@@ -164,7 +165,7 @@ const ReviewSection = () => {
       
       const { error } = await supabase
         .from('user_reviews')
-        .update({ helpful_count: reviewToUpdate.helpful_count + 1 } as any)
+        .update({ helpful_count: reviewToUpdate.helpful_count + 1 })
         .eq('id', id);
       
       if (error) {

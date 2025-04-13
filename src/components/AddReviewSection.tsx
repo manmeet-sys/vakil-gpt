@@ -65,7 +65,7 @@ const AddReviewSection = () => {
       // Add review to database with explicit typing
       const { error } = await supabase
         .from('user_reviews')
-        .insert(reviewData as any);
+        .insert(reviewData);
 
       if (error) {
         console.error("Error submitting review:", error);
