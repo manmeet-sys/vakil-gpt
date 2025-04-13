@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Send, MessageSquare, User, Filter, Clock, ThumbsUp, Sort, ChevronDown, CheckSquare } from 'lucide-react';
+import { Star, Send, MessageSquare, User, Filter, Clock, ThumbsUp, ChevronDown, CheckSquare, ArrowDownAZ } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -273,7 +273,7 @@ const ReviewSection = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" className="flex items-center gap-2">
-                        <Sort className="h-4 w-4" />
+                        <ArrowDownAZ className="h-4 w-4" />
                         Sort by
                         <ChevronDown className="h-3 w-3 opacity-50" />
                       </Button>
@@ -360,8 +360,7 @@ const ReviewSection = () => {
                             <p className="text-legal-slate/80 dark:text-gray-300">
                               {expandedReviews.includes(review.id) || review.comment.length < 150
                                 ? `"${review.comment}"`
-                                : `"${review.comment.slice(0, 150)}..."`
-                              }
+                                : `"${review.comment.slice(0, 150)}..."`}
                             </p>
                             {review.comment.length > 150 && (
                               <button 
@@ -383,10 +382,10 @@ const ReviewSection = () => {
                               Helpful ({review.helpfulCount})
                             </Button>
                             <ShareButton 
-                              variant="ghost" 
-                              size="sm"
                               title={`Review by ${review.name} - VakilGPT`}
                               description={review.comment}
+                              className="text-legal-muted hover:text-legal-accent"
+                              variant="ghost"
                             />
                           </CardFooter>
                         </Card>

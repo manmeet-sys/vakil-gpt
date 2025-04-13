@@ -10,6 +10,7 @@ interface ShareButtonProps {
   description?: string;
   className?: string;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  size?: "default" | "sm" | "lg" | "icon"; // Added size property to match Button component
 }
 
 const ShareButton = ({ 
@@ -17,7 +18,8 @@ const ShareButton = ({
   title = "VakilGPT - AI-Powered Legal Assistance",
   description = "Advanced legal assistance powered by artificial intelligence",
   className = "",
-  variant = "outline"
+  variant = "outline",
+  size = "default" // Default size
 }: ShareButtonProps) => {
   
   const handleShare = async () => {
@@ -44,6 +46,7 @@ const ShareButton = ({
     <Button 
       onClick={handleShare} 
       variant={variant}
+      size={size}
       className={className}
     >
       <Share2 className="h-4 w-4 mr-2" />
