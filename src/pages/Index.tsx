@@ -410,6 +410,130 @@ const Index = () => {
         </div>
       </section>
       
+      {/* Explore Tools Section */}
+      <section className="py-16 px-4 bg-white dark:bg-legal-slate/5">
+        <div className="container mx-auto">
+          <ExploreToolsSection />
+        </div>
+      </section>
+      
+      {/* Creative Reviews Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/10 dark:to-pink-950/20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-1/2 bg-gradient-to-bl from-purple-300/20 to-transparent dark:from-purple-500/10 blur-3xl rounded-full transform translate-x-1/4 -translate-y-1/4"></div>
+        <div className="absolute bottom-0 left-0 w-1/2 h-1/3 bg-gradient-to-tr from-indigo-300/20 to-transparent dark:from-indigo-500/10 blur-3xl rounded-full transform -translate-x-1/4 translate-y-1/4"></div>
+        
+        <div className="container mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
+            <motion.div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-legal-accent/10 text-legal-accent mb-4"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="text-sm font-medium">Client Experiences</span>
+            </motion.div>
+            
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4 tracking-tight font-playfair"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              How VakilGPT <span className="text-legal-accent">Transforms Legal Practices</span>
+            </motion.h2>
+            
+            <motion.p 
+              className="text-legal-muted dark:text-gray-300 max-w-2xl mx-auto text-lg"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              See the impact our AI tools have on Indian legal professionals' daily workflows
+            </motion.p>
+          </div>
+          
+          <motion.div 
+            className="grid gap-6 md:grid-cols-3"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.1 }
+              }
+            }}
+            initial="hidden"
+            animate="visible"
+          >
+            {[
+              {
+                quote: "Document analysis that used to take hours now takes minutes. I can focus more on strategic legal advice.",
+                author: "Anika Patel",
+                role: "Corporate Counsel, Mumbai",
+                highlight: "70% time saved",
+                color: "from-blue-500 to-indigo-600"
+              },
+              {
+                quote: "The compliance tools ensure we stay updated with the latest Indian regulations across multiple jurisdictions.",
+                author: "Vikram Singh",
+                role: "Managing Partner, Delhi",
+                highlight: "98% compliance accuracy",
+                color: "from-purple-500 to-pink-500"
+              },
+              {
+                quote: "Case research capabilities give me access to precedents I wouldn't have found through traditional methods.",
+                author: "Priya Sharma",
+                role: "Litigation Specialist, Bangalore",
+                highlight: "3x more relevant cases",
+                color: "from-amber-500 to-orange-600"
+              }
+            ].map((review, index) => (
+              <motion.div
+                key={review.author}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="h-full"
+              >
+                <Card className="h-full border-none shadow-lg bg-white/80 dark:bg-legal-slate/20 backdrop-blur-sm">
+                  <CardHeader className="pb-2 relative">
+                    <div className={`absolute h-1.5 w-full top-0 left-0 rounded-t-lg bg-gradient-to-r ${review.color}`}></div>
+                    <div className="pt-2">
+                      <div className="mb-4 text-5xl text-legal-accent/20 font-serif italic">"</div>
+                      <CardTitle className="text-xl font-medium text-legal-slate dark:text-white line-clamp-1">
+                        {review.author}
+                      </CardTitle>
+                      <p className="text-legal-muted dark:text-gray-400 text-sm">
+                        {review.role}
+                      </p>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-legal-slate/80 dark:text-gray-300 italic">
+                      "{review.quote}"
+                    </p>
+                    <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium">
+                      {review.highlight}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+          
+          <div className="mt-10 text-center">
+            <Link to="/chat">
+              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-2 group">
+                Experience The Difference
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+      
       {/* CTA Section */}
       <section className="py-20 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
         <div className="container mx-auto">
