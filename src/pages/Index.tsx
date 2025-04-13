@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ChatInterface from '@/components/ChatInterface';
 import FeatureCard from '@/components/FeatureCard';
-import AllTools from '@/components/AllTools';
+import ExploreToolsSection from '@/components/ExploreToolsSection';
 import { Gavel, Scale, FileText, Shield, BookOpen, CheckCircle, ArrowRight, Search, Settings, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -272,7 +272,7 @@ const Index = () => {
             <h3 className="text-2xl font-bold text-legal-slate dark:text-white mb-6 text-center">
               Explore All Legal & Financial Tools
             </h3>
-            <AllTools />
+            <ExploreToolsSection />
           </div>
         </div>
       </section>
