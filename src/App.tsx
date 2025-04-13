@@ -19,6 +19,11 @@ import LegalEducationPage from "./pages/legal-education";
 import ToolsPage from "./pages/tools";
 import PlaceholderToolPage from "./pages/placeholder-tool";
 import PrivacyPolicyPage from "./pages/privacy-policy";
+import TermsOfServicePage from "./pages/terms-of-service";
+import PricingPage from "./pages/pricing";
+import BlogPage from "./pages/blog";
+import GuidesPage from "./pages/guides";
+import FaqPage from "./pages/faq";
 import OrientationMessage from "./components/OrientationMessage";
 import AnalyticsWrapper from "./components/AnalyticsWrapper";
 import AnalyticsDashboard from "./pages/analytics-dashboard";
@@ -89,6 +94,11 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/blog" element={<BlogPage />} />
+                  <Route path="/guides" element={<GuidesPage />} />
+                  <Route path="/faq" element={<FaqPage />} />
                   
                   {/* Auth routes */}
                   <Route path="/signup" element={<SignupPage />} />

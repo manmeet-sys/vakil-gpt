@@ -2,7 +2,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import AnimatedLogo from './AnimatedLogo';
-import { Mail, Phone, Github, Linkedin, Twitter } from 'lucide-react';
+import { Mail, Phone, Github, Linkedin, Twitter, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface FooterProps {
@@ -47,10 +47,10 @@ const Footer: React.FC<FooterProps> = ({
             <div>
               <h4 className="font-semibold text-legal-slate mb-4">Company</h4>
               <ul className="space-y-3">
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">About</a></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Careers</a></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Contact</a></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Blog</a></li>
+                <li><Link to="/" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Home</Link></li>
+                <li><Link to="/tools" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Tools</Link></li>
+                <li><Link to="/pricing" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Pricing</Link></li>
+                <li><a href="mailto:Manmeetsingh20378@gmail.com" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Contact</a></li>
               </ul>
             </div>
             
@@ -58,19 +58,19 @@ const Footer: React.FC<FooterProps> = ({
               <h4 className="font-semibold text-legal-slate mb-4">Legal</h4>
               <ul className="space-y-3">
                 <li><Link to="/privacy-policy" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Privacy Policy</Link></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Terms</a></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Cookies</a></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Licenses</a></li>
+                <li><Link to="/terms-of-service" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Terms of Service</Link></li>
+                <li><Link to="/chat" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Legal Chat</Link></li>
+                <li><Link to="/tools" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Legal Tools</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold text-legal-slate mb-4">Resources</h4>
               <ul className="space-y-3">
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Documentation</a></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Support</a></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">FAQ</a></li>
-                <li><a href="#" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Community</a></li>
+                <li><Link to="/blog" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Blog</Link></li>
+                <li><Link to="/guides" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Legal Guides</Link></li>
+                <li><Link to="/faq" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">FAQ</Link></li>
+                <li><Link to="/chat" className="text-legal-muted hover:text-legal-accent transition-colors text-sm">Support</Link></li>
               </ul>
             </div>
           </div>
@@ -78,7 +78,7 @@ const Footer: React.FC<FooterProps> = ({
         
         <div className="mt-12 pt-8 border-t border-legal-border flex flex-col md:flex-row justify-between items-center">
           <p className="text-legal-muted text-sm">
-            &copy; {currentYear} LegalGPT. All rights reserved.
+            &copy; {currentYear} VakilGPT. All rights reserved.
           </p>
           
           <p className="mt-2 md:mt-0 text-center text-sm font-extrabold text-slate-950">
@@ -106,4 +106,3 @@ const Footer: React.FC<FooterProps> = ({
 };
 
 export default Footer;
-

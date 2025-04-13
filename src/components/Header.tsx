@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown, Book, FileText, HelpCircle, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/context/AuthContext';
@@ -11,10 +12,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import ShareButton from './ShareButton';
+import { Badge } from '@/components/ui/badge';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -84,36 +87,81 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
-            <Link to="/" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+            <Link to="/" className={`px-3 py-2 ${
+              location.pathname === '/' 
+                ? 'text-legal-accent font-medium' 
+                : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+              } transition-colors`}>
               Home
             </Link>
-            <Link to="/chat" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+            <Link to="/chat" className={`px-3 py-2 ${
+              location.pathname === '/chat' 
+                ? 'text-legal-accent font-medium' 
+                : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+              } transition-colors`}>
               Chat
             </Link>
-            <Link to="/tools" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+            <Link to="/tools" className={`px-3 py-2 ${
+              location.pathname === '/tools' 
+                ? 'text-legal-accent font-medium' 
+                : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+              } transition-colors`}>
               Tools
             </Link>
-            <Link to="/pricing" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+            <Link to="/pricing" className={`px-3 py-2 ${
+              location.pathname === '/pricing' 
+                ? 'text-legal-accent font-medium' 
+                : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+              } transition-colors flex items-center gap-1`}>
               Pricing
+              <Badge className="ml-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-[10px] px-1.5 py-0 h-4">FREE BETA</Badge>
             </Link>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+                <Button variant="ghost" className={`px-3 py-2 ${
+                  ['/blog', '/guides', '/faq'].includes(location.pathname) 
+                    ? 'text-legal-accent font-medium' 
+                    : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+                  } transition-colors`}>
                   Resources
                   <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link to="/blog" className="w-full cursor-pointer">Blog</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/guides" className="w-full cursor-pointer">Guides</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/faq" className="w-full cursor-pointer">FAQ</Link>
-                </DropdownMenuItem>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild className="flex items-center">
+                    <Link to="/blog" className="w-full cursor-pointer">
+                      <Book className="h-4 w-4 mr-2" />
+                      Blog
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="flex items-center">
+                    <Link to="/guides" className="w-full cursor-pointer">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Guides
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="flex items-center">
+                    <Link to="/faq" className="w-full cursor-pointer">
+                      <HelpCircle className="h-4 w-4 mr-2" />
+                      FAQ
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="flex items-center">
+                    <Link to="/terms-of-service" className="w-full cursor-pointer">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Terms of Service
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="flex items-center">
+                    <Link to="/privacy-policy" className="w-full cursor-pointer">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Privacy Policy
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </nav>
@@ -207,27 +255,71 @@ const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-white dark:bg-legal-slate border-t border-legal-border dark:border-legal-slate/20 p-4">
           <nav className="flex flex-col space-y-4">
-            <Link to="/" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+            <Link to="/" className={`px-3 py-2 ${
+              location.pathname === '/' 
+                ? 'text-legal-accent font-medium' 
+                : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+              } transition-colors`}>
               Home
             </Link>
-            <Link to="/chat" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+            <Link to="/chat" className={`px-3 py-2 ${
+              location.pathname === '/chat' 
+                ? 'text-legal-accent font-medium' 
+                : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+              } transition-colors`}>
               Chat
             </Link>
-            <Link to="/tools" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+            <Link to="/tools" className={`px-3 py-2 ${
+              location.pathname === '/tools' 
+                ? 'text-legal-accent font-medium' 
+                : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+              } transition-colors`}>
               Tools
             </Link>
-            <Link to="/pricing" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+            <Link to="/pricing" className={`px-3 py-2 ${
+              location.pathname === '/pricing' 
+                ? 'text-legal-accent font-medium' 
+                : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+              } transition-colors flex items-center`}>
               Pricing
+              <Badge className="ml-2 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 text-[10px] px-1.5 py-0 h-4">FREE BETA</Badge>
             </Link>
-            <Link to="/blog" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
-              Blog
-            </Link>
-            <Link to="/guides" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
-              Guides
-            </Link>
-            <Link to="/faq" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
-              FAQ
-            </Link>
+            
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+              <h3 className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 px-3 py-1">Resources</h3>
+              <Link to="/blog" className={`px-3 py-2 ${
+                location.pathname === '/blog' 
+                  ? 'text-legal-accent font-medium' 
+                  : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+                } transition-colors flex items-center gap-2`}>
+                <Book className="h-4 w-4" />
+                Blog
+              </Link>
+              <Link to="/guides" className={`px-3 py-2 ${
+                location.pathname === '/guides' 
+                  ? 'text-legal-accent font-medium' 
+                  : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+                } transition-colors flex items-center gap-2`}>
+                <FileText className="h-4 w-4" />
+                Guides
+              </Link>
+              <Link to="/faq" className={`px-3 py-2 ${
+                location.pathname === '/faq' 
+                  ? 'text-legal-accent font-medium' 
+                  : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+                } transition-colors flex items-center gap-2`}>
+                <HelpCircle className="h-4 w-4" />
+                FAQ
+              </Link>
+              <Link to="/terms-of-service" className={`px-3 py-2 ${
+                location.pathname === '/terms-of-service' 
+                  ? 'text-legal-accent font-medium' 
+                  : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
+                } transition-colors flex items-center gap-2`}>
+                <FileText className="h-4 w-4" />
+                Terms of Service
+              </Link>
+            </div>
           </nav>
         </div>
       )}
