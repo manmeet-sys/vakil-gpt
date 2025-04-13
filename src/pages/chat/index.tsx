@@ -5,7 +5,7 @@ import ChatInterface from '@/components/ChatInterface';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Scale } from 'lucide-react';
+import { ArrowLeft, Scale } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const ChatPage = () => {
