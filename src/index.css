@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
@@ -68,6 +67,18 @@
     --border: 220 15% 25%;
     --input: 220 15% 25%;
     --ring: 220 70% 50%;
+  }
+}
+
+@layer components {
+  .apple-button {
+    @apply rounded-full bg-blue-accent text-white font-medium py-3 px-6 transition-all;
+    @apply hover:bg-blue-accent/90 active:scale-98 focus:outline-none focus:ring-2 focus:ring-blue-accent/50;
+  }
+  
+  .apple-button-secondary {
+    @apply rounded-full bg-blue-light text-blue-slate font-medium py-3 px-6 transition-all;
+    @apply hover:bg-blue-light/90 active:scale-98 focus:outline-none focus:ring-2 focus:ring-blue-muted/50;
   }
 }
 
