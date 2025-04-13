@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { UserCircle, Bot, Book } from 'lucide-react';
+import { UserCircle, Bot } from 'lucide-react';
 
 interface LegalChatMessageProps {
   message: string;
@@ -84,17 +84,19 @@ const LegalChatMessage: React.FC<LegalChatMessageProps> = ({
 
   return (
     <div className={cn(
-      "py-6 px-4 flex items-start gap-4 border-b border-gray-100 dark:border-zinc-800 animate-fade-up group", 
-      isUser ? "bg-white dark:bg-zinc-900" : "bg-gray-50 dark:bg-zinc-800/20"
+      "py-4 sm:py-6 px-3 sm:px-4 flex items-start gap-3 sm:gap-4 rounded-lg mb-3 shadow-sm transition-all duration-300 animate-fade-up", 
+      isUser 
+        ? "bg-white/80 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/30" 
+        : "bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-800/20"
     )}>
       <div className={cn(
-        "w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center",
-        isUser ? "bg-green-500" : "bg-blue-500"
+        "w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-full flex items-center justify-center shadow-sm",
+        isUser ? "bg-purple-500 bg-gradient-to-br from-purple-400 to-purple-600" : "bg-blue-500 bg-gradient-to-br from-blue-400 to-blue-600"
       )}>
         {isUser ? (
-          <UserCircle className="w-5 h-5 text-white" />
+          <UserCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         ) : (
-          <Bot className="w-5 h-5 text-white" />
+          <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         )}
       </div>
       

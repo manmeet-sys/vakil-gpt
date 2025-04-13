@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Settings, Zap, Loader2, Plus, Trash } from 'lucide-react';
+import { Send, Settings, Loader2, Plus, Trash, FileText, Database, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,11 +8,11 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import LegalChatMessage from './LegalChatMessage';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
-import GeminiFlashAnalyzer from './GeminiFlashAnalyzer';
 import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
 import { getGeminiResponse } from './GeminiProIntegration';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
   id: string;
@@ -43,6 +42,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [analysisType, setAnalysisType] = useState('legal-brief');
   const [text, setText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const isMobile = useIsMobile();
   
   const analysisOptions = [
     { value: 'legal-brief', label: 'Legal Brief Generation' },
@@ -191,101 +191,42 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   return (
     <div className={`flex flex-col border rounded-xl bg-white dark:bg-zinc-800 shadow-sm h-full ${className}`}>
       {/* Chat Header */}
-      <div className="flex justify-between items-center p-3 border-b">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-between items-center p-2 sm:p-3 border-b">
+        <div className="flex items-center gap-1">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={clearChat}
-            className="text-xs flex items-center gap-1"
+            className="text-xs flex items-center gap-1 px-2 py-1 h-8"
           >
-            <Trash className="h-3 w-3 mr-1" />
-            Clear Chat
+            <Trash className="h-3 w-3" />
+            <span className={isMobile ? "hidden" : "inline"}>Clear</span>
           </Button>
         </div>
-        <div className="flex items-center gap-2">
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs flex items-center gap-1"
-              >
-                <Zap className="h-3 w-3" />
-                Gemini Pro
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[700px] bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
-              <DialogHeader>
-                <DialogTitle>Gemini Pro Legal Analysis</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-2">
-                  <Select 
-                    value={analysisType} 
-                    onValueChange={setAnalysisType}
-                  >
-                    <SelectTrigger className="w-full sm:w-[250px]">
-                      <SelectValue placeholder="Select analysis type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {analysisOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  className="min-h-[250px] w-full resize-none dark:bg-zinc-800 dark:border-zinc-700"
-                  placeholder={`Enter text for ${analysisOptions.find(opt => opt.value === analysisType)?.label}...`}
-                />
-                
-                <Button 
-                  onClick={generateAnalysis} 
-                  disabled={isGenerating || !text.trim()}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating Analysis...
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="mr-2 h-4 w-4" />
-                      Generate {analysisOptions.find(opt => opt.value === analysisType)?.label}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-          
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
           <LegalAnalysisGenerator
             apiProvider="gemini"
-            onAnalysisComplete={handleAnalysisComplete} 
-          />
-          
-          <GeminiFlashAnalyzer
             onAnalysisComplete={handleAnalysisComplete}
+            buttonLabel={isMobile ? "Analysis" : "Legal Analysis"}
+            iconOnly={isMobile}
           />
           
-          <KnowledgeBaseButton />
+          <KnowledgeBaseButton 
+            buttonLabel={isMobile ? "KB" : "Knowledge Base"}
+            iconOnly={isMobile}
+          />
           
           <PdfAnalyzer 
             apiProvider="gemini"
-            onAnalysisComplete={handleAnalysisComplete} 
+            onAnalysisComplete={handleAnalysisComplete}
+            buttonLabel={isMobile ? "PDF" : "PDF Analysis"}
+            iconOnly={isMobile}
           />
         </div>
       </div>
       
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900/80">
         {messages.map((message) => (
           <LegalChatMessage
             key={message.id}
@@ -304,15 +245,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       </div>
       
       {/* Input Area */}
-      <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2">
+      <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2 bg-white dark:bg-zinc-800/90 backdrop-blur-sm">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about Indian law or legal procedures..."
           disabled={isLoading}
-          className="flex-1 w-full"
+          className="flex-1 w-full border-gray-300 dark:border-zinc-700 focus:ring-blue-accent dark:focus:ring-blue-accent/70"
         />
-        <Button type="submit" disabled={isLoading || !input.trim()}>
+        <Button 
+          type="submit" 
+          disabled={isLoading || !input.trim()}
+          size="icon"
+          className="rounded-full bg-blue-accent hover:bg-blue-accent/90"
+        >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (

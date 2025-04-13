@@ -1,51 +1,43 @@
-import React from 'react';
-import { Book } from 'lucide-react';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Database } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface KnowledgeBaseButtonProps {
-  className?: string;
-  onInsert?: (text: string) => void;
+  buttonLabel?: string;
+  iconOnly?: boolean;
 }
 
-const KnowledgeBaseButton = ({ className, onInsert }: KnowledgeBaseButtonProps) => {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    if (onInsert) {
-      // If onInsert is provided, use it to insert a reference
-      onInsert(" [Reference from knowledge base] ");
-    } else {
-      // Otherwise navigate to the knowledge page
-      navigate('/knowledge');
-    }
-  };
+const KnowledgeBaseButton: React.FC<KnowledgeBaseButtonProps> = ({ 
+  buttonLabel = "Knowledge Base",
+  iconOnly = false
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className={`text-xs flex items-center gap-1 ${className || ''}`}
-            onClick={handleClick}
-          >
-            <Book className="h-3 w-3" />
-            Knowledge Base
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p className="text-xs">Access your custom legal knowledge repository</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className={`text-xs flex items-center gap-1 ${iconOnly ? 'px-2 h-8 min-w-8' : ''}`}
+        >
+          <Database className="h-3 w-3" />
+          {!iconOnly && <span>{buttonLabel}</span>}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px] bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
+        <DialogHeader>
+          <DialogTitle>Knowledge Base</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Knowledge Base content will go here.
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
