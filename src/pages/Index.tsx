@@ -6,10 +6,11 @@ import ChatInterface from '@/components/ChatInterface';
 import FeatureCard from '@/components/FeatureCard';
 import ExploreToolsSection from '@/components/ExploreToolsSection';
 import ReviewSection from '@/components/ReviewSection';
-import { Gavel, Scale, FileText, Shield, BookOpen, CheckCircle, ArrowRight, Search, Settings, User, Users, Sparkle } from 'lucide-react';
+import { Gavel, Scale, FileText, Shield, BookOpen, CheckCircle, ArrowRight, Search, Settings, User, Users, Sparkle, Compass, Sparkles, RotateCw, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { motion } from 'framer-motion';
 
 const features = [
   {
@@ -79,6 +80,51 @@ const howItWorks = [
   }
 ];
 
+const legalAiSolutions = [
+  {
+    title: "Document Analysis",
+    description: "Upload contracts, agreements & legal documents for instant AI-powered insights, key clauses, risk assessment & plain-language explanations.",
+    icon: FileText,
+    stepNumber: "01",
+    color: "from-blue-600 to-indigo-700"
+  },
+  {
+    title: "Ask Questions",
+    description: "Ask any legal question and receive precise answers with references to relevant Indian statutes, case law, and legal principles.",
+    icon: MessageSquare,
+    stepNumber: "02",
+    color: "from-purple-600 to-pink-500"
+  },
+  {
+    title: "Case Law Research",
+    description: "Search across jurisdictions with intelligent filtering by court, date & topic to find precedents that strengthen your arguments.",
+    icon: Gavel,
+    stepNumber: "03",
+    color: "from-amber-500 to-orange-600"
+  },
+  {
+    title: "Customize Experience",
+    description: "Add your own documents to the knowledge base to make responses more relevant to your specific legal needs and jurisdiction.",
+    icon: Settings,
+    stepNumber: "04",
+    color: "from-emerald-500 to-teal-600"
+  },
+  {
+    title: "Compliance Assistance",
+    description: "Stay current with regulatory changes across industries with personalized alerts, compliance checklists, and actionable recommendations.",
+    icon: Shield,
+    stepNumber: "05",
+    color: "from-rose-500 to-red-600"
+  },
+  {
+    title: "Due Diligence Support",
+    description: "Streamline due diligence with automated document review, entity extraction, and customizable report generation for Indian legal context.",
+    icon: CheckCircle,
+    stepNumber: "06",
+    color: "from-sky-500 to-blue-600"
+  }
+];
+
 const Index = () => {
   useEffect(() => {
     const inViewObserver = new IntersectionObserver(entries => {
@@ -102,6 +148,29 @@ const Index = () => {
       elements.forEach(el => inViewObserver.unobserve(el));
     };
   }, []);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
 
   return <>
       <Header />
@@ -200,85 +269,100 @@ const Index = () => {
         </div>
       </section>
       
-      {/* How It Works Section */}
-      <section className="py-16 px-4 bg-legal-light dark:bg-legal-slate/10 transition-colors">
-        <div className="container mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
-              Simple Process
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-4">
-              How VakilGPT Works
-            </h2>
-            <p className="text-legal-muted text-lg">
-              Our platform is designed to be intuitive and powerful, delivering valuable Indian legal insights in seconds.
-            </p>
+      {/* Combined How It Works & Features Section */}
+      <section id="features" className="py-24 px-4 bg-gradient-to-br from-legal-light via-white to-legal-light dark:from-legal-slate/20 dark:via-legal-slate/5 dark:to-legal-slate/20 overflow-hidden">
+        <div className="container mx-auto relative z-10">
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-36 -right-36 w-96 h-96 rounded-full bg-blue-400/10 blur-3xl"></div>
+            <div className="absolute -bottom-36 -left-36 w-96 h-96 rounded-full bg-purple-400/10 blur-3xl"></div>
+          </div>
+
+          <div className="text-center max-w-3xl mx-auto mb-16 fade-up-element">
+            <motion.div 
+              className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              <span>AI-Powered Legal Assistant</span>
+            </motion.div>
+            
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4 font-playfair"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              How <span className="text-legal-accent">VakilGPT</span> Transforms Your Legal Practice
+            </motion.h2>
+            
+            <motion.p 
+              className="text-legal-muted dark:text-gray-300 text-lg"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              Six powerful solutions designed specifically for Indian legal professionals to streamline workflows and enhance decision-making
+            </motion.p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {howItWorks.map((step, index) => <Card key={step.title} className="fade-up-element border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-elegant hover:shadow-elevated transition-all duration-300" style={{
-            animationDelay: `${index * 100}ms`
-          }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-legal-accent/10 flex items-center justify-center mb-4">
-                    <step.icon className="w-6 h-6 text-legal-accent" />
-                  </div>
-                  <CardTitle className="text-xl font-semibold text-legal-slate">{`${index + 1}. ${step.title}`}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-legal-muted">{step.description}</p>
-                </CardContent>
-              </Card>)}
-          </div>
+          <motion.div 
+            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            {legalAiSolutions.map((solution, index) => (
+              <motion.div 
+                key={solution.title} 
+                className="fade-up-element"
+                variants={itemVariants}
+              >
+                <Card className="h-full border-legal-border/40 dark:border-legal-slate/20 bg-white/80 dark:bg-legal-slate/10 backdrop-blur-sm hover:shadow-elegant transition-all duration-300 overflow-hidden group">
+                  <div className={`absolute top-0 left-0 w-2 h-full bg-gradient-to-b ${solution.color}`}></div>
+                  <CardHeader className="relative pb-2">
+                    <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 dark:text-gray-800 opacity-50 font-playfair">
+                      {solution.stepNumber}
+                    </div>
+                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${solution.color} flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                      <solution.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <CardTitle className="text-xl font-bold text-legal-slate dark:text-white">
+                      {solution.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-legal-muted dark:text-gray-300">
+                      {solution.description}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <Button variant="ghost" className="text-legal-accent hover:text-legal-accent/90 hover:bg-legal-accent/10 p-0 h-8 group">
+                      Learn More
+                      <ArrowRight className="ml-1 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
           
-          <div className="text-center fade-up-element">
+          <motion.div 
+            className="mt-10 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
             <Link to="/chat">
-              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-6 py-3">
-                Get Started Now
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-6 text-base shadow-md hover:shadow-lg transition-all group">
+                <RotateCw className="mr-2 h-4 w-4 animate-spin-slow" />
+                Experience AI in Action
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-          </div>
-        </div>
-      </section>
-      
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
-        <div className="container mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16 fade-up-element">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
-              Powerful Capabilities
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-4">
-              Legal AI Services for Indian Professionals
-            </h2>
-            <p className="text-legal-muted text-lg">
-              VakilGPT offers a suite of AI-powered tools designed specifically for Indian legal professionals to streamline workflows and enhance decision-making.
-            </p>
-            <div className="mt-6">
-              <Link to="/tools">
-                <Button className="bg-legal-accent/10 hover:bg-legal-accent/20 text-legal-accent px-6 py-2">
-                  View All Tools
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-          
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
-            {features.map((feature, index) => <div key={feature.title} className="fade-up-element" style={{
-            animationDelay: `${index * 100}ms`
-          }}>
-                <FeatureCard icon={feature.icon} title={feature.title} description={feature.description} />
-              </div>)}
-          </div>
-          
-          <div className="mt-16 fade-up-element">
-            <h3 className="text-2xl font-bold text-legal-slate dark:text-white mb-6 text-center">
-              Explore All Legal & Financial Tools
-            </h3>
-            <ExploreToolsSection />
-          </div>
+          </motion.div>
         </div>
       </section>
       

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -180,6 +181,22 @@ export default {
 					'100%': {
 						transform: 'scale(1)'
 					}
+				},
+				'spin-slow': {
+					'0%': {
+						transform: 'rotate(0deg)'
+					},
+					'100%': {
+						transform: 'rotate(360deg)'
+					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-10px)'
+					}
 				}
 			},
 			animation: {
@@ -188,7 +205,9 @@ export default {
 				'fade-in': 'fade-in 0.5s ease-out forwards',
 				'fade-up': 'fade-up 0.5s ease-out forwards',
 				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
-				'scale': 'scale 0.2s ease-out'
+				'scale': 'scale 0.2s ease-out',
+				'spin-slow': 'spin-slow 8s linear infinite',
+				'float': 'float 4s ease-in-out infinite'
 			},
 			fontFamily: {
 				sans: ['-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'sans-serif'],
