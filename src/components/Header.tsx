@@ -5,6 +5,7 @@ import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown, Book, FileText
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/context/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,7 @@ const Header = () => {
   const { theme, setTheme } = useTheme();
   const { user, userProfile, signOut, isAuthenticated } = useAuth();
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -70,9 +72,9 @@ const Header = () => {
 
   return (
     <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         scrolled 
-          ? 'bg-white/80 dark:bg-legal-slate/80 backdrop-blur-md shadow-sm' 
+          ? 'bg-white/90 dark:bg-legal-slate/90 backdrop-blur-md shadow-sm' 
           : 'bg-transparent'
       }`}
     >
@@ -128,7 +130,7 @@ const Header = () => {
                   <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild className="flex items-center">
                     <Link to="/blog" className="w-full cursor-pointer">
@@ -178,13 +180,15 @@ const Header = () => {
               {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
             
-            {/* Share Button */}
-            <ShareButton 
-              variant="ghost" 
-              className="text-legal-slate dark:text-white/90" 
-              title="VakilGPT - AI-Powered Legal Assistance"
-              description="Advanced legal assistance powered by artificial intelligence"
-            />
+            {/* Share Button - Hide on mobile */}
+            {!isMobile && (
+              <ShareButton 
+                variant="ghost" 
+                className="text-legal-slate dark:text-white/90" 
+                title="VakilGPT - AI-Powered Legal Assistance"
+                description="Advanced legal assistance powered by artificial intelligence"
+              />
+            )}
 
             {/* User Menu or Auth Buttons */}
             {isAuthenticated ? (
@@ -199,7 +203,7 @@ const Header = () => {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
                   <DropdownMenuLabel>
                     {userProfile?.full_name || user?.email || 'My Account'}
                   </DropdownMenuLabel>
@@ -238,21 +242,23 @@ const Header = () => {
               </div>
             )}
 
-            {/* Mobile Menu Button */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="md:hidden text-legal-slate dark:text-white/90"
-              onClick={toggleMenu}
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            {/* Mobile Menu Button - Hide if using AppleMobileNav */}
+            {!isMobile && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="md:hidden text-legal-slate dark:text-white/90"
+                onClick={toggleMenu}
+              >
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
+      {/* Mobile Menu - Hide if using AppleMobileNav */}
+      {isMenuOpen && !isMobile && (
         <div className="md:hidden bg-white dark:bg-legal-slate border-t border-legal-border dark:border-legal-slate/20 p-4">
           <nav className="flex flex-col space-y-4">
             <Link to="/" className={`px-3 py-2 ${

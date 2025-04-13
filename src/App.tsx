@@ -22,7 +22,9 @@ import PrivacyPolicyPage from "./pages/privacy-policy";
 import TermsOfServicePage from "./pages/terms-of-service";
 import PricingPage from "./pages/pricing";
 import BlogPage from "./pages/blog";
+import BlogPostPage from "./pages/blog/post";
 import GuidesPage from "./pages/guides";
+import GuideDetailPage from "./pages/guides/guide";
 import FaqPage from "./pages/faq";
 import OrientationMessage from "./components/OrientationMessage";
 import AnalyticsWrapper from "./components/AnalyticsWrapper";
@@ -96,8 +98,15 @@ const App = () => (
                   <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                   <Route path="/terms-of-service" element={<TermsOfServicePage />} />
                   <Route path="/pricing" element={<PricingPage />} />
+                  
+                  {/* Blog Routes */}
                   <Route path="/blog" element={<BlogPage />} />
+                  <Route path="/blog/:id" element={<BlogPostPage />} />
+                  
+                  {/* Guides Routes */}
                   <Route path="/guides" element={<GuidesPage />} />
+                  <Route path="/guides/:id" element={<GuideDetailPage />} />
+                  
                   <Route path="/faq" element={<FaqPage />} />
                   
                   {/* Auth routes */}
