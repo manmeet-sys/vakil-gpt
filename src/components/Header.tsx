@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown, Globe } from 'lucide-react';
+import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/context/AuthContext';
@@ -78,17 +77,9 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <div className="flex items-center">
-              <img src="/lovable-uploads/a29a46c2-eb0a-4daa-9390-3f070e0b6202.png" alt="VakilGPT Logo" className="h-8 mr-2" />
-              <div className="flex items-center">
-                <span className="text-xl font-bold text-legal-slate dark:text-white">
-                  Vakil<span className="text-legal-accent">GPT</span>
-                </span>
-                <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-800 font-bold">
-                  BETA
-                </span>
-              </div>
-            </div>
+            <span className="text-xl font-bold text-legal-slate dark:text-white">
+              Vakil<span className="text-legal-accent">GPT</span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -102,22 +93,33 @@ const Header = () => {
             <Link to="/tools" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
               Tools
             </Link>
-            <Link to="/knowledge" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
-              Knowledge
+            <Link to="/pricing" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Pricing
             </Link>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+                  Resources
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to="/blog" className="w-full cursor-pointer">Blog</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/guides" className="w-full cursor-pointer">Guides</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/faq" className="w-full cursor-pointer">FAQ</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2">
-            {/* Language Switcher */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-legal-slate dark:text-white/90"
-            >
-              <Globe className="h-5 w-5" />
-            </Button>
-            
             {/* Theme Toggle */}
             <Button 
               variant="ghost" 
@@ -128,6 +130,14 @@ const Header = () => {
               {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
             
+            {/* Share Button */}
+            <ShareButton 
+              variant="ghost" 
+              className="text-legal-slate dark:text-white/90" 
+              title="VakilGPT - AI-Powered Legal Assistance"
+              description="Advanced legal assistance powered by artificial intelligence"
+            />
+
             {/* User Menu or Auth Buttons */}
             {isAuthenticated ? (
               <DropdownMenu>
@@ -166,10 +176,18 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="ghost" className="text-legal-slate dark:text-white/90">
-                <User className="h-5 w-5" />
-                <span className="ml-2">Profile</span>
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Link to="/login">
+                  <Button variant="ghost" className="text-legal-slate dark:text-white/90">
+                    Log in
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white">
+                    Sign up
+                  </Button>
+                </Link>
+              </div>
             )}
 
             {/* Mobile Menu Button */}
@@ -198,8 +216,17 @@ const Header = () => {
             <Link to="/tools" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
               Tools
             </Link>
-            <Link to="/knowledge" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
-              Knowledge
+            <Link to="/pricing" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Pricing
+            </Link>
+            <Link to="/blog" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Blog
+            </Link>
+            <Link to="/guides" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              Guides
+            </Link>
+            <Link to="/faq" className="px-3 py-2 text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent transition-colors">
+              FAQ
             </Link>
           </nav>
         </div>
