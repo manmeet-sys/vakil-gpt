@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Compass, Sparkles } from 'lucide-react';
+import { ArrowRight, Compass, Sparkles, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,29 +36,33 @@ const ExploreToolsSection = () => {
   const featuredCategories = [
     {
       title: "Advocate Tools",
-      description: "Manage cases, track deadlines & billing",
-      color: "from-blue-500 to-indigo-600",
+      description: "Case management, deadlines & billing",
+      icon: <CheckCircle className="h-5 w-5 text-white" />,
+      color: "from-blue-600 to-blue-800",
       textColor: "text-blue-50",
       path: "/tools#advocate-tools"
     },
     {
       title: "AI Assistant",
       description: "24/7 legal Q&A and document analysis",
-      color: "from-purple-500 to-pink-500",
+      icon: <Sparkles className="h-5 w-5 text-white" />,
+      color: "from-purple-600 to-indigo-700",
       textColor: "text-purple-50",
       path: "/tools#ai-assistance"
     },
     {
       title: "Legal Research",
       description: "Case law, statutes & knowledge base",
-      color: "from-amber-500 to-orange-600",
+      icon: <Compass className="h-5 w-5 text-white" />,
+      color: "from-amber-500 to-orange-700",
       textColor: "text-amber-50",
       path: "/tools#legal-research"
     },
     {
       title: "Compliance",
-      description: "DPDP, AML, contract & risk management",
-      color: "from-emerald-500 to-teal-600",
+      description: "DPDP, AML & contract management",
+      icon: <CheckCircle className="h-5 w-5 text-white" />,
+      color: "from-emerald-600 to-green-700",
       textColor: "text-emerald-50",
       path: "/tools#document-automation"
     }
@@ -66,7 +70,7 @@ const ExploreToolsSection = () => {
 
   return (
     <section className="py-16 px-4 relative overflow-hidden">
-      {/* Background decorative elements */}
+      {/* Background decorative elements with enhanced glass effect */}
       <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-legal-accent blur-3xl"></div>
         <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-purple-600 blur-3xl"></div>
@@ -84,12 +88,12 @@ const ExploreToolsSection = () => {
           </h2>
           
           <p className="text-legal-muted dark:text-gray-300 max-w-2xl text-lg">
-            Powerful AI-powered solutions tailored specifically for Indian legal professionals
+            AI-powered solutions tailored for Indian legal professionals
           </p>
         </div>
         
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -103,6 +107,9 @@ const ExploreToolsSection = () => {
                   "bg-gradient-to-br", category.color
                 )}>
                   <CardContent className="p-6 flex flex-col h-full">
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mb-4">
+                      {category.icon}
+                    </div>
                     <div className={cn("font-bold text-xl mb-2", category.textColor)}>
                       {category.title}
                     </div>
