@@ -52,6 +52,18 @@ export type MAApplicableLaw = {
   created_at: string;
 };
 
+// Define UserReview type
+export type UserReviewTable = {
+  id: string;
+  user_id: string;
+  name: string;
+  role: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  helpful_count: number;
+};
+
 // Extra type safety for our tables
 export type Tables = Database['public']['Tables'] & {
   ma_due_diligence: {
@@ -102,6 +114,20 @@ export type Tables = Database['public']['Tables'] & {
       }
     ];
   };
+  user_reviews: {
+    Row: UserReviewTable;
+    Insert: Omit<UserReviewTable, 'id' | 'created_at' | 'helpful_count'>;
+    Update: Partial<Omit<UserReviewTable, 'id' | 'created_at'>>;
+    Relationships: [
+      {
+        foreignKeyName: "user_reviews_user_id_fkey";
+        columns: ["user_id"];
+        isOneToOne: false;
+        referencedRelation: "users";
+        referencedColumns: ["id"];
+      }
+    ];
+  };
 };
 
 // Type-safe helper functions
@@ -117,5 +143,12 @@ export const fromMA = {
   },
   applicableLaws() {
     return supabase.from('ma_applicable_laws');
+  }
+};
+
+// Helper function for user reviews
+export const fromUserReviews = {
+  reviews() {
+    return supabase.from('user_reviews');
   }
 };

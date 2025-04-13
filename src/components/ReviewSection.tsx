@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, MessageSquare, User, Filter, Clock, ThumbsUp, ChevronDown, CheckSquare, ArrowDownAZ } from 'lucide-react';
@@ -13,7 +12,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import AddReviewSection from './AddReviewSection';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, fromUserReviews } from '@/integrations/supabase/client';
 import { UserReview } from '@/types/UserReviews';
 
 interface Review extends UserReview {
@@ -51,8 +50,7 @@ const ReviewSection = () => {
       try {
         setIsLoading(true);
         
-        const { data, error } = await supabase
-          .from('user_reviews')
+        const { data, error } = await fromUserReviews.reviews()
           .select('*')
           .order('created_at', { ascending: false });
         
@@ -163,8 +161,7 @@ const ReviewSection = () => {
       const reviewToUpdate = reviews.find(r => r.id === id);
       if (!reviewToUpdate) return;
       
-      const { error } = await supabase
-        .from('user_reviews')
+      const { error } = await fromUserReviews.reviews()
         .update({ helpful_count: reviewToUpdate.helpful_count + 1 })
         .eq('id', id);
       

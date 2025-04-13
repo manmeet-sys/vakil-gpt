@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Star, Send, X, MessageSquare, Heart } from 'lucide-react';
@@ -15,7 +14,7 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, fromUserReviews } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { UserReviewInsert } from '@/types/UserReviews';
 
@@ -63,8 +62,7 @@ const AddReviewSection = () => {
       };
 
       // Add review to database with explicit typing
-      const { error } = await supabase
-        .from('user_reviews')
+      const { error } = await fromUserReviews.reviews()
         .insert(reviewData);
 
       if (error) {
