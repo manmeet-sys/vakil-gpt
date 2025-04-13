@@ -157,7 +157,7 @@ const FaqPage = () => {
       {
         id: 'technical-3',
         question: 'What file formats are supported for document uploads?',
-        answer: 'VakilGPT supports PDF, DOCX, DOC, TXT, and RTF file formats for document analysis. We're working on adding support for additional formats in future updates.'
+        answer: "VakilGPT supports PDF, DOCX, DOC, TXT, and RTF file formats for document analysis. We're working on adding support for additional formats in future updates."
       },
       {
         id: 'technical-4',
