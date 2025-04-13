@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { 
-  Search, 
   Shield, 
   FileText, 
   Scale, 
@@ -333,16 +332,15 @@ const ToolsPage = () => {
                 Indian Legal Tools Suite
               </h1>
               <p className="text-legal-muted dark:text-gray-300 text-lg">
-                Access specialized tools and resources designed for Indian legal practitioners
+                Access specialized tools for Indian legal practitioners
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
               <div className="relative w-full md:w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Search tools..."
-                  className="pl-10 pr-4 py-2 w-full"
+                  className="pl-4 pr-4 py-2 w-full"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -354,7 +352,7 @@ const ToolsPage = () => {
 
         {/* Categories tabs */}
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="mb-6 flex w-full overflow-x-auto pb-2 no-scrollbar">
+          <TabsList className="mb-6 flex w-full overflow-x-auto pb-2 no-scrollbar justify-start">
             <TabsTrigger value="all" className="min-w-max">All Tools</TabsTrigger>
             {toolCategories.map(category => (
               <TabsTrigger key={category.id} value={category.id} className="min-w-max">
@@ -389,7 +387,7 @@ const ToolsPage = () => {
                             {category.icon}
                           </div>
                           <div>
-                            <CardTitle className="text-xl font-semibold text-legal-slate dark:text-white">
+                            <CardTitle className="text-xl font-semibold text-legal-slate dark:text-white truncate">
                               {category.title}
                             </CardTitle>
                             <CardDescription className="text-legal-muted dark:text-gray-400 line-clamp-2">
@@ -400,7 +398,7 @@ const ToolsPage = () => {
                       </CardHeader>
                       <CardContent className="pt-2">
                         <ul className="space-y-3">
-                          {category.tools.map((tool) => (
+                          {category.tools.slice(0, 3).map((tool) => (
                             <li key={tool.name}>
                               <Button 
                                 variant="ghost" 
@@ -411,11 +409,11 @@ const ToolsPage = () => {
                                   <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent mr-3">
                                     <tool.icon className="h-5 w-5" />
                                   </div>
-                                  <div className="flex-grow mr-2">
-                                    <div className="flex items-center">
-                                      <span className="font-medium text-legal-slate dark:text-white/90">{tool.name}</span>
+                                  <div className="flex-grow mr-2 overflow-hidden">
+                                    <div className="flex items-center flex-wrap gap-1">
+                                      <span className="font-medium text-legal-slate dark:text-white/90 truncate max-w-[150px]">{tool.name}</span>
                                       {tool.badge && (
-                                        <Badge variant="outline" className={`ml-2 text-xs py-0 h-5 ${getBadgeVariant(tool.badge)}`}>
+                                        <Badge variant="outline" className={`text-xs py-0 h-5 ${getBadgeVariant(tool.badge)}`}>
                                           {tool.badge}
                                         </Badge>
                                       )}
@@ -433,6 +431,17 @@ const ToolsPage = () => {
                               </Button>
                             </li>
                           ))}
+                          {category.tools.length > 3 && (
+                            <li>
+                              <Button 
+                                variant="outline" 
+                                className="w-full text-sm text-legal-accent hover:bg-legal-accent/5"
+                                onClick={() => document.querySelector(`[value="${category.id}"]`)?.dispatchEvent(new MouseEvent('click'))}
+                              >
+                                View all {category.tools.length} tools
+                              </Button>
+                            </li>
+                          )}
                         </ul>
                       </CardContent>
                     </Card>
@@ -484,10 +493,10 @@ const ToolsPage = () => {
                             <div className="p-2.5 rounded-full bg-white dark:bg-legal-slate/30 shadow-sm">
                               <tool.icon className="h-5 w-5 text-legal-accent" />
                             </div>
-                            <div className="flex items-center">
+                            <div className="flex items-center flex-wrap gap-1">
                               <CardTitle className="text-lg font-semibold text-legal-slate dark:text-white">{tool.name}</CardTitle>
                               {tool.badge && (
-                                <Badge variant="outline" className={`ml-2 text-xs py-0 h-5 ${getBadgeVariant(tool.badge)}`}>
+                                <Badge variant="outline" className={`text-xs py-0 h-5 ${getBadgeVariant(tool.badge)}`}>
                                   {tool.badge}
                                 </Badge>
                               )}
@@ -495,7 +504,7 @@ const ToolsPage = () => {
                           </div>
                         </CardHeader>
                         <CardContent className="pb-6">
-                          <p className="text-legal-muted dark:text-gray-400 mb-6">{tool.description}</p>
+                          <p className="text-legal-muted dark:text-gray-400 mb-6 line-clamp-2">{tool.description}</p>
                           <Button 
                             onClick={() => navigateToTool(tool.path)}
                             className="w-full bg-legal-accent/10 hover:bg-legal-accent/20 text-legal-accent"

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';  // Add this import
+import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, FileText, Info, Clock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -346,8 +346,8 @@ const AMLComplianceTool = () => {
                               <div className="p-2 rounded-full bg-white/80 dark:bg-black/10">
                                 {getRiskLevelIcon(risk.riskLevel)}
                               </div>
-                              <div>
-                                <CardTitle className="text-lg">
+                              <div className="flex-grow">
+                                <CardTitle className="text-lg truncate max-w-full">
                                   {risk.title}
                                 </CardTitle>
                                 <div className="flex items-center mt-1">
