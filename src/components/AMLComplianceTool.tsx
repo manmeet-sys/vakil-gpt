@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';  // Add this import
 import { AlertTriangle, CheckCircle, FileText, Info, Clock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
