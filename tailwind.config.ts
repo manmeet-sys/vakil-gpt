@@ -132,28 +132,16 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
 				},
 				'fade-in': {
-					'0%': {
-						opacity: '0'
-					},
-					'100%': {
-						opacity: '1'
-					}
+					'0%': { opacity: '0' },
+					'100%': { opacity: '1' }
 				},
 				'fade-up': {
 					'0%': {
@@ -166,36 +154,20 @@ export default {
 					}
 				},
 				'pulse-subtle': {
-					'0%, 100%': {
-						opacity: '1'
-					},
-					'50%': {
-						opacity: '0.85'
-					}
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.85' }
 				},
 				'scale': {
-					'0%': {
-						transform: 'scale(0.95)'
-					},
-					'100%': {
-						transform: 'scale(1)'
-					}
+					'0%': { transform: 'scale(0.95)' },
+					'100%': { transform: 'scale(1)' }
 				},
 				'spin-slow': {
-					'0%': {
-						transform: 'rotate(0deg)'
-					},
-					'100%': {
-						transform: 'rotate(360deg)'
-					}
+					'0%': { transform: 'rotate(0deg)' },
+					'100%': { transform: 'rotate(360deg)' }
 				},
 				'float': {
-					'0%, 100%': {
-						transform: 'translateY(0)'
-					},
-					'50%': {
-						transform: 'translateY(-10px)'
-					}
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
 				},
 				fadeUp: {
 					'0%': { opacity: '0', transform: 'translateY(20px)' },
@@ -205,16 +177,16 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fade-in': 'fade-in 0.5s ease-out forwards',
-				'fade-up': 'fade-up 0.5s ease-out forwards',
+				'fade-in': 'fade-in 0.4s ease-out forwards',
+				'fade-up': 'fade-up 0.4s ease-out forwards',
 				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
-				'scale': 'scale 0.2s ease-out',
+				'scale': 'scale 0.15s ease-out',
 				'spin-slow': 'spin-slow 8s linear infinite',
 				'float': 'float 4s ease-in-out infinite'
 			},
 			fontFamily: {
-				sans: ['-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'sans-serif'],
-				serif: ['New York', 'Times New Roman', 'serif'],
+				sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'sans-serif'],
+				serif: ['Merriweather', 'Georgia', 'New York', 'Times New Roman', 'serif'],
 				mono: ['SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
 				playfair: ["'Playfair Display'", "serif"],
 			},
@@ -244,6 +216,7 @@ export default {
 						'h1, h2, h3, h4': {
 							color: 'var(--foreground)',
 							fontWeight: '600',
+							letterSpacing: '-0.015em',
 						},
 						code: {
 							color: 'var(--primary)',

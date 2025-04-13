@@ -10,8 +10,8 @@ interface AnimatedLogoProps {
 const AnimatedLogo: React.FC<AnimatedLogoProps> = ({ className }) => {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <div className="relative flex items-center justify-center w-8 h-8">
-        <Scale className="w-6 h-6 text-blue-accent animate-pulse-subtle" />
+      <div className="relative flex items-center justify-center w-8 h-8 overflow-hidden">
+        <Scale className="w-6 h-6 text-blue-accent animate-float" />
       </div>
       <div className="font-serif font-semibold text-xl tracking-tight">
         <span className="text-blue-slate">Vakil</span>

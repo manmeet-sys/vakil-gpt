@@ -17,7 +17,8 @@ import {
   Calculator,
   IndianRupee,
   CalendarClock,
-  Gavel
+  Gavel,
+  Search
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -235,26 +236,26 @@ const ToolsPage = () => {
       })).filter(category => category.tools.length > 0)
     : toolCategories;
 
-  // Animation variants
+  // Animation variants - optimized for better performance
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
+        staggerChildren: 0.05
       }
     }
   };
   
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 15 },
     visible: { 
       opacity: 1, 
       y: 0,
       transition: {
         type: "spring",
-        stiffness: 100,
-        damping: 15
+        stiffness: 120,
+        damping: 14
       }
     }
   };
@@ -290,13 +291,13 @@ const ToolsPage = () => {
         {/* Hero section with search */}
         <motion.div
           className="mb-10"
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-6 md:p-8 rounded-2xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-6 md:p-8 rounded-2xl shadow-elegant">
             <div className="text-center md:text-left max-w-2xl">
-              <h1 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-3">
+              <h1 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-3 tracking-tight">
                 Indian Legal Tools Suite
               </h1>
               <p className="text-legal-muted dark:text-gray-300 text-lg">
@@ -308,7 +309,7 @@ const ToolsPage = () => {
                 <Input
                   type="text"
                   placeholder="Search tools..."
-                  className="pl-4 pr-4 py-2 w-full"
+                  className="pl-4 pr-10 py-2 w-full"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -318,7 +319,7 @@ const ToolsPage = () => {
           </div>
         </motion.div>
 
-        {/* Tools grid - directly showing all tools without tabs */}
+        {/* Tools grid */}
         {filteredCategories.length === 0 ? (
           <div className="text-center p-8">
             <p className="text-lg text-muted-foreground">No tools match your search. Try different keywords.</p>
@@ -355,7 +356,7 @@ const ToolsPage = () => {
                         <li key={tool.name}>
                           <Button 
                             variant="ghost" 
-                            className="w-full justify-start text-left hover:bg-legal-accent/5 dark:hover:bg-legal-accent/10 p-2"
+                            className="w-full justify-start text-left hover:bg-legal-accent/5 dark:hover:bg-legal-accent/10 p-2 transition-colors duration-200"
                             onClick={() => navigateToTool(tool.path)}
                           >
                             <div className="flex items-center w-full">
