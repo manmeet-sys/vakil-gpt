@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -84,42 +83,42 @@ const howItWorks = [
 const legalAiSolutions = [
   {
     title: "Document Analysis",
-    description: "Upload contracts, agreements & legal documents for instant AI-powered insights, key clauses, risk assessment & plain-language explanations.",
+    description: "Upload contracts & agreements for AI-powered insights",
     icon: FileText,
     stepNumber: "01",
     color: "from-blue-600 to-indigo-700"
   },
   {
     title: "Ask Questions",
-    description: "Ask any legal question and receive precise answers with references to relevant Indian statutes, case law, and legal principles.",
+    description: "Get precise answers with references to Indian statutes",
     icon: MessageSquare,
     stepNumber: "02",
     color: "from-purple-600 to-pink-500"
   },
   {
     title: "Case Law Research",
-    description: "Search across jurisdictions with intelligent filtering by court, date & topic to find precedents that strengthen your arguments.",
+    description: "Find precedents that strengthen your arguments",
     icon: Gavel,
     stepNumber: "03",
     color: "from-amber-500 to-orange-600"
   },
   {
     title: "Customize Experience",
-    description: "Add your own documents to the knowledge base to make responses more relevant to your specific legal needs and jurisdiction.",
+    description: "Add your documents to the knowledge base",
     icon: Settings,
     stepNumber: "04",
     color: "from-emerald-500 to-teal-600"
   },
   {
     title: "Compliance Assistance",
-    description: "Stay current with regulatory changes across industries with personalized alerts, compliance checklists, and actionable recommendations.",
+    description: "Stay current with regulatory changes across industries",
     icon: Shield,
     stepNumber: "05",
     color: "from-rose-500 to-red-600"
   },
   {
     title: "Due Diligence Support",
-    description: "Streamline due diligence with automated document review, entity extraction, and customizable report generation for Indian legal context.",
+    description: "Streamline due diligence with automated document review",
     icon: CheckCircle,
     stepNumber: "06",
     color: "from-sky-500 to-blue-600"
@@ -184,7 +183,7 @@ const Index = () => {
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-2">
               AI-Powered Legal Assistance for India
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-legal-slate dark:text-legal-light leading-tight text-balance">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-legal-slate dark:text-legal-light leading-tight text-balance font-playfair">
               Transform Your Legal <span className="text-legal-accent">Research & Analysis</span>
             </h1>
             <p className="text-lg text-legal-muted dark:text-gray-300 max-w-lg">
@@ -234,9 +233,10 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12 fade-up-element">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium mb-4">
-              VakilGPT Demo
+              <Sparkles className="h-4 w-4 mr-2" />
+              <span>VakilGPT Demo</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4 font-playfair">
               Experience Indian Legal AI in Action
             </h2>
             <p className="text-legal-muted dark:text-gray-300 text-lg">
@@ -256,6 +256,11 @@ const Index = () => {
             </div>
           </div>
           
+          {/* MOVED: "Explore Legal & Financial Tools" section here, below chat box */}
+          <div className="mt-16">
+            <ExploreToolsSection />
+          </div>
+          
           <div className="mt-12 text-center fade-up-element">
             <p className="text-legal-muted dark:text-gray-300 mb-6">
               Ready to experience the full capabilities of VakilGPT for Indian legal research?
@@ -270,12 +275,12 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Combined How It Works & Features Section */}
+      {/* ENHANCED: How It Works & Features Section with reduced text and more visual appeal */}
       <section id="features" className="py-24 px-4 bg-gradient-to-br from-legal-light via-white to-legal-light dark:from-legal-slate/20 dark:via-legal-slate/5 dark:to-legal-slate/20 overflow-hidden">
         <div className="container mx-auto relative z-10">
           <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-36 -right-36 w-96 h-96 rounded-full bg-blue-400/10 blur-3xl"></div>
-            <div className="absolute -bottom-36 -left-36 w-96 h-96 rounded-full bg-purple-400/10 blur-3xl"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-purple-400/20 blur-3xl animate-pulse"></div>
           </div>
 
           <div className="text-center max-w-3xl mx-auto mb-16 fade-up-element">
@@ -295,33 +300,28 @@ const Index = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              How <span className="text-legal-accent">VakilGPT</span> Transforms Your Legal Practice
+              How <span className="text-legal-accent">VakilGPT</span> Transforms Your Practice
             </motion.h2>
-            
-            <motion.p 
-              className="text-legal-muted dark:text-gray-300 text-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              Six powerful solutions designed specifically for Indian legal professionals to streamline workflows and enhance decision-making
-            </motion.p>
           </div>
           
           <motion.div 
-            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12"
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-50px" }}
           >
             {legalAiSolutions.map((solution, index) => (
               <motion.div 
                 key={solution.title} 
                 className="fade-up-element"
                 variants={itemVariants}
+                whileHover={{ 
+                  y: -10,
+                  transition: { duration: 0.2 } 
+                }}
               >
-                <Card className="h-full border-legal-border/40 dark:border-legal-slate/20 bg-white/80 dark:bg-legal-slate/10 backdrop-blur-sm hover:shadow-elegant transition-all duration-300 overflow-hidden group">
+                <Card className="h-full border-legal-border/40 dark:border-legal-slate/20 bg-white/90 dark:bg-legal-slate/10 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
                   <div className={`absolute top-0 left-0 w-2 h-full bg-gradient-to-b ${solution.color}`}></div>
                   <CardHeader className="relative pb-2">
                     <div className="absolute top-4 right-4 text-4xl font-bold text-gray-100 dark:text-gray-800 opacity-50 font-playfair">
@@ -361,7 +361,7 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Benefits Section */}
+      {/* Benefits Section - Keeping it more concise */}
       <section id="benefits" className="py-20 px-4 bg-gradient-to-br from-legal-light via-white to-legal-light dark:from-legal-slate/20 dark:via-legal-slate/5 dark:to-legal-slate/20 transition-colors">
         <div className="container mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16 fade-up-element">
@@ -372,9 +372,6 @@ const Index = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-4 font-playfair">
               Transform Your <span className="text-legal-accent">Indian Legal Practice</span>
             </h2>
-            <p className="text-legal-muted dark:text-gray-300 text-lg">
-              Discover how VakilGPT can revolutionize your legal workflow with these powerful advantages
-            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
@@ -410,13 +407,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Explore Tools Section */}
-      <section className="py-16 px-4 bg-white dark:bg-legal-slate/5">
-        <div className="container mx-auto">
-          <ExploreToolsSection />
-        </div>
-      </section>
-      
       {/* Creative Reviews Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/10 dark:to-pink-950/20 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/3 h-1/2 bg-gradient-to-bl from-purple-300/20 to-transparent dark:from-purple-500/10 blur-3xl rounded-full transform translate-x-1/4 -translate-y-1/4"></div>
@@ -442,103 +432,17 @@ const Index = () => {
             >
               How VakilGPT <span className="text-legal-accent">Transforms Legal Practices</span>
             </motion.h2>
-            
-            <motion.p 
-              className="text-legal-muted dark:text-gray-300 max-w-2xl mx-auto text-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              See the impact our AI tools have on Indian legal professionals' daily workflows
-            </motion.p>
           </div>
           
-          <motion.div 
-            className="grid gap-6 md:grid-cols-3"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.1 }
-              }
-            }}
-            initial="hidden"
-            animate="visible"
-          >
-            {[
-              {
-                quote: "Document analysis that used to take hours now takes minutes. I can focus more on strategic legal advice.",
-                author: "Anika Patel",
-                role: "Corporate Counsel, Mumbai",
-                highlight: "70% time saved",
-                color: "from-blue-500 to-indigo-600"
-              },
-              {
-                quote: "The compliance tools ensure we stay updated with the latest Indian regulations across multiple jurisdictions.",
-                author: "Vikram Singh",
-                role: "Managing Partner, Delhi",
-                highlight: "98% compliance accuracy",
-                color: "from-purple-500 to-pink-500"
-              },
-              {
-                quote: "Case research capabilities give me access to precedents I wouldn't have found through traditional methods.",
-                author: "Priya Sharma",
-                role: "Litigation Specialist, Bangalore",
-                highlight: "3x more relevant cases",
-                color: "from-amber-500 to-orange-600"
-              }
-            ].map((review, index) => (
-              <motion.div
-                key={review.author}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 }
-                }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className="h-full"
-              >
-                <Card className="h-full border-none shadow-lg bg-white/80 dark:bg-legal-slate/20 backdrop-blur-sm">
-                  <CardHeader className="pb-2 relative">
-                    <div className={`absolute h-1.5 w-full top-0 left-0 rounded-t-lg bg-gradient-to-r ${review.color}`}></div>
-                    <div className="pt-2">
-                      <div className="mb-4 text-5xl text-legal-accent/20 font-serif italic">"</div>
-                      <CardTitle className="text-xl font-medium text-legal-slate dark:text-white line-clamp-1">
-                        {review.author}
-                      </CardTitle>
-                      <p className="text-legal-muted dark:text-gray-400 text-sm">
-                        {review.role}
-                      </p>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-legal-slate/80 dark:text-gray-300 italic">
-                      "{review.quote}"
-                    </p>
-                    <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-legal-accent/10 text-legal-accent text-sm font-medium">
-                      {review.highlight}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-          
-          <div className="mt-10 text-center">
-            <Link to="/chat">
-              <Button className="bg-legal-accent hover:bg-legal-accent/90 text-white px-8 py-2 group">
-                Experience The Difference
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
+          <ReviewSection />
         </div>
       </section>
       
       {/* CTA Section */}
       <section className="py-20 px-4 bg-white dark:bg-legal-slate/5 transition-colors">
         <div className="container mx-auto">
-          <div className="max-w-4xl mx-auto text-center fade-up-element bg-legal-accent/5 dark:bg-legal-accent/10 rounded-xl p-10 border border-legal-border dark:border-legal-slate/20 shadow-elegant">
-            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-6">
+          <div className="max-w-4xl mx-auto text-center fade-up-element bg-gradient-to-br from-legal-accent/5 to-purple-500/5 dark:from-legal-accent/10 dark:to-purple-500/10 rounded-xl p-10 border border-legal-border dark:border-legal-slate/20 shadow-elegant">
+            <h2 className="text-3xl md:text-4xl font-bold text-legal-slate mb-6 font-playfair">
               Ready to Transform Your Indian Legal Practice?
             </h2>
             <p className="text-legal-muted text-xl mb-8 max-w-2xl mx-auto">

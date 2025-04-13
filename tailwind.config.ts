@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -197,6 +196,10 @@ export default {
 					'50%': {
 						transform: 'translateY(-10px)'
 					}
+				},
+				fadeUp: {
+					'0%': { opacity: '0', transform: 'translateY(20px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
 				}
 			},
 			animation: {
@@ -213,14 +216,14 @@ export default {
 				sans: ['-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'sans-serif'],
 				serif: ['New York', 'Times New Roman', 'serif'],
 				mono: ['SF Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
-				playfair: ['Playfair Display', 'serif'],
+				playfair: ["'Playfair Display'", "serif"],
 			},
 			boxShadow: {
-				'elegant': '0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.02)',
-				'elevated': '0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+				'elegant': '0 10px 25px -3px rgba(0, 0, 0, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.02)',
+				'elevated': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
 				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
 				'apple': '0 2px 10px rgba(0, 0, 0, 0.05)',
-				'apple-hover': '0 4px 20px rgba(0, 0, 0, 0.1)',
+				'apple-hover': '0 0 10px rgba(0, 0, 0, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.06)',
 				'card': '0 2px 8px rgba(0, 0, 0, 0.04)',
 				'blue': '0 2px 10px rgba(29, 78, 216, 0.05)',
 				'blue-hover': '0 4px 20px rgba(29, 78, 216, 0.1)'
