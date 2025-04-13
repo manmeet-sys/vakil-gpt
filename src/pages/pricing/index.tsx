@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
@@ -14,7 +13,6 @@ const PricingPage = () => {
   const [annual, setAnnual] = useState(false);
   const { isAuthenticated } = useAuth();
   
-  // Simulated countdown to end of free beta
   const [countdown, setCountdown] = useState({
     days: 30,
     hours: 23,
@@ -25,7 +23,6 @@ const PricingPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Simulate countdown timer
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev.seconds > 0) {
@@ -64,13 +61,13 @@ const PricingPage = () => {
     {
       name: "Basic",
       description: "Essential legal AI tools for individuals",
-      price: annual ? "₹399" : "₹49",
+      price: annual ? "₹2,999" : "₹299",
       period: annual ? "/year" : "/month",
-      currentBadge: "FREE During Beta",
+      currentBadge: "Introductory Offer",
       color: "bg-gray-100 dark:bg-gray-800",
       features: [
         "Basic legal chat assistance",
-        "Document analysis (3/month)",
+        "Document analysis (5/month)",
         "Access to standard templates",
         "Email support",
         "Limited legal research"
@@ -80,15 +77,15 @@ const PricingPage = () => {
         "Advanced features",
         "API access"
       ],
-      cta: "Get Started Free"
+      cta: "Get Started"
     },
     {
       name: "Professional",
       description: "Advanced features for legal professionals",
-      price: annual ? "₹4,999" : "₹599",
+      price: annual ? "₹14,999" : "₹1,499",
       period: annual ? "/year" : "/month",
-      discount: annual ? "Save ₹1,189" : null,
-      currentBadge: "FREE During Beta",
+      discount: annual ? "Save ₹3,588" : null,
+      currentBadge: "Most Popular",
       color: "bg-gradient-to-b from-legal-accent/10 to-legal-accent/5",
       popular: true,
       features: [
@@ -101,17 +98,17 @@ const PricingPage = () => {
         "Litigation prediction tools"
       ],
       notIncluded: [
-        "Enterprise features",
-        "Dedicated account manager"
+        "Dedicated account manager",
+        "Custom AI model training"
       ],
-      cta: "Get Started Free"
+      cta: "Choose Professional"
     },
     {
       name: "Enterprise",
       description: "Customized solutions for law firms & corporates",
-      price: "Custom",
+      price: "Contact for Pricing",
       period: "",
-      currentBadge: "Contact Us",
+      currentBadge: "Tailored Solutions",
       color: "bg-gradient-to-b from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/10",
       features: [
         "Everything in Professional",
@@ -123,7 +120,7 @@ const PricingPage = () => {
         "SLA guarantees",
         "Custom integrations"
       ],
-      cta: "Contact Sales"
+      cta: "Request Custom Quote"
     }
   ];
 
@@ -143,7 +140,6 @@ const PricingPage = () => {
             Free during our beta period, premium features coming soon
           </p>
           
-          {/* Free Beta Countdown Banner */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
