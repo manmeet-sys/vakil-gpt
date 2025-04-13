@@ -57,7 +57,7 @@ const GuideDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [relatedGuides, setRelatedGuides] = useState<Guide[]>([]);
   const navigate = useNavigate();
-  const shareUrl = window.location.href;
+  const shareUrl = window.location.href; // Move this before any function that uses it
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -143,7 +143,7 @@ const GuideDetailPage = () => {
     const title = encodeURIComponent(guide.title);
     const url = encodeURIComponent(shareUrl);
     
-    let shareUrl = '';
+    let shareUrl = ''; // Renamed to avoid shadowing
     
     switch (platform) {
       case 'twitter':

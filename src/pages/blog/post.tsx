@@ -56,10 +56,8 @@ const BlogPostPage = () => {
       
       setPost(fetchedPost);
       
-      // Track this view
       BlogService.trackPostView(fetchedPost);
       
-      // Fetch related posts by category
       const sameCategory = await BlogService.getPostsByCategory(fetchedPost.category);
       setRelatedPosts(sameCategory.filter(p => p.id !== postId).slice(0, 3));
     } catch (error) {
@@ -191,7 +189,6 @@ const BlogPostPage = () => {
                   className="w-full h-auto max-h-[500px] object-cover rounded-xl mb-8"
                 />
                 
-                {/* Placeholder for blog content - in a real implementation, this would be the actual content */}
                 <div className="prose prose-lg dark:prose-invert max-w-none">
                   <p className="lead">{post.excerpt}</p>
                   <p>
@@ -243,7 +240,6 @@ const BlogPostPage = () => {
                 </div>
               </div>
               
-              {/* Author Bio */}
               <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 mb-10 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center">
                   <div className="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-600 mr-4 overflow-hidden">
@@ -262,7 +258,6 @@ const BlogPostPage = () => {
                 </div>
               </div>
               
-              {/* Related Posts */}
               {relatedPosts.length > 0 && (
                 <div className="mb-10">
                   <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Related Articles</h2>
@@ -301,7 +296,6 @@ const BlogPostPage = () => {
                 </div>
               )}
               
-              {/* Call to Action */}
               <div className="bg-gradient-to-r from-legal-accent/10 to-blue-500/10 rounded-xl p-6 border border-legal-accent/20 text-center">
                 <h2 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">
                   Need legal assistance?
