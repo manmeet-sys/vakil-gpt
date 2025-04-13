@@ -57,7 +57,7 @@ const GuideDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [relatedGuides, setRelatedGuides] = useState<Guide[]>([]);
   const navigate = useNavigate();
-  const shareUrl = window.location.href; // Move this before any function that uses it
+  const pageShareUrl = window.location.href; // Renamed from shareUrl
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -141,28 +141,28 @@ const GuideDetailPage = () => {
     if (!guide) return;
     
     const title = encodeURIComponent(guide.title);
-    const url = encodeURIComponent(shareUrl);
+    const url = encodeURIComponent(pageShareUrl); // Use pageShareUrl
     
-    let shareUrl = ''; // Renamed to avoid shadowing
+    let socialShareUrl = ''; // Renamed from shareUrl
     
     switch (platform) {
       case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
+        socialShareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
         break;
       case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        socialShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
         break;
       case 'linkedin':
-        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+        socialShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
         break;
       case 'email':
-        shareUrl = `mailto:?subject=${title}&body=${url}`;
+        socialShareUrl = `mailto:?subject=${title}&body=${url}`;
         break;
       default:
         return;
     }
     
-    window.open(shareUrl, '_blank');
+    window.open(socialShareUrl, '_blank');
   };
   
   // For demonstration, we'll use a subset of the steps array based on the guide's step count

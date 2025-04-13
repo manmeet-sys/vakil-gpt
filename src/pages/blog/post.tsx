@@ -33,7 +33,7 @@ const BlogPostPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const navigate = useNavigate();
-  const shareUrl = window.location.href;
+  const pageShareUrl = window.location.href;
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -72,28 +72,28 @@ const BlogPostPage = () => {
     if (!post) return;
     
     const title = encodeURIComponent(post.title);
-    const url = encodeURIComponent(shareUrl);
+    const url = encodeURIComponent(pageShareUrl);
     
-    let shareUrl = '';
+    let socialShareUrl = '';
     
     switch (platform) {
       case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
+        socialShareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
         break;
       case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        socialShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
         break;
       case 'linkedin':
-        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+        socialShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
         break;
       case 'email':
-        shareUrl = `mailto:?subject=${title}&body=${url}`;
+        socialShareUrl = `mailto:?subject=${title}&body=${url}`;
         break;
       default:
         return;
     }
     
-    window.open(shareUrl, '_blank');
+    window.open(socialShareUrl, '_blank');
   };
   
   return (
