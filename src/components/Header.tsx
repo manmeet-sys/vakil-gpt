@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown, Book, FileText, HelpCircle, CreditCard } from 'lucide-react';
+import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown, Book, FileText, HelpCircle, CreditCard, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/context/AuthContext';
