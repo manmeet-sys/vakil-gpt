@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Compass, Sparkles, CheckCircle } from 'lucide-react';
+import { ArrowRight, Compass, Sparkles, CheckCircle, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ const ExploreToolsSection = () => {
     }
   };
 
-  // Categories to showcase (reduced from the full set for brevity)
+  // Categories to showcase
   const featuredCategories = [
     {
       title: "Advocate Tools",
@@ -61,7 +61,7 @@ const ExploreToolsSection = () => {
     {
       title: "Compliance",
       description: "DPDP, AML & contract management",
-      icon: <CheckCircle className="h-5 w-5 text-white" />,
+      icon: <Shield className="h-5 w-5 text-white" />,
       color: "from-emerald-600 to-green-700",
       textColor: "text-emerald-50",
       path: "/tools#document-automation"
@@ -69,27 +69,42 @@ const ExploreToolsSection = () => {
   ];
 
   return (
-    <section className="py-16 px-4 relative overflow-hidden">
+    <section className="py-16 px-4 relative overflow-hidden bg-white dark:bg-legal-slate/5 rounded-2xl shadow-elegant border border-gray-100 dark:border-gray-800">
       {/* Background decorative elements with enhanced glass effect */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+      <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-legal-accent blur-3xl"></div>
         <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-purple-600 blur-3xl"></div>
       </div>
       
       <div className="container mx-auto relative z-10">
         <div className="flex flex-col items-center text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-legal-accent/10 text-legal-accent mb-4">
+          <motion.div 
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-legal-accent/10 text-legal-accent mb-4"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
             <Compass className="h-4 w-4" />
             <span className="text-sm font-medium">Discover Your Legal Arsenal</span>
-          </div>
+          </motion.div>
           
-          <h2 className="text-4xl md:text-5xl font-bold text-legal-slate dark:text-white mb-4 tracking-tight font-playfair">
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-legal-slate dark:text-white mb-4 tracking-tight font-playfair"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             Explore <span className="text-legal-accent">Legal & Financial</span> Tools
-          </h2>
+          </motion.h2>
           
-          <p className="text-legal-muted dark:text-gray-300 max-w-2xl text-lg">
+          <motion.p 
+            className="text-legal-muted dark:text-gray-300 max-w-2xl text-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
             AI-powered solutions tailored for Indian legal professionals
-          </p>
+          </motion.p>
         </div>
         
         <motion.div 
@@ -129,7 +144,12 @@ const ExploreToolsSection = () => {
           ))}
         </motion.div>
         
-        <div className="mt-10 text-center">
+        <motion.div 
+          className="mt-10 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
           <Link to="/tools">
             <Button variant="outline" size="lg" className="rounded-full border-legal-accent/30 text-legal-accent hover:bg-legal-accent/10 hover:text-legal-accent group">
               <Sparkles className="mr-2 h-4 w-4" />
@@ -137,7 +157,7 @@ const ExploreToolsSection = () => {
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
