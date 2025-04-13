@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams, useNavigate } from 'react-router-dom';
@@ -58,6 +57,7 @@ const GuideDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [relatedGuides, setRelatedGuides] = useState<Guide[]>([]);
   const navigate = useNavigate();
+  const shareUrl = window.location.href;
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -136,8 +136,6 @@ const GuideDetailPage = () => {
     
     return <IconComponent className={`h-5 w-5 ${color}`} />;
   };
-  
-  const shareUrl = window.location.href;
   
   const handleShare = (platform: string) => {
     if (!guide) return;

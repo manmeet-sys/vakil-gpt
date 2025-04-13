@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams, useNavigate } from 'react-router-dom';
@@ -34,6 +33,7 @@ const BlogPostPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const navigate = useNavigate();
+  const shareUrl = window.location.href;
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -69,8 +69,6 @@ const BlogPostPage = () => {
       setIsLoading(false);
     }
   };
-  
-  const shareUrl = window.location.href;
   
   const handleShare = (platform: string) => {
     if (!post) return;
