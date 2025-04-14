@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import { Helmet } from 'react-helmet-async';
 import { 
@@ -75,6 +75,7 @@ export type Case = {
 const CaseManagementPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [cases, setCases] = useState<Case[]>([]);
   const [filteredCases, setFilteredCases] = useState<Case[]>([]);
@@ -84,6 +85,7 @@ const CaseManagementPage = () => {
   const [showNewCaseForm, setShowNewCaseForm] = useState(false);
   const [activeTab, setActiveTab] = useState('active-cases');
   const [showClientManagement, setShowClientManagement] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -146,6 +148,24 @@ const CaseManagementPage = () => {
     
     setFilteredCases(filtered);
   }, [cases, searchTerm, statusFilter, activeTab]);
+
+  useEffect(() => {
+    // Check if we came from another component with state
+    if (location.state) {
+      if (location.state.showClientManagement) {
+        setShowClientManagement(true);
+        setSelectedCase(null);
+        setShowNewCaseForm(false);
+      }
+      
+      if (location.state.selectedClientId) {
+        setSelectedClientId(location.state.selectedClientId);
+        setShowClientManagement(true);
+        setSelectedCase(null);
+        setShowNewCaseForm(false);
+      }
+    }
+  }, [location]);
 
   const handleCaseClick = (caseItem: Case) => {
     setSelectedCase(caseItem);

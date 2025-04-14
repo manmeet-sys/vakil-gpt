@@ -13,12 +13,15 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, Plus, MoreHorizontal } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Client {
   id: string;
   name: string;
   email: string | null;
   phone: string | null;
+  address: string | null;
+  created_at: string;
 }
 
 const ClientsList = () => {
@@ -44,6 +47,7 @@ const ClientsList = () => {
         setClients(data || []);
       } catch (error: any) {
         console.error('Error fetching clients:', error.message);
+        toast.error('Failed to load clients');
       } finally {
         setLoading(false);
       }
@@ -51,6 +55,11 @@ const ClientsList = () => {
     
     fetchClients();
   }, [user]);
+
+  const handleAddClient = () => {
+    // Navigate to the client management section
+    navigate('/case-management', { state: { showClientManagement: true } });
+  };
 
   return (
     <Card>
@@ -87,6 +96,7 @@ const ClientsList = () => {
               <div
                 key={client.id}
                 className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition cursor-pointer"
+                onClick={() => navigate('/case-management', { state: { selectedClientId: client.id } })}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
@@ -105,7 +115,7 @@ const ClientsList = () => {
         )}
       </CardContent>
       <CardFooter>
-        <Button variant="outline" size="sm" className="w-full">
+        <Button variant="outline" size="sm" className="w-full" onClick={handleAddClient}>
           <Plus className="h-4 w-4 mr-1" />
           Add New Client
         </Button>
