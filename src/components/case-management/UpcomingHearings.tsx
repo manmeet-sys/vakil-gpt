@@ -19,9 +19,9 @@ import { toast } from 'sonner';
 interface Deadline {
   id: string;
   title: string;
-  case_title: string | null;
-  client_name: string | null;
-  court_name: string | null;
+  case_title?: string | null;
+  client_name?: string | null;
+  court_name?: string | null;
   due_date: string;
   time_left: {
     days: number;
@@ -43,15 +43,45 @@ const UpcomingHearings = () => {
         setLoading(true);
         const today = new Date().toISOString();
         
-        // First try to fetch from deadlines table which has the hearing info
+        // First try to fetch from deadlines table
         const { data: deadlinesData, error: deadlinesError } = await supabase
           .from('deadlines')
-          .select('id, title, case_title, client_name, court_name, due_date')
+          .select('id, title, due_date, case_title, client_name, court_name')
           .gte('due_date', today)
           .order('due_date', { ascending: true })
           .limit(5);
         
-        if (deadlinesError) throw deadlinesError;
+        if (deadlinesError) {
+          console.error('Error fetching deadlines:', deadlinesError);
+          // Check if the error is related to missing columns
+          if (deadlinesError.message.includes("column") && deadlinesError.message.includes("does not exist")) {
+            // Fallback to basic deadline data if columns don't exist yet
+            const { data: basicDeadlines, error: basicError } = await supabase
+              .from('deadlines')
+              .select('id, title, due_date')
+              .gte('due_date', today)
+              .order('due_date', { ascending: true })
+              .limit(5);
+              
+            if (basicError) throw basicError;
+            
+            // Transform basic data to match our interface
+            const hearingsData = basicDeadlines?.map(deadline => ({
+              id: deadline.id,
+              title: deadline.title,
+              due_date: deadline.due_date,
+              case_title: null,
+              client_name: null,
+              court_name: null
+            })) || [];
+            
+            setHearings(calculateTimeLeft(hearingsData));
+            setLoading(false);
+            return;
+          } else {
+            throw deadlinesError;
+          }
+        }
         
         // If no dedicated hearings, fallback to court filings hearing dates
         let hearingsData = deadlinesData || [];
@@ -82,32 +112,11 @@ const UpcomingHearings = () => {
           }
         }
         
-        // Calculate days left for each hearing
-        const formattedHearings = hearingsData.map((hearing) => {
-          const hearingDate = new Date(hearing.due_date);
-          const today = new Date();
-          
-          // Set both dates to midnight for accurate day calculation
-          hearingDate.setHours(0, 0, 0, 0);
-          today.setHours(0, 0, 0, 0);
-          
-          // Calculate difference in days
-          const diffTime = hearingDate.getTime() - today.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          
-          return {
-            ...hearing,
-            time_left: {
-              days: diffDays,
-              isUpcoming: diffDays <= 5, // Mark as upcoming if within 5 days
-            },
-          };
-        });
-        
-        setHearings(formattedHearings);
+        setHearings(calculateTimeLeft(hearingsData));
       } catch (error: any) {
         console.error('Error fetching upcoming hearings:', error.message);
         toast.error('Failed to load hearings');
+        setHearings([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
@@ -115,6 +124,30 @@ const UpcomingHearings = () => {
     
     fetchUpcomingHearings();
   }, [user]);
+
+  // Calculate days left for each hearing
+  const calculateTimeLeft = (hearingsData: any[]): Deadline[] => {
+    return hearingsData.map((hearing) => {
+      const hearingDate = new Date(hearing.due_date);
+      const today = new Date();
+      
+      // Set both dates to midnight for accurate day calculation
+      hearingDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      
+      // Calculate difference in days
+      const diffTime = hearingDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      return {
+        ...hearing,
+        time_left: {
+          days: diffDays,
+          isUpcoming: diffDays <= 5, // Mark as upcoming if within 5 days
+        },
+      };
+    });
+  };
 
   // Format date to Indian format
   const formatDate = (dateString: string) => {
