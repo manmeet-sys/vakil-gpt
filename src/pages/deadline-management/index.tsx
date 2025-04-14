@@ -164,6 +164,7 @@ const DeadlineManagementPage = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
 
   // Initialize the form
@@ -179,6 +180,18 @@ const DeadlineManagementPage = () => {
       enableReminders: true,
     },
   });
+
+  // Get current user
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    
+    fetchCurrentUser();
+  }, []);
 
   // Fetch deadlines from the database
   useEffect(() => {
@@ -229,19 +242,52 @@ const DeadlineManagementPage = () => {
 
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!currentUserId) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create deadlines.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
+      // Create a due date that combines the date and time
+      let dueDate = values.deadlineDate;
+      if (values.deadlineTime) {
+        const [hours, minutes] = values.deadlineTime.split(':');
+        dueDate = new Date(dueDate.setHours(parseInt(hours), parseInt(minutes)));
+      }
+      
+      // Calculate reminder date from notifyDaysBefore
+      let reminderDate = null;
+      if (values.enableReminders) {
+        reminderDate = new Date(dueDate);
+        
+        if (values.notifyDaysBefore.includes('day')) {
+          const days = parseInt(values.notifyDaysBefore);
+          reminderDate.setDate(reminderDate.getDate() - days);
+        } else if (values.notifyDaysBefore.includes('week')) {
+          const weeks = parseInt(values.notifyDaysBefore);
+          reminderDate.setDate(reminderDate.getDate() - (weeks * 7));
+        } else if (values.notifyDaysBefore.includes('month')) {
+          const months = parseInt(values.notifyDaysBefore);
+          reminderDate.setMonth(reminderDate.getMonth() - months);
+        }
+      }
+      
       // Convert form values to match the database schema
       const deadlineData = {
         title: values.title,
         case_id: values.associatedCase !== 'none' ? values.associatedCase : null,
-        due_date: values.deadlineDate.toISOString(),
+        due_date: dueDate.toISOString(),
         priority: values.priority,
-        reminder_date: values.enableReminders ? values.deadlineDate.toISOString() : null, // This should be calculated based on notifyDaysBefore
+        reminder_date: reminderDate ? reminderDate.toISOString() : null,
         description: values.description || null,
         status: 'pending',
-        user_id: supabase.auth.getUser().then(res => res.data.user?.id) || 'guest-user' // Get the authenticated user ID
+        user_id: currentUserId
       };
       
       // Insert the deadline into the database
