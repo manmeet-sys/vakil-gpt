@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Calendar as CalendarIcon, Clock, Save, Check, Plus, Trash2, FileEdit, AlertTriangle, Filter } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import LegalToolLayout from '@/components/LegalToolLayout';
@@ -151,9 +151,10 @@ const getPriorityColor = (priority) => {
 
 // Helper function to calculate if a deadline is approaching
 const isDeadlineApproaching = (date) => {
+  if (!date) return false;
   const today = new Date();
   const deadlineDate = new Date(date);
-  const diffTime = Math.abs(deadlineDate - today);
+  const diffTime = Math.abs(deadlineDate.getTime() - today.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays <= 3;
 };
@@ -188,7 +189,7 @@ const DeadlineManagementPage = () => {
         const { data, error } = await supabase
           .from('deadlines')
           .select('*')
-          .order('deadlineDate', { ascending: true });
+          .order('due_date', { ascending: true });
         
         if (error) throw error;
         
@@ -210,7 +211,9 @@ const DeadlineManagementPage = () => {
 
   // Filter deadlines by tab
   const filteredDeadlines = deadlines.filter(deadline => {
-    const deadlineDate = new Date(deadline.deadlineDate);
+    if (!deadline.due_date) return false;
+    
+    const deadlineDate = new Date(deadline.due_date);
     const today = new Date();
     
     if (activeTab === 'upcoming') {
@@ -229,21 +232,16 @@ const DeadlineManagementPage = () => {
     setIsSubmitting(true);
     
     try {
-      // Prepare the deadline data
+      // Convert form values to match the database schema
       const deadlineData = {
         title: values.title,
-        associatedCase: values.associatedCase,
-        deadlineDate: values.deadlineDate.toISOString(),
-        deadlineTime: values.deadlineTime || null,
-        deadlineType: values.deadlineType,
+        case_id: values.associatedCase !== 'none' ? values.associatedCase : null,
+        due_date: values.deadlineDate.toISOString(),
         priority: values.priority,
-        notifyDaysBefore: values.notifyDaysBefore,
-        jurisdiction: values.jurisdiction || null,
+        reminder_date: values.enableReminders ? values.deadlineDate.toISOString() : null, // This should be calculated based on notifyDaysBefore
         description: values.description || null,
-        courtFilingRequired: values.courtFilingRequired,
-        enableReminders: values.enableReminders,
-        createdAt: new Date().toISOString(),
-        status: 'active'
+        status: 'pending',
+        user_id: supabase.auth.getUser().then(res => res.data.user?.id) || 'guest-user' // Get the authenticated user ID
       };
       
       // Insert the deadline into the database
@@ -289,13 +287,13 @@ const DeadlineManagementPage = () => {
           {/* Left column - Form */}
           <div className="md:col-span-1">
             <Card className="shadow-md border border-legal-border dark:border-legal-slate/20">
-              <CardHeader className="bg-gradient-to-r from-purple-500/5 to-indigo-500/5 dark:from-purple-900/10 dark:to-indigo-900/10">
+              <CardHeader className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 dark:from-purple-900/20 dark:to-indigo-900/20">
                 <CardTitle className="text-xl">Add New Deadline</CardTitle>
                 <CardDescription>Enter the details for your new deadline or court date</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 overflow-y-auto max-h-[70vh] pr-2 pb-20">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 overflow-y-auto max-h-[70vh] pr-2">
                     <FormField
                       control={form.control}
                       name="title"
@@ -303,7 +301,7 @@ const DeadlineManagementPage = () => {
                         <FormItem>
                           <FormLabel>Title</FormLabel>
                           <FormControl>
-                            <Input placeholder="E.g., File appeal in Tax Case" {...field} />
+                            <Input placeholder="E.g., File appeal in Tax Case" {...field} className="cursor-text pointer-events-auto" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -318,7 +316,7 @@ const DeadlineManagementPage = () => {
                           <FormLabel>Associated Case</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="cursor-pointer pointer-events-auto">
                                 <SelectValue placeholder="Select a case" />
                               </SelectTrigger>
                             </FormControl>
@@ -348,7 +346,7 @@ const DeadlineManagementPage = () => {
                                   <Button
                                     variant={"outline"}
                                     className={cn(
-                                      "w-full pl-3 text-left font-normal",
+                                      "w-full pl-3 text-left font-normal cursor-pointer pointer-events-auto",
                                       !field.value && "text-muted-foreground"
                                     )}
                                   >
@@ -383,7 +381,7 @@ const DeadlineManagementPage = () => {
                           <FormItem>
                             <FormLabel>Time (optional)</FormLabel>
                             <FormControl>
-                              <Input type="time" {...field} />
+                              <Input type="time" {...field} className="cursor-text pointer-events-auto" />
                             </FormControl>
                             <FormDescription>
                               24-hour format
@@ -403,7 +401,7 @@ const DeadlineManagementPage = () => {
                             <FormLabel>Deadline Type</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="cursor-pointer pointer-events-auto">
                                   <SelectValue placeholder="Select deadline type" />
                                 </SelectTrigger>
                               </FormControl>
@@ -428,7 +426,7 @@ const DeadlineManagementPage = () => {
                             <FormLabel>Priority</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="cursor-pointer pointer-events-auto">
                                   <SelectValue placeholder="Select priority" />
                                 </SelectTrigger>
                               </FormControl>
@@ -458,7 +456,7 @@ const DeadlineManagementPage = () => {
                             <FormLabel>Notify Days Before</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="cursor-pointer pointer-events-auto">
                                   <SelectValue placeholder="Select notification time" />
                                 </SelectTrigger>
                               </FormControl>
@@ -483,7 +481,7 @@ const DeadlineManagementPage = () => {
                             <FormLabel>Jurisdiction (optional)</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="cursor-pointer pointer-events-auto">
                                   <SelectValue placeholder="Select jurisdiction" />
                                 </SelectTrigger>
                               </FormControl>
@@ -510,7 +508,7 @@ const DeadlineManagementPage = () => {
                           <FormControl>
                             <Textarea
                               placeholder="Add any additional details about this deadline"
-                              className="min-h-[80px]"
+                              className="min-h-[80px] cursor-text pointer-events-auto"
                               {...field}
                             />
                           </FormControl>
@@ -535,6 +533,7 @@ const DeadlineManagementPage = () => {
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
+                                className="pointer-events-auto"
                               />
                             </FormControl>
                           </FormItem>
@@ -556,6 +555,7 @@ const DeadlineManagementPage = () => {
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
+                                className="pointer-events-auto"
                               />
                             </FormControl>
                           </FormItem>
@@ -563,27 +563,25 @@ const DeadlineManagementPage = () => {
                       />
                     </div>
                     
-                    <CardFooter className="px-0 pt-6 flex justify-end gap-2">
-                      <Button 
-                        type="submit"
-                        disabled={isSubmitting}
-                        variant="gradient"
-                        size="lg"
-                        className="pointer-events-auto shadow-md"
-                      >
-                        {isSubmitting ? (
-                          <div className="flex items-center">
-                            <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></div>
-                            Saving...
-                          </div>
-                        ) : (
-                          <div className="flex items-center">
-                            <Save className="mr-2 h-4 w-4" />
-                            Save Deadline
-                          </div>
-                        )}
-                      </Button>
-                    </CardFooter>
+                    <Button 
+                      type="submit"
+                      disabled={isSubmitting}
+                      variant="gradient"
+                      size="lg"
+                      className="w-full mt-6 pointer-events-auto shadow-md"
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></div>
+                          Saving...
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center">
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Deadline
+                        </div>
+                      )}
+                    </Button>
                   </form>
                 </Form>
               </CardContent>
@@ -593,7 +591,7 @@ const DeadlineManagementPage = () => {
           {/* Right column - Deadlines list */}
           <div className="md:col-span-2">
             <Card className="shadow-md border border-legal-border dark:border-legal-slate/20">
-              <CardHeader className="bg-gradient-to-r from-indigo-500/5 to-purple-500/5 dark:from-indigo-900/10 dark:to-purple-900/10">
+              <CardHeader className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-900/20 dark:to-purple-900/20">
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-xl">Your Deadlines</CardTitle>
@@ -604,6 +602,7 @@ const DeadlineManagementPage = () => {
                       variant={activeTab === 'upcoming' ? 'advocate' : 'outline'} 
                       size="sm"
                       onClick={() => setActiveTab('upcoming')}
+                      className="pointer-events-auto"
                     >
                       Upcoming
                     </Button>
@@ -611,6 +610,7 @@ const DeadlineManagementPage = () => {
                       variant={activeTab === 'urgent' ? 'advocate' : 'outline'}
                       size="sm"
                       onClick={() => setActiveTab('urgent')}
+                      className="pointer-events-auto"
                     >
                       Urgent
                     </Button>
@@ -618,6 +618,7 @@ const DeadlineManagementPage = () => {
                       variant={activeTab === 'past' ? 'advocate' : 'outline'}
                       size="sm"
                       onClick={() => setActiveTab('past')}
+                      className="pointer-events-auto"
                     >
                       Past
                     </Button>
@@ -644,6 +645,7 @@ const DeadlineManagementPage = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => setActiveTab('upcoming')}
+                      className="pointer-events-auto"
                     >
                       View all deadlines
                     </Button>
@@ -656,15 +658,13 @@ const DeadlineManagementPage = () => {
                           <TableHead>Priority</TableHead>
                           <TableHead>Title</TableHead>
                           <TableHead>Deadline</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Case</TableHead>
+                          <TableHead>Status</TableHead>
                           <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {filteredDeadlines.map((deadline) => {
-                          const caseInfo = CASES.find(c => c.id === deadline.associatedCase);
-                          const approaching = isDeadlineApproaching(deadline.deadlineDate);
+                          const approaching = isDeadlineApproaching(deadline.due_date);
                           
                           return (
                             <TableRow key={deadline.id} className={approaching ? "bg-red-50 dark:bg-red-900/10" : ""}>
@@ -688,33 +688,24 @@ const DeadlineManagementPage = () => {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                {deadline.deadlineDate && format(new Date(deadline.deadlineDate), "dd MMM yyyy")}
-                                {deadline.deadlineTime && (
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    <Clock className="h-3 w-3 inline mr-1" />
-                                    {deadline.deadlineTime}
-                                  </div>
-                                )}
+                                {deadline.due_date && format(new Date(deadline.due_date), "dd MMM yyyy")}
                               </TableCell>
                               <TableCell>
                                 <Badge variant="secondary" className="font-normal">
-                                  {deadline.deadlineType}
+                                  {deadline.status || 'Pending'}
                                 </Badge>
                               </TableCell>
                               <TableCell>
-                                {caseInfo ? caseInfo.title : 'None'}
-                              </TableCell>
-                              <TableCell>
                                 <div className="flex space-x-2">
-                                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                                  <Button variant="outline" size="sm" className="h-8 w-8 p-0 pointer-events-auto">
                                     <FileEdit className="h-4 w-4" />
                                     <span className="sr-only">Edit</span>
                                   </Button>
-                                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                                  <Button variant="outline" size="sm" className="h-8 w-8 p-0 pointer-events-auto">
                                     <Check className="h-4 w-4" />
                                     <span className="sr-only">Complete</span>
                                   </Button>
-                                  <Button variant="outline" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-600">
+                                  <Button variant="outline" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-600 pointer-events-auto">
                                     <Trash2 className="h-4 w-4" />
                                     <span className="sr-only">Delete</span>
                                   </Button>
