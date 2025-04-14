@@ -6,7 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer pointer-events-auto",
   {
     variants: {
       variant: {
@@ -19,8 +19,11 @@ const buttonVariants = cva(
           "bg-blue-light text-blue-slate hover:bg-blue-light/80 shadow-sm dark:bg-blue-info/20 dark:text-blue-light dark:hover:bg-blue-info/30",
         ghost: "hover:bg-blue-light hover:text-blue-slate dark:hover:bg-blue-info/20 dark:hover:text-blue-light",
         link: "text-blue-accent underline-offset-4 hover:underline",
-        advocate: "bg-purple-600 text-white hover:bg-purple-700 shadow-sm dark:bg-purple-700 dark:hover:bg-purple-800 pointer-events-auto",
+        advocate: "bg-purple-600 text-white hover:bg-purple-700 shadow-sm dark:bg-purple-700 dark:hover:bg-purple-800 pointer-events-auto cursor-pointer",
         success: "bg-green-600 text-white hover:bg-green-700 shadow-sm dark:bg-green-700 dark:hover:bg-green-800",
+        purple: "bg-purple-500 text-white hover:bg-purple-600 shadow-sm dark:bg-purple-600 dark:hover:bg-purple-700",
+        indigo: "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md dark:bg-indigo-700 dark:hover:bg-indigo-800",
+        gradient: "bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700 shadow-md",
       },
       size: {
         default: "h-11 px-5 py-2.5",
