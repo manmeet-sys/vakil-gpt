@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
@@ -18,7 +19,8 @@ import {
   Gavel, 
   Pencil, 
   Plus, 
-  Trash 
+  Trash,
+  User
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import LegalToolLayout from '@/components/LegalToolLayout';

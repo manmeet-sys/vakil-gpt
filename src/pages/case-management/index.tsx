@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -434,6 +433,7 @@ const CaseManagementPage = () => {
 
 // Enhanced Client Management Component
 const ClientManagement = () => {
+  const { user } = useAuth();
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -477,9 +477,14 @@ const ClientManagement = () => {
     e.preventDefault();
     
     try {
+      const clientData = {
+        ...formData,
+        user_id: user?.id
+      };
+      
       const { data, error } = await supabase
         .from('clients')
-        .insert([formData])
+        .insert([clientData])
         .select()
         .single();
       

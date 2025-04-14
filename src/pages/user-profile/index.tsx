@@ -37,9 +37,9 @@ const UserProfilePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
-  const [cases, setCases] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [deadlines, setDeadlines] = useState([]);
+  const [cases, setCases] = useState<number>(0);
+  const [clients, setClients] = useState<number>(0);
+  const [deadlines, setDeadlines] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
