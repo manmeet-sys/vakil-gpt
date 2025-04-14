@@ -35,7 +35,7 @@ const BillingTrackingPage = () => {
   const { billingEntries, loading, addBillingEntry, updateBillingEntry, deleteBillingEntry } = useBilling();
   const [isNewEntryDialogOpen, setIsNewEntryDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingEntry, setEditingEntry] = useState(null);
+  const [editingEntry, setEditingEntry] = useState<any>(null);
   const [viewMode, setViewMode] = useState('list');
 
   const form = useForm<z.infer<typeof timeEntrySchema>>({
@@ -145,14 +145,20 @@ const BillingTrackingPage = () => {
     );
   });
 
-  // Calculate statistics
-  const totalHours = filteredEntries.reduce((sum, entry) => sum + (entry.hours_spent || 0), 0);
-  const totalBillable = filteredEntries.reduce((sum, entry) => {
-    const amount = entry.hourly_rate ? entry.hours_spent * entry.hourly_rate : 0;
-    return sum + amount;
+  // Calculate statistics - Fix type issues with numeric operations
+  const totalHours = filteredEntries.reduce((sum, entry) => {
+    const hours = typeof entry.hours_spent === 'number' ? entry.hours_spent : 0;
+    return sum + hours;
   }, 0);
   
-  const clientData = {};
+  const totalBillable = filteredEntries.reduce((sum, entry) => {
+    const hours = typeof entry.hours_spent === 'number' ? entry.hours_spent : 0;
+    const rate = typeof entry.hourly_rate === 'number' ? entry.hourly_rate : 0;
+    return sum + (hours * rate);
+  }, 0);
+  
+  // Fix client data calculations
+  const clientData: Record<string, { hours: number; amount: number }> = {};
   filteredEntries.forEach(entry => {
     if (entry.client_name) {
       if (!clientData[entry.client_name]) {
@@ -161,13 +167,16 @@ const BillingTrackingPage = () => {
           amount: 0
         };
       }
-      clientData[entry.client_name].hours += entry.hours_spent || 0;
-      clientData[entry.client_name].amount += entry.hourly_rate ? entry.hours_spent * entry.hourly_rate : 0;
+      const hours = typeof entry.hours_spent === 'number' ? entry.hours_spent : 0;
+      const rate = typeof entry.hourly_rate === 'number' ? entry.hourly_rate : 0;
+      
+      clientData[entry.client_name].hours += hours;
+      clientData[entry.client_name].amount += (hours * rate);
     }
   });
 
   const topClients = Object.entries(clientData)
-    .map(([name, data]: [string, any]) => ({ name, ...data }))
+    .map(([name, data]) => ({ name, ...data }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5);
 
@@ -468,7 +477,7 @@ const BillingTrackingPage = () => {
                                 <span className="font-medium">{client.name}</span>
                                 <span className="font-medium">₹{client.amount.toLocaleString('en-IN')}</span>
                               </div>
-                              <Progress value={(client.amount / topClients[0].amount) * 100} className="h-2" />
+                              <Progress value={topClients[0].amount > 0 ? (client.amount / topClients[0].amount) * 100 : 0} className="h-2" />
                               <div className="text-xs text-muted-foreground">
                                 {client.hours.toFixed(1)} hours
                               </div>
@@ -488,13 +497,14 @@ const BillingTrackingPage = () => {
                       </CardHeader>
                       <CardContent>
                         {(() => {
-                          const activityStats = {};
+                          const activityStats: Record<string, number> = {};
                           filteredEntries.forEach(entry => {
                             if (entry.activity_type) {
                               if (!activityStats[entry.activity_type]) {
                                 activityStats[entry.activity_type] = 0;
                               }
-                              activityStats[entry.activity_type] += entry.hours_spent || 0;
+                              const hours = typeof entry.hours_spent === 'number' ? entry.hours_spent : 0;
+                              activityStats[entry.activity_type] += hours;
                             }
                           });
                           
@@ -511,11 +521,11 @@ const BillingTrackingPage = () => {
                                   <div key={type} className="space-y-1">
                                     <div className="flex justify-between">
                                       <span className="font-medium">{type}</span>
-                                      <span className="font-medium">{(hours as number).toFixed(1)} hrs</span>
+                                      <span className="font-medium">{hours.toFixed(1)} hrs</span>
                                     </div>
-                                    <Progress value={(hours as number / total) * 100} className="h-2" />
+                                    <Progress value={total > 0 ? (hours / total) * 100 : 0} className="h-2" />
                                     <div className="text-xs text-muted-foreground">
-                                      {Math.round((hours as number / total) * 100)}% of total time
+                                      {total > 0 ? Math.round((hours / total) * 100) : 0}% of total time
                                     </div>
                                   </div>
                                 ))}
@@ -580,13 +590,13 @@ const BillingTrackingPage = () => {
                                   <td className="p-2 text-right">{entry.hours_spent}</td>
                                   <td className="p-2 text-right">{entry.hourly_rate ? `₹${entry.hourly_rate.toLocaleString('en-IN')}` : 'N/A'}</td>
                                   <td className="p-2 text-right font-medium">
-                                    {entry.hourly_rate 
+                                    {typeof entry.hours_spent === 'number' && typeof entry.hourly_rate === 'number' 
                                       ? `₹${(entry.hours_spent * entry.hourly_rate).toLocaleString('en-IN')}`
                                       : 'N/A'
                                     }
                                   </td>
                                   <td className="p-2 text-center">
-                                    <Badge variant={entry.invoice_status === 'billed' ? 'success' : 'outline'}>
+                                    <Badge variant={entry.invoice_status === 'billed' ? 'secondary' : 'outline'}>
                                       {entry.invoice_status === 'billed' ? 'Billed' : 'Unbilled'}
                                     </Badge>
                                   </td>
