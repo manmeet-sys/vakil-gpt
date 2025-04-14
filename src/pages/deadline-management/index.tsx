@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -64,8 +63,11 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
-// Define deadline type for better type safety
 interface Deadline {
   id: number;
   title: string;
@@ -82,7 +84,6 @@ interface Deadline {
   completed: boolean;
 }
 
-// Define the form schema
 const deadlineFormSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
   caseReference: z.string().optional(),
@@ -97,7 +98,6 @@ const deadlineFormSchema = z.object({
   jurisdiction: z.string().optional(),
 });
 
-// Define deadline types specific to Indian legal system
 const deadlineTypes = [
   "Filing Deadline",
   "Reply Deadline",
@@ -113,7 +113,6 @@ const deadlineTypes = [
   "Legal Research Deadline"
 ];
 
-// Define Indian jurisdictions
 const indianJurisdictions = [
   "Supreme Court of India",
   "Delhi High Court",
@@ -129,7 +128,6 @@ const indianJurisdictions = [
   "Other"
 ];
 
-// Mock data for deadlines
 const initialDeadlines: Deadline[] = [
   {
     id: 1,
@@ -209,13 +207,34 @@ const initialDeadlines: Deadline[] = [
 ];
 
 const DeadlineManagementPage = () => {
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [deadlines, setDeadlines] = useState<Deadline[]>(initialDeadlines);
   const [isAddingDeadline, setIsAddingDeadline] = useState(false);
   const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null);
   const [activeTab, setActiveTab] = useState("upcoming");
+  const [cases, setCases] = useState<any[]>([]);
   
-  // Initialize the form
+  useEffect(() => {
+    if (user) {
+      fetchCases();
+    }
+  }, [user]);
+
+  const fetchCases = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('court_filings')
+        .select('id, case_title, case_number')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setCases(data || []);
+    } catch (error) {
+      console.error('Error fetching cases:', error);
+    }
+  };
+  
   const form = useForm<z.infer<typeof deadlineFormSchema>>({
     resolver: zodResolver(deadlineFormSchema),
     defaultValues: {
@@ -231,12 +250,8 @@ const DeadlineManagementPage = () => {
     },
   });
   
-  // Helper to get deadline dates with case details
   const getDeadlinesWithDates = () => {
-    // Create an array of dates (today + next 6 days)
     const dateRange = Array.from({ length: 7 }, (_, i) => addDays(new Date(), i));
-    
-    // Map each date to deadlines occurring on that date
     return dateRange.map(date => ({
       date,
       deadlines: deadlines.filter(d => 
@@ -246,7 +261,6 @@ const DeadlineManagementPage = () => {
     }));
   };
   
-  // Filter deadlines based on selected date and active tab
   const filteredDeadlines = selectedDate 
     ? deadlines.filter(d => 
         isSameDay(d.date, selectedDate) && 
@@ -256,7 +270,6 @@ const DeadlineManagementPage = () => {
         activeTab === "upcoming" ? !d.completed : activeTab === "completed" ? d.completed : true
       );
   
-  // Reset form for new deadline
   const resetForm = () => {
     form.reset({
       title: "",
@@ -274,7 +287,6 @@ const DeadlineManagementPage = () => {
     setEditingDeadline(null);
   };
   
-  // Handle editing a deadline
   const handleEditDeadline = (deadline: Deadline) => {
     setEditingDeadline(deadline);
     form.reset({
@@ -293,7 +305,6 @@ const DeadlineManagementPage = () => {
     setIsAddingDeadline(true);
   };
   
-  // Handle deleting a deadline
   const handleDeleteDeadline = (id: number) => {
     setDeadlines(prev => prev.filter(d => d.id !== id));
     toast({
@@ -302,7 +313,6 @@ const DeadlineManagementPage = () => {
     });
   };
   
-  // Handle marking a deadline as complete/incomplete
   const handleToggleComplete = (id: number) => {
     setDeadlines(prev => prev.map(d => 
       d.id === id ? { ...d, completed: !d.completed } : d
@@ -315,10 +325,8 @@ const DeadlineManagementPage = () => {
     });
   };
   
-  // Form submission handler
   const onSubmit = (data: z.infer<typeof deadlineFormSchema>) => {
     if (editingDeadline) {
-      // Update existing deadline
       setDeadlines(prev => prev.map(d => 
         d.id === editingDeadline.id ? { 
           ...d, 
@@ -341,7 +349,6 @@ const DeadlineManagementPage = () => {
         description: "The deadline has been successfully updated.",
       });
     } else {
-      // Add new deadline with all required fields
       const newDeadline: Deadline = {
         id: Math.max(0, ...deadlines.map(d => d.id)) + 1,
         title: data.title,
@@ -370,7 +377,6 @@ const DeadlineManagementPage = () => {
     setIsAddingDeadline(false);
   };
   
-  // Get priority badge
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -384,7 +390,6 @@ const DeadlineManagementPage = () => {
     }
   };
   
-  // Get deadline date display
   const getDeadlineDateDisplay = (date: Date) => {
     if (isToday(date)) {
       return <Badge className="bg-blue-500 hover:bg-blue-600">Today</Badge>;
@@ -404,7 +409,6 @@ const DeadlineManagementPage = () => {
     >
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Calendar and Upcoming Section */}
           <div className="lg:col-span-4 space-y-6">
             <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
               <CardHeader>
@@ -442,71 +446,27 @@ const DeadlineManagementPage = () => {
             <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <Bell className="mr-2 h-5 w-5" />
-                  Upcoming Deadlines
+                  <Gavel className="mr-2 h-5 w-5" />
+                  Related Actions
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
-                {getDeadlinesWithDates().map(({ date, deadlines: dateDls }) => (
-                  <div key={format(date, 'yyyy-MM-dd')} className="mb-1">
-                    {dateDls.length > 0 && (
-                      <>
-                        <div className={`
-                          px-4 py-2 text-sm font-medium 
-                          ${isToday(date) ? 'bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' : 
-                            isTomorrow(date) ? 'bg-orange-50 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 
-                            'bg-gray-50 text-gray-700 dark:bg-gray-800/40 dark:text-gray-300'}
-                        `}>
-                          {isToday(date) ? 'Today' : 
-                            isTomorrow(date) ? 'Tomorrow' : 
-                            format(date, 'EEEE, MMMM d')}
-                        </div>
-                        
-                        <ScrollArea className="max-h-48">
-                          {dateDls.map((dl) => (
-                            <div 
-                              key={dl.id} 
-                              className="px-4 py-2 border-b last:border-0 border-gray-100 dark:border-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-pointer"
-                              onClick={() => {
-                                setSelectedDate(dl.date);
-                              }}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                  {dl.deadlineType === "Hearing Date" ? (
-                                    <Gavel className="h-4 w-4 text-purple-500 mr-2" />
-                                  ) : dl.deadlineType === "Filing Deadline" ? (
-                                    <FileText className="h-4 w-4 text-red-500 mr-2" />
-                                  ) : (
-                                    <Calendar className="h-4 w-4 text-blue-500 mr-2" />
-                                  )}
-                                  <span className="text-sm truncate max-w-[180px]">{dl.title}</span>
-                                </div>
-                                {dl.time && (
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    {dl.time}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </ScrollArea>
-                      </>
-                    )}
-                  </div>
-                ))}
-                
-                {getDeadlinesWithDates().every(({ deadlines: dateDls }) => dateDls.length === 0) && (
-                  <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                    <CalendarCheck className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                    <p>No upcoming deadlines for the next 7 days</p>
-                  </div>
-                )}
+              <CardContent className="space-y-2">
+                <Link to="/case-management">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Case Management
+                  </Button>
+                </Link>
+                <Link to="/user-profile">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <User className="mr-2 h-4 w-4" />
+                    Advocate Profile
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
           
-          {/* Deadlines List Section */}
           <div className="lg:col-span-8">
             <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
               <CardHeader className="pb-2">
@@ -663,7 +623,6 @@ const DeadlineManagementPage = () => {
         </div>
       </div>
       
-      {/* Dialog for adding or editing deadlines */}
       <Dialog open={isAddingDeadline} onOpenChange={setIsAddingDeadline}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -689,6 +648,35 @@ const DeadlineManagementPage = () => {
                     <FormControl>
                       <Input placeholder="E.g., File appeal in Tax Case" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="caseReference"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Associated Case</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a case (optional)" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {cases.map((caseItem) => (
+                          <SelectItem key={caseItem.id} value={caseItem.case_number || caseItem.id}>
+                            {caseItem.case_title} {caseItem.case_number ? `(${caseItem.case_number})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -723,7 +711,7 @@ const DeadlineManagementPage = () => {
                             selected={field.value}
                             onSelect={field.onChange}
                             initialFocus
-                            className="p-3 pointer-events-auto"
+                            className={cn("p-3 pointer-events-auto")}
                           />
                         </PopoverContent>
                       </Popover>
@@ -804,20 +792,6 @@ const DeadlineManagementPage = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="caseReference"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Case Reference (optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="E.g., CRL/123/2025" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
                 <FormField
                   control={form.control}
                   name="notifyDaysBefore"

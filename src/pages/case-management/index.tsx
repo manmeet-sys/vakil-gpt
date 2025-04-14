@@ -42,6 +42,7 @@ import CaseDetails from '@/components/case-management/CaseDetails';
 import NewCaseForm from '@/components/case-management/NewCaseForm';
 import ClientsList from '@/components/case-management/ClientsList';
 import UpcomingHearings from '@/components/case-management/UpcomingHearings';
+import { Link } from 'react-router-dom';
 
 type Court = {
   id: string;
@@ -81,6 +82,7 @@ const CaseManagementPage = () => {
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [showNewCaseForm, setShowNewCaseForm] = useState(false);
   const [activeTab, setActiveTab] = useState('active-cases');
+  const [showClientManagement, setShowClientManagement] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -147,11 +149,19 @@ const CaseManagementPage = () => {
   const handleCaseClick = (caseItem: Case) => {
     setSelectedCase(caseItem);
     setShowNewCaseForm(false);
+    setShowClientManagement(false);
   };
 
   const handleCreateNew = () => {
     setSelectedCase(null);
     setShowNewCaseForm(true);
+    setShowClientManagement(false);
+  };
+
+  const handleShowClientManagement = () => {
+    setSelectedCase(null);
+    setShowNewCaseForm(false);
+    setShowClientManagement(true);
   };
 
   const handleCaseCreated = (newCase: Case) => {
@@ -187,10 +197,16 @@ const CaseManagementPage = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Case Management</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">Track and manage all your legal cases efficiently</p>
           </div>
-          <Button onClick={handleCreateNew} className="flex items-center gap-1">
-            <Plus className="h-4 w-4" />
-            Create New Case
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleShowClientManagement} className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              Manage Clients
+            </Button>
+            <Button onClick={handleCreateNew} className="flex items-center gap-1">
+              <Plus className="h-4 w-4" />
+              Create New Case
+            </Button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -369,12 +385,34 @@ const CaseManagementPage = () => {
                 </Tabs>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Quick Links</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link to="/deadline-management">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Manage Deadlines
+                  </Button>
+                </Link>
+                <Link to="/user-profile">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <User className="mr-2 h-4 w-4" />
+                    Advocate Profile
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           </div>
           
           {/* Right side - Case details or form */}
           <div className="lg:col-span-2">
             {showNewCaseForm ? (
               <NewCaseForm onCaseCreated={handleCaseCreated} onCancel={() => setShowNewCaseForm(false)} />
+            ) : showClientManagement ? (
+              <ClientManagement />
             ) : selectedCase ? (
               <CaseDetails
                 caseData={selectedCase}
@@ -391,6 +429,225 @@ const CaseManagementPage = () => {
         </div>
       </div>
     </AppLayout>
+  );
+};
+
+// Enhanced Client Management Component
+const ClientManagement = () => {
+  const [clients, setClients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    notes: ''
+  });
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name', { ascending: true });
+      
+      if (error) throw error;
+      
+      setClients(data || []);
+    } catch (error: any) {
+      console.error('Error fetching clients:', error.message);
+      toast.error('Failed to load clients');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .insert([formData])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      setClients(prev => [...prev, data]);
+      setFormData({ name: '', email: '', phone: '', address: '', notes: '' });
+      setShowAddForm(false);
+      toast.success('Client added successfully');
+    } catch (error: any) {
+      console.error('Error adding client:', error.message);
+      toast.error('Failed to add client');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this client?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setClients(prev => prev.filter(client => client.id !== id));
+      toast.success('Client deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting client:', error.message);
+      toast.error('Failed to delete client');
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <div>
+          <CardTitle className="text-xl">Client Management</CardTitle>
+          <CardDescription>Manage your clients and their information</CardDescription>
+        </div>
+        <Button size="sm" onClick={() => setShowAddForm(!showAddForm)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Client
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {showAddForm && (
+          <Card className="mb-6 border-dashed">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Add New Client</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="name" className="text-sm font-medium">Full Name *</label>
+                    <Input 
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="Enter client's full name"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium">Email</label>
+                    <Input 
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      type="email"
+                      placeholder="Email address"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="text-sm font-medium">Phone</label>
+                    <Input 
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Phone number"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="address" className="text-sm font-medium">Address</label>
+                    <Input 
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder="Address"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="notes" className="text-sm font-medium">Notes</label>
+                  <Textarea 
+                    id="notes"
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleInputChange}
+                    placeholder="Additional notes about the client"
+                    className="min-h-[100px]"
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" type="button" onClick={() => setShowAddForm(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    Save Client
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
+        {loading ? (
+          <div className="text-center py-8">Loading clients data...</div>
+        ) : clients.length === 0 ? (
+          <div className="text-center py-8">
+            <Users className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+            <h3 className="text-lg font-medium">No clients found</h3>
+            <p className="text-gray-500 mt-2 mb-4">Add your first client to get started</p>
+            <Button onClick={() => setShowAddForm(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Client
+            </Button>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Client Name</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {clients.map((client) => (
+                <TableRow key={client.id}>
+                  <TableCell className="font-medium">{client.name}</TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {client.email && <div className="text-sm">{client.email}</div>}
+                      {client.phone && <div className="text-sm">{client.phone}</div>}
+                    </div>
+                  </TableCell>
+                  <TableCell>{client.address || '—'}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleDelete(client.id)}>
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
