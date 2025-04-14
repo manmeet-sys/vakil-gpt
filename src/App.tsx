@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -59,6 +60,7 @@ import UserProfilePage from "./pages/user-profile";
 import ProfileEditPage from "./pages/profile-edit";
 import CourtFilingPage from "./pages/court-filing";
 import DeadlineManagementPage from "./pages/deadline-management";
+import CaseManagementPage from "./pages/case-management";
 
 import NotFound from "./pages/NotFound";
 
@@ -293,6 +295,12 @@ const App = () => (
                   <Route path="/deadline-management" element={
                     <ProtectedRoute>
                       <DeadlineManagementPage />
+                    </ProtectedRoute>
+                  } />
+
+                  <Route path="/case-management" element={
+                    <ProtectedRoute>
+                      <CaseManagementPage />
                     </ProtectedRoute>
                   } />
                   
