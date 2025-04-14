@@ -93,13 +93,15 @@ const UpcomingHearings = () => {
           }
         }
         
-        // If no dedicated hearings, fallback to court filings hearing dates
         // Handle the case when deadlinesData might be a SelectQueryError
         let hearingsData: DeadlineData[] = [];
         
-        if (deadlinesData && !('error' in deadlinesData)) {
-          // Only if deadlinesData is valid data and not an error
-          hearingsData = deadlinesData as DeadlineData[];
+        if (deadlinesData) {
+          // Verify deadlinesData is not an error before casting
+          // Use type narrowing to check if it's an array and has expected properties
+          if (Array.isArray(deadlinesData) && deadlinesData.length > 0 && 'id' in deadlinesData[0]) {
+            hearingsData = deadlinesData as DeadlineData[];
+          }
         }
         
         if (hearingsData.length < 5) {
