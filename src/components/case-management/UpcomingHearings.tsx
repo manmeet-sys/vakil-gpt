@@ -94,14 +94,23 @@ const UpcomingHearings = () => {
         }
         
         // Handle the case when deadlinesData might be a SelectQueryError
-        let hearingsData: DeadlineData[] = [];
+        const hearingsData: DeadlineData[] = [];
         
-        if (deadlinesData) {
-          // Verify deadlinesData is not an error before casting
-          // Use type narrowing to check if it's an array and has expected properties
-          if (Array.isArray(deadlinesData) && deadlinesData.length > 0 && 'id' in deadlinesData[0]) {
-            hearingsData = deadlinesData as DeadlineData[];
-          }
+        // Only process deadlinesData if it's not null and is an array
+        if (deadlinesData && Array.isArray(deadlinesData)) {
+          // Safe to add items to hearingsData only if they have the required properties
+          deadlinesData.forEach(item => {
+            if ('id' in item && 'title' in item && 'due_date' in item) {
+              hearingsData.push({
+                id: item.id,
+                title: item.title,
+                due_date: item.due_date,
+                case_title: 'case_title' in item ? item.case_title : null,
+                client_name: 'client_name' in item ? item.client_name : null,
+                court_name: 'court_name' in item ? item.court_name : null
+              });
+            }
+          });
         }
         
         if (hearingsData.length < 5) {
@@ -126,7 +135,7 @@ const UpcomingHearings = () => {
               due_date: filing.hearing_date
             }));
             
-            hearingsData = [...hearingsData, ...transformedFilings];
+            hearingsData.push(...transformedFilings);
           }
         }
         
