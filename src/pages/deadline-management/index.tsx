@@ -418,33 +418,36 @@ const DeadlineManagementPage = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-4 space-y-6">
-            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg">
-                <CardTitle className="text-lg font-semibold flex items-center text-purple-800 dark:text-purple-200">
-                  <CalendarDays className="mr-2 h-5 w-5" />
+            <Card className="border border-purple-200 dark:border-purple-900/30 bg-white dark:bg-legal-slate/10 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg border-b border-purple-100 dark:border-purple-900/30">
+                <CardTitle className="text-xl font-semibold flex items-center text-purple-800 dark:text-purple-200">
+                  <CalendarDays className="mr-3 h-6 w-6 text-purple-600 dark:text-purple-400" />
                   Advocate's Calendar
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="pt-6">
                 <CalendarComponent
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
-                  className="rounded-md border p-3 pointer-events-auto"
+                  className="rounded-md border border-purple-100 dark:border-purple-900/30 p-3 shadow-sm pointer-events-auto"
                 />
               </CardContent>
-              <CardFooter className="flex justify-between">
+              <CardFooter className="flex justify-between p-4 bg-purple-50/50 dark:bg-purple-900/10 border-t border-purple-100 dark:border-purple-900/30 rounded-b-lg">
                 <Button 
                   variant="outline" 
                   size="sm"
                   onClick={() => setSelectedDate(new Date())}
+                  className="border-purple-200 hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:hover:bg-purple-900/20 dark:text-purple-300"
                 >
+                  <CalendarCheck className="mr-2 h-4 w-4" />
                   Today
                 </Button>
                 <Button 
                   size="sm"
                   variant="advocate"
                   onClick={() => setIsAddingDeadline(true)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Deadline
@@ -452,60 +455,114 @@ const DeadlineManagementPage = () => {
               </CardFooter>
             </Card>
             
-            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg">
-                <CardTitle className="text-lg font-semibold flex items-center text-purple-800 dark:text-purple-200">
-                  <Briefcase className="mr-2 h-5 w-5" />
+            <Card className="border border-purple-200 dark:border-purple-900/30 bg-white dark:bg-legal-slate/10 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg border-b border-purple-100 dark:border-purple-900/30">
+                <CardTitle className="text-xl font-semibold flex items-center text-purple-800 dark:text-purple-200">
+                  <Briefcase className="mr-3 h-6 w-6 text-purple-600 dark:text-purple-400" />
                   Advocate's Toolkit
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 pt-3">
-                <Link to="/case-management">
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    <FileText className="mr-2 h-4 w-4" />
-                    Case Management
-                  </Button>
-                </Link>
-                <Link to="/court-filing">
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    <Scroll className="mr-2 h-4 w-4" />
-                    Court Filings
-                  </Button>
-                </Link>
-                <Link to="/legal-document-analyzer">
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Document Analysis
-                  </Button>
-                </Link>
-                <Link to="/legal-brief-generation">
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    <Scale className="mr-2 h-4 w-4" />
-                    Brief Generator
-                  </Button>
-                </Link>
-                <Link to="/user-profile">
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    <User className="mr-2 h-4 w-4" />
-                    Advocate Profile
-                  </Button>
-                </Link>
+              <CardContent className="space-y-3 pt-4 p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <Link to="/case-management" className="group">
+                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
+                      <FileText className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
+                      Cases
+                    </Button>
+                  </Link>
+                  <Link to="/court-filing" className="group">
+                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
+                      <Scroll className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
+                      Filings
+                    </Button>
+                  </Link>
+                  <Link to="/legal-document-analyzer" className="group">
+                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
+                      <BookOpen className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
+                      Analyze
+                    </Button>
+                  </Link>
+                  <Link to="/legal-brief-generation" className="group">
+                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
+                      <Scale className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
+                      Briefs
+                    </Button>
+                  </Link>
+                </div>
+                
+                <div className="pt-2">
+                  <Link to="/user-profile" className="group w-full">
+                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
+                      <User className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
+                      Advocate Profile
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Upcoming Deadlines Summary Card */}
+            <Card className="border border-purple-200 dark:border-purple-900/30 bg-white dark:bg-legal-slate/10 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg border-b border-purple-100 dark:border-purple-900/30">
+                <CardTitle className="text-lg font-semibold flex items-center text-purple-800 dark:text-purple-200">
+                  <AlertCircle className="mr-3 h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  Upcoming Priorities
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="space-y-3">
+                  {deadlines
+                    .filter(d => !d.completed)
+                    .sort((a, b) => a.date.getTime() - b.date.getTime())
+                    .slice(0, 3)
+                    .map(deadline => (
+                      <div key={deadline.id} className="p-3 rounded-lg border border-purple-100 dark:border-purple-900/20 bg-white dark:bg-purple-950/10">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-medium text-purple-800 dark:text-purple-200">{deadline.title}</h4>
+                            <div className="flex items-center mt-1 text-sm text-gray-600 dark:text-gray-400">
+                              <CalendarDays className="mr-1 h-3.5 w-3.5" />
+                              {getDeadlineDateDisplay(deadline.date)}
+                              {deadline.time && (
+                                <span className="ml-2 flex items-center">
+                                  <Clock className="mr-1 h-3.5 w-3.5" />
+                                  {deadline.time}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {getPriorityBadge(deadline.priority)}
+                        </div>
+                      </div>
+                    ))}
+                    
+                  {deadlines.filter(d => !d.completed).length === 0 && (
+                    <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                      <CalendarCheck className="h-10 w-10 mx-auto mb-2 text-purple-400 dark:text-purple-500" />
+                      <p>No upcoming deadlines</p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
           
           <div className="lg:col-span-8">
-            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2 bg-purple-50 dark:bg-purple-900/20 rounded-t-lg">
+            <Card className="border border-purple-200 dark:border-purple-900/30 bg-white dark:bg-legal-slate/10 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <CardHeader className="pb-2 bg-purple-50 dark:bg-purple-900/20 rounded-t-lg border-b border-purple-100 dark:border-purple-900/30">
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-xl font-semibold text-purple-800 dark:text-purple-200">
+                  <CardTitle className="text-xl font-semibold text-purple-800 dark:text-purple-200 flex items-center">
                     {selectedDate ? (
-                      <>Deadlines for {format(selectedDate, "d MMMM yyyy")}</>
+                      <><Calendar className="mr-3 h-6 w-6 text-purple-600 dark:text-purple-400" />Deadlines for {format(selectedDate, "d MMMM yyyy")}</>
                     ) : (
-                      <>All Deadlines</>
+                      <><Calendar className="mr-3 h-6 w-6 text-purple-600 dark:text-purple-400" />All Deadlines</>
                     )}
                   </CardTitle>
-                  <Button onClick={() => setIsAddingDeadline(true)} variant="advocate">
+                  <Button 
+                    onClick={() => setIsAddingDeadline(true)} 
+                    variant="advocate"
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     Add Deadline
                   </Button>
@@ -514,19 +571,34 @@ const DeadlineManagementPage = () => {
               
               <CardContent className="pt-4">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid grid-cols-3 mb-6">
-                    <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                    <TabsTrigger value="completed">Completed</TabsTrigger>
-                    <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsList className="grid grid-cols-3 mb-6 bg-purple-100 dark:bg-purple-900/30">
+                    <TabsTrigger 
+                      value="upcoming" 
+                      className="data-[state=active]:bg-purple-600 data-[state=active]:text-white dark:data-[state=active]:bg-purple-700"
+                    >
+                      Upcoming
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="completed" 
+                      className="data-[state=active]:bg-purple-600 data-[state=active]:text-white dark:data-[state=active]:bg-purple-700"
+                    >
+                      Completed
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="all" 
+                      className="data-[state=active]:bg-purple-600 data-[state=active]:text-white dark:data-[state=active]:bg-purple-700"
+                    >
+                      All
+                    </TabsTrigger>
                   </TabsList>
                   
-                  <TabsContent value={activeTab}>
+                  <TabsContent value={activeTab} className="pointer-events-auto">
                     {filteredDeadlines.length > 0 ? (
                       <div className="space-y-4">
                         {filteredDeadlines.map((deadline) => (
-                          <Card key={deadline.id} className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                          <Card key={deadline.id} className="overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-purple-100 dark:border-purple-900/20">
                             <div className={`
-                              h-1.5 w-full
+                              h-2 w-full
                               ${deadline.priority === 'high' ? 'bg-red-500' : 
                                 deadline.priority === 'medium' ? 'bg-orange-400' : 
                                 'bg-blue-400'}
@@ -539,9 +611,9 @@ const DeadlineManagementPage = () => {
                                       id={`complete-${deadline.id}`} 
                                       checked={deadline.completed}
                                       onCheckedChange={() => handleToggleComplete(deadline.id)}
-                                      className="mr-2"
+                                      className="mr-2 border-purple-400 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600 pointer-events-auto"
                                     />
-                                    <h3 className={`font-semibold text-lg ${deadline.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''}`}>
+                                    <h3 className={`font-semibold text-lg ${deadline.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-purple-800 dark:text-purple-200'}`}>
                                       {deadline.title}
                                     </h3>
                                   </div>
@@ -556,7 +628,7 @@ const DeadlineManagementPage = () => {
                                       </Badge>
                                     )}
                                     
-                                    <Badge variant="outline">
+                                    <Badge variant="outline" className="border-gray-300 dark:border-gray-700">
                                       {deadline.deadlineType}
                                     </Badge>
                                   </div>
@@ -606,6 +678,7 @@ const DeadlineManagementPage = () => {
                                       size="sm" 
                                       variant="outline"
                                       onClick={() => handleEditDeadline(deadline)}
+                                      className="border-purple-200 hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:hover:bg-purple-900/20 dark:text-purple-300 pointer-events-auto"
                                     >
                                       <Pencil className="h-3.5 w-3.5 mr-1" />
                                       Edit
@@ -613,7 +686,7 @@ const DeadlineManagementPage = () => {
                                     <Button 
                                       size="sm" 
                                       variant="outline"
-                                      className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 dark:border-red-900 dark:hover:border-red-800"
+                                      className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 dark:border-red-900 dark:hover:border-red-800 pointer-events-auto"
                                       onClick={() => handleDeleteDeadline(deadline.id)}
                                     >
                                       <Trash className="h-3.5 w-3.5 mr-1" />
@@ -628,16 +701,16 @@ const DeadlineManagementPage = () => {
                       </div>
                     ) : (
                       <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/20 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-                        <CalendarClock className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">
+                        <CalendarClock className="h-16 w-16 mx-auto mb-6 text-purple-300 dark:text-purple-700" />
+                        <h3 className="text-xl font-medium text-purple-800 dark:text-purple-200 mb-3">
                           No deadlines found
                         </h3>
-                        <p className="text-gray-500 dark:text-gray-400 mb-4">
+                        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                           {selectedDate
                             ? `No ${activeTab} deadlines for ${format(selectedDate, "d MMMM yyyy")}`
                             : `No ${activeTab} deadlines available`}
                         </p>
-                        <Button onClick={() => setIsAddingDeadline(true)} variant="advocate">
+                        <Button onClick={() => setIsAddingDeadline(true)} variant="advocate" className="bg-purple-600 hover:bg-purple-700 pointer-events-auto">
                           <Plus className="mr-2 h-4 w-4" />
                           Add New Deadline
                         </Button>
@@ -652,12 +725,12 @@ const DeadlineManagementPage = () => {
       </div>
       
       <Dialog open={isAddingDeadline} onOpenChange={setIsAddingDeadline}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="text-purple-800 dark:text-purple-300">
+        <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden pointer-events-auto">
+          <DialogHeader className="bg-purple-50 dark:bg-purple-900/20 p-6 border-b border-purple-100 dark:border-purple-900/30">
+            <DialogTitle className="text-xl text-purple-800 dark:text-purple-200">
               {editingDeadline ? "Edit Deadline" : "Add New Deadline"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-purple-700/70 dark:text-purple-300/70">
               {editingDeadline
                 ? "Update the details for this deadline"
                 : "Create a new deadline or important date for your calendar"
@@ -665,308 +738,317 @@ const DeadlineManagementPage = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="E.g., File appeal in Tax Case" {...field} className="focus-visible:ring-purple-500" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="caseReference"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Associated Case</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="focus-visible:ring-purple-500">
-                          <SelectValue placeholder="Select a case (optional)" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="pointer-events-auto">
-                        <SelectItem value="none">None</SelectItem>
-                        {cases.map((caseItem) => (
-                          <SelectItem key={caseItem.id} value={caseItem.case_number || caseItem.id.toString()}>
-                            {caseItem.case_title} {caseItem.case_number ? `(${caseItem.case_number})` : ''}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="date"
+                  name="title"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                    <FormItem>
+                      <FormLabel className="text-purple-800 dark:text-purple-200">Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="E.g., File appeal in Tax Case" {...field} className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="caseReference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-purple-800 dark:text-purple-200">Associated Case</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value || "none"}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
+                            <SelectValue placeholder="Select a case (optional)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="pointer-events-auto">
+                          <SelectItem value="none">None</SelectItem>
+                          {cases.map((caseItem) => (
+                            <SelectItem key={caseItem.id} value={caseItem.case_number || caseItem.id.toString()}>
+                              {caseItem.case_title} {caseItem.case_number ? `(${caseItem.case_number})` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-purple-800 dark:text-purple-200">Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={`w-full justify-start text-left font-normal border-purple-200 dark:border-purple-800 pointer-events-auto ${!field.value && "text-muted-foreground"}`}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Select a date</span>
+                                )}
+                                <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0 z-50 pointer-events-auto" align="start">
+                            <CalendarComponent
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                              className="p-3 pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-purple-800 dark:text-purple-200">Time (optional)</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="deadlineType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-purple-800 dark:text-purple-200">Deadline Type</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
                           <FormControl>
-                            <Button
-                              variant="outline"
-                              className={`w-full justify-start text-left font-normal focus-visible:ring-purple-500 ${!field.value && "text-muted-foreground"}`}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Select a date</span>
-                              )}
-                              <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
+                              <SelectValue placeholder="Select deadline type" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 z-50" align="start">
-                          <CalendarComponent
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                            className={cn("p-3 pointer-events-auto")}
+                          <SelectContent className="pointer-events-auto">
+                            {deadlineTypes.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="priority"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-purple-800 dark:text-purple-200">Priority</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
+                              <SelectValue placeholder="Select priority" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="pointer-events-auto">
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="low">Low</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="notifyDaysBefore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-purple-800 dark:text-purple-200">Notify Days Before</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(parseInt(value))} 
+                          defaultValue={field.value.toString()}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
+                              <SelectValue placeholder="Select days" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="pointer-events-auto">
+                            <SelectItem value="0">Same day only</SelectItem>
+                            <SelectItem value="1">1 day before</SelectItem>
+                            <SelectItem value="2">2 days before</SelectItem>
+                            <SelectItem value="3">3 days before</SelectItem>
+                            <SelectItem value="5">5 days before</SelectItem>
+                            <SelectItem value="7">1 week before</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="jurisdiction"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-purple-800 dark:text-purple-200">Jurisdiction (optional)</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
+                              <SelectValue placeholder="Select jurisdiction" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="pointer-events-auto">
+                            {indianJurisdictions.map((jurisdiction) => (
+                              <SelectItem key={jurisdiction} value={jurisdiction}>
+                                {jurisdiction}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-purple-800 dark:text-purple-200">Description (optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Add any additional details about this deadline" 
+                          className="min-h-[80px] focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="courtFilingRequired"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border border-purple-100 dark:border-purple-900/20 p-3 hover:bg-purple-50/50 dark:hover:bg-purple-900/10">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-purple-800 dark:text-purple-200">Court Filing Required</FormLabel>
+                          <FormDescription className="text-xs text-purple-700/70 dark:text-purple-300/70">
+                            Requires document filing with court
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="data-[state=checked]:bg-purple-600 pointer-events-auto"
                           />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Time (optional)</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} className="focus-visible:ring-purple-500" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="deadlineType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Deadline Type</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="focus-visible:ring-purple-500">
-                            <SelectValue placeholder="Select deadline type" />
-                          </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="pointer-events-auto">
-                          {deadlineTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="priority"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Priority</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="enableReminders"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border border-purple-100 dark:border-purple-900/20 p-3 hover:bg-purple-50/50 dark:hover:bg-purple-900/10">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-purple-800 dark:text-purple-200">Enable Reminders</FormLabel>
+                          <FormDescription className="text-xs text-purple-700/70 dark:text-purple-300/70">
+                            Send notifications for this deadline
+                          </FormDescription>
+                        </div>
                         <FormControl>
-                          <SelectTrigger className="focus-visible:ring-purple-500">
-                            <SelectValue placeholder="Select priority" />
-                          </SelectTrigger>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="data-[state=checked]:bg-purple-600 pointer-events-auto"
+                          />
                         </FormControl>
-                        <SelectContent className="pointer-events-auto">
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="low">Low</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="notifyDaysBefore"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Notify Days Before</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(parseInt(value))} 
-                        defaultValue={field.value.toString()}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="focus-visible:ring-purple-500">
-                            <SelectValue placeholder="Select days" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="pointer-events-auto">
-                          <SelectItem value="0">Same day only</SelectItem>
-                          <SelectItem value="1">1 day before</SelectItem>
-                          <SelectItem value="2">2 days before</SelectItem>
-                          <SelectItem value="3">3 days before</SelectItem>
-                          <SelectItem value="5">5 days before</SelectItem>
-                          <SelectItem value="7">1 week before</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
-                <FormField
-                  control={form.control}
-                  name="jurisdiction"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jurisdiction (optional)</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="focus-visible:ring-purple-500">
-                            <SelectValue placeholder="Select jurisdiction" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="pointer-events-auto">
-                          {indianJurisdictions.map((jurisdiction) => (
-                            <SelectItem key={jurisdiction} value={jurisdiction}>
-                              {jurisdiction}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description (optional)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Add any additional details about this deadline" 
-                        className="min-h-[80px] focus-visible:ring-purple-500"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="courtFilingRequired"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 hover:bg-slate-50 dark:hover:bg-slate-900/10 transition-colors">
-                      <div className="space-y-0.5">
-                        <FormLabel>Court Filing Required</FormLabel>
-                        <FormDescription className="text-xs">
-                          Requires document filing with court
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="enableReminders"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 hover:bg-slate-50 dark:hover:bg-slate-900/10 transition-colors">
-                      <div className="space-y-0.5">
-                        <FormLabel>Enable Reminders</FormLabel>
-                        <FormDescription className="text-xs">
-                          Send notifications for this deadline
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <DialogFooter className="pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    resetForm();
-                    setIsAddingDeadline(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" variant="advocate">
-                  {editingDeadline ? (
-                    <>
-                      <SquareCheckBig className="h-4 w-4 mr-2" />
-                      Update Deadline
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Deadline
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+                <DialogFooter className="pt-4 border-t border-purple-100 dark:border-purple-900/30 mt-6">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      resetForm();
+                      setIsAddingDeadline(false);
+                    }}
+                    className="border-purple-200 hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:hover:bg-purple-900/20 dark:text-purple-300 pointer-events-auto"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    variant="advocate"
+                    className="bg-purple-600 hover:bg-purple-700 text-white pointer-events-auto"
+                  >
+                    {editingDeadline ? (
+                      <>
+                        <SquareCheckBig className="h-4 w-4 mr-2" />
+                        Update Deadline
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Deadline
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </div>
         </DialogContent>
       </Dialog>
     </LegalToolLayout>

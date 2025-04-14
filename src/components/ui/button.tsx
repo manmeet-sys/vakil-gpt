@@ -19,7 +19,7 @@ const buttonVariants = cva(
           "bg-blue-light text-blue-slate hover:bg-blue-light/80 shadow-sm dark:bg-blue-info/20 dark:text-blue-light dark:hover:bg-blue-info/30",
         ghost: "hover:bg-blue-light hover:text-blue-slate dark:hover:bg-blue-info/20 dark:hover:text-blue-light",
         link: "text-blue-accent underline-offset-4 hover:underline",
-        advocate: "bg-purple-600 text-white hover:bg-purple-700 shadow-sm dark:bg-purple-700 dark:hover:bg-purple-800",
+        advocate: "bg-purple-600 text-white hover:bg-purple-700 shadow-sm dark:bg-purple-700 dark:hover:bg-purple-800 pointer-events-auto",
         success: "bg-green-600 text-white hover:bg-green-700 shadow-sm dark:bg-green-700 dark:hover:bg-green-800",
       },
       size: {
