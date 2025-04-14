@@ -102,12 +102,12 @@ const UpcomingHearings = () => {
           deadlinesData.forEach(item => {
             if ('id' in item && 'title' in item && 'due_date' in item) {
               hearingsData.push({
-                id: item.id,
-                title: item.title,
-                due_date: item.due_date,
-                case_title: 'case_title' in item ? item.case_title : null,
-                client_name: 'client_name' in item ? item.client_name : null,
-                court_name: 'court_name' in item ? item.court_name : null
+                id: item.id as string,
+                title: item.title as string,
+                due_date: item.due_date as string,
+                case_title: 'case_title' in item ? (item.case_title as string | null) : null,
+                client_name: 'client_name' in item ? (item.client_name as string | null) : null,
+                court_name: 'court_name' in item ? (item.court_name as string | null) : null
               });
             }
           });
