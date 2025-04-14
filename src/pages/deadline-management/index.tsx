@@ -164,7 +164,7 @@ const DeadlineManagementPage = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Initialize the form
@@ -255,10 +255,11 @@ const DeadlineManagementPage = () => {
     
     try {
       // Create a due date that combines the date and time
-      let dueDate = values.deadlineDate;
+      let dueDate = new Date(values.deadlineDate);
+      
       if (values.deadlineTime) {
         const [hours, minutes] = values.deadlineTime.split(':');
-        dueDate = new Date(dueDate.setHours(parseInt(hours), parseInt(minutes)));
+        dueDate.setHours(parseInt(hours), parseInt(minutes));
       }
       
       // Calculate reminder date from notifyDaysBefore
