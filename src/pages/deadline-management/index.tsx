@@ -1,46 +1,38 @@
 
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { addDays, format, isSameDay, isToday, isTomorrow } from 'date-fns';
-import { 
-  AlertCircle, 
-  Bell, 
-  Calendar, 
-  CalendarCheck, 
-  CalendarClock, 
-  CalendarDays, 
-  Check, 
-  ChevronDown, 
-  Clock, 
-  FileText, 
-  Gavel, 
-  Pencil, 
-  Plus, 
-  Trash,
-  User,
-  Briefcase,
-  BookOpen,
-  Scale,
-  Scroll,
-  SquareCheckBig
-} from 'lucide-react';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon, Clock, Save, Check, Plus, Trash2, FileEdit, AlertTriangle, Filter } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Textarea } from '@/components/ui/textarea';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Calendar } from '@/components/ui/calendar';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
 import { 
   Select, 
   SelectContent, 
@@ -48,1009 +40,698 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
-interface Deadline {
-  id: number;
-  title: string;
-  caseReference: string;
-  deadlineType: string;
-  date: Date;
-  time: string;
-  description: string;
-  priority: string;
-  notifyDaysBefore: number;
-  enableReminders: boolean;
-  courtFilingRequired: boolean;
-  jurisdiction: string;
-  completed: boolean;
-}
-
-const deadlineFormSchema = z.object({
-  title: z.string().min(3, { message: "Title must be at least 3 characters" }),
-  caseReference: z.string().optional(),
-  deadlineType: z.string().min(1, { message: "Deadline type is required" }),
-  date: z.date({ required_error: "Date is required" }),
-  time: z.string().optional(),
-  description: z.string().optional(),
-  priority: z.string().default("medium"),
-  notifyDaysBefore: z.coerce.number().int().min(0).default(1),
-  enableReminders: z.boolean().default(true),
-  courtFilingRequired: z.boolean().default(false),
+// Define the schema for the form
+const formSchema = z.object({
+  title: z.string().min(3, {
+    message: "Title must be at least 3 characters.",
+  }),
+  associatedCase: z.string(),
+  deadlineDate: z.date({
+    required_error: "A deadline date is required.",
+  }),
+  deadlineTime: z.string().optional(),
+  deadlineType: z.string({
+    required_error: "Please select a deadline type.",
+  }),
+  priority: z.string({
+    required_error: "Please select a priority level.",
+  }),
+  notifyDaysBefore: z.string(),
   jurisdiction: z.string().optional(),
+  description: z.string().optional(),
+  courtFilingRequired: z.boolean().default(false),
+  enableReminders: z.boolean().default(true),
 });
 
-const deadlineTypes = [
-  "Filing Deadline",
-  "Reply Deadline",
-  "Hearing Date",
-  "Document Submission",
-  "Evidence Submission",
-  "Client Meeting",
+// Define options for the dropdowns
+const DEADLINE_TYPES = [
   "Statute of Limitations",
+  "Filing Deadline",
+  "Response Due",
+  "Hearing Date",
   "Court Appearance",
+  "Client Meeting",
+  "Document Production",
   "Settlement Conference",
+  "Trial Date",
   "Appeal Deadline",
-  "Payment Due Date",
-  "Legal Research Deadline"
-];
-
-const indianJurisdictions = [
-  "Supreme Court of India",
-  "Delhi High Court",
-  "Bombay High Court",
-  "Madras High Court",
-  "Karnataka High Court",
-  "Calcutta High Court",
-  "Allahabad High Court",
-  "District Courts",
-  "Consumer Forum",
-  "National Company Law Tribunal",
-  "Income Tax Appellate Tribunal",
+  "Mediation",
+  "Deposition",
   "Other"
 ];
 
-const initialDeadlines: Deadline[] = [
-  {
-    id: 1,
-    title: "File Counter-Affidavit in Mehta vs. Sharma",
-    caseReference: "CMA/123/2025",
-    deadlineType: "Filing Deadline",
-    date: addDays(new Date(), 2),
-    time: "14:00",
-    description: "Counter-affidavit needs to be filed with supporting documents",
-    priority: "high",
-    notifyDaysBefore: 1,
-    enableReminders: true,
-    courtFilingRequired: true,
-    jurisdiction: "Karnataka High Court",
-    completed: false
-  },
-  {
-    id: 2,
-    title: "Hearing in State vs. Reddy",
-    caseReference: "CRL/789/2025",
-    deadlineType: "Hearing Date",
-    date: addDays(new Date(), 5),
-    time: "10:30",
-    description: "Criminal case hearing, bring all case files",
-    priority: "high",
-    notifyDaysBefore: 2,
-    enableReminders: true,
-    courtFilingRequired: false,
-    jurisdiction: "Bangalore District Court",
-    completed: false
-  },
-  {
-    id: 3,
-    title: "Submit GST Appeal Documents",
-    caseReference: "GST/456/2025",
-    deadlineType: "Document Submission",
-    date: addDays(new Date(), 1),
-    time: "17:00",
-    description: "GST appeal documentation needs to be completed and submitted",
-    priority: "medium",
-    notifyDaysBefore: 1,
-    enableReminders: true,
-    courtFilingRequired: true,
-    jurisdiction: "GST Appellate Tribunal",
-    completed: false
-  },
-  {
-    id: 4,
-    title: "Client Meeting - Patel Property Dispute",
-    caseReference: "CIVIL/234/2025",
-    deadlineType: "Client Meeting",
-    date: new Date(),
-    time: "11:00",
-    description: "Review case strategy and discuss settlement options",
-    priority: "medium",
-    notifyDaysBefore: 1,
-    enableReminders: true,
-    courtFilingRequired: false,
-    jurisdiction: "N/A",
-    completed: false
-  },
-  {
-    id: 5,
-    title: "File Appeal in Tax Matter",
-    caseReference: "IT/567/2025",
-    deadlineType: "Appeal Deadline",
-    date: addDays(new Date(), -1),
-    time: "16:00",
-    description: "Last day to file income tax appeal",
-    priority: "high",
-    notifyDaysBefore: 2,
-    enableReminders: true,
-    courtFilingRequired: true,
-    jurisdiction: "Income Tax Appellate Tribunal",
-    completed: true
-  }
+const PRIORITIES = [
+  "Urgent",
+  "High",
+  "Medium",
+  "Low"
 ];
 
-const DeadlineManagementPage = () => {
-  const { user } = useAuth();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [deadlines, setDeadlines] = useState<Deadline[]>(initialDeadlines);
-  const [isAddingDeadline, setIsAddingDeadline] = useState(false);
-  const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null);
-  const [activeTab, setActiveTab] = useState("upcoming");
-  const [cases, setCases] = useState<any[]>([]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  
-  useEffect(() => {
-    if (user) {
-      fetchCases();
-    }
-  }, [user]);
+const NOTIFICATION_OPTIONS = [
+  "1 day before",
+  "2 days before",
+  "3 days before",
+  "1 week before",
+  "2 weeks before",
+  "1 month before"
+];
 
-  const fetchCases = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('court_filings')
-        .select('id, case_title, case_number')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      setCases(data || []);
-    } catch (error) {
-      console.error('Error fetching cases:', error);
-    }
-  };
-  
-  const form = useForm<z.infer<typeof deadlineFormSchema>>({
-    resolver: zodResolver(deadlineFormSchema),
+const JURISDICTIONS = [
+  "Supreme Court of India",
+  "Delhi High Court",
+  "Bombay High Court",
+  "Calcutta High Court",
+  "Madras High Court",
+  "Karnataka High Court",
+  "Allahabad High Court",
+  "Gujarat High Court",
+  "District Court",
+  "Other"
+];
+
+// Mock case data - replace with actual data
+const CASES = [
+  { id: '1', title: 'Singh vs State of Punjab' },
+  { id: '2', title: 'Mehta & Co. Tax Appeal' },
+  { id: '3', title: 'Sharma Property Dispute' },
+  { id: '4', title: 'Patel Trademark Infringement' },
+  { id: '5', title: 'Kumar Corporate Restructuring' },
+  { id: 'none', title: 'None' }
+];
+
+// Helper function to get priority color
+const getPriorityColor = (priority) => {
+  switch (priority) {
+    case 'Urgent':
+      return 'bg-red-500';
+    case 'High':
+      return 'bg-orange-500';
+    case 'Medium':
+      return 'bg-blue-500';
+    case 'Low':
+      return 'bg-green-500';
+    default:
+      return 'bg-gray-500';
+  }
+};
+
+// Helper function to calculate if a deadline is approaching
+const isDeadlineApproaching = (date) => {
+  const today = new Date();
+  const deadlineDate = new Date(date);
+  const diffTime = Math.abs(deadlineDate - today);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays <= 3;
+};
+
+const DeadlineManagementPage = () => {
+  const [deadlines, setDeadlines] = useState([]);
+  const [activeTab, setActiveTab] = useState('upcoming');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+
+  // Initialize the form
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      caseReference: "",
+      associatedCase: "none",
       deadlineType: "",
-      description: "",
-      priority: "medium",
-      notifyDaysBefore: 1,
-      enableReminders: true,
+      priority: "Medium",
+      notifyDaysBefore: "3 days before",
       courtFilingRequired: false,
-      jurisdiction: "",
+      enableReminders: true,
     },
   });
-  
-  const getDeadlinesWithDates = () => {
-    const dateRange = Array.from({ length: 7 }, (_, i) => addDays(new Date(), i));
-    return dateRange.map(date => ({
-      date,
-      deadlines: deadlines.filter(d => 
-        isSameDay(d.date, date) && 
-        (activeTab === "upcoming" ? !d.completed : true)
-      )
-    }));
-  };
-  
-  const filteredDeadlines = selectedDate 
-    ? deadlines.filter(d => 
-        isSameDay(d.date, selectedDate) && 
-        (activeTab === "upcoming" ? !d.completed : activeTab === "completed" ? d.completed : true)
-      )
-    : deadlines.filter(d => 
-        activeTab === "upcoming" ? !d.completed : activeTab === "completed" ? d.completed : true
-      );
-  
-  const resetForm = () => {
-    form.reset({
-      title: "",
-      caseReference: "",
-      deadlineType: "",
-      description: "",
-      date: new Date(),
-      time: "",
-      priority: "medium",
-      notifyDaysBefore: 1,
-      enableReminders: true,
-      courtFilingRequired: false,
-      jurisdiction: "",
-    });
-    setEditingDeadline(null);
-  };
-  
-  const handleEditDeadline = (deadline: Deadline) => {
-    setEditingDeadline(deadline);
-    form.reset({
-      title: deadline.title,
-      caseReference: deadline.caseReference || "",
-      deadlineType: deadline.deadlineType,
-      date: new Date(deadline.date),
-      time: deadline.time || "",
-      description: deadline.description || "",
-      priority: deadline.priority,
-      notifyDaysBefore: deadline.notifyDaysBefore,
-      enableReminders: deadline.enableReminders,
-      courtFilingRequired: deadline.courtFilingRequired,
-      jurisdiction: deadline.jurisdiction || "",
-    });
-    setIsAddingDeadline(true);
-  };
-  
-  const handleDeleteDeadline = (id: number) => {
-    setDeadlines(prev => prev.filter(d => d.id !== id));
-    toast({
-      title: "Deadline Deleted",
-      description: "The deadline has been successfully deleted.",
-    });
-  };
-  
-  const handleToggleComplete = (id: number) => {
-    setDeadlines(prev => prev.map(d => 
-      d.id === id ? { ...d, completed: !d.completed } : d
-    ));
+
+  // Fetch deadlines from the database
+  useEffect(() => {
+    const fetchDeadlines = async () => {
+      setIsLoading(true);
+      try {
+        // In a real app, this would fetch from your database
+        const { data, error } = await supabase
+          .from('deadlines')
+          .select('*')
+          .order('deadlineDate', { ascending: true });
+        
+        if (error) throw error;
+        
+        setDeadlines(data || []);
+      } catch (error) {
+        console.error('Error fetching deadlines:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load deadlines. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDeadlines();
+  }, []);
+
+  // Filter deadlines by tab
+  const filteredDeadlines = deadlines.filter(deadline => {
+    const deadlineDate = new Date(deadline.deadlineDate);
+    const today = new Date();
     
-    const deadline = deadlines.find(d => d.id === id);
-    toast({
-      title: deadline?.completed ? "Deadline Marked as Incomplete" : "Deadline Marked as Complete",
-      description: `${deadline?.title} has been updated.`,
-    });
-  };
-  
-  const onSubmit = (data: z.infer<typeof deadlineFormSchema>) => {
-    if (editingDeadline) {
-      setDeadlines(prev => prev.map(d => 
-        d.id === editingDeadline.id ? { 
-          ...d, 
-          title: data.title,
-          caseReference: data.caseReference || "",
-          deadlineType: data.deadlineType,
-          date: data.date,
-          time: data.time || "",
-          description: data.description || "",
-          priority: data.priority,
-          notifyDaysBefore: data.notifyDaysBefore,
-          enableReminders: data.enableReminders,
-          courtFilingRequired: data.courtFilingRequired,
-          jurisdiction: data.jurisdiction || ""
-        } : d
-      ));
-      
-      toast({
-        title: "Deadline Updated",
-        description: "The deadline has been successfully updated.",
-      });
-    } else {
-      const newDeadline: Deadline = {
-        id: Math.max(0, ...deadlines.map(d => d.id)) + 1,
-        title: data.title,
-        caseReference: data.caseReference || "",
-        deadlineType: data.deadlineType,
-        date: data.date,
-        time: data.time || "",
-        description: data.description || "",
-        priority: data.priority,
-        notifyDaysBefore: data.notifyDaysBefore,
-        enableReminders: data.enableReminders,
-        courtFilingRequired: data.courtFilingRequired,
-        jurisdiction: data.jurisdiction || "",
-        completed: false
+    if (activeTab === 'upcoming') {
+      return deadlineDate >= today;
+    } else if (activeTab === 'past') {
+      return deadlineDate < today;
+    } else if (activeTab === 'urgent') {
+      return deadline.priority === 'Urgent' && deadlineDate >= today;
+    }
+    
+    return true;
+  });
+
+  // Handle form submission
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Prepare the deadline data
+      const deadlineData = {
+        title: values.title,
+        associatedCase: values.associatedCase,
+        deadlineDate: values.deadlineDate.toISOString(),
+        deadlineTime: values.deadlineTime || null,
+        deadlineType: values.deadlineType,
+        priority: values.priority,
+        notifyDaysBefore: values.notifyDaysBefore,
+        jurisdiction: values.jurisdiction || null,
+        description: values.description || null,
+        courtFilingRequired: values.courtFilingRequired,
+        enableReminders: values.enableReminders,
+        createdAt: new Date().toISOString(),
+        status: 'active'
       };
       
-      setDeadlines(prev => [...prev, newDeadline]);
+      // Insert the deadline into the database
+      const { data, error } = await supabase
+        .from('deadlines')
+        .insert(deadlineData)
+        .select();
       
+      if (error) throw error;
+      
+      // Update the local state
+      setDeadlines(prev => [...prev, ...data]);
+      
+      // Show success message
       toast({
-        title: "Deadline Added",
-        description: "New deadline has been successfully added.",
+        title: "Deadline created",
+        description: "Your deadline has been successfully created.",
       });
+      
+      // Reset the form
+      form.reset();
+      
+    } catch (error) {
+      console.error('Error saving deadline:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save deadline. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    resetForm();
-    setIsAddingDeadline(false);
-  };
-  
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return <Badge variant="destructive">High Priority</Badge>;
-      case 'medium':
-        return <Badge variant="secondary">Medium Priority</Badge>;
-      case 'low':
-        return <Badge variant="outline">Low Priority</Badge>;
-      default:
-        return null;
-    }
-  };
-  
-  const getDeadlineDateDisplay = (date: Date) => {
-    if (isToday(date)) {
-      return <Badge className="bg-blue-500 hover:bg-blue-600">Today</Badge>;
-    } else if (isTomorrow(date)) {
-      return <Badge className="bg-orange-500 hover:bg-orange-600">Tomorrow</Badge>;
-    } else if (date < new Date()) {
-      return <Badge variant="destructive">Overdue</Badge>;
-    }
-    return format(date, "dd MMM yyyy");
   };
 
   return (
     <LegalToolLayout
       title="Deadline Management"
-      description="Track deadlines, court dates, and filing requirements for Indian legal matters"
-      icon={<CalendarClock className="w-6 h-6 text-white" />}
+      description="Create and track legal deadlines and court filing dates"
+      icon={<Clock className="w-6 h-6 text-white" />}
     >
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-4 space-y-6">
-            <Card className="border border-purple-200 dark:border-purple-900/30 bg-white dark:bg-legal-slate/10 shadow-md hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg border-b border-purple-100 dark:border-purple-900/30">
-                <CardTitle className="text-xl font-semibold flex items-center text-purple-800 dark:text-purple-200">
-                  <CalendarDays className="mr-3 h-6 w-6 text-purple-600 dark:text-purple-400" />
-                  Advocate's Calendar
-                </CardTitle>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left column - Form */}
+          <div className="md:col-span-1">
+            <Card className="shadow-md border border-legal-border dark:border-legal-slate/20">
+              <CardHeader className="bg-gradient-to-r from-purple-500/5 to-indigo-500/5 dark:from-purple-900/10 dark:to-indigo-900/10">
+                <CardTitle className="text-xl">Add New Deadline</CardTitle>
+                <CardDescription>Enter the details for your new deadline or court date</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  className="rounded-md border border-purple-100 dark:border-purple-900/30 p-3 shadow-sm pointer-events-auto"
-                />
-              </CardContent>
-              <CardFooter className="flex justify-between p-4 bg-purple-50/50 dark:bg-purple-900/10 border-t border-purple-100 dark:border-purple-900/30 rounded-b-lg">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setSelectedDate(new Date())}
-                  className="border-purple-200 hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:hover:bg-purple-900/20 dark:text-purple-300"
-                >
-                  <CalendarCheck className="mr-2 h-4 w-4" />
-                  Today
-                </Button>
-                <Button 
-                  size="sm"
-                  variant="advocate"
-                  onClick={() => setIsAddingDeadline(true)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Deadline
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <Card className="border border-purple-200 dark:border-purple-900/30 bg-white dark:bg-legal-slate/10 shadow-md hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg border-b border-purple-100 dark:border-purple-900/30">
-                <CardTitle className="text-xl font-semibold flex items-center text-purple-800 dark:text-purple-200">
-                  <Briefcase className="mr-3 h-6 w-6 text-purple-600 dark:text-purple-400" />
-                  Advocate's Toolkit
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 pt-4 p-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <Link to="/case-management" className="group">
-                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
-                      <FileText className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
-                      Cases
-                    </Button>
-                  </Link>
-                  <Link to="/court-filing" className="group">
-                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
-                      <Scroll className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
-                      Filings
-                    </Button>
-                  </Link>
-                  <Link to="/legal-document-analyzer" className="group">
-                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
-                      <BookOpen className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
-                      Analyze
-                    </Button>
-                  </Link>
-                  <Link to="/legal-brief-generation" className="group">
-                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
-                      <Scale className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
-                      Briefs
-                    </Button>
-                  </Link>
-                </div>
-                
-                <div className="pt-2">
-                  <Link to="/user-profile" className="group w-full">
-                    <Button variant="outline" className="w-full justify-start border-purple-200 bg-white hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950/20 dark:hover:bg-purple-900/30 dark:text-purple-300 group-hover:border-purple-400 transition-all">
-                      <User className="mr-2 h-5 w-5 text-purple-500 dark:text-purple-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors" />
-                      Advocate Profile
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Upcoming Deadlines Summary Card */}
-            <Card className="border border-purple-200 dark:border-purple-900/30 bg-white dark:bg-legal-slate/10 shadow-md hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg border-b border-purple-100 dark:border-purple-900/30">
-                <CardTitle className="text-lg font-semibold flex items-center text-purple-800 dark:text-purple-200">
-                  <AlertCircle className="mr-3 h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  Upcoming Priorities
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <div className="space-y-3">
-                  {deadlines
-                    .filter(d => !d.completed)
-                    .sort((a, b) => a.date.getTime() - b.date.getTime())
-                    .slice(0, 3)
-                    .map(deadline => (
-                      <div key={deadline.id} className="p-3 rounded-lg border border-purple-100 dark:border-purple-900/20 bg-white dark:bg-purple-950/10">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium text-purple-800 dark:text-purple-200">{deadline.title}</h4>
-                            <div className="flex items-center mt-1 text-sm text-gray-600 dark:text-gray-400">
-                              <CalendarDays className="mr-1 h-3.5 w-3.5" />
-                              {getDeadlineDateDisplay(deadline.date)}
-                              {deadline.time && (
-                                <span className="ml-2 flex items-center">
-                                  <Clock className="mr-1 h-3.5 w-3.5" />
-                                  {deadline.time}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          {getPriorityBadge(deadline.priority)}
-                        </div>
-                      </div>
-                    ))}
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 overflow-y-auto max-h-[70vh] pr-2 pb-20">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="E.g., File appeal in Tax Case" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     
-                  {deadlines.filter(d => !d.completed).length === 0 && (
-                    <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-                      <CalendarCheck className="h-10 w-10 mx-auto mb-2 text-purple-400 dark:text-purple-500" />
-                      <p>No upcoming deadlines</p>
+                    <FormField
+                      control={form.control}
+                      name="associatedCase"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Associated Case</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a case" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="pointer-events-auto">
+                              {CASES.map(caseItem => (
+                                <SelectItem key={caseItem.id} value={caseItem.id} className="cursor-pointer">
+                                  {caseItem.title}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="deadlineDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Date</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "PPP")
+                                    ) : (
+                                      <span>Select a date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  initialFocus
+                                  className="p-3 pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="deadlineTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Time (optional)</FormLabel>
+                            <FormControl>
+                              <Input type="time" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              24-hour format
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  )}
-                </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="deadlineType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Deadline Type</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select deadline type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="pointer-events-auto">
+                                {DEADLINE_TYPES.map(type => (
+                                  <SelectItem key={type} value={type} className="cursor-pointer">
+                                    {type}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="priority"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Priority</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select priority" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="pointer-events-auto">
+                                {PRIORITIES.map(priority => (
+                                  <SelectItem key={priority} value={priority} className="cursor-pointer">
+                                    <div className="flex items-center">
+                                      <span className={`w-2 h-2 rounded-full mr-2 ${getPriorityColor(priority)}`}></span>
+                                      {priority}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="notifyDaysBefore"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Notify Days Before</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select notification time" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="pointer-events-auto">
+                                {NOTIFICATION_OPTIONS.map(option => (
+                                  <SelectItem key={option} value={option} className="cursor-pointer">
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="jurisdiction"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Jurisdiction (optional)</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select jurisdiction" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="pointer-events-auto">
+                                {JURISDICTIONS.map(jurisdiction => (
+                                  <SelectItem key={jurisdiction} value={jurisdiction} className="cursor-pointer">
+                                    {jurisdiction}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description (optional)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Add any additional details about this deadline"
+                              className="min-h-[80px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="courtFilingRequired"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between p-3 border rounded-md">
+                            <div className="space-y-0.5">
+                              <FormLabel>Court Filing Required</FormLabel>
+                              <FormDescription className="text-xs">
+                                This deadline requires court filing
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="enableReminders"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between p-3 border rounded-md">
+                            <div className="space-y-0.5">
+                              <FormLabel>Enable Reminders</FormLabel>
+                              <FormDescription className="text-xs">
+                                Receive notifications for this deadline
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <CardFooter className="px-0 pt-6 flex justify-end gap-2">
+                      <Button 
+                        type="submit"
+                        disabled={isSubmitting}
+                        variant="gradient"
+                        size="lg"
+                        className="pointer-events-auto shadow-md"
+                      >
+                        {isSubmitting ? (
+                          <div className="flex items-center">
+                            <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></div>
+                            Saving...
+                          </div>
+                        ) : (
+                          <div className="flex items-center">
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Deadline
+                          </div>
+                        )}
+                      </Button>
+                    </CardFooter>
+                  </form>
+                </Form>
               </CardContent>
             </Card>
           </div>
           
-          <div className="lg:col-span-8">
-            <Card className="border border-purple-200 dark:border-purple-900/30 bg-white dark:bg-legal-slate/10 shadow-md hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="pb-2 bg-purple-50 dark:bg-purple-900/20 rounded-t-lg border-b border-purple-100 dark:border-purple-900/30">
+          {/* Right column - Deadlines list */}
+          <div className="md:col-span-2">
+            <Card className="shadow-md border border-legal-border dark:border-legal-slate/20">
+              <CardHeader className="bg-gradient-to-r from-indigo-500/5 to-purple-500/5 dark:from-indigo-900/10 dark:to-purple-900/10">
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-xl font-semibold text-purple-800 dark:text-purple-200 flex items-center">
-                    {selectedDate ? (
-                      <><Calendar className="mr-3 h-6 w-6 text-purple-600 dark:text-purple-400" />Deadlines for {format(selectedDate, "d MMMM yyyy")}</>
-                    ) : (
-                      <><Calendar className="mr-3 h-6 w-6 text-purple-600 dark:text-purple-400" />All Deadlines</>
-                    )}
-                  </CardTitle>
-                  <Button 
-                    onClick={() => setIsAddingDeadline(true)} 
-                    variant="advocate"
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Deadline
-                  </Button>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="pt-4">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid grid-cols-3 mb-6 bg-purple-100 dark:bg-purple-900/30">
-                    <TabsTrigger 
-                      value="upcoming" 
-                      className="data-[state=active]:bg-purple-600 data-[state=active]:text-white dark:data-[state=active]:bg-purple-700"
+                  <div>
+                    <CardTitle className="text-xl">Your Deadlines</CardTitle>
+                    <CardDescription>Track and manage all your legal deadlines</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={activeTab === 'upcoming' ? 'advocate' : 'outline'} 
+                      size="sm"
+                      onClick={() => setActiveTab('upcoming')}
                     >
                       Upcoming
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="completed" 
-                      className="data-[state=active]:bg-purple-600 data-[state=active]:text-white dark:data-[state=active]:bg-purple-700"
+                    </Button>
+                    <Button 
+                      variant={activeTab === 'urgent' ? 'advocate' : 'outline'}
+                      size="sm"
+                      onClick={() => setActiveTab('urgent')}
                     >
-                      Completed
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="all" 
-                      className="data-[state=active]:bg-purple-600 data-[state=active]:text-white dark:data-[state=active]:bg-purple-700"
+                      Urgent
+                    </Button>
+                    <Button 
+                      variant={activeTab === 'past' ? 'advocate' : 'outline'}
+                      size="sm"
+                      onClick={() => setActiveTab('past')}
                     >
-                      All
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value={activeTab} className="pointer-events-auto">
-                    {filteredDeadlines.length > 0 ? (
-                      <div className="space-y-4">
-                        {filteredDeadlines.map((deadline) => (
-                          <Card key={deadline.id} className="overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-purple-100 dark:border-purple-900/20">
-                            <div className={`
-                              h-2 w-full
-                              ${deadline.priority === 'high' ? 'bg-red-500' : 
-                                deadline.priority === 'medium' ? 'bg-orange-400' : 
-                                'bg-blue-400'}
-                            `}></div>
-                            <CardContent className="p-0">
-                              <div className="flex flex-col md:flex-row md:items-center p-4">
-                                <div className="flex-1 md:mr-4">
-                                  <div className="flex items-center mb-2">
-                                    <Checkbox 
-                                      id={`complete-${deadline.id}`} 
-                                      checked={deadline.completed}
-                                      onCheckedChange={() => handleToggleComplete(deadline.id)}
-                                      className="mr-2 border-purple-400 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600 pointer-events-auto"
-                                    />
-                                    <h3 className={`font-semibold text-lg ${deadline.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-purple-800 dark:text-purple-200'}`}>
-                                      {deadline.title}
-                                    </h3>
-                                  </div>
-                                  
-                                  <div className="flex flex-wrap gap-2 mb-2">
-                                    {getPriorityBadge(deadline.priority)}
-                                    
-                                    {deadline.courtFilingRequired && (
-                                      <Badge variant="outline" className="border-purple-400 text-purple-700 dark:border-purple-600 dark:text-purple-400">
-                                        <Gavel className="h-3 w-3 mr-1" />
-                                        Court Filing Required
-                                      </Badge>
-                                    )}
-                                    
-                                    <Badge variant="outline" className="border-gray-300 dark:border-gray-700">
-                                      {deadline.deadlineType}
+                      Past
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex justify-center items-center p-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+                  </div>
+                ) : filteredDeadlines.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center mb-4">
+                      <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">No deadlines found</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                      {activeTab === 'upcoming' ? "You don't have any upcoming deadlines." : 
+                       activeTab === 'past' ? "You don't have any past deadlines." : 
+                       "You don't have any urgent deadlines."}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActiveTab('upcoming')}
+                    >
+                      View all deadlines
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Priority</TableHead>
+                          <TableHead>Title</TableHead>
+                          <TableHead>Deadline</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Case</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredDeadlines.map((deadline) => {
+                          const caseInfo = CASES.find(c => c.id === deadline.associatedCase);
+                          const approaching = isDeadlineApproaching(deadline.deadlineDate);
+                          
+                          return (
+                            <TableRow key={deadline.id} className={approaching ? "bg-red-50 dark:bg-red-900/10" : ""}>
+                              <TableCell>
+                                <div className="flex items-center">
+                                  <span 
+                                    className={`w-3 h-3 rounded-full mr-2 ${getPriorityColor(deadline.priority)}`}
+                                  ></span>
+                                  <span>{deadline.priority}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <div className="flex flex-col">
+                                  {deadline.title}
+                                  {approaching && (
+                                    <Badge variant="outline" className="mt-1 border-red-400 text-red-600 text-xs">
+                                      <AlertTriangle className="h-3 w-3 mr-1" />
+                                      Approaching
                                     </Badge>
-                                  </div>
-                                  
-                                  {deadline.description && (
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                      {deadline.description}
-                                    </p>
                                   )}
-                                  
-                                  <div className="flex flex-wrap text-sm text-gray-500 dark:text-gray-400 gap-4">
-                                    {deadline.caseReference && (
-                                      <div className="flex items-center">
-                                        <FileText className="h-4 w-4 mr-1" />
-                                        <span>{deadline.caseReference}</span>
-                                      </div>
-                                    )}
-                                    
-                                    {deadline.jurisdiction && (
-                                      <div className="flex items-center">
-                                        <Gavel className="h-4 w-4 mr-1" />
-                                        <span>{deadline.jurisdiction}</span>
-                                      </div>
-                                    )}
-                                  </div>
                                 </div>
-                                
-                                <div className="mt-3 md:mt-0 md:text-right">
-                                  <div className="flex items-center md:justify-end mb-2">
-                                    <CalendarDays className="h-4 w-4 mr-1 text-gray-500 dark:text-gray-400" />
-                                    <span className="text-sm">
-                                      {getDeadlineDateDisplay(deadline.date)}
-                                    </span>
+                              </TableCell>
+                              <TableCell>
+                                {deadline.deadlineDate && format(new Date(deadline.deadlineDate), "dd MMM yyyy")}
+                                {deadline.deadlineTime && (
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    <Clock className="h-3 w-3 inline mr-1" />
+                                    {deadline.deadlineTime}
                                   </div>
-                                  
-                                  {deadline.time && (
-                                    <div className="flex items-center md:justify-end mb-3">
-                                      <Clock className="h-4 w-4 mr-1 text-gray-500 dark:text-gray-400" />
-                                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                                        {deadline.time}
-                                      </span>
-                                    </div>
-                                  )}
-                                  
-                                  <div className="flex space-x-2 justify-start md:justify-end">
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline"
-                                      onClick={() => handleEditDeadline(deadline)}
-                                      className="border-purple-200 hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:hover:bg-purple-900/20 dark:text-purple-300 pointer-events-auto"
-                                    >
-                                      <Pencil className="h-3.5 w-3.5 mr-1" />
-                                      Edit
-                                    </Button>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline"
-                                      className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 dark:border-red-900 dark:hover:border-red-800 pointer-events-auto"
-                                      onClick={() => handleDeleteDeadline(deadline.id)}
-                                    >
-                                      <Trash className="h-3.5 w-3.5 mr-1" />
-                                      Delete
-                                    </Button>
-                                  </div>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="secondary" className="font-normal">
+                                  {deadline.deadlineType}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {caseInfo ? caseInfo.title : 'None'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                                    <FileEdit className="h-4 w-4" />
+                                    <span className="sr-only">Edit</span>
+                                  </Button>
+                                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                                    <Check className="h-4 w-4" />
+                                    <span className="sr-only">Complete</span>
+                                  </Button>
+                                  <Button variant="outline" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-600">
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Delete</span>
+                                  </Button>
                                 </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/20 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-                        <CalendarClock className="h-16 w-16 mx-auto mb-6 text-purple-300 dark:text-purple-700" />
-                        <h3 className="text-xl font-medium text-purple-800 dark:text-purple-200 mb-3">
-                          No deadlines found
-                        </h3>
-                        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                          {selectedDate
-                            ? `No ${activeTab} deadlines for ${format(selectedDate, "d MMMM yyyy")}`
-                            : `No ${activeTab} deadlines available`}
-                        </p>
-                        <Button onClick={() => setIsAddingDeadline(true)} variant="advocate" className="bg-purple-600 hover:bg-purple-700 pointer-events-auto">
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add New Deadline
-                        </Button>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-      
-      <Dialog open={isAddingDeadline} onOpenChange={setIsAddingDeadline}>
-        <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden pointer-events-auto">
-          <DialogHeader className="bg-purple-50 dark:bg-purple-900/20 p-6 border-b border-purple-100 dark:border-purple-900/30">
-            <DialogTitle className="text-xl text-purple-800 dark:text-purple-200">
-              {editingDeadline ? "Edit Deadline" : "Add New Deadline"}
-            </DialogTitle>
-            <DialogDescription className="text-purple-700/70 dark:text-purple-300/70">
-              {editingDeadline
-                ? "Update the details for this deadline"
-                : "Create a new deadline or important date for your calendar"
-              }
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="p-6">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-purple-800 dark:text-purple-200">Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="E.g., File appeal in Tax Case" {...field} className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="caseReference"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-purple-800 dark:text-purple-200">Associated Case</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value || "none"}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
-                            <SelectValue placeholder="Select a case (optional)" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="pointer-events-auto">
-                          <SelectItem value="none">None</SelectItem>
-                          {cases.map((caseItem) => (
-                            <SelectItem key={caseItem.id} value={caseItem.case_number || caseItem.id.toString()}>
-                              {caseItem.case_title} {caseItem.case_number ? `(${caseItem.case_number})` : ''}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="date"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-purple-800 dark:text-purple-200">Date</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={`w-full justify-start text-left font-normal border-purple-200 dark:border-purple-800 pointer-events-auto ${!field.value && "text-muted-foreground"}`}
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP")
-                                ) : (
-                                  <span>Select a date</span>
-                                )}
-                                <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0 z-50 pointer-events-auto" align="start">
-                            <CalendarComponent
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              initialFocus
-                              className="p-3 pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-purple-800 dark:text-purple-200">Time (optional)</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="deadlineType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-purple-800 dark:text-purple-200">Deadline Type</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
-                              <SelectValue placeholder="Select deadline type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="pointer-events-auto">
-                            {deadlineTypes.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="priority"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-purple-800 dark:text-purple-200">Priority</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
-                              <SelectValue placeholder="Select priority" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="pointer-events-auto">
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="low">Low</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="notifyDaysBefore"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-purple-800 dark:text-purple-200">Notify Days Before</FormLabel>
-                        <Select 
-                          onValueChange={(value) => field.onChange(parseInt(value))} 
-                          defaultValue={field.value.toString()}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
-                              <SelectValue placeholder="Select days" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="pointer-events-auto">
-                            <SelectItem value="0">Same day only</SelectItem>
-                            <SelectItem value="1">1 day before</SelectItem>
-                            <SelectItem value="2">2 days before</SelectItem>
-                            <SelectItem value="3">3 days before</SelectItem>
-                            <SelectItem value="5">5 days before</SelectItem>
-                            <SelectItem value="7">1 week before</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="jurisdiction"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-purple-800 dark:text-purple-200">Jurisdiction (optional)</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto">
-                              <SelectValue placeholder="Select jurisdiction" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="pointer-events-auto">
-                            {indianJurisdictions.map((jurisdiction) => (
-                              <SelectItem key={jurisdiction} value={jurisdiction}>
-                                {jurisdiction}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-purple-800 dark:text-purple-200">Description (optional)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Add any additional details about this deadline" 
-                          className="min-h-[80px] focus-visible:ring-purple-500 border-purple-200 dark:border-purple-800 pointer-events-auto"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="courtFilingRequired"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border border-purple-100 dark:border-purple-900/20 p-3 hover:bg-purple-50/50 dark:hover:bg-purple-900/10">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-purple-800 dark:text-purple-200">Court Filing Required</FormLabel>
-                          <FormDescription className="text-xs text-purple-700/70 dark:text-purple-300/70">
-                            Requires document filing with court
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="data-[state=checked]:bg-purple-600 pointer-events-auto"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="enableReminders"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border border-purple-100 dark:border-purple-900/20 p-3 hover:bg-purple-50/50 dark:hover:bg-purple-900/10">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-purple-800 dark:text-purple-200">Enable Reminders</FormLabel>
-                          <FormDescription className="text-xs text-purple-700/70 dark:text-purple-300/70">
-                            Send notifications for this deadline
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="data-[state=checked]:bg-purple-600 pointer-events-auto"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <DialogFooter className="pt-4 border-t border-purple-100 dark:border-purple-900/30 mt-6">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => {
-                      resetForm();
-                      setIsAddingDeadline(false);
-                    }}
-                    className="border-purple-200 hover:bg-purple-50 text-purple-700 dark:border-purple-800 dark:hover:bg-purple-900/20 dark:text-purple-300 pointer-events-auto"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    variant="advocate"
-                    className="bg-purple-600 hover:bg-purple-700 text-white pointer-events-auto"
-                  >
-                    {editingDeadline ? (
-                      <>
-                        <SquareCheckBig className="h-4 w-4 mr-2" />
-                        Update Deadline
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Deadline
-                      </>
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </div>
-        </DialogContent>
-      </Dialog>
     </LegalToolLayout>
   );
 };
