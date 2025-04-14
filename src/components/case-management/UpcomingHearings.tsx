@@ -94,7 +94,13 @@ const UpcomingHearings = () => {
         }
         
         // If no dedicated hearings, fallback to court filings hearing dates
-        let hearingsData: DeadlineData[] = deadlinesData || [];
+        // Handle the case when deadlinesData might be a SelectQueryError
+        let hearingsData: DeadlineData[] = [];
+        
+        if (deadlinesData && !('error' in deadlinesData)) {
+          // Only if deadlinesData is valid data and not an error
+          hearingsData = deadlinesData as DeadlineData[];
+        }
         
         if (hearingsData.length < 5) {
           const { data: filingData, error: filingError } = await supabase
