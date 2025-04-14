@@ -65,7 +65,7 @@ export type Case = {
   hearing_date: string | null;
   description: string | null;
   opposing_party: string | null;
-  documents: any[] | null;
+  documents: any; // Changed from any[] to any to accommodate both Json and array types
   created_at: string;
   updated_at: string;
 };
@@ -97,8 +97,14 @@ const CaseManagementPage = () => {
           throw error;
         }
         
-        setCases(data || []);
-        setFilteredCases(data || []);
+        // Cast the data to ensure it matches the Case type
+        const casesData = data?.map(item => ({
+          ...item,
+          documents: item.documents || [] // Ensure documents is always an array
+        })) as Case[];
+        
+        setCases(casesData || []);
+        setFilteredCases(casesData || []);
       } catch (error: any) {
         console.error('Error fetching cases:', error.message);
         toast.error('Failed to load cases. Please try again.');

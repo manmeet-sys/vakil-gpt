@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Case } from '@/pages/case-management/index';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, Clock, FilePlus, FileText, Trash2, User, Users, Edit, MapPin, Gavel, Save, X, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, FilePlus, FileText, Trash2, User, Users, Edit, MapPin, Gavel, Save, X, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
