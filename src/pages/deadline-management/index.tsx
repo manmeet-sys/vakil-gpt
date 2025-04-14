@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
@@ -19,7 +20,12 @@ import {
   Pencil, 
   Plus, 
   Trash,
-  User
+  User,
+  Briefcase,
+  BookOpen,
+  Scale,
+  Scroll,
+  SquareCheckBig
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import LegalToolLayout from '@/components/LegalToolLayout';
@@ -412,14 +418,14 @@ const DeadlineManagementPage = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-4 space-y-6">
-            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
+            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg">
+                <CardTitle className="text-lg font-semibold flex items-center text-purple-800 dark:text-purple-200">
                   <CalendarDays className="mr-2 h-5 w-5" />
-                  Calendar
+                  Advocate's Calendar
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-4">
                 <CalendarComponent
                   mode="single"
                   selected={selectedDate}
@@ -437,6 +443,7 @@ const DeadlineManagementPage = () => {
                 </Button>
                 <Button 
                   size="sm"
+                  variant="advocate"
                   onClick={() => setIsAddingDeadline(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -445,18 +452,36 @@ const DeadlineManagementPage = () => {
               </CardFooter>
             </Card>
             
-            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center">
-                  <Gavel className="mr-2 h-5 w-5" />
-                  Related Actions
+            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 rounded-t-lg">
+                <CardTitle className="text-lg font-semibold flex items-center text-purple-800 dark:text-purple-200">
+                  <Briefcase className="mr-2 h-5 w-5" />
+                  Advocate's Toolkit
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-3 pt-3">
                 <Link to="/case-management">
                   <Button variant="outline" className="w-full justify-start" size="sm">
                     <FileText className="mr-2 h-4 w-4" />
                     Case Management
+                  </Button>
+                </Link>
+                <Link to="/court-filing">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <Scroll className="mr-2 h-4 w-4" />
+                    Court Filings
+                  </Button>
+                </Link>
+                <Link to="/legal-document-analyzer">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Document Analysis
+                  </Button>
+                </Link>
+                <Link to="/legal-brief-generation">
+                  <Button variant="outline" className="w-full justify-start" size="sm">
+                    <Scale className="mr-2 h-4 w-4" />
+                    Brief Generator
                   </Button>
                 </Link>
                 <Link to="/user-profile">
@@ -470,17 +495,17 @@ const DeadlineManagementPage = () => {
           </div>
           
           <div className="lg:col-span-8">
-            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10">
-              <CardHeader className="pb-2">
+            <Card className="border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2 bg-purple-50 dark:bg-purple-900/20 rounded-t-lg">
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-xl font-semibold">
+                  <CardTitle className="text-xl font-semibold text-purple-800 dark:text-purple-200">
                     {selectedDate ? (
                       <>Deadlines for {format(selectedDate, "d MMMM yyyy")}</>
                     ) : (
                       <>All Deadlines</>
                     )}
                   </CardTitle>
-                  <Button onClick={() => setIsAddingDeadline(true)}>
+                  <Button onClick={() => setIsAddingDeadline(true)} variant="advocate">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Deadline
                   </Button>
@@ -499,9 +524,9 @@ const DeadlineManagementPage = () => {
                     {filteredDeadlines.length > 0 ? (
                       <div className="space-y-4">
                         {filteredDeadlines.map((deadline) => (
-                          <Card key={deadline.id} className="overflow-hidden">
+                          <Card key={deadline.id} className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                             <div className={`
-                              h-1 w-full
+                              h-1.5 w-full
                               ${deadline.priority === 'high' ? 'bg-red-500' : 
                                 deadline.priority === 'medium' ? 'bg-orange-400' : 
                                 'bg-blue-400'}
@@ -525,7 +550,8 @@ const DeadlineManagementPage = () => {
                                     {getPriorityBadge(deadline.priority)}
                                     
                                     {deadline.courtFilingRequired && (
-                                      <Badge variant="outline" className="border-legal-accent text-legal-accent">
+                                      <Badge variant="outline" className="border-purple-400 text-purple-700 dark:border-purple-600 dark:text-purple-400">
+                                        <Gavel className="h-3 w-3 mr-1" />
                                         Court Filing Required
                                       </Badge>
                                     )}
@@ -611,7 +637,7 @@ const DeadlineManagementPage = () => {
                             ? `No ${activeTab} deadlines for ${format(selectedDate, "d MMMM yyyy")}`
                             : `No ${activeTab} deadlines available`}
                         </p>
-                        <Button onClick={() => setIsAddingDeadline(true)}>
+                        <Button onClick={() => setIsAddingDeadline(true)} variant="advocate">
                           <Plus className="mr-2 h-4 w-4" />
                           Add New Deadline
                         </Button>
@@ -628,7 +654,7 @@ const DeadlineManagementPage = () => {
       <Dialog open={isAddingDeadline} onOpenChange={setIsAddingDeadline}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-purple-800 dark:text-purple-300">
               {editingDeadline ? "Edit Deadline" : "Add New Deadline"}
             </DialogTitle>
             <DialogDescription>
@@ -648,7 +674,7 @@ const DeadlineManagementPage = () => {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="E.g., File appeal in Tax Case" {...field} />
+                      <Input placeholder="E.g., File appeal in Tax Case" {...field} className="focus-visible:ring-purple-500" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -666,14 +692,14 @@ const DeadlineManagementPage = () => {
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="focus-visible:ring-purple-500">
                           <SelectValue placeholder="Select a case (optional)" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="pointer-events-auto">
                         <SelectItem value="none">None</SelectItem>
                         {cases.map((caseItem) => (
-                          <SelectItem key={caseItem.id} value={caseItem.case_number || caseItem.id}>
+                          <SelectItem key={caseItem.id} value={caseItem.case_number || caseItem.id.toString()}>
                             {caseItem.case_title} {caseItem.case_number ? `(${caseItem.case_number})` : ''}
                           </SelectItem>
                         ))}
@@ -696,7 +722,7 @@ const DeadlineManagementPage = () => {
                           <FormControl>
                             <Button
                               variant="outline"
-                              className={`w-full justify-start text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                              className={`w-full justify-start text-left font-normal focus-visible:ring-purple-500 ${!field.value && "text-muted-foreground"}`}
                             >
                               {field.value ? (
                                 format(field.value, "PPP")
@@ -707,7 +733,7 @@ const DeadlineManagementPage = () => {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 z-50" align="start">
                           <CalendarComponent
                             mode="single"
                             selected={field.value}
@@ -729,7 +755,7 @@ const DeadlineManagementPage = () => {
                     <FormItem>
                       <FormLabel>Time (optional)</FormLabel>
                       <FormControl>
-                        <Input type="time" {...field} />
+                        <Input type="time" {...field} className="focus-visible:ring-purple-500" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -749,11 +775,11 @@ const DeadlineManagementPage = () => {
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="focus-visible:ring-purple-500">
                             <SelectValue placeholder="Select deadline type" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="pointer-events-auto">
                           {deadlineTypes.map((type) => (
                             <SelectItem key={type} value={type}>
                               {type}
@@ -777,11 +803,11 @@ const DeadlineManagementPage = () => {
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="focus-visible:ring-purple-500">
                             <SelectValue placeholder="Select priority" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="pointer-events-auto">
                           <SelectItem value="high">High</SelectItem>
                           <SelectItem value="medium">Medium</SelectItem>
                           <SelectItem value="low">Low</SelectItem>
@@ -805,17 +831,45 @@ const DeadlineManagementPage = () => {
                         defaultValue={field.value.toString()}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="focus-visible:ring-purple-500">
                             <SelectValue placeholder="Select days" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="pointer-events-auto">
                           <SelectItem value="0">Same day only</SelectItem>
                           <SelectItem value="1">1 day before</SelectItem>
                           <SelectItem value="2">2 days before</SelectItem>
                           <SelectItem value="3">3 days before</SelectItem>
                           <SelectItem value="5">5 days before</SelectItem>
                           <SelectItem value="7">1 week before</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="jurisdiction"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Jurisdiction (optional)</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="focus-visible:ring-purple-500">
+                            <SelectValue placeholder="Select jurisdiction" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="pointer-events-auto">
+                          {indianJurisdictions.map((jurisdiction) => (
+                            <SelectItem key={jurisdiction} value={jurisdiction}>
+                              {jurisdiction}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -833,7 +887,7 @@ const DeadlineManagementPage = () => {
                     <FormControl>
                       <Textarea 
                         placeholder="Add any additional details about this deadline" 
-                        className="min-h-[80px]"
+                        className="min-h-[80px] focus-visible:ring-purple-500"
                         {...field} 
                       />
                     </FormControl>
@@ -847,7 +901,7 @@ const DeadlineManagementPage = () => {
                   control={form.control}
                   name="courtFilingRequired"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 hover:bg-slate-50 dark:hover:bg-slate-900/10 transition-colors">
                       <div className="space-y-0.5">
                         <FormLabel>Court Filing Required</FormLabel>
                         <FormDescription className="text-xs">
@@ -868,7 +922,7 @@ const DeadlineManagementPage = () => {
                   control={form.control}
                   name="enableReminders"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 hover:bg-slate-50 dark:hover:bg-slate-900/10 transition-colors">
                       <div className="space-y-0.5">
                         <FormLabel>Enable Reminders</FormLabel>
                         <FormDescription className="text-xs">
@@ -886,34 +940,6 @@ const DeadlineManagementPage = () => {
                 />
               </div>
               
-              <FormField
-                control={form.control}
-                name="jurisdiction"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Jurisdiction (optional)</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select jurisdiction" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {indianJurisdictions.map((jurisdiction) => (
-                          <SelectItem key={jurisdiction} value={jurisdiction}>
-                            {jurisdiction}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
               <DialogFooter className="pt-4">
                 <Button 
                   type="button" 
@@ -925,8 +951,18 @@ const DeadlineManagementPage = () => {
                 >
                   Cancel
                 </Button>
-                <Button type="submit">
-                  {editingDeadline ? "Update Deadline" : "Add Deadline"}
+                <Button type="submit" variant="advocate">
+                  {editingDeadline ? (
+                    <>
+                      <SquareCheckBig className="h-4 w-4 mr-2" />
+                      Update Deadline
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Deadline
+                    </>
+                  )}
                 </Button>
               </DialogFooter>
             </form>
