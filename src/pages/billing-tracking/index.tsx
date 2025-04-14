@@ -247,18 +247,18 @@ const BillingTrackingPage = () => {
                 <CardContent>
                   {/* Count activities and display the top one */}
                   {(() => {
-                    const activityCounts = {};
+                    const activityCounts: Record<string, number> = {};
                     filteredEntries.forEach(entry => {
                       if (entry.activity_type) {
                         activityCounts[entry.activity_type] = (activityCounts[entry.activity_type] || 0) + 1;
                       }
                     });
                     
-                    const topActivity = Object.entries(activityCounts)
-                      .sort((a, b) => b[1] - a[1])
-                      .shift();
+                    const sortedActivities = Object.entries(activityCounts)
+                      .sort((a, b) => b[1] - a[1]);
                       
-                    if (topActivity) {
+                    if (sortedActivities.length > 0) {
+                      const topActivity = sortedActivities[0];
                       return (
                         <>
                           <div className="flex items-baseline">
@@ -267,7 +267,7 @@ const BillingTrackingPage = () => {
                           <div className="mt-2 flex items-center space-x-1">
                             <FileText className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm text-muted-foreground">
-                              {topActivity[1]} entries, {Math.round(topActivity[1] / filteredEntries.length * 100)}% of total
+                              {topActivity[1]} entries, {filteredEntries.length > 0 ? Math.round((topActivity[1] / filteredEntries.length) * 100) : 0}% of total
                             </span>
                           </div>
                         </>
