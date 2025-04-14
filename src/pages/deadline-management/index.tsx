@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
@@ -216,6 +215,7 @@ const DeadlineManagementPage = () => {
   const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null);
   const [activeTab, setActiveTab] = useState("upcoming");
   const [cases, setCases] = useState<any[]>([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
   useEffect(() => {
     if (user) {
@@ -671,7 +671,7 @@ const DeadlineManagementPage = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {cases.map((caseItem) => (
                           <SelectItem key={caseItem.id} value={caseItem.case_number || caseItem.id}>
                             {caseItem.case_title} {caseItem.case_number ? `(${caseItem.case_number})` : ''}
