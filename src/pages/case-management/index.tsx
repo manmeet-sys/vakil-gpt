@@ -42,6 +42,8 @@ import NewCaseForm from '@/components/case-management/NewCaseForm';
 import ClientsList from '@/components/case-management/ClientsList';
 import UpcomingHearings from '@/components/case-management/UpcomingHearings';
 import { Link } from 'react-router-dom';
+import { Textarea } from '@/components/ui/textarea';
+import { Trash2 } from 'lucide-react';
 
 type Court = {
   id: string;
