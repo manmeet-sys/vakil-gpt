@@ -118,7 +118,7 @@ const FormControl = React.forwardRef<
           : `${formDescriptionId} ${formMessageId}`
       }
       aria-invalid={!!error}
-      className="pointer-events-auto"
+      className="pointer-events-auto cursor-pointer"
       {...props}
     />
   )
