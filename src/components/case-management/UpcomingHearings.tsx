@@ -29,6 +29,16 @@ interface Deadline {
   };
 }
 
+// Define a specific type for our data response
+type DeadlineData = {
+  id: string;
+  title: string;
+  case_title?: string | null;
+  client_name?: string | null;
+  court_name?: string | null;
+  due_date: string;
+};
+
 const UpcomingHearings = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -66,14 +76,14 @@ const UpcomingHearings = () => {
             if (basicError) throw basicError;
             
             // Transform basic data to match our interface
-            const hearingsData = basicDeadlines?.map(deadline => ({
+            const hearingsData: DeadlineData[] = (basicDeadlines || []).map(deadline => ({
               id: deadline.id,
               title: deadline.title,
               due_date: deadline.due_date,
               case_title: null,
               client_name: null,
               court_name: null
-            })) || [];
+            }));
             
             setHearings(calculateTimeLeft(hearingsData));
             setLoading(false);
@@ -84,7 +94,7 @@ const UpcomingHearings = () => {
         }
         
         // If no dedicated hearings, fallback to court filings hearing dates
-        let hearingsData = deadlinesData || [];
+        let hearingsData: DeadlineData[] = deadlinesData || [];
         
         if (hearingsData.length < 5) {
           const { data: filingData, error: filingError } = await supabase
@@ -99,7 +109,7 @@ const UpcomingHearings = () => {
           
           // Transform filing data to match deadline structure
           if (filingData && filingData.length > 0) {
-            const transformedFilings = filingData.map(filing => ({
+            const transformedFilings: DeadlineData[] = filingData.map(filing => ({
               id: filing.id,
               title: `Hearing: ${filing.case_title || 'Untitled Case'}`,
               case_title: filing.case_title,
@@ -126,7 +136,7 @@ const UpcomingHearings = () => {
   }, [user]);
 
   // Calculate days left for each hearing
-  const calculateTimeLeft = (hearingsData: any[]): Deadline[] => {
+  const calculateTimeLeft = (hearingsData: DeadlineData[]): Deadline[] => {
     return hearingsData.map((hearing) => {
       const hearingDate = new Date(hearing.due_date);
       const today = new Date();
