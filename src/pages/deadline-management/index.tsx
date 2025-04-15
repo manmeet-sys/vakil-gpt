@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,7 +13,6 @@ import {
   Card, 
   CardContent, 
   CardDescription, 
-  CardFooter, 
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
@@ -178,6 +176,7 @@ const DeadlineManagementPage = () => {
       notifyDaysBefore: "3 days before",
       courtFilingRequired: false,
       enableReminders: true,
+      deadlineTime: "",
     },
   });
 
