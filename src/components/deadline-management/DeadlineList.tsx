@@ -9,7 +9,9 @@ import {
   Bell, 
   FileEdit, 
   Check, 
-  Trash2 
+  Trash2,
+  Clock,
+  Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -38,6 +40,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { motion } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Import constants and helper functions
 import { PRIORITIES, getDeadlineTypeIcon } from './DeadlineForm';
@@ -165,13 +169,36 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.05
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { duration: 0.3 }
+    }
+  };
+
   return (
-    <Card className="shadow-md border border-indigo-100 dark:border-indigo-900/30">
+    <Card className="shadow-lg border border-indigo-100 dark:border-indigo-900/30 overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-900/30 dark:to-purple-900/30 border-b border-indigo-100 dark:border-indigo-800/20 pb-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <CardTitle className="text-xl text-indigo-900 dark:text-indigo-100">Your Deadlines</CardTitle>
-            <CardDescription className="text-indigo-700 dark:text-indigo-300">
+            <CardTitle className="text-xl text-indigo-900 dark:text-indigo-100 flex items-center">
+              <Clock className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
+              Your Deadlines
+            </CardTitle>
+            <CardDescription className="text-indigo-700 dark:text-indigo-300 ml-7">
               Track and manage all your legal deadlines
             </CardDescription>
           </div>
@@ -180,7 +207,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
               variant={activeTab === 'upcoming' ? 'default' : 'outline'} 
               size="sm"
               onClick={() => setActiveTab('upcoming')}
-              className={`pointer-events-auto ${activeTab === 'upcoming' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}`}
+              className={`pointer-events-auto ${activeTab === 'upcoming' ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/20'}`}
             >
               <CalendarDays className="h-4 w-4 mr-1" />
               Upcoming
@@ -189,7 +216,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
               variant={activeTab === 'urgent' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActiveTab('urgent')}
-              className={`pointer-events-auto ${activeTab === 'urgent' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}`}
+              className={`pointer-events-auto ${activeTab === 'urgent' ? 'bg-red-600 hover:bg-red-700 text-white' : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/20'}`}
             >
               <AlertTriangle className="h-4 w-4 mr-1" />
               Urgent
@@ -198,7 +225,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
               variant={activeTab === 'past' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActiveTab('past')}
-              className={`pointer-events-auto ${activeTab === 'past' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}`}
+              className={`pointer-events-auto ${activeTab === 'past' ? 'bg-green-600 hover:bg-green-700 text-white' : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/20'}`}
             >
               <CheckCircle2 className="h-4 w-4 mr-1" />
               Completed/Past
@@ -213,7 +240,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
             <span className="text-sm text-indigo-600 dark:text-indigo-300">Filter by:</span>
           </div>
           <Select value={filterPriority} onValueChange={setFilterPriority}>
-            <SelectTrigger className="w-[140px] h-8 text-xs cursor-pointer pointer-events-auto border-indigo-200 dark:border-indigo-800/50">
+            <SelectTrigger className="w-[180px] h-9 text-sm cursor-pointer pointer-events-auto border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-800">
               <SelectValue placeholder="Filter by priority" />
             </SelectTrigger>
             <SelectContent className="pointer-events-auto z-50">
@@ -233,12 +260,23 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
       <CardContent className="p-0">
         {isLoading ? (
           <div className="flex justify-center items-center p-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
           </div>
         ) : filteredDeadlines.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="mx-auto w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center mb-4">
-              <CalendarDays className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="text-center py-12"
+          >
+            <div className="mx-auto w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center mb-4">
+              {activeTab === 'upcoming' ? (
+                <CalendarDays className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+              ) : activeTab === 'urgent' ? (
+                <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+              ) : (
+                <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+              )}
             </div>
             <h3 className="text-lg font-medium text-indigo-900 dark:text-indigo-100 mb-1">No deadlines found</h3>
             <p className="text-indigo-600 dark:text-indigo-300 mb-4">
@@ -250,11 +288,11 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
               variant="outline"
               size="sm"
               onClick={() => setActiveTab('upcoming')}
-              className="pointer-events-auto border-indigo-200 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-300"
+              className="pointer-events-auto border-indigo-200 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
             >
               View all deadlines
             </Button>
-          </div>
+          </motion.div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -268,17 +306,23 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                   <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium">Actions</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <motion.tbody
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 {filteredDeadlines.map((deadline) => {
                   const approaching = isDeadlineApproaching(deadline.due_date);
                   const timeRemaining = formatTimeRemaining(deadline.due_date);
                   const isPast = new Date(deadline.due_date) < new Date();
+                  const DeadlineTypeIcon = getDeadlineTypeIcon(deadline.type);
                   
                   return (
-                    <TableRow 
-                      key={deadline.id} 
+                    <motion.tr 
+                      key={deadline.id}
+                      variants={itemVariants}
                       className={cn(
-                        "transition-colors border-indigo-100 dark:border-indigo-800/20 cursor-pointer",
+                        "transition-all duration-200 border-indigo-100 dark:border-indigo-800/20 cursor-pointer hover:shadow-md",
                         approaching && deadline.status !== 'completed' ? "bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20" : 
                         isPast && deadline.status !== 'completed' ? "bg-amber-50 dark:bg-amber-900/10 hover:bg-amber-100 dark:hover:bg-amber-900/20" :
                         deadline.status === 'completed' ? "bg-green-50 dark:bg-green-900/10 hover:bg-green-100 dark:hover:bg-green-900/20" :
@@ -291,26 +335,36 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium text-indigo-800 dark:text-indigo-200">
-                        <div className="flex flex-col">
-                          <span>{deadline.title}</span>
-                          {deadline.description && (
-                            <span className="text-xs text-indigo-500 dark:text-indigo-400 mt-1 line-clamp-1">
-                              {deadline.description}
+                        <div className="flex items-center space-x-2">
+                          {DeadlineTypeIcon && (
+                            <span className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                              <DeadlineTypeIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                             </span>
                           )}
-                          {approaching && deadline.status !== 'completed' && (
-                            <Badge variant="outline" className="mt-1 border-red-400 text-red-600 text-xs w-fit">
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              Approaching
-                            </Badge>
-                          )}
+                          <div>
+                            <span>{deadline.title}</span>
+                            {deadline.description && (
+                              <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-1 line-clamp-1">
+                                {deadline.description}
+                              </p>
+                            )}
+                            {approaching && deadline.status !== 'completed' && (
+                              <Badge variant="outline" className="mt-1 border-red-400 text-red-600 text-xs w-fit">
+                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                Approaching
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-indigo-700 dark:text-indigo-300">
                         <div className="flex flex-col">
-                          <span>{deadline.due_date && format(new Date(deadline.due_date), "dd MMM yyyy")}</span>
+                          <div className="flex items-center">
+                            <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-indigo-500 dark:text-indigo-400" />
+                            <span>{deadline.due_date && format(new Date(deadline.due_date), "dd MMM yyyy")}</span>
+                          </div>
                           {deadline.reminder_date && (
-                            <div className="flex items-center mt-1 text-xs text-indigo-500 dark:text-indigo-400">
+                            <div className="flex items-center mt-2 text-xs text-indigo-500 dark:text-indigo-400">
                               <Bell className="h-3 w-3 mr-1" />
                               Reminder: {format(new Date(deadline.reminder_date), "dd MMM")}
                             </div>
@@ -331,6 +385,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                               : "border-blue-400 text-blue-600 dark:border-blue-800 dark:text-blue-400"
                           )}
                         >
+                          <Clock className="h-3 w-3 mr-1" />
                           {timeRemaining}
                         </Badge>
                       </TableCell>
@@ -341,6 +396,8 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                             "font-normal",
                             deadline.status === 'completed' 
                               ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400" 
+                              : isPast 
+                              ? "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
                               : "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400"
                           )}
                         >
@@ -349,48 +406,84 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                               <CheckCircle2 className="h-3 w-3 mr-1" />
                               Completed
                             </div>
-                          ) : isPast ? 'Overdue' : 'Pending'}
+                          ) : isPast ? (
+                            <div className="flex items-center">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Overdue
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <Shield className="h-3 w-3 mr-1" />
+                              Pending
+                            </div>
+                          )}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 pointer-events-auto border-indigo-200 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
-                            title="Edit deadline"
-                          >
-                            <FileEdit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0 pointer-events-auto border-indigo-200 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
+                                >
+                                  <FileEdit className="h-4 w-4" />
+                                  <span className="sr-only">Edit</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent className="pointer-events-auto">
+                                <p>Edit deadline</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          
                           {deadline.status !== 'completed' && (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-8 w-8 p-0 pointer-events-auto border-green-200 dark:border-green-800/50 text-green-600 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30"
-                              onClick={() => handleMarkComplete(deadline.id)}
-                              title="Mark as completed"
-                            >
-                              <Check className="h-4 w-4" />
-                              <span className="sr-only">Complete</span>
-                            </Button>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="h-8 w-8 p-0 pointer-events-auto border-green-200 dark:border-green-800/50 text-green-600 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30"
+                                    onClick={() => handleMarkComplete(deadline.id)}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                    <span className="sr-only">Complete</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="pointer-events-auto">
+                                  <p>Mark as completed</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )}
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 pointer-events-auto border-red-200 dark:border-red-800/50 text-red-500 hover:text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30"
-                            onClick={() => handleDelete(deadline.id)}
-                            title="Delete deadline"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0 pointer-events-auto border-red-200 dark:border-red-800/50 text-red-500 hover:text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30"
+                                  onClick={() => handleDelete(deadline.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Delete</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent className="pointer-events-auto">
+                                <p>Delete deadline</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </TableCell>
-                    </TableRow>
+                    </motion.tr>
                   );
                 })}
-              </TableBody>
+              </motion.tbody>
             </Table>
           </div>
         )}

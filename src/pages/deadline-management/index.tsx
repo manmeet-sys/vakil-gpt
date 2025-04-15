@@ -1,14 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, AlertCircle } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { supabase } from '@/integrations/supabase/client';
+import { motion } from 'framer-motion';
 
 // Import refactored components
 import DeadlineForm from '@/components/deadline-management/DeadlineForm';
 import DeadlineList from '@/components/deadline-management/DeadlineList';
 import DashboardCards from '@/components/deadline-management/DashboardCards';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const DeadlineManagementPage = () => {
   const [deadlines, setDeadlines] = useState([]);
@@ -76,10 +78,32 @@ const DeadlineManagementPage = () => {
   // Handlers for child component actions
   const handleDeadlineAdded = () => {
     fetchDeadlines();
+    toast.success("New deadline added successfully!");
   };
 
   const handleDeadlineUpdated = () => {
     fetchDeadlines();
+  };
+
+  // Animation variants
+  const pageVariants = {
+    initial: { opacity: 0 },
+    animate: { 
+      opacity: 1,
+      transition: { 
+        duration: 0.5,
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const itemVariants = {
+    initial: { y: 20, opacity: 0 },
+    animate: { 
+      y: 0, 
+      opacity: 1,
+      transition: { duration: 0.4 }
+    }
   };
 
   return (
@@ -90,34 +114,61 @@ const DeadlineManagementPage = () => {
     >
       <Toaster richColors position="top-right" />
       
-      <div className="container mx-auto px-4 py-6">
+      <motion.div 
+        className="container mx-auto px-4 py-6"
+        initial="initial"
+        animate="animate"
+        variants={pageVariants}
+      >
         {/* Stats Dashboard */}
-        <DashboardCards 
-          upcomingCount={getUpcomingCount()}
-          urgentCount={urgentCount}
-          completedCount={completedCount}
-          totalDeadlines={deadlines.length}
-        />
+        <motion.div variants={itemVariants}>
+          <DashboardCards 
+            upcomingCount={getUpcomingCount()}
+            urgentCount={urgentCount}
+            completedCount={completedCount}
+            totalDeadlines={deadlines.length}
+          />
+        </motion.div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Left column - Form */}
-          <div className="md:col-span-1">
+          <motion.div className="md:col-span-1" variants={itemVariants}>
             <DeadlineForm 
               onDeadlineAdded={handleDeadlineAdded}
               currentUserId={currentUserId}
             />
-          </div>
+            
+            {/* Tips alert */}
+            <motion.div 
+              className="mt-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+            >
+              <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/30">
+                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-blue-700 dark:text-blue-300 text-sm">
+                  <p className="font-medium mb-1">Tips for effective deadline management:</p>
+                  <ul className="list-disc pl-5 space-y-1 text-xs">
+                    <li>Set reminders for important deadlines</li>
+                    <li>Prioritize urgent tasks with appropriate labels</li>
+                    <li>Update status promptly when completed</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          </motion.div>
           
           {/* Right column - Deadlines list */}
-          <div className="md:col-span-2">
+          <motion.div className="md:col-span-2" variants={itemVariants}>
             <DeadlineList 
               deadlines={deadlines}
               isLoading={isLoading}
               onDeadlineUpdated={handleDeadlineUpdated}
             />
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </LegalToolLayout>
   );
 };
