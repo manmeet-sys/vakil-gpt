@@ -19,7 +19,7 @@ import {
   CalendarDays, 
   BookOpen, 
   Scale, 
-  Award, 
+  Award,
   ArrowRight
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -71,12 +71,11 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Toaster } from '@/components/ui/sonner';
 
-// Define the schema for the form
+// Define the schema for the form - removing associatedCase field
 const formSchema = z.object({
   title: z.string().min(3, {
     message: "Title must be at least 3 characters.",
   }),
-  associatedCase: z.string(),
   deadlineDate: z.date({
     required_error: "A deadline date is required.",
   }),
@@ -138,16 +137,6 @@ const JURISDICTIONS = [
   "Gujarat High Court",
   "District Court",
   "Other"
-];
-
-// Mock case data - replace with actual data
-const CASES = [
-  { id: '1', title: 'Singh vs State of Punjab' },
-  { id: '2', title: 'Mehta & Co. Tax Appeal' },
-  { id: '3', title: 'Sharma Property Dispute' },
-  { id: '4', title: 'Patel Trademark Infringement' },
-  { id: '5', title: 'Kumar Corporate Restructuring' },
-  { id: 'none', title: 'None' }
 ];
 
 // Helper function to get priority color
@@ -223,12 +212,11 @@ const DeadlineManagementPage = () => {
   const [urgentCount, setUrgentCount] = useState(0);
   const navigate = useNavigate();
 
-  // Initialize the form
+  // Initialize the form with updated defaults (removed associatedCase)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      associatedCase: "none",
       deadlineType: "",
       priority: "Medium",
       notifyDaysBefore: "3 days before",
@@ -347,10 +335,9 @@ const DeadlineManagementPage = () => {
         }
       }
       
-      // Convert form values to match the database schema
+      // Convert form values to match the database schema (removed case_id)
       const deadlineData = {
         title: values.title,
-        case_id: values.associatedCase !== 'none' ? values.associatedCase : null,
         due_date: dueDate.toISOString(),
         priority: values.priority,
         reminder_date: reminderDate ? reminderDate.toISOString() : null,
@@ -568,31 +555,6 @@ const DeadlineManagementPage = () => {
                       )}
                     />
                     
-                    <FormField
-                      control={form.control}
-                      name="associatedCase"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-purple-800 dark:text-purple-200">Associated Case</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="cursor-pointer pointer-events-auto border-purple-200 dark:border-purple-800/50 focus:ring-purple-400/20">
-                                <SelectValue placeholder="Select a case" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="pointer-events-auto">
-                              {CASES.map(caseItem => (
-                                <SelectItem key={caseItem.id} value={caseItem.id} className="cursor-pointer">
-                                  {caseItem.title}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -619,7 +581,7 @@ const DeadlineManagementPage = () => {
                                   </Button>
                                 </FormControl>
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                              <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
                                 <Calendar
                                   mode="single"
                                   selected={field.value}
@@ -669,7 +631,7 @@ const DeadlineManagementPage = () => {
                                   <SelectValue placeholder="Select deadline type" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent className="pointer-events-auto">
+                              <SelectContent className="pointer-events-auto z-50">
                                 {DEADLINE_TYPES.map(type => (
                                   <SelectItem key={type} value={type} className="cursor-pointer">
                                     <div className="flex items-center">
@@ -697,7 +659,7 @@ const DeadlineManagementPage = () => {
                                   <SelectValue placeholder="Select priority" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent className="pointer-events-auto">
+                              <SelectContent className="pointer-events-auto z-50">
                                 {PRIORITIES.map(priority => (
                                   <SelectItem key={priority} value={priority} className="cursor-pointer">
                                     <div className="flex items-center">
@@ -727,7 +689,7 @@ const DeadlineManagementPage = () => {
                                   <SelectValue placeholder="Select notification time" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent className="pointer-events-auto">
+                              <SelectContent className="pointer-events-auto z-50">
                                 {NOTIFICATION_OPTIONS.map(option => (
                                   <SelectItem key={option} value={option} className="cursor-pointer">
                                     {option}
@@ -752,7 +714,7 @@ const DeadlineManagementPage = () => {
                                   <SelectValue placeholder="Select jurisdiction" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent className="pointer-events-auto">
+                              <SelectContent className="pointer-events-auto z-50">
                                 {JURISDICTIONS.map(jurisdiction => (
                                   <SelectItem key={jurisdiction} value={jurisdiction} className="cursor-pointer">
                                     {jurisdiction}
@@ -833,9 +795,9 @@ const DeadlineManagementPage = () => {
                     <Button 
                       type="submit"
                       disabled={isSubmitting}
-                      variant="gradient"
+                      variant="default"
                       size="lg"
-                      className="w-full mt-6 pointer-events-auto shadow-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                      className="w-full mt-6 pointer-events-auto shadow-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
                     >
                       {isSubmitting ? (
                         <div className="flex items-center justify-center">
@@ -868,28 +830,28 @@ const DeadlineManagementPage = () => {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button 
-                      variant={activeTab === 'upcoming' ? 'purple' : 'outline'} 
+                      variant={activeTab === 'upcoming' ? 'default' : 'outline'} 
                       size="sm"
                       onClick={() => setActiveTab('upcoming')}
-                      className="pointer-events-auto"
+                      className={`pointer-events-auto ${activeTab === 'upcoming' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}`}
                     >
                       <CalendarDays className="h-4 w-4 mr-1" />
                       Upcoming
                     </Button>
                     <Button 
-                      variant={activeTab === 'urgent' ? 'purple' : 'outline'}
+                      variant={activeTab === 'urgent' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setActiveTab('urgent')}
-                      className="pointer-events-auto"
+                      className={`pointer-events-auto ${activeTab === 'urgent' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}`}
                     >
                       <AlertTriangle className="h-4 w-4 mr-1" />
                       Urgent
                     </Button>
                     <Button 
-                      variant={activeTab === 'past' ? 'purple' : 'outline'}
+                      variant={activeTab === 'past' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setActiveTab('past')}
-                      className="pointer-events-auto"
+                      className={`pointer-events-auto ${activeTab === 'past' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}`}
                     >
                       <CheckCircle2 className="h-4 w-4 mr-1" />
                       Completed/Past
@@ -907,7 +869,7 @@ const DeadlineManagementPage = () => {
                     <SelectTrigger className="w-[140px] h-8 text-xs cursor-pointer pointer-events-auto border-indigo-200 dark:border-indigo-800/50">
                       <SelectValue placeholder="Filter by priority" />
                     </SelectTrigger>
-                    <SelectContent className="pointer-events-auto">
+                    <SelectContent className="pointer-events-auto z-50">
                       <SelectItem value="all" className="cursor-pointer">All Priorities</SelectItem>
                       {PRIORITIES.map(priority => (
                         <SelectItem key={priority} value={priority} className="cursor-pointer">
