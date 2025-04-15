@@ -11,7 +11,12 @@ import {
   Check, 
   Trash2,
   Clock,
-  Shield
+  Shield,
+  FileText,
+  FileCheck,
+  Gavel,
+  FileSearch,
+  Briefcase
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -43,8 +48,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// Import constants and helper functions
-import { PRIORITIES, getDeadlineTypeIcon } from './DeadlineForm';
+// Dictionary for mapping deadline types to icons
+const deadlineTypeIcons = {
+  'Court Filing': FileText,
+  'Hearing': Gavel,
+  'Client Meeting': Briefcase,
+  'Document Submission': FileCheck,
+  'Research': FileSearch,
+  'Other': Clock,
+};
+
+// Import constants from DeadlineForm (assuming these exist in that file)
+const PRIORITIES = ['Urgent', 'High', 'Medium', 'Low'];
+
+// Helper function to get the icon for a deadline type
+const getDeadlineTypeIcon = (type) => {
+  return deadlineTypeIcons[type] || Clock; // Default to Clock if type doesn't match
+};
 
 // Helper function to calculate if a deadline is approaching
 const isDeadlineApproaching = (date) => {
@@ -207,7 +227,10 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
               variant={activeTab === 'upcoming' ? 'default' : 'outline'} 
               size="sm"
               onClick={() => setActiveTab('upcoming')}
-              className={`pointer-events-auto ${activeTab === 'upcoming' ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/20'}`}
+              className={cn(
+                "pointer-events-auto", 
+                activeTab === 'upcoming' ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/20'
+              )}
             >
               <CalendarDays className="h-4 w-4 mr-1" />
               Upcoming
@@ -216,7 +239,10 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
               variant={activeTab === 'urgent' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActiveTab('urgent')}
-              className={`pointer-events-auto ${activeTab === 'urgent' ? 'bg-red-600 hover:bg-red-700 text-white' : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/20'}`}
+              className={cn(
+                "pointer-events-auto",
+                activeTab === 'urgent' ? 'bg-red-600 hover:bg-red-700 text-white' : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/20'
+              )}
             >
               <AlertTriangle className="h-4 w-4 mr-1" />
               Urgent
@@ -225,7 +251,10 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
               variant={activeTab === 'past' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActiveTab('past')}
-              className={`pointer-events-auto ${activeTab === 'past' ? 'bg-green-600 hover:bg-green-700 text-white' : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/20'}`}
+              className={cn(
+                "pointer-events-auto",
+                activeTab === 'past' ? 'bg-green-600 hover:bg-green-700 text-white' : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/20'
+              )}
             >
               <CheckCircle2 className="h-4 w-4 mr-1" />
               Completed/Past
@@ -248,7 +277,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
               {PRIORITIES.map(priority => (
                 <SelectItem key={priority} value={priority} className="cursor-pointer">
                   <div className="flex items-center">
-                    <span className={`w-2 h-2 rounded-full mr-2 ${getPriorityColor(priority)}`}></span>
+                    <span className={cn("w-2 h-2 rounded-full mr-2", getPriorityColor(priority))}></span>
                     {priority}
                   </div>
                 </SelectItem>
@@ -315,7 +344,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                   const approaching = isDeadlineApproaching(deadline.due_date);
                   const timeRemaining = formatTimeRemaining(deadline.due_date);
                   const isPast = new Date(deadline.due_date) < new Date();
-                  const DeadlineTypeIcon = getDeadlineTypeIcon(deadline.type);
+                  const DeadlineIcon = getDeadlineTypeIcon(deadline.type);
                   
                   return (
                     <motion.tr 
@@ -336,15 +365,13 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                       </TableCell>
                       <TableCell className="font-medium text-indigo-800 dark:text-indigo-200">
                         <div className="flex items-center space-x-2">
-                          {DeadlineTypeIcon && (
-                            <span className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                              <DeadlineTypeIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                            </span>
-                          )}
+                          <span className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                            <DeadlineIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                          </span>
                           <div>
-                            <span>{deadline.title}</span>
+                            <span className="text-sm md:text-base truncate max-w-[150px] md:max-w-[200px] inline-block">{deadline.title}</span>
                             {deadline.description && (
-                              <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-1 line-clamp-1">
+                              <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-1 line-clamp-1 max-w-[150px] md:max-w-[200px]">
                                 {deadline.description}
                               </p>
                             )}
@@ -357,11 +384,11 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-indigo-700 dark:text-indigo-300">
+                      <TableCell className="text-indigo-700 dark:text-indigo-300 text-xs md:text-sm">
                         <div className="flex flex-col">
                           <div className="flex items-center">
                             <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-indigo-500 dark:text-indigo-400" />
-                            <span>{deadline.due_date && format(new Date(deadline.due_date), "dd MMM yyyy")}</span>
+                            <span className="whitespace-nowrap">{deadline.due_date && format(new Date(deadline.due_date), "dd MMM yyyy")}</span>
                           </div>
                           {deadline.reminder_date && (
                             <div className="flex items-center mt-2 text-xs text-indigo-500 dark:text-indigo-400">
@@ -375,7 +402,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                         <Badge
                           variant="outline"
                           className={cn(
-                            "font-normal text-xs",
+                            "font-normal text-xs whitespace-nowrap",
                             deadline.status === 'completed'
                               ? "border-green-400 text-green-600 dark:border-green-800 dark:text-green-400"
                               : isPast
@@ -393,7 +420,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                         <Badge 
                           variant="secondary" 
                           className={cn(
-                            "font-normal",
+                            "font-normal text-xs whitespace-nowrap",
                             deadline.status === 'completed' 
                               ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400" 
                               : isPast 
@@ -420,16 +447,16 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-1 md:space-x-2">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
-                                  className="h-8 w-8 p-0 pointer-events-auto border-indigo-200 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
+                                  className="h-7 w-7 p-0 pointer-events-auto border-indigo-200 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
                                 >
-                                  <FileEdit className="h-4 w-4" />
+                                  <FileEdit className="h-3.5 w-3.5" />
                                   <span className="sr-only">Edit</span>
                                 </Button>
                               </TooltipTrigger>
@@ -446,10 +473,10 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
-                                    className="h-8 w-8 p-0 pointer-events-auto border-green-200 dark:border-green-800/50 text-green-600 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30"
+                                    className="h-7 w-7 p-0 pointer-events-auto border-green-200 dark:border-green-800/50 text-green-600 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30"
                                     onClick={() => handleMarkComplete(deadline.id)}
                                   >
-                                    <Check className="h-4 w-4" />
+                                    <Check className="h-3.5 w-3.5" />
                                     <span className="sr-only">Complete</span>
                                   </Button>
                                 </TooltipTrigger>
@@ -466,10 +493,10 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
-                                  className="h-8 w-8 p-0 pointer-events-auto border-red-200 dark:border-red-800/50 text-red-500 hover:text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30"
+                                  className="h-7 w-7 p-0 pointer-events-auto border-red-200 dark:border-red-800/50 text-red-500 hover:text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30"
                                   onClick={() => handleDelete(deadline.id)}
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-3.5 w-3.5" />
                                   <span className="sr-only">Delete</span>
                                 </Button>
                               </TooltipTrigger>
