@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ClientDocument, ClientPortalRPC } from '@/types/ClientPortalTypes';
+import { ClientDocument, ClientPortalRPCs } from '@/types/ClientPortalTypes';
 
 interface ClientDocumentUploaderProps {
   clientId: string;
@@ -109,17 +109,20 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
         if (storageError) throw storageError;
         
         // Create database entry using RPC function
-        const { data, error } = await supabase.rpc('add_client_document', {
-          p_name: file.name,
-          p_size: file.size,
-          p_type: file.type,
-          p_path: filePath,
-          p_client_id: clientId,
-          p_notes: notes || null,
-          p_case_id: selectedCase || null,
-          p_status: 'pending_review',
-          p_uploaded_by: user?.id || ''
-        });
+        const { data, error } = await supabase.rpc<'add_client_document'>(
+          'add_client_document',
+          {
+            p_name: file.name,
+            p_size: file.size,
+            p_type: file.type,
+            p_path: filePath,
+            p_client_id: clientId,
+            p_notes: notes || null,
+            p_case_id: selectedCase || null,
+            p_status: 'pending_review',
+            p_uploaded_by: user?.id || ''
+          }
+        );
         
         if (error) throw error;
         

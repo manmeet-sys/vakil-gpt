@@ -60,8 +60,8 @@ export interface ClientMessage {
   created_at: string;
 }
 
-// Custom Types for RPC functions
-export interface ClientPortalRPC {
+// Properly define RPC function interfaces with their argument and return types
+export interface ClientPortalRPCs {
   add_client_document: {
     Args: {
       p_name: string;
@@ -128,4 +128,19 @@ export interface ClientPortalRPC {
     };
     Returns: null;
   };
+}
+
+// Import this type into the supabase client
+declare module '@supabase/supabase-js' {
+  interface SupabaseClient {
+    rpc<
+      FunctionName extends keyof ClientPortalRPCs,
+      Args extends ClientPortalRPCs[FunctionName]['Args'] = ClientPortalRPCs[FunctionName]['Args'],
+      Returns = ClientPortalRPCs[FunctionName]['Returns']
+    >(
+      fn: FunctionName,
+      args: Args,
+      options?: {}
+    ): { data: Returns; error: any };
+  }
 }
