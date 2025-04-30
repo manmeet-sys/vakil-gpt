@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -16,7 +16,8 @@ type DocumentTemplateListProps = {
 };
 
 const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({ onTemplateSelect }) => {
-  const templates: Template[] = [
+  const [filter, setFilter] = useState<string>("all");
+  const [templates, setTemplates] = useState<Template[]>([
     {
       id: "1",
       title: "Rental Agreement",
@@ -38,7 +39,8 @@ const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({ onTemplateS
       description: "Protect confidential information with this NDA",
       content: "NON-DISCLOSURE AGREEMENT\n\nThis Non-Disclosure Agreement (\"Agreement\") is made and entered into on [DATE] between:\n\n[PARTY A NAME], with its principal place of business at [ADDRESS] (\"Disclosing Party\")\n\nand\n\n[PARTY B NAME], with its principal place of business at [ADDRESS] (\"Receiving Party\")\n\nWHEREAS, the Disclosing Party possesses certain confidential and proprietary information relating to its business, products, services, clients, operations, or other matters;\n\nAND WHEREAS, the Receiving Party may receive or has received such confidential information for the purpose of [PURPOSE];\n\nNOW THEREFORE, in consideration of the mutual covenants contained herein, the parties agree as follows:\n\n1. DEFINITION OF CONFIDENTIAL INFORMATION\n\"Confidential Information\" means any information disclosed by the Disclosing Party to the Receiving Party, either directly or indirectly, in writing, orally or by inspection of tangible objects, which is designated as \"Confidential,\" \"Proprietary\" or some similar designation, or information that by its nature would be understood by a reasonable person to be confidential.\n\n2. NON-DISCLOSURE AND NON-USE\nThe Receiving Party agrees not to use any Confidential Information for any purpose except for the Purpose stated above. The Receiving Party agrees not to disclose any Confidential Information to any third party.\n\n3. TERM\nThe obligations of the Receiving Party under this Agreement shall survive for a period of [DURATION] years from the date of disclosure of the Confidential Information."
     }
-  ];
+  ]);
+  const [filteredTemplates, setFilteredTemplates] = useState<Template[]>(templates);
 
   const categories = [
     { id: "all", name: "All Templates" },
@@ -47,9 +49,41 @@ const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({ onTemplateS
     { id: "confidentiality", name: "Confidentiality" },
   ];
 
+  useEffect(() => {
+    if (filter === "all") {
+      setFilteredTemplates(templates);
+    } else {
+      setFilteredTemplates(
+        templates.filter(template => 
+          template.type.toLowerCase().includes(filter.toLowerCase())
+        )
+      );
+    }
+  }, [filter, templates]);
+
   const handleCategoryChange = (categoryId: string) => {
-    // Filter templates based on category
+    setFilter(categoryId);
     console.log(`Category selected: ${categoryId}`);
+  };
+
+  // Track template usage
+  const trackTemplateUsage = (template: Template) => {
+    // Get current usage stats from localStorage
+    const usageStatsString = localStorage.getItem('templateUsageStats');
+    const usageStats = usageStatsString ? JSON.parse(usageStatsString) : {};
+    
+    // Update usage count for this template
+    usageStats[template.id] = (usageStats[template.id] || 0) + 1;
+    
+    // Save back to localStorage
+    localStorage.setItem('templateUsageStats', JSON.stringify(usageStats));
+    
+    // Track last used date
+    const lastUsed = {
+      ...JSON.parse(localStorage.getItem('lastUsedTemplates') || '{}'),
+      [template.id]: new Date().toISOString()
+    };
+    localStorage.setItem('lastUsedTemplates', JSON.stringify(lastUsed));
   };
 
   return (
@@ -70,19 +104,32 @@ const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({ onTemplateS
         </Select>
       </div>
       
-      <div className="grid grid-cols-1 gap-3">
-        {templates.map((template) => (
-          <Card key={template.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors" onClick={() => onTemplateSelect(template)}>
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium">{template.title}</h4>
-                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded px-2 py-0.5">{template.type}</span>
-              </div>
-              <p className="text-xs text-muted-foreground line-clamp-2">{template.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {filteredTemplates.length === 0 ? (
+        <div className="text-center py-6 text-sm text-gray-500">
+          No templates found matching the current filter.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3">
+          {filteredTemplates.map((template) => (
+            <Card 
+              key={template.id} 
+              className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors" 
+              onClick={() => {
+                onTemplateSelect(template);
+                trackTemplateUsage(template);
+              }}
+            >
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium">{template.title}</h4>
+                  <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded px-2 py-0.5">{template.type}</span>
+                </div>
+                <p className="text-xs text-muted-foreground line-clamp-2">{template.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Calendar, FileType } from 'lucide-react';
+import { Search, Calendar, FileType, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 interface SearchDocumentsProps {
   onSearch: (query: string, type: string, dateRange: string) => void;
@@ -14,10 +15,51 @@ const SearchDocuments: React.FC<SearchDocumentsProps> = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [documentType, setDocumentType] = useState('all');
   const [dateRange, setDateRange] = useState('all');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  // Load recent searches from localStorage on component mount
+  useEffect(() => {
+    const savedSearches = localStorage.getItem('recentDocumentSearches');
+    if (savedSearches) {
+      setRecentSearches(JSON.parse(savedSearches));
+    }
+  }, []);
+
+  // Save recent searches to localStorage
+  const saveSearch = (query: string) => {
+    if (!query.trim()) return;
+    
+    const updatedSearches = [query, ...recentSearches.filter(s => s !== query)].slice(0, 5);
+    setRecentSearches(updatedSearches);
+    localStorage.setItem('recentDocumentSearches', JSON.stringify(updatedSearches));
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(searchQuery, documentType, dateRange);
+    saveSearch(searchQuery);
+    toast.success('Search filters applied');
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setDocumentType('all');
+    setDateRange('all');
+    onSearch('', 'all', 'all');
+    toast.info('Search filters cleared');
+  };
+
+  const handleRecentSearchClick = (search: string) => {
+    setSearchQuery(search);
+    onSearch(search, documentType, dateRange);
+    saveSearch(search);
+  };
+
+  const handleRemoveRecentSearch = (search: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updatedSearches = recentSearches.filter(s => s !== search);
+    setRecentSearches(updatedSearches);
+    localStorage.setItem('recentDocumentSearches', JSON.stringify(updatedSearches));
   };
 
   return (
@@ -31,8 +73,17 @@ const SearchDocuments: React.FC<SearchDocumentsProps> = ({ onSearch }) => {
                 placeholder="Search legal documents..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 pr-8"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
             <Button type="submit" size="sm" className="whitespace-nowrap">
               Search
@@ -85,6 +136,41 @@ const SearchDocuments: React.FC<SearchDocumentsProps> = ({ onSearch }) => {
               </Select>
             </div>
           </div>
+
+          {recentSearches.length > 0 && (
+            <div className="pt-2">
+              <p className="text-xs text-gray-500 mb-1">Recent Searches:</p>
+              <div className="flex flex-wrap gap-2">
+                {recentSearches.map((search, index) => (
+                  <div 
+                    key={index}
+                    onClick={() => handleRecentSearchClick(search)}
+                    className="flex items-center bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-xs cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
+                  >
+                    {search}
+                    <X 
+                      className="ml-1 h-3 w-3 hover:text-red-500" 
+                      onClick={(e) => handleRemoveRecentSearch(search, e)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {(searchQuery || documentType !== 'all' || dateRange !== 'all') && (
+            <div className="pt-1">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={handleClearSearch}
+                className="text-xs"
+              >
+                Clear Filters
+              </Button>
+            </div>
+          )}
         </form>
       </CardContent>
     </Card>
