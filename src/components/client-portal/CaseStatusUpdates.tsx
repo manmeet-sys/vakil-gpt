@@ -4,16 +4,7 @@ import { Bell, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-
-interface StatusUpdate {
-  id: string;
-  message: string;
-  created_at: string;
-  case_id: string;
-  case_title: string;
-  status: string;
-  is_read: boolean;
-}
+import { StatusUpdate } from '@/types/ClientPortalTypes';
 
 interface CaseStatusUpdatesProps {
   updates: StatusUpdate[];

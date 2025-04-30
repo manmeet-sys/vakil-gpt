@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -50,6 +49,7 @@ import {
 import ClientDocumentUploader from '@/components/client-portal/ClientDocumentUploader';
 import CaseStatusUpdates from '@/components/client-portal/CaseStatusUpdates';
 import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter';
+import { ClientDocument, StatusUpdate } from '@/types/ClientPortalTypes';
 
 // Types for client portal data
 interface Document {
@@ -89,7 +89,7 @@ const ClientPortalPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<ClientDocument[]>([]);
   const [statusUpdates, setStatusUpdates] = useState<StatusUpdate[]>([]);
   const [clientCases, setClientCases] = useState<ClientCase[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -128,26 +128,20 @@ const ClientPortalPage = () => {
     try {
       setLoading(true);
       
-      // Fetch client documents
-      const { data: documentsData, error: documentsError } = await supabase
-        .from('client_documents')
-        .select('*')
-        .eq('client_id', user?.id)
-        .order('created_at', { ascending: false });
+      // Fetch client documents using the API
+      const documentsResponse = await fetch(`/api/get-client-documents?clientId=${user?.id}`);
+      const documentsData = await documentsResponse.json();
       
-      if (documentsError) throw documentsError;
+      if (!documentsResponse.ok) throw new Error(documentsData.error);
       
       // Fetch status updates
-      const { data: updatesData, error: updatesError } = await supabase
-        .from('case_status_updates')
-        .select('*')
-        .eq('client_id', user?.id)
-        .order('created_at', { ascending: false });
+      const updatesResponse = await fetch(`/api/get-status-updates?clientId=${user?.id}`);
+      const updatesData = await updatesResponse.json();
       
-      if (updatesError) throw updatesError;
+      if (!updatesResponse.ok) throw new Error(updatesData.error);
       
       // Count unread updates
-      const unread = updatesData?.filter(update => !update.is_read).length || 0;
+      const unread = updatesData?.filter((update: StatusUpdate) => !update.is_read).length || 0;
       
       // Fetch cases
       const { data: casesData, error: casesError } = await supabase
@@ -161,7 +155,7 @@ const ClientPortalPage = () => {
       // Transform case data to include progress
       const transformedCases = casesData?.map(caseItem => ({
         ...caseItem,
-        progress: calculateCaseProgress(caseItem.status)
+        progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
       setDocuments(documentsData || []);
@@ -190,12 +184,16 @@ const ClientPortalPage = () => {
   
   const markUpdateAsRead = async (updateId: string) => {
     try {
-      const { error } = await supabase
-        .from('case_status_updates')
-        .update({ is_read: true })
-        .eq('id', updateId);
+      const response = await fetch('/api/mark-status-read', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ updateId }),
+      });
       
-      if (error) throw error;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
       
       setStatusUpdates(prev => prev.map(update => 
         update.id === updateId ? { ...update, is_read: true } : update

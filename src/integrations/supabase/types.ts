@@ -104,6 +104,130 @@ export type Database = {
           },
         ]
       }
+      case_status_updates: {
+        Row: {
+          case_id: string
+          case_title: string
+          client_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean
+          message: string
+          status: string
+        }
+        Insert: {
+          case_id: string
+          case_title: string
+          client_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          status: string
+        }
+        Update: {
+          case_id?: string
+          case_title?: string
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_status_updates_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "court_filings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_documents: {
+        Row: {
+          case_id: string | null
+          client_id: string
+          created_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          path: string
+          size: number
+          status: string
+          type: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          case_id?: string | null
+          client_id: string
+          created_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          path: string
+          size: number
+          status?: string
+          type: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          case_id?: string | null
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          path?: string
+          size?: number
+          status?: string
+          type?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_documents_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "court_filings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean
+          receiver_id: string
+          sender_id: string
+          sender_name: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          receiver_id: string
+          sender_id: string
+          sender_name: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          receiver_id?: string
+          sender_id?: string
+          sender_name?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           address: string | null
@@ -144,6 +268,7 @@ export type Database = {
         Row: {
           case_number: string | null
           case_title: string | null
+          client_id: string | null
           client_name: string | null
           court_name: string | null
           court_type: string | null
@@ -165,6 +290,7 @@ export type Database = {
         Insert: {
           case_number?: string | null
           case_title?: string | null
+          client_id?: string | null
           client_name?: string | null
           court_name?: string | null
           court_type?: string | null
@@ -186,6 +312,7 @@ export type Database = {
         Update: {
           case_number?: string | null
           case_title?: string | null
+          client_id?: string | null
           client_name?: string | null
           court_name?: string | null
           court_type?: string | null

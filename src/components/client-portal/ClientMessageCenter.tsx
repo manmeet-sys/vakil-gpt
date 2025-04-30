@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -8,16 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-interface Message {
-  id: string;
-  content: string;
-  sender_id: string;
-  sender_name: string;
-  receiver_id: string;
-  created_at: string;
-  is_read: boolean;
-}
+import { ClientMessage } from '@/types/ClientPortalTypes';
 
 interface ClientMessageCenterProps {
   clientId: string;
@@ -27,7 +17,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ClientMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [advocates, setAdvocates] = useState<{id: string, name: string}[]>([]);
   const [selectedAdvocate, setSelectedAdvocate] = useState<string | null>(null);
@@ -52,7 +42,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         
         // Extract unique advocates
         const uniqueAdvocates = advocatesData?.reduce<{id: string, name: string}[]>((acc, curr) => {
-          // @ts-ignore
+          // @ts-ignore - we know the structure of the returned data
           const advocateId = curr.profiles?.id;
           // @ts-ignore
           const advocateName = curr.profiles?.full_name;
@@ -84,29 +74,30 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
   useEffect(() => {
     if (!clientId || !selectedAdvocate) return;
     
-    // Fetch messages between client and selected advocate
+    // Fetch messages using API since we can't directly query the table
     const fetchMessages = async () => {
       try {
-        const { data, error } = await supabase
-          .from('client_messages')
-          .select('*')
-          .or(`and(sender_id.eq.${clientId},receiver_id.eq.${selectedAdvocate}),and(sender_id.eq.${selectedAdvocate},receiver_id.eq.${clientId})`)
-          .order('created_at', { ascending: true });
+        const response = await fetch(`/api/client-messages?clientId=${clientId}&advocateId=${selectedAdvocate}`);
+        const data = await response.json();
           
-        if (error) throw error;
+        if (!response.ok) throw new Error(data.error);
         
         setMessages(data || []);
         
         // Mark received messages as read
-        const unreadMessages = data?.filter(m => 
+        const unreadMessages = data?.filter((m: ClientMessage) => 
           m.receiver_id === clientId && !m.is_read
-        ).map(m => m.id);
+        ).map((m: ClientMessage) => m.id);
         
         if (unreadMessages && unreadMessages.length > 0) {
-          await supabase
-            .from('client_messages')
-            .update({ is_read: true })
-            .in('id', unreadMessages);
+          // Mark messages as read using API
+          await fetch('/api/mark-messages-read', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ messageIds: unreadMessages }),
+          });
         }
         
       } catch (error) {
@@ -116,40 +107,15 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
     
     fetchMessages();
     
-    // Subscribe to new messages
-    const channel = supabase
-      .channel(`client-messages-${clientId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'client_messages',
-        filter: `or(receiver_id=eq.${clientId},sender_id=eq.${clientId})`
-      }, payload => {
-        // @ts-ignore
-        const newMsg = payload.new as Message;
-        // Only add if it's from the currently selected conversation
-        if (
-          (newMsg.sender_id === clientId && newMsg.receiver_id === selectedAdvocate) ||
-          (newMsg.sender_id === selectedAdvocate && newMsg.receiver_id === clientId)
-        ) {
-          setMessages(prev => [...prev, newMsg]);
-          
-          // Mark as read if we received it
-          if (newMsg.receiver_id === clientId) {
-            supabase
-              .from('client_messages')
-              .update({ is_read: true })
-              .eq('id', newMsg.id);
-          }
-        }
-      })
-      .subscribe();
-      
     // Scroll to bottom on new messages
     scrollToBottom();
     
+    // Set up a subscription for new message via polling (every 5 seconds) 
+    // since we can't use the Supabase realtime directly with the DB functions
+    const interval = setInterval(fetchMessages, 5000);
+    
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [clientId, selectedAdvocate]);
   
@@ -168,20 +134,26 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
     try {
       setSending(true);
       
-      const { data, error } = await supabase
-        .from('client_messages')
-        .insert([
-          {
-            content: newMessage.trim(),
-            sender_id: clientId,
-            sender_name: user?.user_metadata?.full_name || 'Client',
-            receiver_id: selectedAdvocate,
-            is_read: false
-          }
-        ])
-        .select();
-        
-      if (error) throw error;
+      // Send message using API
+      const response = await fetch('/api/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: newMessage.trim(),
+          sender_id: clientId,
+          sender_name: user?.user_metadata?.full_name || 'Client',
+          receiver_id: selectedAdvocate,
+          is_read: false
+        }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      
+      // Add the new message to the list
+      setMessages(prev => [...prev, data]);
       
       // Clear input after sending
       setNewMessage('');

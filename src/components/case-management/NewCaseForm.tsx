@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Case } from '@/pages/case-management/index';
+import { Case } from '@/types/ClientPortalTypes';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useForm } from 'react-hook-form';
@@ -112,6 +112,8 @@ const NewCaseForm: React.FC<NewCaseFormProps> = ({ onCaseCreated, onCancel }) =>
             opposing_party: data.opposing_party,
             filing_date: data.filing_date,
             hearing_date: data.hearing_date || null,
+            // Include client_id if available
+            client_id: data.client_id || null
           },
         ])
         .select('*')
@@ -119,8 +121,13 @@ const NewCaseForm: React.FC<NewCaseFormProps> = ({ onCaseCreated, onCancel }) =>
       
       if (error) throw error;
       
-      // Type assertion to match the expected Case type
-      onCaseCreated({...(newCase as any), client_id: newCase.client_id || null} as Case);
+      // Create a proper Case object with appropriate typing
+      const finalCase: Case = {
+        ...newCase as any,
+        client_id: newCase.client_id || null
+      };
+      
+      onCaseCreated(finalCase);
     } catch (error: any) {
       console.error('Error creating new case:', error.message);
       toast.error('Failed to create case. Please try again.');

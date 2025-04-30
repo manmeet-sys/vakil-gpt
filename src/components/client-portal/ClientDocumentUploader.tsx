@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { ClientPortalRPC } from '@/types/ClientPortalTypes';
 
 interface ClientDocumentUploaderProps {
   clientId: string;
@@ -57,7 +58,7 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
         
         setCases(data?.map(c => ({
           id: c.id,
-          title: c.case_title
+          title: c.case_title || 'Untitled Case'
         })) || []);
       } catch (error) {
         console.error('Error fetching cases:', error);
@@ -107,23 +108,27 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
           
         if (storageError) throw storageError;
         
-        // Create database entry using RPC function
-        const { data: docData, error: docError } = await supabase.rpc(
-          'add_client_document',
-          {
-            p_name: file.name,
-            p_size: file.size,
-            p_type: file.type,
-            p_path: filePath,
-            p_client_id: clientId,
-            p_notes: notes,
-            p_case_id: selectedCase || null,
-            p_status: 'pending_review',
-            p_uploaded_by: user?.id
-          }
-        );
-          
-        if (docError) throw docError;
+        // Create database entry using fetch directly to the API endpoint
+        const response = await fetch('/api/client-documents', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            path: filePath,
+            client_id: clientId,
+            notes: notes || null,
+            case_id: selectedCase || null,
+            status: 'pending_review',
+            uploaded_by: user?.id
+          }),
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
         
         return { success: true };
       });

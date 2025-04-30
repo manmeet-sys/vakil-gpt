@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Case } from '@/pages/case-management';
+import { Case } from '@/types/ClientPortalTypes';
 import { 
   Card, 
   CardContent, 
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -80,8 +80,13 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ caseData, onCaseUpdated, onCa
         throw error;
       }
 
-      // Type assertion to match the Case type
-      onCaseUpdated({...(data as any), client_id: data.client_id || null} as Case);
+      // Ensure client_id is maintained in the updated case
+      const updatedCase: Case = {
+        ...(data as any),
+        client_id: caseData.client_id // Preserve the client_id from the original data
+      };
+      
+      onCaseUpdated(updatedCase);
       setIsEditing(false);
     } catch (error: any) {
       console.error('Error updating case:', error.message);
