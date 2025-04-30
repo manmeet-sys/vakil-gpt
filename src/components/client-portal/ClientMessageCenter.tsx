@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ClientMessage } from '@/types/ClientPortalTypes';
+import { ClientMessage, ClientPortalRPC } from '@/types/ClientPortalTypes';
 
 interface ClientMessageCenterProps {
   clientId: string;
@@ -77,7 +78,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
     // Fetch messages using RPC function
     const fetchMessages = async () => {
       try {
-        const { data, error } = await supabase.rpc(
+        const { data, error } = await supabase.rpc<'get_client_advocate_messages', ClientPortalRPC>(
           'get_client_advocate_messages',
           {
             p_client_id: clientId,
@@ -96,7 +97,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         
         if (unreadMessages && unreadMessages.length > 0) {
           // Mark messages as read using RPC
-          await supabase.rpc('mark_messages_read', {
+          await supabase.rpc<'mark_messages_read', ClientPortalRPC>('mark_messages_read', {
             p_message_ids: unreadMessages
           });
         }
@@ -135,8 +136,8 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
     try {
       setSending(true);
       
-      // Send message using RPC
-      const { data, error } = await supabase.rpc(
+      // Send message using RPC with proper type assertion
+      const { data, error } = await supabase.rpc<'add_client_message', ClientPortalRPC>(
         'add_client_message',
         {
           p_content: newMessage.trim(),
@@ -151,7 +152,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       
       // Add the new message to the list
       if (data) {
-        setMessages(prev => [...prev, data]);
+        setMessages(prev => [...prev, data as ClientMessage]);
       }
       
       // Clear input after sending
