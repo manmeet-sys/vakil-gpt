@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { IndianRupee, Plus, Pencil, Trash2, FileText, Download, Filter, BarChart, Search, CreditCard } from 'lucide-react';
+import { IndianRupee, Plus, Pencil, Trash2, Download, Filter, BarChart, Search, CreditCard, Calendar } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { useAuth } from '@/context/AuthContext';
 import { useBilling } from '@/context/BillingContext';
@@ -19,7 +19,8 @@ import * as z from 'zod';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import TimeTrackingStats from '@/components/TimeTrackingStats';
+import InvoiceGenerator from '@/components/InvoiceGenerator';
 
 const timeEntrySchema = z.object({
   client_name: z.string().min(1, { message: 'Client name is required' }),
@@ -37,6 +38,7 @@ const BillingTrackingPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingEntry, setEditingEntry] = useState<any>(null);
   const [viewMode, setViewMode] = useState('list');
+  const [timePeriod, setTimePeriod] = useState<'week' | 'month' | 'year'>('month');
 
   const form = useForm<z.infer<typeof timeEntrySchema>>({
     resolver: zodResolver(timeEntrySchema),
@@ -145,41 +147,6 @@ const BillingTrackingPage = () => {
     );
   });
 
-  // Calculate statistics - Fix type issues with numeric operations
-  const totalHours = filteredEntries.reduce((sum, entry) => {
-    const hours = typeof entry.hours_spent === 'number' ? entry.hours_spent : 0;
-    return sum + hours;
-  }, 0);
-  
-  const totalBillable = filteredEntries.reduce((sum, entry) => {
-    const hours = typeof entry.hours_spent === 'number' ? entry.hours_spent : 0;
-    const rate = typeof entry.hourly_rate === 'number' ? entry.hourly_rate : 0;
-    return sum + (hours * rate);
-  }, 0);
-  
-  // Fix client data calculations
-  const clientData: Record<string, { hours: number; amount: number }> = {};
-  filteredEntries.forEach(entry => {
-    if (entry.client_name) {
-      if (!clientData[entry.client_name]) {
-        clientData[entry.client_name] = {
-          hours: 0,
-          amount: 0
-        };
-      }
-      const hours = typeof entry.hours_spent === 'number' ? entry.hours_spent : 0;
-      const rate = typeof entry.hourly_rate === 'number' ? entry.hourly_rate : 0;
-      
-      clientData[entry.client_name].hours += hours;
-      clientData[entry.client_name].amount += (hours * rate);
-    }
-  });
-
-  const topClients = Object.entries(clientData)
-    .map(([name, data]) => ({ name, ...data }))
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 5);
-
   return (
     <LegalToolLayout
       title="Indian Legal Billing & Time Tracking"
@@ -205,81 +172,37 @@ const BillingTrackingPage = () => {
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="border border-blue-100 dark:border-blue-900/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-medium text-blue-700 dark:text-blue-400">Total Billable Hours</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">{totalHours.toFixed(1)}</span>
-                    <span className="text-sm text-muted-foreground ml-2">hours</span>
-                  </div>
-                  <Progress className="h-2 mt-2" value={Math.min((totalHours / 160) * 100, 100)} />
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {Math.round((totalHours / 160) * 100)}% of 160 hour monthly target
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border border-green-100 dark:border-green-900/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-medium text-green-700 dark:text-green-400">Total Billable Amount</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">₹{totalBillable.toLocaleString('en-IN')}</span>
-                  </div>
-                  <div className="mt-2 flex items-center space-x-1">
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {filteredEntries.filter(e => e.invoice_status === 'billed').length} entries invoiced
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border border-amber-100 dark:border-amber-900/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-medium text-amber-700 dark:text-amber-400">Top Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Count activities and display the top one */}
-                  {(() => {
-                    const activityCounts: Record<string, number> = {};
-                    filteredEntries.forEach(entry => {
-                      if (entry.activity_type) {
-                        activityCounts[entry.activity_type] = (activityCounts[entry.activity_type] || 0) + 1;
-                      }
-                    });
-                    
-                    const sortedActivities = Object.entries(activityCounts)
-                      .sort((a, b) => b[1] - a[1]);
-                      
-                    if (sortedActivities.length > 0) {
-                      const topActivity = sortedActivities[0];
-                      return (
-                        <>
-                          <div className="flex items-baseline">
-                            <span className="text-xl font-bold truncate">{topActivity[0]}</span>
-                          </div>
-                          <div className="mt-2 flex items-center space-x-1">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
-                              {topActivity[1]} entries, {filteredEntries.length > 0 ? Math.round((topActivity[1] / filteredEntries.length) * 100) : 0}% of total
-                            </span>
-                          </div>
-                        </>
-                      );
-                    }
-                    
-                    return <span className="text-sm text-muted-foreground">No activities recorded</span>;
-                  })()}
-                </CardContent>
-              </Card>
+            {/* Time Period Selector */}
+            <div className="flex justify-end">
+              <div className="border rounded-md flex">
+                <Button 
+                  variant={timePeriod === 'week' ? 'secondary' : 'ghost'} 
+                  className="rounded-r-none"
+                  onClick={() => setTimePeriod('week')}
+                >
+                  Week
+                </Button>
+                <Button 
+                  variant={timePeriod === 'month' ? 'secondary' : 'ghost'} 
+                  className="rounded-none border-x"
+                  onClick={() => setTimePeriod('month')}
+                >
+                  Month
+                </Button>
+                <Button 
+                  variant={timePeriod === 'year' ? 'secondary' : 'ghost'} 
+                  className="rounded-l-none"
+                  onClick={() => setTimePeriod('year')}
+                >
+                  Year
+                </Button>
+              </div>
             </div>
-          
+            
+            {/* Time Tracking Stats */}
+            <TimeTrackingStats entries={filteredEntries} period={timePeriod} />
+            
+            {/* Controls for time entries */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -301,7 +224,7 @@ const BillingTrackingPage = () => {
                     className="rounded-r-none"
                     onClick={() => setViewMode('list')}
                   >
-                    <FileText className="h-4 w-4 mr-1" />
+                    <Calendar className="h-4 w-4 mr-1" />
                     List
                   </Button>
                   <Button 
@@ -311,7 +234,7 @@ const BillingTrackingPage = () => {
                     onClick={() => setViewMode('dashboard')}
                   >
                     <BarChart className="h-4 w-4 mr-1" />
-                    Dashboard
+                    Stats
                   </Button>
                 </div>
               </div>
@@ -457,187 +380,110 @@ const BillingTrackingPage = () => {
             <Tabs defaultValue="time-entries" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="time-entries">Time Entries</TabsTrigger>
-                <TabsTrigger value="clients">Clients</TabsTrigger>
-                <TabsTrigger value="matters">Matters</TabsTrigger>
                 <TabsTrigger value="invoices">Invoices</TabsTrigger>
+                <TabsTrigger value="clients">Clients</TabsTrigger>
+                <TabsTrigger value="reports">Reports</TabsTrigger>
               </TabsList>
               
               <TabsContent value="time-entries" className="space-y-4">
-                {viewMode === 'dashboard' ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Top Clients by Revenue</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {topClients.length > 0 ? topClients.map(client => (
-                            <div key={client.name} className="space-y-1">
-                              <div className="flex justify-between">
-                                <span className="font-medium">{client.name}</span>
-                                <span className="font-medium">₹{client.amount.toLocaleString('en-IN')}</span>
-                              </div>
-                              <Progress value={topClients[0].amount > 0 ? (client.amount / topClients[0].amount) * 100 : 0} className="h-2" />
-                              <div className="text-xs text-muted-foreground">
-                                {client.hours.toFixed(1)} hours
-                              </div>
-                            </div>
-                          )) : (
-                            <div className="text-center py-8 text-gray-500">
-                              <p>No client data available yet</p>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Time Distribution by Activity</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {(() => {
-                          const activityStats: Record<string, number> = {};
-                          filteredEntries.forEach(entry => {
-                            if (entry.activity_type) {
-                              if (!activityStats[entry.activity_type]) {
-                                activityStats[entry.activity_type] = 0;
-                              }
-                              const hours = typeof entry.hours_spent === 'number' ? entry.hours_spent : 0;
-                              activityStats[entry.activity_type] += hours;
-                            }
-                          });
-                          
-                          const sortedActivities = Object.entries(activityStats)
-                            .sort((a, b) => b[1] - a[1])
-                            .slice(0, 6);
-                            
-                          const total = Object.values(activityStats).reduce((sum: number, val: number) => sum + val, 0);
-                            
-                          if (sortedActivities.length > 0) {
-                            return (
-                              <div className="space-y-4">
-                                {sortedActivities.map(([type, hours]) => (
-                                  <div key={type} className="space-y-1">
-                                    <div className="flex justify-between">
-                                      <span className="font-medium">{type}</span>
-                                      <span className="font-medium">{hours.toFixed(1)} hrs</span>
-                                    </div>
-                                    <Progress value={total > 0 ? (hours / total) * 100 : 0} className="h-2" />
-                                    <div className="text-xs text-muted-foreground">
-                                      {total > 0 ? Math.round((hours / total) * 100) : 0}% of total time
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            );
-                          }
-                          
-                          return (
-                            <div className="text-center py-8 text-gray-500">
-                              <p>No activity data available yet</p>
-                            </div>
-                          );
-                        })()}
-                      </CardContent>
-                    </Card>
-                  </div>
-                ) : (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Recent Time Entries</CardTitle>
-                      <CardDescription>
-                        Track and manage your billable time entries
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {loading ? (
-                        <div className="flex justify-center p-4">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        </div>
-                      ) : filteredEntries.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">
-                          <p>No time entries found. Add your first entry to get started.</p>
-                        </div>
-                      ) : (
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse">
-                            <thead>
-                              <tr className="border-b">
-                                <th className="text-left p-2">Client</th>
-                                <th className="text-left p-2">Date</th>
-                                <th className="text-left p-2">Activity</th>
-                                <th className="text-right p-2">Hours</th>
-                                <th className="text-right p-2">Rate (₹)</th>
-                                <th className="text-right p-2">Amount (₹)</th>
-                                <th className="text-center p-2">Status</th>
-                                <th className="text-center p-2">Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filteredEntries.map((entry) => (
-                                <tr key={entry.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                                  <td className="p-2">{entry.client_name || 'N/A'}</td>
-                                  <td className="p-2">{entry.date ? format(new Date(entry.date), 'dd/MM/yyyy') : 'N/A'}</td>
-                                  <td className="p-2">
-                                    {entry.activity_type}
-                                    {entry.description && (
-                                      <div className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                                        {entry.description}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="p-2 text-right">{entry.hours_spent}</td>
-                                  <td className="p-2 text-right">{entry.hourly_rate ? `₹${entry.hourly_rate.toLocaleString('en-IN')}` : 'N/A'}</td>
-                                  <td className="p-2 text-right font-medium">
-                                    {typeof entry.hours_spent === 'number' && typeof entry.hourly_rate === 'number' 
-                                      ? `₹${(entry.hours_spent * entry.hourly_rate).toLocaleString('en-IN')}`
-                                      : 'N/A'
-                                    }
-                                  </td>
-                                  <td className="p-2 text-center">
-                                    <Badge variant={entry.invoice_status === 'billed' ? 'secondary' : 'outline'}>
-                                      {entry.invoice_status === 'billed' ? 'Billed' : 'Unbilled'}
-                                    </Badge>
-                                  </td>
-                                  <td className="p-2 flex justify-center space-x-2">
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon"
-                                      onClick={() => handleEdit(entry)}
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="text-red-500 hover:text-red-700 hover:bg-red-100"
-                                      onClick={() => handleDeleteConfirm(entry.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <div className="text-sm text-muted-foreground">
-                        Showing {filteredEntries.length} entries
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Time Entries</CardTitle>
+                    <CardDescription>
+                      Track and manage your billable time entries
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <div className="flex justify-center p-4">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                       </div>
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Export Data
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                )}
+                    ) : filteredEntries.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>No time entries found. Add your first entry to get started.</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left p-2">Client</th>
+                              <th className="text-left p-2">Date</th>
+                              <th className="text-left p-2">Activity</th>
+                              <th className="text-right p-2">Hours</th>
+                              <th className="text-right p-2">Rate (₹)</th>
+                              <th className="text-right p-2">Amount (₹)</th>
+                              <th className="text-center p-2">Status</th>
+                              <th className="text-center p-2">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredEntries.map((entry) => (
+                              <tr key={entry.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <td className="p-2">{entry.client_name || 'N/A'}</td>
+                                <td className="p-2">{entry.date ? format(new Date(entry.date), 'dd/MM/yyyy') : 'N/A'}</td>
+                                <td className="p-2">
+                                  {entry.activity_type}
+                                  {entry.description && (
+                                    <div className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                      {entry.description}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="p-2 text-right">{entry.hours_spent}</td>
+                                <td className="p-2 text-right">{entry.hourly_rate ? `₹${entry.hourly_rate.toLocaleString('en-IN')}` : 'N/A'}</td>
+                                <td className="p-2 text-right font-medium">
+                                  {typeof entry.hours_spent === 'number' && typeof entry.hourly_rate === 'number' 
+                                    ? `₹${(entry.hours_spent * entry.hourly_rate).toLocaleString('en-IN')}`
+                                    : 'N/A'
+                                  }
+                                </td>
+                                <td className="p-2 text-center">
+                                  <Badge variant={entry.invoice_status === 'billed' ? 'secondary' : 'outline'}>
+                                    {entry.invoice_status === 'billed' ? 'Billed' : 'Unbilled'}
+                                  </Badge>
+                                </td>
+                                <td className="p-2 flex justify-center space-x-2">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handleEdit(entry)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                                    onClick={() => handleDeleteConfirm(entry.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {filteredEntries.length} entries
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Data
+                    </Button>
+                  </CardFooter>
+                </Card>
               </TabsContent>
               
-              <TabsContent value="clients">
+              <TabsContent value="invoices" className="space-y-4">
+                <InvoiceGenerator />
+              </TabsContent>
+              
+              <TabsContent value="clients" className="space-y-4">
                 <Card>
                   <CardHeader>
                     <CardTitle>Clients</CardTitle>
@@ -654,33 +500,16 @@ const BillingTrackingPage = () => {
                 </Card>
               </TabsContent>
               
-              <TabsContent value="matters">
+              <TabsContent value="reports" className="space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Matters</CardTitle>
-                    <CardDescription>Manage legal matters and cases</CardDescription>
+                    <CardTitle>Financial Reports</CardTitle>
+                    <CardDescription>Generate detailed financial reports for your practice</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex justify-center p-6 border border-dashed rounded-lg">
                       <div className="text-center space-y-2">
-                        <p className="text-muted-foreground">Matter management feature coming soon</p>
-                        <Button variant="outline" size="sm">Request Early Access</Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="invoices">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Invoices</CardTitle>
-                    <CardDescription>Create and manage invoices</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-center p-6 border border-dashed rounded-lg">
-                      <div className="text-center space-y-2">
-                        <p className="text-muted-foreground">Invoice management feature coming soon</p>
+                        <p className="text-muted-foreground">Advanced reporting features coming soon</p>
                         <Button variant="outline" size="sm">Request Early Access</Button>
                       </div>
                     </div>
