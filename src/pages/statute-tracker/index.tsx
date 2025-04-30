@@ -1,867 +1,780 @@
-
 import React, { useState, useEffect } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { Scale, Bell, Eye, EyeOff, Clock, Calendar, RefreshCw, Info, FileText, BookOpen } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { BookOpen, Search, Loader2, AlertCircle, Filter, Clock, Download, BookOpenCheck, FileCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { useAnalytics } from '@/hooks/use-analytics';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import BackButton from '@/components/BackButton';
 
+// Types for improved statute tracking
+interface Statute {
+  id: string;
+  name: string;
+  jurisdiction: string;
+  lastUpdated: string;
+  recentChanges: string[];
+  notifications: boolean;
+  details: StatuteDetails;
+}
+
+interface StatuteDetails {
+  description: string;
+  fullTextLink: string;
+  relatedRules: string[];
+  keyTerms: string[];
+}
+
+interface StatuteSearchOptions {
+  jurisdiction: string;
+  timeframe: string;
+  relevance: number;
+  includeRepealed: boolean;
+  includeAmendments: boolean;
+  apiProvider: 'deepseek' | 'gemini';
+  sortBy: 'relevance' | 'date' | 'authority';
+  format: 'detailed' | 'summary' | 'structured';
+  subjectMatter: string[];
+}
+
 const StatuteTrackerPage = () => {
-  const { toast } = useToast();
+  const [isSearching, setIsSearching] = useState(false);
+  const [query, setQuery] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('tracking');
-  const [lastUpdated, setLastUpdated] = useState<string>('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Mocked Indian statutes for demonstration
-  const [trackedStatutes, setTrackedStatutes] = useState([
+  const [results, setResults] = useState<string>('');
+  const { toast } = useToast();
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [activeTab, setActiveTab] = useState('statute-search');
+  const { logPageView, logSearch, logAction, logError } = useAnalytics();
+
+  // Enhanced search options for more accuracy
+  const [searchOptions, setSearchOptions] = useState<StatuteSearchOptions>({
+    jurisdiction: 'all',
+    timeframe: 'all',
+    relevance: 80, // Default relevance threshold (0-100)
+    includeRepealed: false,
+    includeAmendments: true,
+    apiProvider: 'gemini',
+    sortBy: 'relevance',
+    format: 'detailed',
+    subjectMatter: [],
+  });
+
+  // More complete list of Indian jurisdictions
+  const jurisdictions = [
+    { value: 'all', label: 'All India' },
+    { value: 'delhi', label: 'Delhi' },
+    { value: 'mumbai', label: 'Mumbai (Bombay HC)' },
+    { value: 'kolkata', label: 'Kolkata (Calcutta HC)' },
+    { value: 'chennai', label: 'Chennai (Madras HC)' },
+    { value: 'bangalore', label: 'Bangalore (Karnataka HC)' },
+    { value: 'hyderabad', label: 'Hyderabad (Telangana HC)' },
+    { value: 'allahabad', label: 'Allahabad HC' },
+    { value: 'gujarat', label: 'Gujarat HC' },
+    { value: 'punjab-haryana', label: 'Punjab & Haryana HC' },
+    { value: 'kerala', label: 'Kerala HC' },
+    { value: 'patna', label: 'Patna HC' },
+    { value: 'rajasthan', label: 'Rajasthan HC' },
+    { value: 'orissa', label: 'Orissa HC' },
+    { value: 'gauhati', label: 'Gauhati HC' },
+    { value: 'jharkhand', label: 'Jharkhand HC' },
+    { value: 'chhattisgarh', label: 'Chhattisgarh HC' },
+    { value: 'uttarakhand', label: 'Uttarakhand HC' },
+    { value: 'sikkim', label: 'Sikkim HC' },
+    { value: 'manipur', label: 'Manipur HC' },
+    { value: 'tripura', label: 'Tripura HC' }
+  ];
+
+  // Timeframe options with more specific filtering
+  const timeframes = [
+    { value: 'all', label: 'All Time' },
+    { value: 'last-month', label: 'Last Month' },
+    { value: 'last-6-months', label: 'Last 6 Months' },
+    { value: 'last-year', label: 'Last Year' },
+    { value: 'last-5-years', label: 'Last 5 Years' },
+    { value: 'last-10-years', label: 'Last 10 Years' },
+    { value: 'last-20-years', label: 'Last 20 Years' },
+    { value: 'bnss-bns-era', label: 'BNS/BNSS/BSA Era (2023-)' },
+    { value: 'post-2020', label: 'Post 2020' },
+    { value: 'post-2010', label: 'Post 2010' },
+    { value: 'post-2000', label: 'Post 2000' },
+    { value: 'post-1990', label: 'Post 1990' },
+    { value: 'post-1980', label: 'Post 1980' },
+    { value: 'post-independence', label: 'Post Independence (1947+)' },
+    { value: 'pre-independence', label: 'Pre-Independence (Before 1947)' }
+  ];
+
+  // Subject matter options
+  const subjectMatters = [
+    { value: 'constitutional', label: 'Constitutional Law' },
+    { value: 'criminal', label: 'Criminal Law' },
+    { value: 'civil', label: 'Civil Law' },
+    { value: 'corporate', label: 'Corporate Law' },
+    { value: 'tax', label: 'Tax Law' },
+    { value: 'property', label: 'Property Law' },
+    { value: 'family', label: 'Family Law' },
+    { value: 'ip', label: 'Intellectual Property' },
+    { value: 'labor', label: 'Labor & Employment' },
+    { value: 'administrative', label: 'Administrative Law' },
+    { value: 'environmental', label: 'Environmental Law' },
+    { value: 'banking', label: 'Banking & Finance' },
+    { value: 'competition', label: 'Competition Law' },
+    { value: 'arbitration', label: 'Arbitration & ADR' },
+  ];
+
+  // Mock statute data for demonstration
+  const mockStatutes: Statute[] = [
     {
-      id: 1,
-      name: "Information Technology Act, 2000",
-      jurisdiction: "India",
-      lastUpdated: "2024-04-30",
-      recentChanges: 2,
+      id: 'ipc',
+      name: 'Indian Penal Code, 1860',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: ['Bharatiya Nyaya Sanhita, 2023 (BNS)'],
       notifications: true,
       details: {
-        gazetteRef: "Part II, Section 3(i) of the Gazette of India",
-        enforcementDate: "October 17, 2000",
-        keyAuthority: "Ministry of Electronics & Information Technology",
-        officialLink: "https://www.meity.gov.in/content/information-technology-act-2000",
-        relatedRules: ["Information Technology Rules, 2021", "Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021"]
+        description: 'The main criminal code of India, defining various offences and punishments.',
+        fullTextLink: 'https://legislative.gov.in/sites/default/files/A1860-45.pdf',
+        relatedRules: ['Criminal Procedure Code, 1973'],
+        keyTerms: ['Murder', 'Theft', 'Cheating', 'Criminal Conspiracy']
       }
     },
     {
-      id: 2,
-      name: "The Constitution of India",
-      jurisdiction: "India",
-      lastUpdated: "2024-03-15",
-      recentChanges: 1,
+      id: 'crpc',
+      name: 'Criminal Procedure Code, 1973',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: ['Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)'],
       notifications: true,
       details: {
-        gazetteRef: "Constituent Assembly Debates",
-        enforcementDate: "January 26, 1950",
-        keyAuthority: "Parliament of India",
-        officialLink: "https://legislative.gov.in/constitution-of-india/",
-        relatedRules: ["Part III - Fundamental Rights", "Part IV - Directive Principles", "Part IVA - Fundamental Duties"]
+        description: 'Provides the procedure for the administration of criminal law in India.',
+        fullTextLink: 'https://legislative.gov.in/sites/default/files/A1974-02.pdf',
+        relatedRules: ['Indian Penal Code, 1860'],
+        keyTerms: ['Arrest', 'Bail', 'Investigation', 'Trial']
       }
     },
     {
-      id: 3,
-      name: "Bharatiya Nyaya Sanhita, 2023",
-      jurisdiction: "India",
-      lastUpdated: "2024-04-25",
-      recentChanges: 5,
+      id: 'evidence-act',
+      name: 'Indian Evidence Act, 1872',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: ['Bharatiya Sakshya Adhiniyam, 2023 (BSA)'],
       notifications: true,
       details: {
-        gazetteRef: "CG-DL-E-25122023-255156",
-        enforcementDate: "July 1, 2024",
-        keyAuthority: "Ministry of Home Affairs",
-        officialLink: "https://mha.gov.in/en/acts-rules-regulations",
-        relatedRules: ["BNS Rules, 2024", "Guidelines for Implementation of BNS, 2024"]
+        description: 'Governs the admissibility of evidence in Indian courts.',
+        fullTextLink: 'https://legislative.gov.in/sites/default/files/A1872-01.pdf',
+        relatedRules: ['Criminal Procedure Code, 1973', 'Civil Procedure Code, 1908'],
+        keyTerms: ['Evidence', 'Witness', 'Admissibility', 'Proof']
       }
     },
     {
-      id: 4,
-      name: "Bharatiya Nagarik Suraksha Sanhita, 2023",
-      jurisdiction: "India",
-      lastUpdated: "2024-04-25",
-      recentChanges: 4, 
+      id: 'constitution',
+      name: 'Constitution of India, 1950',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: ['Various Amendments'],
       notifications: true,
       details: {
-        gazetteRef: "CG-DL-E-25122023-255157",
-        enforcementDate: "July 1, 2024",
-        keyAuthority: "Ministry of Home Affairs",
-        officialLink: "https://mha.gov.in/en/acts-rules-regulations",
-        relatedRules: ["BNSS Implementation Rules, 2024", "Electronic Evidence Guidelines under BNSS, 2024"]
+        description: 'The supreme law of India, defining the framework of political principles, procedures, and powers of government.',
+        fullTextLink: 'https://legislative.gov.in/constitution-of-india',
+        relatedRules: [],
+        keyTerms: ['Fundamental Rights', 'Directive Principles', 'Parliament', 'Judiciary']
       }
     },
     {
-      id: 5,
-      name: "Bharatiya Sakshya Adhiniyam, 2023",
-      jurisdiction: "India",
-      lastUpdated: "2024-04-25",
-      recentChanges: 3,
-      notifications: false,
-      details: {
-        gazetteRef: "CG-DL-E-25122023-255158",
-        enforcementDate: "July 1, 2024",
-        keyAuthority: "Ministry of Law and Justice",
-        officialLink: "https://legislative.gov.in/acts-rules-and-bills/",
-        relatedRules: ["BSA Implementation Rules, 2024", "Digital Evidence Standards under BSA, 2024"]
-      }
-    },
-    {
-      id: 6,
-      name: "The Digital Personal Data Protection Act, 2023",
-      jurisdiction: "India",
-      lastUpdated: "2024-04-28",
-      recentChanges: 2,
+      id: 'it-act',
+      name: 'Information Technology Act, 2000',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: ['Amendments in 2008'],
       notifications: true,
       details: {
-        gazetteRef: "CG-DL-E-11082023-244611",
-        enforcementDate: "Expected July 2024",
-        keyAuthority: "Ministry of Electronics & Information Technology",
-        officialLink: "https://www.meity.gov.in/data-protection-framework",
-        relatedRules: ["DPDP Rules (Draft), 2024", "Data Protection Authority Guidelines (Draft)"]
+        description: 'Deals with cybercrime and electronic commerce.',
+        fullTextLink: 'https://legislative.gov.in/sites/default/files/A2000-21.pdf',
+        relatedRules: [],
+        keyTerms: ['Cybercrime', 'Data Protection', 'E-commerce', 'Digital Signature']
       }
     },
     {
-      id: 7,
-      name: "Competition Act, 2002 (as amended)",
-      jurisdiction: "India",
-      lastUpdated: "2024-04-15",
-      recentChanges: 1,
+      id: 'companies-act',
+      name: 'Companies Act, 2013',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: ['Various Amendments'],
       notifications: true,
       details: {
-        gazetteRef: "Part II, Section 3(i) of the Gazette of India",
-        enforcementDate: "March 31, 2003 (with subsequent amendments)",
-        keyAuthority: "Competition Commission of India",
-        officialLink: "https://www.cci.gov.in/legal-framework/competition-act",
-        relatedRules: ["Competition Commission of India Rules, 2022", "Merger Control Regulations, 2023"]
-      }
-    }
-  ]);
-  
-  // Mocked statute updates (India-specific)
-  const [statuteUpdates, setStatuteUpdates] = useState([
-    {
-      id: 101,
-      statuteName: "Information Technology Act, 2000",
-      updateDate: "2024-04-30",
-      description: "New rules regarding data localization and digital privacy under Section 87",
-      type: "Amendment",
-      link: "https://www.meity.gov.in/notification/2024/04/30/data-localization"
-    },
-    {
-      id: 102,
-      statuteName: "Information Technology Act, 2000",
-      updateDate: "2024-03-22",
-      description: "Updated requirements for intermediary liability protections under Section 79",
-      type: "Rules",
-      link: "https://www.meity.gov.in/notification/2024/03/22/intermediary-guidelines"
-    },
-    {
-      id: 103,
-      statuteName: "The Constitution of India",
-      updateDate: "2024-03-15",
-      description: "Supreme Court interpretation of 103rd Constitutional Amendment related to EWS reservations",
-      type: "Interpretation",
-      link: "https://main.sci.gov.in/judgments/2024-03-15"
-    },
-    {
-      id: 104,
-      statuteName: "Bharatiya Nyaya Sanhita, 2023",
-      updateDate: "2024-04-25",
-      description: "Release of implementation guidelines for transition from IPC to BNS",
-      type: "Implementation Guidelines",
-      link: "https://mha.gov.in/BNS-implementation-guidelines-2024"
-    },
-    {
-      id: 105,
-      statuteName: "Bharatiya Nyaya Sanhita, 2023",
-      updateDate: "2024-04-10",
-      description: "Updated sections on cybercrime and digital fraud (Sections 318-324)",
-      type: "Amendment",
-      link: "https://mha.gov.in/BNS-cybercrime-sections-2024"
-    },
-    {
-      id: 106,
-      statuteName: "Bharatiya Nyaya Sanhita, 2023",
-      updateDate: "2024-03-18",
-      description: "Supreme Court clarification on applicability of Section 103 (mob lynching)",
-      type: "Judgment",
-      link: "https://main.sci.gov.in/judgments/2024-03-18"
-    },
-    {
-      id: 107,
-      statuteName: "Bharatiya Nagarik Suraksha Sanhita, 2023",
-      updateDate: "2024-04-25",
-      description: "Implementation timeline and transition guidelines from CrPC to BNSS",
-      type: "Implementation Guidelines",
-      link: "https://mha.gov.in/BNSS-implementation-guidelines-2024"
-    },
-    {
-      id: 108,
-      statuteName: "Bharatiya Nagarik Suraksha Sanhita, 2023",
-      updateDate: "2024-04-05",
-      description: "Guidelines issued for recording of electronic evidence under Section 78",
-      type: "Rules",
-      link: "https://mha.gov.in/BNSS-electronic-evidence-guidelines-2024"
-    },
-    {
-      id: 109,
-      statuteName: "Bharatiya Sakshya Adhiniyam, 2023",
-      updateDate: "2024-04-25",
-      description: "Implementation timeline and transition guidelines from Indian Evidence Act to BSA",
-      type: "Implementation Guidelines",
-      link: "https://lawmin.gov.in/BSA-implementation-guidelines-2024"
-    },
-    {
-      id: 110,
-      statuteName: "Digital Personal Data Protection Act, 2023",
-      updateDate: "2024-04-28",
-      description: "Draft rules for Data Protection Authority formation and processes",
-      type: "Draft Rules",
-      link: "https://www.meity.gov.in/dpdpa-draft-rules-2024"
-    },
-    {
-      id: 111,
-      statuteName: "Competition Act, 2002",
-      updateDate: "2024-04-15",
-      description: "New merger control thresholds for digital businesses",
-      type: "Regulation",
-      link: "https://www.cci.gov.in/regulations/2024/04/merger-thresholds"
-    }
-  ]);
-  
-  // Mocked recommendations (India-specific)
-  const recommendations = [
-    {
-      id: 201,
-      name: "The Companies Act, 2013",
-      jurisdiction: "India",
-      relevance: "High",
-      reason: "Recent amendments on corporate law compliance and governance",
-      details: {
-        gazetteRef: "Part II, Section 3(i) of the Gazette of India",
-        enforcementDate: "April 1, 2014 (with subsequent amendments)",
-        keyAuthority: "Ministry of Corporate Affairs",
-        officialLink: "https://www.mca.gov.in/content/mca/global/en/acts-rules/companies-act.html"
+        description: 'Regulates the incorporation, operation, and winding up of companies in India.',
+        fullTextLink: 'https://www.mca.gov.in/MinistryV2/companiesact2013.html',
+        relatedRules: [],
+        keyTerms: ['Company', 'Director', 'Shareholder', 'Corporate Governance']
       }
     },
     {
-      id: 202,
-      name: "The Right to Information Act, 2005",
-      jurisdiction: "India",
-      relevance: "Medium",
-      reason: "Important for transparency and administrative law practice",
+      id: 'consumer-protection-act',
+      name: 'Consumer Protection Act, 2019',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: [],
+      notifications: true,
       details: {
-        gazetteRef: "Part II, Section 3(i) of the Gazette of India",
-        enforcementDate: "October 12, 2005",
-        keyAuthority: "Ministry of Personnel, Public Grievances & Pensions",
-        officialLink: "https://rti.gov.in/"
+        description: 'Protects the rights of consumers and provides mechanisms for redressal of grievances.',
+        fullTextLink: 'https://consumeraffairs.nic.in/sites/default/files/file-uploads/latest-acts-rules/Consumer%20Protection%20Act%2C2019.pdf',
+        relatedRules: [],
+        keyTerms: ['Consumer Rights', 'Grievance Redressal', 'Product Liability', 'Unfair Trade Practices']
       }
     },
     {
-      id: 203,
-      name: "Banking Regulation Act, 1949 (as amended)",
-      jurisdiction: "India",
-      relevance: "High",
-      reason: "Recent amendments on digital banking and fintech regulations",
+      id: 'motor-vehicles-act',
+      name: 'Motor Vehicles Act, 1988',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: ['Amendments in 2019'],
+      notifications: true,
       details: {
-        gazetteRef: "Part II, Section 3(i) of the Gazette of India",
-        enforcementDate: "March 16, 1949 (with subsequent amendments)",
-        keyAuthority: "Reserve Bank of India",
-        officialLink: "https://www.rbi.org.in/Scripts/Bs_rbiActAndRegulations.aspx"
+        description: 'Regulates road transport and provides for compensation to victims of road accidents.',
+        fullTextLink: 'https://legislative.gov.in/sites/default/files/A1988-59.pdf',
+        relatedRules: [],
+        keyTerms: ['Road Transport', 'Accident Compensation', 'Driving License', 'Vehicle Insurance']
       }
     },
     {
-      id: 204,
-      name: "Real Estate (Regulation and Development) Act, 2016",
-      jurisdiction: "India",
-      relevance: "Medium",
-      reason: "Essential for real estate practice and consumer protection",
+      id: 'rbi-act',
+      name: 'Reserve Bank of India Act, 1934',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: [],
+      notifications: true,
       details: {
-        gazetteRef: "Part II, Section 3(i) of the Gazette of India",
-        enforcementDate: "May 1, 2016",
-        keyAuthority: "Ministry of Housing and Urban Affairs",
-        officialLink: "https://mohua.gov.in/cms/real-estate-regulation-and-development-act-2016.php"
+        description: 'Governs the functioning of the Reserve Bank of India and regulates the monetary policy of India.',
+        fullTextLink: 'https://rbi.org.in/Scripts/Acts_Notified.aspx?Id=10448',
+        relatedRules: [],
+        keyTerms: ['Monetary Policy', 'Banking Regulation', 'Currency', 'Reserve Bank']
       }
     },
     {
-      id: 205,
-      name: "Arbitration and Conciliation Act, 1996 (as amended)",
-      jurisdiction: "India",
-      relevance: "High", 
-      reason: "Recent amendments on international arbitration and enforcement",
+      id: 'epf-act',
+      name: 'Employees\' Provident Funds and Miscellaneous Provisions Act, 1952',
+      jurisdiction: 'India',
+      lastUpdated: '2024-01-26',
+      recentChanges: [],
+      notifications: true,
       details: {
-        gazetteRef: "Part II, Section 3(i) of the Gazette of India",
-        enforcementDate: "August 16, 1996 (with subsequent amendments)",
-        keyAuthority: "Ministry of Law and Justice",
-        officialLink: "https://legislative.gov.in/acts-rules-and-bills/"
-      }
-    },
-    {
-      id: 206,
-      name: "Insolvency and Bankruptcy Code, 2016",
-      jurisdiction: "India",
-      relevance: "High",
-      reason: "Recent amendments on cross-border insolvency and pre-packaged resolution",
-      details: {
-        gazetteRef: "Part II, Section 3(i) of the Gazette of India",
-        enforcementDate: "May 28, 2016",
-        keyAuthority: "Insolvency and Bankruptcy Board of India",
-        officialLink: "https://ibbi.gov.in/legal-framework/act"
-      }
-    },
-    {
-      id: 207,
-      name: "Consumer Protection Act, 2019",
-      jurisdiction: "India",
-      relevance: "Medium",
-      reason: "Important for e-commerce and consumer dispute resolution practice",
-      details: {
-        gazetteRef: "Part II, Section 3(i) of the Gazette of India",
-        enforcementDate: "July 20, 2020",
-        keyAuthority: "Ministry of Consumer Affairs",
-        officialLink: "https://consumeraffairs.nic.in/consumer-protection"
+        description: 'Provides for the establishment of provident funds for employees.',
+        fullTextLink: 'https://labour.gov.in/epfo/acts-rules-0',
+        relatedRules: [],
+        keyTerms: ['Provident Fund', 'Employees', 'Pension', 'Insurance']
       }
     }
   ];
-  
-  // Effect to simulate refreshing statutes data daily
+
   useEffect(() => {
-    const now = new Date();
-    setLastUpdated(now.toLocaleString('en-IN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    }));
-    
-    // Simulate daily refresh at midnight
-    const midnight = new Date();
-    midnight.setHours(24, 0, 0, 0);
-    const timeToMidnight = midnight.getTime() - now.getTime();
-    
-    const timer = setTimeout(() => {
-      refreshStatutes();
-    }, timeToMidnight);
-    
-    return () => clearTimeout(timer);
-  }, []);
-  
-  const refreshStatutes = async () => {
-    setIsRefreshing(true);
-    
-    try {
-      // In a real implementation, this would be an API call to fetch the latest statute data
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simulate updated data
-      const updatedDate = new Date().toISOString().split('T')[0];
-      
-      // Update the last updated timestamp for some statutes
-      setTrackedStatutes(prev => 
-        prev.map((statute, idx) => 
-          idx % 3 === 0 ? { ...statute, lastUpdated: updatedDate, recentChanges: statute.recentChanges + 1 } : statute
-        )
-      );
-      
-      // Add a new update
-      const newUpdate = {
-        id: Math.max(...statuteUpdates.map(s => s.id)) + 1,
-        statuteName: trackedStatutes[Math.floor(Math.random() * trackedStatutes.length)].name,
-        updateDate: updatedDate,
-        description: "New update from daily refresh",
-        type: ["Amendment", "Rules", "Judgment", "Interpretation"][Math.floor(Math.random() * 4)],
-        link: "https://example.com/new-update"
-      };
-      
-      setStatuteUpdates(prev => [newUpdate, ...prev]);
-      
-      const now = new Date();
-      setLastUpdated(now.toLocaleString('en-IN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      }));
-      
+    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    setSearchOptions(prev => ({...prev, apiProvider: storedApiProvider}));
+
+    logPageView({
+      tool: 'statute-tracker',
+      provider: storedApiProvider
+    });
+  }, [logPageView]);
+
+  const handleSearch = async () => {
+    if (!query.trim()) {
       toast({
-        title: "Statutes Updated",
-        description: `Successfully refreshed statute data at ${now.toLocaleTimeString('en-IN')}`,
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a search query",
+      });
+      return;
+    }
+
+    setIsSearching(true);
+
+    try {
+      logSearch(query, {
+        jurisdiction: searchOptions.jurisdiction,
+        timeframe: searchOptions.timeframe,
+        provider: searchOptions.apiProvider,
+        relevance: searchOptions.relevance,
+        sortBy: searchOptions.sortBy,
+        format: searchOptions.format
+      });
+
+      const apiKey = localStorage.getItem(`${searchOptions.apiProvider}ApiKey`) || '';
+      let statuteResults = '';
+
+      if (searchOptions.apiProvider === 'gemini') {
+        statuteResults = await generateGeminiStatuteResults(query, apiKey, searchOptions);
+      } else if (searchOptions.apiProvider === 'deepseek') {
+        statuteResults = await generateDeepSeekStatuteResults(query, apiKey, searchOptions);
+      }
+
+      setResults(statuteResults);
+
+      logAction('search_complete', {
+        query_length: query.length,
+        result_length: statuteResults.length,
+        provider: searchOptions.apiProvider
+      });
+
+      toast({
+        title: "Research Complete",
+        description: "Indian statute research results have been generated",
       });
     } catch (error) {
+      console.error('Error searching statute:', error);
+
+      logError('search_failed', {
+        query,
+        provider: searchOptions.apiProvider,
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+
       toast({
-        title: "Update Failed",
-        description: "Could not refresh statute data. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
+        title: "Search Failed",
+        description: error instanceof Error ? error.message : "Failed to complete statute research",
       });
     } finally {
-      setIsRefreshing(false);
+      setIsSearching(false);
     }
   };
-  
-  const toggleNotifications = (id: number) => {
-    setTrackedStatutes(trackedStatutes.map(statute => 
-      statute.id === id ? { ...statute, notifications: !statute.notifications } : statute
-    ));
-    
-    const statute = trackedStatutes.find(s => s.id === id);
-    if (statute) {
-      toast({
-        title: statute.notifications ? "Notifications Disabled" : "Notifications Enabled",
-        description: `You will ${statute.notifications ? 'no longer' : 'now'} receive updates for ${statute.name}`,
-      });
-    }
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    logAction('tab_change', { tab: value });
   };
-  
-  const addToTracking = (recommendation: typeof recommendations[0]) => {
-    if (!trackedStatutes.some(s => s.name === recommendation.name)) {
-      const newStatute = {
-        id: Date.now(),
-        name: recommendation.name,
-        jurisdiction: recommendation.jurisdiction,
-        lastUpdated: new Date().toISOString().split('T')[0],
-        recentChanges: 0,
-        notifications: true,
-        details: recommendation.details
-      };
-      
-      setTrackedStatutes([...trackedStatutes, newStatute]);
-      
+
+  const handleExportCitations = () => {
+    logAction('export_citations', { query });
+
+    // Extract citations from results
+    const citationRegex = /\b(?:Art|Sec)\.\s*\d+(?:A-Z)?(?:\(\d+\))?(?:\s*of\s*[A-Za-z\s]+)?\b/g;
+    const citations = results.match(citationRegex) || [];
+
+    if (citations.length > 0) {
+      const citationText = citations.join('\n');
+      navigator.clipboard.writeText(citationText);
       toast({
-        title: "Statute Added",
-        description: `${recommendation.name} has been added to your tracking list`,
+        title: "Citations Exported",
+        description: `${citations.length} Indian statute citations copied to clipboard`,
       });
     } else {
       toast({
-        title: "Already Tracking",
-        description: `${recommendation.name} is already in your tracking list`,
+        title: "No Citations Found",
+        description: "Could not identify standard citation formats in the results",
         variant: "destructive"
       });
     }
   };
-  
-  const filteredStatutes = searchTerm 
-    ? trackedStatutes.filter(s => 
-        s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        s.jurisdiction.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : trackedStatutes;
-  
+
+  const handleDownloadResults = () => {
+    logAction('download_results', { query });
+
+    // Create a download file with the research results
+    const element = document.createElement("a");
+    const file = new Blob([`
+Statute Research Results
+Query: ${query}
+Date: ${new Date().toLocaleDateString('en-IN')}
+Search Parameters: 
+- Jurisdiction: ${jurisdictions.find(j => j.value === searchOptions.jurisdiction)?.label}
+- Timeframe: ${timeframes.find(t => t.value === searchOptions.timeframe)?.label}
+
+RESULTS:
+${results}
+    `], {type: 'text/plain'});
+
+    element.href = URL.createObjectURL(file);
+    element.download = `StatuteResearch_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+
+    toast({
+      title: "Results Downloaded",
+      description: "Research results saved as text file",
+    });
+  };
+
+  const handleSettingChange = (setting: string, value: any) => {
+    logAction('setting_change', { setting, value });
+
+    setSearchOptions(prev => ({...prev, [setting]: value}));
+
+    if (setting === 'apiProvider') {
+      localStorage.setItem('preferredApiProvider', value);
+    }
+  };
+
+  const handleSuggestedQuery = (query: string) => {
+    setQuery(query);
+    setActiveTab('statute-search');
+    logAction('suggested_query_selected', { query });
+  };
+
+  const generateGeminiStatuteResults = async (
+    query: string,
+    apiKey: string,
+    options: StatuteSearchOptions
+  ): Promise<string> => {
+    const timeframeText = options.timeframe !== 'all'
+      ? `6. Focus on statutes from the ${timeframes.find(t => t.value === options.timeframe)?.label}`
+      : '';
+
+    const jurisdictionFocus = options.jurisdiction !== 'all'
+      ? `with particular emphasis on statutes from ${jurisdictions.find(j => j.value === options.jurisdiction)?.label}`
+      : 'from all relevant jurisdictions';
+
+    const subjectMatterText = options.subjectMatter.length > 0
+      ? `7. Focus on the following subject matters: ${options.subjectMatter.join(', ')}`
+      : '';
+
+    const repealedText = !options.includeRepealed
+      ? "8. Exclude repealed or superseded statutes"
+      : "8. Include historically significant repealed statutes with clear indication of their current status";
+
+    const formatInstructions = options.format === 'detailed'
+      ? "Provide comprehensive analysis with detailed reasoning from each statute"
+      : options.format === 'summary'
+        ? "Provide concise summaries focusing on key sections and principles"
+        : "Structure the response with clear headings, bullet points, and tables where appropriate";
+
+    const amendmentsText = options.includeAmendments
+      ? "9. Include references to relevant amendments and related rules"
+      : "";
+
+    const sortingInstruction = options.sortBy === 'relevance'
+      ? "Format your response with proper Indian legal citations and organize by relevance"
+      : options.sortBy === 'date'
+        ? "Format your response with proper Indian legal citations and organize chronologically (newest first)"
+        : "Format your response with proper Indian legal citations and organize by authority (Central Acts first, then State Acts)";
+
+    const systemPrompt = `You are VakilGPT's statute research assistant specialized in Indian law. 
+    
+    For the provided query, find and summarize relevant statutes from Indian jurisdictions, including:
+    1. Key statutes relevant to the query
+    2. Statutes ${jurisdictionFocus} if applicable
+    3. The legal principles established in these statutes
+    4. Key sections and provisions
+    5. How these statutes apply in the Indian legal context
+    ${timeframeText}
+    ${subjectMatterText}
+    ${repealedText}
+    ${amendmentsText}
+    
+    ${formatInstructions}. ${sortingInstruction}.
+    
+    Maintain a relevance threshold of ${options.relevance}% - only include statutes that are directly applicable to the query.`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          { role: 'user', parts: [{ text: systemPrompt }] },
+          { role: 'model', parts: [{ text: 'I will research and provide relevant Indian statutes and provisions following Indian legal citation standards.' }] },
+          { role: 'user', parts: [{ text: query }] }
+        ],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 4000,
+          topK: 40,
+          topP: 0.95
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || `API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+      return data.candidates[0].content.parts[0].text;
+    } else {
+      throw new Error('Invalid response format from Gemini API');
+    }
+  };
+
+  const generateDeepSeekStatuteResults = async (
+    query: string,
+    apiKey: string,
+    options: StatuteSearchOptions
+  ): Promise<string> => {
+    const timeframeText = options.timeframe !== 'all'
+      ? `6. Focus on statutes from the ${timeframes.find(t => t.value === options.timeframe)?.label}`
+      : '';
+
+    const jurisdictionFocus = options.jurisdiction !== 'all'
+      ? `with particular emphasis on statutes from ${jurisdictions.find(j => j.value === options.jurisdiction)?.label}`
+      : 'from all relevant jurisdictions';
+
+    const subjectMatterText = options.subjectMatter.length > 0
+      ? `7. Focus on the following subject matters: ${options.subjectMatter.join(', ')}`
+      : '';
+
+    const repealedText = !options.includeRepealed
+      ? "8. Exclude repealed or superseded statutes"
+      : "8. Include historically significant repealed statutes with clear indication of their current status";
+
+    const formatInstructions = options.format === 'detailed'
+      ? "Provide comprehensive analysis with detailed reasoning from each statute"
+      : options.format === 'summary'
+        ? "Provide concise summaries focusing on key sections and principles"
+        : "Structure the response with clear headings, bullet points, and tables where appropriate";
+
+    const amendmentsText = options.includeAmendments
+      ? "9. Include references to relevant amendments and related rules"
+      : "";
+
+    const sortingInstruction = options.sortBy === 'relevance'
+      ? "Format your response with proper Indian legal citations and organize by relevance"
+      : options.sortBy === 'date'
+        ? "Format your response with proper Indian legal citations and organize chronologically (newest first)"
+        : "Format your response with proper Indian legal citations and organize by authority (Central Acts first, then State Acts)";
+
+    const systemPrompt = `You are VakilGPT's statute research assistant specialized in Indian law. 
+    
+    For the provided query, find and summarize relevant statutes from Indian jurisdictions, including:
+    1. Key statutes relevant to the query
+    2. Statutes ${jurisdictionFocus} if applicable
+    3. The legal principles established in these statutes
+    4. Key sections and provisions
+    5. How these statutes apply in the Indian legal context
+    ${timeframeText}
+    ${subjectMatterText}
+    ${repealedText}
+    ${amendmentsText}
+    
+    ${formatInstructions}. ${sortingInstruction}.
+    
+    Maintain a relevance threshold of ${options.relevance}% - only include statutes that are directly applicable to the query.`;
+
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: query }
+        ],
+        temperature: 0.2,
+        max_tokens: 4000
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || `API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  };
+
   return (
     <LegalToolLayout
-      title="Indian Statute & Regulation Tracker"
-      description="Stay up-to-date with changes in Indian laws and regulations including the new BNS, BNSS and BSA criminal laws. Set up alerts for amendments, Supreme Court interpretations, and regulatory changes relevant to your practice."
-      icon={<Scale className="w-6 h-6 text-white" />}
+      title="Indian Statute Tracker"
+      description="Research and track relevant statutes from Indian jurisdictions based on your legal queries"
+      icon={<BookOpen className="h-6 w-6 text-blue-600" />}
     >
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <BackButton to="/tools" label="Back to Tools" />
-        
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-5 rounded-xl mb-6 border border-blue-100 dark:border-blue-900/30">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold mb-1 text-slate-800 dark:text-slate-100">Indian Statute Tracker</h1>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">
-                Monitor legal updates from the Gazette of India, Supreme Court judgments, ministry notifications and more
-              </p>
-              {lastUpdated && (
-                <div className="flex items-center mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Last refreshed: {lastUpdated}
-                </div>
-              )}
-            </div>
-            
-            <Button 
-              onClick={refreshStatutes} 
-              disabled={isRefreshing}
-              variant="outline" 
-              size="sm"
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing...' : 'Refresh Now'}
-            </Button>
-          </div>
-        </div>
-        
-        <div className="mb-6">
-          <div className="relative">
-            <Input
-              placeholder="Search Indian statutes by name or jurisdiction..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
-        </div>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="tracking">Tracked Statutes</TabsTrigger>
-            <TabsTrigger value="updates">Recent Updates</TabsTrigger>
-            <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-6">
+            <TabsTrigger value="statute-search">
+              <Search className="h-4 w-4 mr-2" />
+              Statute Search
+            </TabsTrigger>
+            <TabsTrigger value="statute-list">
+              <BookOpenCheck className="h-4 w-4 mr-2" />
+              Statute List
+            </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="tracking">
-            <div className="space-y-4 mt-4">
-              {filteredStatutes.length > 0 ? (
-                filteredStatutes.map(statute => (
-                  <Card key={statute.id} className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="border-b border-gray-100 dark:border-zinc-800 p-5">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">{statute.name}</h3>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                                    <Info className="h-4 w-4 text-blue-500" />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-80">
-                                  <div className="space-y-2 text-sm">
-                                    <h4 className="font-medium">Statute Details</h4>
-                                    <div className="grid grid-cols-3 gap-1">
-                                      <p className="text-gray-500 dark:text-gray-400 col-span-1">Gazette Ref:</p>
-                                      <p className="col-span-2">{statute.details?.gazetteRef || 'Not available'}</p>
-                                      
-                                      <p className="text-gray-500 dark:text-gray-400 col-span-1">Enforced:</p>
-                                      <p className="col-span-2">{statute.details?.enforcementDate || 'Not available'}</p>
-                                      
-                                      <p className="text-gray-500 dark:text-gray-400 col-span-1">Authority:</p>
-                                      <p className="col-span-2">{statute.details?.keyAuthority || 'Not available'}</p>
-                                      
-                                      <p className="text-gray-500 dark:text-gray-400 col-span-1">Official:</p>
-                                      <p className="col-span-2">
-                                        {statute.details?.officialLink ? (
-                                          <a href={statute.details.officialLink} target="_blank" rel="noopener noreferrer" 
-                                             className="text-blue-600 dark:text-blue-400 hover:underline">
-                                            View Source
-                                          </a>
-                                        ) : 'Not available'}
-                                      </p>
-                                    </div>
-                                    
-                                    {statute.details?.relatedRules && statute.details.relatedRules.length > 0 && (
-                                      <div className="mt-2">
-                                        <p className="font-medium text-xs mb-1">Related Rules & Regulations</p>
-                                        <ul className="list-disc pl-4 space-y-0.5">
-                                          {statute.details.relatedRules.map((rule, index) => (
-                                            <li key={index} className="text-xs">{rule}</li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Jurisdiction: {statute.jurisdiction}
-                            </p>
-                            <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              Last updated: {statute.lastUpdated}
-                            </div>
-                          </div>
-                          
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                            {statute.recentChanges > 0 && (
-                              <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50">
-                                {statute.recentChanges} recent {statute.recentChanges === 1 ? 'change' : 'changes'}
-                              </Badge>
-                            )}
-                            
-                            <div className="flex items-center space-x-2">
-                              <Switch 
-                                id={`notifications-${statute.id}`}
-                                checked={statute.notifications}
-                                onCheckedChange={() => toggleNotifications(statute.id)}
-                              />
-                              <label
-                                htmlFor={`notifications-${statute.id}`}
-                                className="text-sm cursor-pointer flex items-center"
-                              >
-                                {statute.notifications ? (
-                                  <>
-                                    <Bell className="h-4 w-4 mr-1 text-blue-500" />
-                                    <span>Notifications on</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <BellOff className="h-4 w-4 mr-1" />
-                                    <span>Notifications off</span>
-                                  </>
-                                )}
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {statute.recentChanges > 0 && (
-                        <div className="p-4 bg-gray-50 dark:bg-zinc-800/50">
-                          <div className="flex items-center gap-2 text-sm mb-2">
-                            <FileText className="h-4 w-4 text-blue-500" />
-                            <span className="font-medium">Recent Changes</span>
-                          </div>
-                          <div className="space-y-2">
-                            {statuteUpdates
-                              .filter(update => update.statuteName === statute.name)
-                              .slice(0, 2)
-                              .map(update => (
-                                <div key={update.id} className="text-sm border-l-2 border-blue-200 dark:border-blue-800 pl-3">
-                                  <div className="flex justify-between">
-                                    <p className="font-medium">{update.description}</p>
-                                    <Badge className={`${
-                                      update.type === 'Major Revision' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                      update.type === 'Amendment' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                                      update.type === 'Judgment' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
-                                      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                    } hover:bg-opacity-90`}>
-                                      {update.type}
-                                    </Badge>
-                                  </div>
-                                  <div className="flex justify-between items-center mt-1">
-                                    <span className="text-xs text-gray-600 dark:text-gray-400">{update.updateDate}</span>
-                                    <a 
-                                      href={update.link} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                                    >
-                                      View Details
-                                    </a>
-                                  </div>
-                                </div>
-                              ))}
-                              
-                            {statuteUpdates.filter(update => update.statuteName === statute.name).length > 2 && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-xs w-full mt-1"
-                                onClick={() => {
-                                  setActiveTab('updates');
-                                  setSearchTerm(statute.name);
-                                }}
-                              >
-                                View all changes
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <Card className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {searchTerm ? 'No statutes match your search criteria' : 'No statutes tracked yet'}
-                    </p>
-                    {!searchTerm && (
-                      <Button 
-                        onClick={() => setActiveTab('recommendations')}
-                        variant="outline" 
-                        className="mt-4"
-                      >
-                        Browse Recommendations
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="updates">
-            <div className="mb-4 flex justify-between items-center">
-              <h2 className="text-lg font-medium">Recent Legislative Updates</h2>
-              <Badge variant="outline" className="bg-blue-50 text-blue-800 dark:bg-blue-950/50 dark:text-blue-400 border-blue-200 dark:border-blue-800/50">
-                {statuteUpdates.length} updates tracked
-              </Badge>
-            </div>
-            
-            <div className="space-y-4">
-              {statuteUpdates
-                .filter(update => 
-                  searchTerm ? 
-                  update.statuteName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                  update.description.toLowerCase().includes(searchTerm.toLowerCase()) :
-                  true
-                )
-                .map(update => (
-                  <Card key={update.id} className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 overflow-hidden">
-                    <CardContent className="p-5">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold">{update.statuteName}</h3>
-                          <Badge variant="outline" className={`${
-                            update.type === 'Major Revision' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                            update.type === 'Amendment' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                            update.type === 'Judgment' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
-                            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                          } border-${update.type === 'Major Revision' ? 'red' : update.type === 'Amendment' ? 'blue' : update.type === 'Judgment' ? 'purple' : 'green'}-200 dark:border-opacity-50 hover:bg-opacity-90`}>
-                            {update.type}
-                          </Badge>
-                        </div>
-                        <p className="text-sm">{update.description}</p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            {update.updateDate}
-                          </div>
-                          <a 
-                            href={update.link} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                          >
-                            <BookOpen className="h-4 w-4" />
-                            View Source
-                          </a>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                
-              {statuteUpdates.filter(update => 
-                searchTerm ? 
-                update.statuteName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                update.description.toLowerCase().includes(searchTerm.toLowerCase()) :
-                true
-              ).length === 0 && (
-                <Card className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-gray-600 dark:text-gray-400">No updates found for your search criteria</p>
-                    {searchTerm && (
-                      <Button 
-                        onClick={() => setSearchTerm('')}
-                        variant="outline" 
-                        className="mt-4"
-                      >
-                        Clear Search
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="recommendations">
-            <div className="space-y-4 mt-4">
-              {recommendations.map(recommendation => (
-                <Card key={recommendation.id} className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 overflow-hidden">
-                  <CardContent className="p-5">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{recommendation.name}</h3>
-                          <Badge className={recommendation.relevance === 'High' ? 'bg-blue-500' : 'bg-slate-500'}>
-                            {recommendation.relevance} relevance
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Jurisdiction: {recommendation.jurisdiction}
-                        </p>
-                        <p className="text-sm mt-1">
-                          <span className="text-gray-600 dark:text-gray-400">Why: </span>
-                          {recommendation.reason}
-                        </p>
-                        
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="ghost" size="sm" className="mt-2 flex items-center gap-1 px-0">
-                              <Info className="h-4 w-4 text-blue-500" />
-                              <span className="text-blue-600 dark:text-blue-400 text-sm">View Details</span>
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-80">
-                            <div className="space-y-2 text-sm">
-                              <h4 className="font-medium">Statute Details</h4>
-                              <div className="grid grid-cols-3 gap-1">
-                                <p className="text-gray-500 dark:text-gray-400 col-span-1">Gazette Ref:</p>
-                                <p className="col-span-2">{recommendation.details?.gazetteRef || 'Not available'}</p>
-                                
-                                <p className="text-gray-500 dark:text-gray-400 col-span-1">Enforced:</p>
-                                <p className="col-span-2">{recommendation.details?.enforcementDate || 'Not available'}</p>
-                                
-                                <p className="text-gray-500 dark:text-gray-400 col-span-1">Authority:</p>
-                                <p className="col-span-2">{recommendation.details?.keyAuthority || 'Not available'}</p>
-                                
-                                <p className="text-gray-500 dark:text-gray-400 col-span-1">Official:</p>
-                                <p className="col-span-2">
-                                  {recommendation.details?.officialLink ? (
-                                    <a href={recommendation.details.officialLink} target="_blank" rel="noopener noreferrer" 
-                                        className="text-blue-600 dark:text-blue-400 hover:underline">
-                                      View Source
-                                    </a>
-                                  ) : 'Not available'}
-                                </p>
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      
-                      <Button 
-                        onClick={() => addToTracking(recommendation)}
-                        className={`shrink-0 ${
-                          trackedStatutes.some(s => s.name === recommendation.name) ? 
-                          'bg-green-500 hover:bg-green-600 cursor-default' : 
-                          ''
-                        }`}
-                        disabled={trackedStatutes.some(s => s.name === recommendation.name)}
-                      >
-                        {trackedStatutes.some(s => s.name === recommendation.name) ? (
-                          <>Already Tracking</>
-                        ) : (
-                          <>Add to Tracking</>
-                        )}
-                      </Button>
+
+          <TabsContent value="statute-search">
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Indian Statute Search</CardTitle>
+                <CardDescription>
+                  Enter your legal question or describe the issue to find relevant Indian statutes. Use advanced filters for more precise results.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Textarea
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="E.g., What are the key provisions of the Information Technology Act, 2000? Or describe a legal scenario under Indian law..."
+                    className="min-h-[100px]"
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="jurisdiction" className="text-sm font-medium mb-1 block">Jurisdiction</Label>
+                      <Select value={searchOptions.jurisdiction} onValueChange={(value) => handleSettingChange('jurisdiction', value)}>
+                        <SelectTrigger id="jurisdiction">
+                          <SelectValue placeholder="Select Jurisdiction" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {jurisdictions.map(jurisdiction => (
+                            <SelectItem key={jurisdiction.value} value={jurisdiction.value}>{jurisdiction.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </LegalToolLayout>
-  );
-};
 
-const BellOff = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"></path>
-    <path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"></path>
-    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
-    <path d="m2 2 20 20"></path>
-  </svg>
-);
+                    <div>
+                      <Label htmlFor="timeframe" className="text-sm font-medium mb-1 block">Timeframe</Label>
+                      <Select value={searchOptions.timeframe} onValueChange={(value) => handleSettingChange('timeframe', value)}>
+                        <SelectTrigger id="timeframe">
+                          <SelectValue placeholder="Select Timeframe" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeframes.map(timeframe => (
+                            <SelectItem key={timeframe.value} value={timeframe.value}>{timeframe.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-export default StatuteTrackerPage;
+                  <div className="flex justify-between items-center">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                      size="sm"
+                      className="text-blue-600 dark:text-blue-400"
+                    >
+                      {showAdvancedOptions ? 'Hide Advanced Options' : 'Show Advanced Options'}
+                    </Button>
+
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="apiProvider" className="text-sm font-medium">API Provider</Label>
+                      <Select
+                        value={searchOptions.apiProvider}
+                        onValueChange={(value) => handleSettingChange('apiProvider', value as 'deepseek' | 'gemini')}
+                      >
+                        <SelectTrigger id="apiProvider" className="w-[120px]">
+                          <SelectValue placeholder="Select Provider" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gemini">Gemini</SelectItem>
+                          <SelectItem value="deepseek">DeepSeek</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {showAdvancedOptions && (
+                    <div className="border rounded-lg p-4 space-y-4 bg-gray-50 dark:bg-zinc-900">
+                      <h3 className="text-sm font-medium flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        Advanced Search Options
+                      </h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="sortBy" className="text-sm font-medium mb-1 block">Sort Results By</Label>
+                          <Select value={searchOptions.sortBy} onValueChange={(value: any) => handleSettingChange('sortBy', value)}>
+                            <SelectTrigger id="sortBy">
+                              <SelectValue placeholder="Sort Results By" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="relevance">Relevance</SelectItem>
+                              <SelectItem value="date">Date (Newest First)</SelectItem>
+                              <SelectItem value="authority">Authority (Central Acts First)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="format" className="text-sm font-medium mb-1 block">Result Format</Label>
+                          <Select value={searchOptions.format} onValueChange={(value: any) => handleSettingChange('format', value)}>
+                            <SelectTrigger id="format">
+                              <SelectValue placeholder="Result Format" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="detailed">Detailed Analysis</SelectItem>
+                              <SelectItem value="summary">Concise Summary</SelectItem>
+                              <SelectItem value="structured">Structured Format</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="subjectMatter" className="text-sm font-medium mb-1 block">Subject Matter</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-full justify-start text-left font-normal"
+                              >
+                                {searchOptions.subjectMatter.length > 0
+                                  ? `${searchOptions.subjectMatter.length} selected`
+                                  : "Select Subject Matter"}
+                                <span className="sr-only">Open popover</span>
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0" align="start">
+                              <div className="max-h-80 overflow-auto p-4">
+                                {subjectMatters.map(subject => (
+                                  <div key={subject.value} className="flex items-center space-x-2 mb-2">
+                                    <Checkbox
+                                      id={`subject-${subject.value}`}
+                                      checked={searchOptions.subjectMatter.includes(subject.value)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          handleSettingChange('subjectMatter',
+                                            [...searchOptions.subjectMatter, subject.value]
+                                          );
+                                        } else {
+                                          handleSettingChange('subjectMatter',
+                                            searchOptions.subjectMatter.filter(s => s !== subject.value)
+                                          );
+                                        }
+                                      }}
+                                    />
+                                    <Label
+                                      htmlFor={`subject-${subject.value}`}
+                                      className="text-sm cursor-pointer"
+                                    >
+                                      {subject.label}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="flex items-center justify-between p-2 border-t">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleSettingChange('subjectMatter', [])}
+                                >
+                                  Clear All
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleSettingChange('subjectMatter', subjectMatters.map(s => s.value))}
+                                >
+                                  Select All
+                                </Button>
+                              </div>
+                            </PopoverContent>
+                          </

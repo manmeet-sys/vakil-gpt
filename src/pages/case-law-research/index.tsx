@@ -47,6 +47,7 @@ interface CaseLawSearchOptions {
 const CaseLawResearchPage = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [query, setQuery] = useState('');
+  const [searchTerm, setSearchTerm] = useState(''); // Added missing searchTerm state
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);

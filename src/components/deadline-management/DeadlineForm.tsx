@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -336,27 +335,27 @@ const DeadlineForm: React.FC<DeadlineFormProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-purple-800 dark:text-purple-200">Deadline Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="cursor-pointer pointer-events-auto border-purple-200 dark:border-purple-800/50 focus:ring-purple-400/20">
-                          <SelectValue placeholder="Select deadline type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="pointer-events-auto z-50">
-                        {DEADLINE_TYPES.map(type => (
-                          <SelectItem key={type} value={type} className="cursor-pointer">
-                            <div className="flex items-center">
-                              {getDeadlineTypeIcon(type)}
-                              <span className="ml-2">{type}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <Select onValueChange={field.onChange} defaultValue={field.value || undefined}> {/* Ensure no empty string value */}
+                    <FormControl>
+                      <SelectTrigger className="cursor-pointer pointer-events-auto border-purple-200 dark:border-purple-800/50 focus:ring-purple-400/20">
+                        <SelectValue placeholder="Select deadline type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="pointer-events-auto z-50">
+                      {DEADLINE_TYPES.map((type) => (
+                        <SelectItem key={type} value={type || "default"}> {/* Ensure no empty string value */}
+                          <div className="flex items-center">
+                            {getDeadlineTypeIcon(type)}
+                            <span className="ml-2">{type}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
               
               <FormField
                 control={form.control}

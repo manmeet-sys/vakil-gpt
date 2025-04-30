@@ -375,7 +375,7 @@ Document format: Return ONLY the complete document text, no explanations needed.
                   <SelectContent>
                     {documentTypes.map(type => (
                       <SelectItem key={type.value} value={type.value}>
-                        {type.label} 
+                        {type.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
