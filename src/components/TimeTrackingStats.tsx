@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +13,7 @@ interface TimeEntry {
   description: string | null;
   hourly_rate: number | null;
   amount: number | null;
+  invoice_status: string | null; // Added this property to fix the TypeScript error
 }
 
 interface TimeTrackingStatsProps {
