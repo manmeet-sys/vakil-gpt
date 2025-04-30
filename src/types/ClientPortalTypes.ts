@@ -76,6 +76,16 @@ export type ClientPortalRPC = Database['public']['Functions'] & {
     };
     Returns: { id: string; created_at: string };
   };
+  add_client_message: {
+    Args: {
+      p_content: string;
+      p_sender_id: string;
+      p_sender_name: string;
+      p_receiver_id: string;
+      p_is_read: boolean;
+    };
+    Returns: ClientMessage;
+  };
   add_case_status_update: {
     Args: {
       p_client_id: string;
@@ -110,12 +120,12 @@ export type ClientPortalRPC = Database['public']['Functions'] & {
     Args: {
       p_update_id: string;
     };
-    Returns: void;
+    Returns: null;
   };
   mark_messages_read: {
     Args: {
       p_message_ids: string[];
     };
-    Returns: void;
+    Returns: null;
   };
 }

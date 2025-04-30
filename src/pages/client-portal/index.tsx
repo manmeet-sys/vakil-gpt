@@ -49,7 +49,7 @@ import {
 import ClientDocumentUploader from '@/components/client-portal/ClientDocumentUploader';
 import CaseStatusUpdates from '@/components/client-portal/CaseStatusUpdates';
 import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter';
-import { ClientDocument, StatusUpdate as ClientStatusUpdate } from '@/types/ClientPortalTypes';
+import { ClientDocument, StatusUpdate } from '@/types/ClientPortalTypes';
 
 // Types for client portal data
 interface Document {
@@ -64,17 +64,7 @@ interface Document {
   notes?: string;
 }
 
-// Local interface for status updates (avoid conflict with imported type)
-interface StatusUpdate {
-  id: string;
-  message: string;
-  created_at: string;
-  case_id: string;
-  case_title: string;
-  status: string;
-  is_read: boolean;
-  client_id: string; // Added to match the imported type
-}
+// Use our imported StatusUpdate type directly
 
 interface ClientCase {
   id: string;
@@ -115,7 +105,8 @@ const ClientPortalPage = () => {
         table: 'case_status_updates',
         filter: `client_id=eq.${user.id}`
       }, payload => {
-        setStatusUpdates(prev => [payload.new as StatusUpdate, ...prev]);
+        const newUpdate = payload.new as StatusUpdate;
+        setStatusUpdates(prev => [newUpdate, ...prev]);
         toast.info("You have a new case status update!");
         setUnreadUpdates(prev => prev + 1);
       })
@@ -131,16 +122,22 @@ const ClientPortalPage = () => {
       setLoading(true);
       
       // Fetch client documents using RPC function
-      const { data: documentsData, error: documentsError } = await supabase.rpc('get_client_documents', {
-        p_client_id: user?.id || ''
-      });
+      const { data: documentsData, error: documentsError } = await supabase.rpc(
+        'get_client_documents',
+        {
+          p_client_id: user?.id || ''
+        }
+      );
       
       if (documentsError) throw documentsError;
       
       // Fetch status updates using RPC function
-      const { data: updatesData, error: updatesError } = await supabase.rpc('get_client_status_updates', {
-        p_client_id: user?.id || ''
-      });
+      const { data: updatesData, error: updatesError } = await supabase.rpc(
+        'get_client_status_updates',
+        {
+          p_client_id: user?.id || ''
+        }
+      );
       
       if (updatesError) throw updatesError;
       
@@ -189,9 +186,12 @@ const ClientPortalPage = () => {
   const markUpdateAsRead = async (updateId: string) => {
     try {
       // Use RPC function to mark status update as read
-      const { error } = await supabase.rpc('mark_status_update_read', {
-        p_update_id: updateId
-      });
+      const { error } = await supabase.rpc(
+        'mark_status_update_read',
+        {
+          p_update_id: updateId
+        }
+      );
       
       if (error) throw error;
       
@@ -205,7 +205,7 @@ const ClientPortalPage = () => {
     }
   };
   
-  const handleDocumentFilter = (documents: Document[]) => {
+  const handleDocumentFilter = (documents: ClientDocument[]): ClientDocument[] => {
     if (!searchTerm) return documents;
     
     return documents.filter(doc => 
@@ -503,7 +503,7 @@ const ClientPortalPage = () => {
                 </CardHeader>
                 <CardContent>
                   <CaseStatusUpdates 
-                    updates={statusUpdates as ClientStatusUpdate[]} 
+                    updates={statusUpdates} 
                     loading={loading}
                     onMarkAsRead={markUpdateAsRead}
                   />
