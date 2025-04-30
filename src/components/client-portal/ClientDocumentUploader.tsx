@@ -107,10 +107,9 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
           
         if (storageError) throw storageError;
         
-        // Create database entry using RPC function with type assertion
-        const { data, error } = await supabase.rpc<'add_client_document', ClientPortalRPC>(
-          'add_client_document', 
-          {
+        // Create database entry using RPC function
+        const { data, error } = await supabase
+          .rpc('add_client_document', {
             p_name: file.name,
             p_size: file.size,
             p_type: file.type,
@@ -120,8 +119,8 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
             p_case_id: selectedCase || null,
             p_status: 'pending_review',
             p_uploaded_by: user?.id || ''
-          }
-        );
+          })
+          .returns<{ id: string; created_at: string }>();
         
         if (error) throw error;
         

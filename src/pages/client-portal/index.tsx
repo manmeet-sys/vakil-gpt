@@ -108,27 +108,25 @@ const ClientPortalPage = () => {
       setLoading(true);
       
       // Fetch client documents using RPC function with type assertion
-      const { data: documentsData, error: documentsError } = await supabase.rpc<'get_client_documents', ClientPortalRPC>(
-        'get_client_documents',
-        {
+      const { data: documentsData, error: documentsError } = await supabase
+        .rpc('get_client_documents', {
           p_client_id: user?.id || ''
-        }
-      );
+        })
+        .returns<ClientDocument[]>();
       
       if (documentsError) throw documentsError;
       
       // Fetch status updates using RPC function with type assertion
-      const { data: updatesData, error: updatesError } = await supabase.rpc<'get_client_status_updates', ClientPortalRPC>(
-        'get_client_status_updates',
-        {
+      const { data: updatesData, error: updatesError } = await supabase
+        .rpc('get_client_status_updates', {
           p_client_id: user?.id || ''
-        }
-      );
+        })
+        .returns<StatusUpdate[]>();
       
       if (updatesError) throw updatesError;
       
-      // Count unread updates with null check
-      const unread = updatesData?.filter((update: StatusUpdate) => !update.is_read).length || 0;
+      // Count unread updates with type safety
+      const unread = updatesData ? updatesData.filter(update => !update.is_read).length : 0;
       
       // Fetch cases
       const { data: casesData, error: casesError } = await supabase
@@ -145,8 +143,8 @@ const ClientPortalPage = () => {
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      setDocuments(documentsData || []);
-      setStatusUpdates(updatesData || []);
+      if (documentsData) setDocuments(documentsData);
+      if (updatesData) setStatusUpdates(updatesData);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error) {
@@ -171,13 +169,12 @@ const ClientPortalPage = () => {
   
   const markUpdateAsRead = async (updateId: string) => {
     try {
-      // Use RPC function to mark status update as read with type assertion
-      const { error } = await supabase.rpc<'mark_status_update_read', ClientPortalRPC>(
-        'mark_status_update_read',
-        {
+      // Use RPC function to mark status update as read with proper type assertion
+      const { error } = await supabase
+        .rpc('mark_status_update_read', {
           p_update_id: updateId
-        }
-      );
+        })
+        .returns<null>();
       
       if (error) throw error;
       

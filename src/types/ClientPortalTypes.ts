@@ -61,7 +61,7 @@ export interface ClientMessage {
 }
 
 // Custom Types for RPC functions with proper parameter types
-export type ClientPortalRPC = Database['public']['Functions'] & {
+export interface ClientPortalRPC {
   add_client_document: {
     Args: {
       p_name: string;

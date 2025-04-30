@@ -78,28 +78,31 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
     // Fetch messages using RPC function
     const fetchMessages = async () => {
       try {
-        const { data, error } = await supabase.rpc<'get_client_advocate_messages', ClientPortalRPC>(
-          'get_client_advocate_messages',
-          {
+        const { data, error } = await supabase
+          .rpc('get_client_advocate_messages', {
             p_client_id: clientId,
             p_advocate_id: selectedAdvocate
-          }
-        );
+          })
+          .returns<ClientMessage[]>();
           
         if (error) throw error;
         
-        setMessages(data || []);
-        
-        // Mark received messages as read
-        const unreadMessages = data?.filter((m: ClientMessage) => 
-          m.receiver_id === clientId && !m.is_read
-        ).map((m: ClientMessage) => m.id) || [];
-        
-        if (unreadMessages && unreadMessages.length > 0) {
-          // Mark messages as read using RPC
-          await supabase.rpc<'mark_messages_read', ClientPortalRPC>('mark_messages_read', {
-            p_message_ids: unreadMessages
-          });
+        if (data) {
+          setMessages(data);
+          
+          // Mark received messages as read
+          const unreadMessages = data.filter((m: ClientMessage) => 
+            m.receiver_id === clientId && !m.is_read
+          ).map((m: ClientMessage) => m.id);
+          
+          if (unreadMessages && unreadMessages.length > 0) {
+            // Mark messages as read using RPC
+            await supabase
+              .rpc('mark_messages_read', {
+                p_message_ids: unreadMessages
+              })
+              .returns<null>();
+          }
         }
         
       } catch (error) {
@@ -137,22 +140,21 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       setSending(true);
       
       // Send message using RPC with proper type assertion
-      const { data, error } = await supabase.rpc<'add_client_message', ClientPortalRPC>(
-        'add_client_message',
-        {
+      const { data, error } = await supabase
+        .rpc('add_client_message', {
           p_content: newMessage.trim(),
           p_sender_id: clientId,
           p_sender_name: user?.user_metadata?.full_name || 'Client',
           p_receiver_id: selectedAdvocate,
           p_is_read: false
-        }
-      );
+        })
+        .returns<ClientMessage>();
       
       if (error) throw error;
       
       // Add the new message to the list
       if (data) {
-        setMessages(prev => [...prev, data as ClientMessage]);
+        setMessages(prev => [...prev, data]);
       }
       
       // Clear input after sending
