@@ -109,7 +109,7 @@ const ClientPortalPage = () => {
       
       // Fetch client documents using RPC function with type assertion
       const { data: documentsData, error: documentsError } = await supabase
-        .rpc<ClientDocument[]>('get_client_documents', {
+        .rpc<ClientPortalRPC['get_client_documents']['Returns']>('get_client_documents', {
           p_client_id: user?.id || ''
         });
       
@@ -117,7 +117,7 @@ const ClientPortalPage = () => {
       
       // Fetch status updates using RPC function with type assertion
       const { data: updatesData, error: updatesError } = await supabase
-        .rpc<StatusUpdate[]>('get_client_status_updates', {
+        .rpc<ClientPortalRPC['get_client_status_updates']['Returns']>('get_client_status_updates', {
           p_client_id: user?.id || ''
         });
       
@@ -169,7 +169,7 @@ const ClientPortalPage = () => {
     try {
       // Use RPC function to mark status update as read with proper type assertion
       const { error } = await supabase
-        .rpc('mark_status_update_read', {
+        .rpc<ClientPortalRPC['mark_status_update_read']['Returns']>('mark_status_update_read', {
           p_update_id: updateId
         });
       
