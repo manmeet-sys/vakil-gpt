@@ -56,7 +56,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, require2FA = 
   }
 
   if (loading) {
-    // Show a better loading state while checking auth
+    // Show an optimized loading state while checking auth
     return (
       <div className="flex flex-col items-center justify-center h-screen p-4">
         <div className="w-full max-w-md space-y-4">

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,62 +7,71 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/context/AuthContext";
-import { useEffect } from "react";
-import Index from "./pages/Index";
-import ChatPage from "./pages/chat";
-import KnowledgePage from "./pages/knowledge";
-import LegalDocumentAnalyzerPage from "./pages/legal-document-analyzer";
-import CaseLawResearchPage from "./pages/case-law-research";
-import ComplianceAssistancePage from "./pages/compliance-assistance";
-import LegalRiskAssessmentPage from "./pages/legal-risk-assessment";
-import LegalDueDiligencePage from "./pages/legal-due-diligence";
-import LegalEducationPage from "./pages/legal-education";
-import ToolsPage from "./pages/tools";
-import PlaceholderToolPage from "./pages/placeholder-tool";
-import PrivacyPolicyPage from "./pages/privacy-policy";
-import TermsOfServicePage from "./pages/terms-of-service";
-import PricingPage from "./pages/pricing";
-import BlogPage from "./pages/blog";
-import BlogPostPage from "./pages/blog/post";
-import GuidesPage from "./pages/guides";
-import GuideDetailPage from "./pages/guides/guide";
-import FaqPage from "./pages/faq";
+import { useEffect, lazy, Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import ProtectedRoute from "./components/ProtectedRoute";
 import OrientationMessage from "./components/OrientationMessage";
 import AnalyticsWrapper from "./components/AnalyticsWrapper";
-import AnalyticsDashboard from "./pages/analytics-dashboard";
+
+// Eagerly loaded core components
+import NotFound from "./pages/NotFound";
+
+// Lazy loaded components
+const Index = lazy(() => import("./pages/Index"));
+const ChatPage = lazy(() => import("./pages/chat"));
+const KnowledgePage = lazy(() => import("./pages/knowledge"));
+const LegalDocumentAnalyzerPage = lazy(() => import("./pages/legal-document-analyzer"));
+const CaseLawResearchPage = lazy(() => import("./pages/case-law-research"));
+const ComplianceAssistancePage = lazy(() => import("./pages/compliance-assistance"));
+const LegalRiskAssessmentPage = lazy(() => import("./pages/legal-risk-assessment"));
+const LegalDueDiligencePage = lazy(() => import("./pages/legal-due-diligence"));
+const LegalEducationPage = lazy(() => import("./pages/legal-education"));
+const ToolsPage = lazy(() => import("./pages/tools"));
+const PlaceholderToolPage = lazy(() => import("./pages/placeholder-tool"));
+const PrivacyPolicyPage = lazy(() => import("./pages/privacy-policy"));
+const TermsOfServicePage = lazy(() => import("./pages/terms-of-service"));
+const PricingPage = lazy(() => import("./pages/pricing"));
+const BlogPage = lazy(() => import("./pages/blog"));
+const BlogPostPage = lazy(() => import("./pages/blog/post"));
+const GuidesPage = lazy(() => import("./pages/guides"));
+const GuideDetailPage = lazy(() => import("./pages/guides/guide"));
+const FaqPage = lazy(() => import("./pages/faq"));
+const AnalyticsDashboard = lazy(() => import("./pages/analytics-dashboard"));
 
 // Auth pages
-import SignupPage from "./pages/signup";
-import LoginPage from "./pages/login";
-import ResetPasswordPage from "./pages/reset-password";
-import ProtectedRoute from "./components/ProtectedRoute";
+const SignupPage = lazy(() => import("./pages/signup"));
+const LoginPage = lazy(() => import("./pages/login"));
+const ResetPasswordPage = lazy(() => import("./pages/reset-password"));
 
 // Implemented tool pages
-import LegalBriefGenerationPage from "./pages/legal-brief-generation";
-import StatuteTrackerPage from "./pages/statute-tracker";
-import ContractDraftingPage from "./pages/contract-drafting";
-import StartupToolkitPage from "./pages/startup-toolkit";
-import PleaBargainPage from "./pages/plea-bargain";
-import ESignaturePage from "./pages/e-signature";
-import GdprCompliancePage from "./pages/gdpr-compliance";
-import LitigationPredictionPage from "./pages/litigation-prediction";
-import TaxCompliancePage from "./pages/tax-compliance";
-import BillingTrackingPage from "./pages/billing-tracking";
-import IPProtectionPage from "./pages/ip-protection";
-import SentencingPredictorPage from "./pages/sentencing-predictor";
-import AMLCompliancePage from "./pages/aml-compliance";
-import MADueDiligencePage from "./pages/m&a-due-diligence";
-import FinancialObligationsPage from "./pages/financial-obligations";
-import FraudDetectorPage from "./pages/fraud-detector";
-
-// New tools added
-import UserProfilePage from "./pages/user-profile";
-import ProfileEditPage from "./pages/profile-edit";
-import CourtFilingPage from "./pages/court-filing";
-import DeadlineManagementPage from "./pages/deadline-management";
-import CaseManagementPage from "./pages/case-management";
-
-import NotFound from "./pages/NotFound";
+const LegalBriefGenerationPage = lazy(() => import("./pages/legal-brief-generation"));
+const StatuteTrackerPage = lazy(() => import("./pages/statute-tracker"));
+const ContractDraftingPage = lazy(() => import("./pages/contract-drafting"));
+const StartupToolkitPage = lazy(() => import("./pages/startup-toolkit"));
+const PleaBargainPage = lazy(() => import("./pages/plea-bargain"));
+const ESignaturePage = lazy(() => import("./pages/e-signature"));
+const GdprCompliancePage = lazy(() => import("./pages/gdpr-compliance"));
+const LitigationPredictionPage = lazy(() => import("./pages/litigation-prediction"));
+const TaxCompliancePage = lazy(() => import("./pages/tax-compliance"));
+const BillingTrackingPage = lazy(() => import("./pages/billing-tracking"));
+const IPProtectionPage = lazy(() => import("./pages/ip-protection"));
+const SentencingPredictorPage = lazy(() => import("./pages/sentencing-predictor"));
+const AMLCompliancePage = lazy(() => import("./pages/aml-compliance"));
+const MADueDiligencePage = lazy(() => import("./pages/m&a-due-diligence"));
+const FinancialObligationsPage = lazy(() => import("./pages/financial-obligations"));
+const FraudDetectorPage = lazy(() => import("./pages/fraud-detector"));
+const UserProfilePage = lazy(() => import("./pages/user-profile"));
+const ProfileEditPage = lazy(() => import("./pages/profile-edit"));
+const CourtFilingPage = lazy(() => import("./pages/court-filing"));
+const DeadlineManagementPage = lazy(() => import("./pages/deadline-management"));
+const CaseManagementPage = lazy(() => import("./pages/case-management"));
+const LegalDocumentDraftingPage = lazy(() => import("./pages/legal-document-drafting"));
+const PracticeAreasPage = lazy(() => import("./pages/practice-areas"));
+const CriminalLawPage = lazy(() => import("./pages/criminal-law"));
+const CivilLawPage = lazy(() => import("./pages/civil-law"));
+const CorporateLawPage = lazy(() => import("./pages/corporate-law"));
+const FamilyLawPage = lazy(() => import("./pages/family-law"));
+const RealEstateLawPage = lazy(() => import("./pages/real-estate-law"));
 
 // ScrollToTop component to handle scrolling to top on route changes
 const ScrollToTop = () => {
@@ -74,6 +84,21 @@ const ScrollToTop = () => {
   return null;
 };
 
+// Loading fallback component
+const PageLoadingFallback = () => (
+  <div className="flex flex-col items-center justify-center min-h-screen p-4">
+    <div className="w-full max-w-md space-y-4">
+      <Skeleton className="h-12 w-full rounded-xl" />
+      <Skeleton className="h-32 w-full rounded-xl" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-3/4 rounded-lg" />
+        <Skeleton className="h-4 w-full rounded-lg" />
+        <Skeleton className="h-4 w-2/3 rounded-lg" />
+      </div>
+    </div>
+  </div>
+);
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -85,17 +110,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// New import for the Legal Document Drafting page
-import LegalDocumentDraftingPage from "./pages/legal-document-drafting";
-
-// New imports for practice areas
-import PracticeAreasPage from "./pages/practice-areas";
-import CriminalLawPage from "./pages/criminal-law";
-import CivilLawPage from "./pages/civil-law";
-import CorporateLawPage from "./pages/corporate-law";
-import FamilyLawPage from "./pages/family-law";
-import RealEstateLawPage from "./pages/real-estate-law";
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
@@ -105,242 +119,244 @@ const App = () => (
             <TooltipProvider>
               <AnalyticsWrapper>
                 <ScrollToTop />
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-                  <Route path="/pricing" element={<PricingPage />} />
-                  
-                  {/* Blog Routes */}
-                  <Route path="/blog" element={<BlogPage />} />
-                  <Route path="/blog/:id" element={<BlogPostPage />} />
-                  
-                  {/* Guides Routes */}
-                  <Route path="/guides" element={<GuidesPage />} />
-                  <Route path="/guides/:id" element={<GuideDetailPage />} />
-                  
-                  <Route path="/faq" element={<FaqPage />} />
-                  
-                  {/* Auth routes */}
-                  <Route path="/signup" element={<SignupPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/reset-password" element={<ResetPasswordPage />} />
-                  
-                  {/* Analytics Dashboard */}
-                  <Route path="/analytics-dashboard" element={
-                    <ProtectedRoute>
-                      <AnalyticsDashboard />
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Protected routes - wrap all tool pages */}
-                  <Route path="/tools" element={
-                    <ProtectedRoute>
-                      <ToolsPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/chat" element={
-                    <ProtectedRoute>
-                      <ChatPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/knowledge" element={
-                    <ProtectedRoute>
-                      <KnowledgePage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/legal-document-analyzer" element={
-                    <ProtectedRoute>
-                      <LegalDocumentAnalyzerPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/legal-brief-generation" element={
-                    <ProtectedRoute>
-                      <LegalBriefGenerationPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/case-law-research" element={
-                    <ProtectedRoute>
-                      <CaseLawResearchPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/statute-tracker" element={
-                    <ProtectedRoute>
-                      <StatuteTrackerPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/contract-drafting" element={
-                    <ProtectedRoute>
-                      <ContractDraftingPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/compliance-assistance" element={
-                    <ProtectedRoute>
-                      <ComplianceAssistancePage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/gdpr-compliance" element={
-                    <ProtectedRoute>
-                      <GdprCompliancePage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/aml-compliance" element={
-                    <ProtectedRoute>
-                      <AMLCompliancePage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/legal-risk-assessment" element={
-                    <ProtectedRoute>
-                      <LegalRiskAssessmentPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/litigation-prediction" element={
-                    <ProtectedRoute>
-                      <LitigationPredictionPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/legal-due-diligence" element={
-                    <ProtectedRoute>
-                      <LegalDueDiligencePage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/startup-toolkit" element={
-                    <ProtectedRoute>
-                      <StartupToolkitPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/m&a-due-diligence" element={
-                    <ProtectedRoute>
-                      <MADueDiligencePage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/ip-protection" element={
-                    <ProtectedRoute>
-                      <IPProtectionPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/billing-tracking" element={
-                    <ProtectedRoute>
-                      <BillingTrackingPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/financial-obligations" element={
-                    <ProtectedRoute>
-                      <FinancialObligationsPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/fraud-detector" element={
-                    <ProtectedRoute>
-                      <FraudDetectorPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/legal-education" element={
-                    <ProtectedRoute>
-                      <LegalEducationPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/e-signature" element={
-                    <ProtectedRoute>
-                      <ESignaturePage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/plea-bargain" element={
-                    <ProtectedRoute>
-                      <PleaBargainPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/tax-compliance" element={
-                    <ProtectedRoute>
-                      <TaxCompliancePage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/sentencing-predictor" element={
-                    <ProtectedRoute>
-                      <SentencingPredictorPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/user-profile" element={
-                    <ProtectedRoute>
-                      <UserProfilePage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/profile-edit" element={
-                    <ProtectedRoute>
-                      <ProfileEditPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/court-filing" element={
-                    <ProtectedRoute>
-                      <CourtFilingPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/deadline-management" element={
-                    <ProtectedRoute>
-                      <DeadlineManagementPage />
-                    </ProtectedRoute>
-                  } />
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                    <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                    <Route path="/pricing" element={<PricingPage />} />
+                    
+                    {/* Blog Routes */}
+                    <Route path="/blog" element={<BlogPage />} />
+                    <Route path="/blog/:id" element={<BlogPostPage />} />
+                    
+                    {/* Guides Routes */}
+                    <Route path="/guides" element={<GuidesPage />} />
+                    <Route path="/guides/:id" element={<GuideDetailPage />} />
+                    
+                    <Route path="/faq" element={<FaqPage />} />
+                    
+                    {/* Auth routes */}
+                    <Route path="/signup" element={<SignupPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    
+                    {/* Analytics Dashboard */}
+                    <Route path="/analytics-dashboard" element={
+                      <ProtectedRoute>
+                        <AnalyticsDashboard />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Protected routes - wrap all tool pages */}
+                    <Route path="/tools" element={
+                      <ProtectedRoute>
+                        <ToolsPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/chat" element={
+                      <ProtectedRoute>
+                        <ChatPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/knowledge" element={
+                      <ProtectedRoute>
+                        <KnowledgePage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/legal-document-analyzer" element={
+                      <ProtectedRoute>
+                        <LegalDocumentAnalyzerPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/legal-brief-generation" element={
+                      <ProtectedRoute>
+                        <LegalBriefGenerationPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/case-law-research" element={
+                      <ProtectedRoute>
+                        <CaseLawResearchPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/statute-tracker" element={
+                      <ProtectedRoute>
+                        <StatuteTrackerPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/contract-drafting" element={
+                      <ProtectedRoute>
+                        <ContractDraftingPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/compliance-assistance" element={
+                      <ProtectedRoute>
+                        <ComplianceAssistancePage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/gdpr-compliance" element={
+                      <ProtectedRoute>
+                        <GdprCompliancePage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/aml-compliance" element={
+                      <ProtectedRoute>
+                        <AMLCompliancePage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/legal-risk-assessment" element={
+                      <ProtectedRoute>
+                        <LegalRiskAssessmentPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/litigation-prediction" element={
+                      <ProtectedRoute>
+                        <LitigationPredictionPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/legal-due-diligence" element={
+                      <ProtectedRoute>
+                        <LegalDueDiligencePage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/startup-toolkit" element={
+                      <ProtectedRoute>
+                        <StartupToolkitPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/m&a-due-diligence" element={
+                      <ProtectedRoute>
+                        <MADueDiligencePage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/ip-protection" element={
+                      <ProtectedRoute>
+                        <IPProtectionPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/billing-tracking" element={
+                      <ProtectedRoute>
+                        <BillingTrackingPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/financial-obligations" element={
+                      <ProtectedRoute>
+                        <FinancialObligationsPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/fraud-detector" element={
+                      <ProtectedRoute>
+                        <FraudDetectorPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/legal-education" element={
+                      <ProtectedRoute>
+                        <LegalEducationPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/e-signature" element={
+                      <ProtectedRoute>
+                        <ESignaturePage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/plea-bargain" element={
+                      <ProtectedRoute>
+                        <PleaBargainPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/tax-compliance" element={
+                      <ProtectedRoute>
+                        <TaxCompliancePage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/sentencing-predictor" element={
+                      <ProtectedRoute>
+                        <SentencingPredictorPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/user-profile" element={
+                      <ProtectedRoute>
+                        <UserProfilePage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/profile-edit" element={
+                      <ProtectedRoute>
+                        <ProfileEditPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/court-filing" element={
+                      <ProtectedRoute>
+                        <CourtFilingPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/deadline-management" element={
+                      <ProtectedRoute>
+                        <DeadlineManagementPage />
+                      </ProtectedRoute>
+                    } />
 
-                  <Route path="/case-management" element={
-                    <ProtectedRoute>
-                      <CaseManagementPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/virtual-assistant" element={
-                    <ProtectedRoute>
-                      <PlaceholderToolPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/regulatory-reporting" element={
-                    <ProtectedRoute>
-                      <PlaceholderToolPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/legal-document-drafting" element={
-                    <ProtectedRoute>
-                      <LegalDocumentDraftingPage />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/practice-areas" element={<PracticeAreasPage />} />
-                  <Route path="/criminal-law" element={<CriminalLawPage />} />
-                  <Route path="/civil-law" element={<CivilLawPage />} />
-                  <Route path="/corporate-law" element={<CorporateLawPage />} />
-                  <Route path="/family-law" element={<FamilyLawPage />} />
-                  <Route path="/real-estate-law" element={<RealEstateLawPage />} />
-                  
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                    <Route path="/case-management" element={
+                      <ProtectedRoute>
+                        <CaseManagementPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/virtual-assistant" element={
+                      <ProtectedRoute>
+                        <PlaceholderToolPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/regulatory-reporting" element={
+                      <ProtectedRoute>
+                        <PlaceholderToolPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/legal-document-drafting" element={
+                      <ProtectedRoute>
+                        <LegalDocumentDraftingPage />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="/practice-areas" element={<PracticeAreasPage />} />
+                    <Route path="/criminal-law" element={<CriminalLawPage />} />
+                    <Route path="/civil-law" element={<CivilLawPage />} />
+                    <Route path="/corporate-law" element={<CorporateLawPage />} />
+                    <Route path="/family-law" element={<FamilyLawPage />} />
+                    <Route path="/real-estate-law" element={<RealEstateLawPage />} />
+                    
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
                 <Toaster />
                 <Sonner />
                 <OrientationMessage />

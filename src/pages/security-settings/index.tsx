@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import { Helmet } from 'react-helmet-async';
@@ -13,7 +13,20 @@ import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import QRCode from 'qrcode';
+
+// Lazy loaded QR code component
+const QRCodeDisplay = lazy(() => import('./QRCodeDisplay'));
+
+// QR code loading skeleton
+const QRCodeSkeleton = () => (
+  <div className="bg-white p-4 rounded-lg w-48 h-48 flex items-center justify-center">
+    <div className="animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 w-full h-full flex items-center justify-center">
+      <Loader2 className="h-8 w-8 text-gray-400 dark:text-gray-500 animate-spin" />
+    </div>
+  </div>
+);
 
 const SecuritySettingsPage = () => {
   const { user, userProfile, twoFactorEnabled, enableTwoFactor, disableTwoFactor, verifyTwoFactor } = useAuth();
@@ -183,19 +196,9 @@ const SecuritySettingsPage = () => {
                       </div>
                       
                       <div className="flex flex-col items-center space-y-4">
-                        <div className="bg-white p-4 rounded-lg w-48 h-48 flex items-center justify-center">
-                          {qrCodeUrl ? (
-                            <img 
-                              src={qrCodeUrl} 
-                              alt="Two-factor authentication QR code"
-                              className="w-full h-full"
-                            />
-                          ) : (
-                            <div className="animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 w-full h-full flex items-center justify-center">
-                              <Loader2 className="h-8 w-8 text-gray-400 dark:text-gray-500 animate-spin" />
-                            </div>
-                          )}
-                        </div>
+                        <Suspense fallback={<QRCodeSkeleton />}>
+                          {qrCodeUrl && <QRCodeDisplay imageUrl={qrCodeUrl} />}
+                        </Suspense>
                         
                         <div className="flex items-center space-x-2">
                           <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded font-mono text-sm">

@@ -1,58 +1,69 @@
 
-import React from 'react';
-import { useTheme } from "@/components/ThemeProvider";
-import ChatInterface from '@/components/ChatInterface';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Scale } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import React, { lazy, Suspense } from 'react';
+import { Helmet } from 'react-helmet-async';
+import OptimizedAppLayout from '@/components/OptimizedAppLayout'; // Use the optimized version
+import BackButton from '@/components/BackButton';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy load ChatInterface component
+const ChatInterface = lazy(() => import('@/components/ChatInterface'));
+
+// Chat loading skeleton
+const ChatLoadingSkeleton = () => (
+  <div className="w-full h-[calc(100vh-350px)] min-h-[500px] flex flex-col">
+    <div className="flex-1 p-4 overflow-hidden">
+      <div className="space-y-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex-shrink-0" />
+            <div className="space-y-2 flex-1">
+              <Skeleton className="h-4 w-20 rounded" />
+              <Skeleton className="h-24 w-full rounded-lg" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div className="border-t p-4">
+      <Skeleton className="h-12 w-full rounded-lg" />
+    </div>
+  </div>
+);
 
 const ChatPage = () => {
-  const { theme } = useTheme();
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  
+  // Ensure page scrolls to top on mount
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
-      <header className="border-b border-gray-200 dark:border-zinc-700/50 py-3 px-4 flex items-center justify-between bg-white dark:bg-zinc-800/90 shadow-sm backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => navigate('/')} 
-            className="rounded-full"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center">
-            <Scale className="h-5 w-5 text-blue-accent mr-2" />
-            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
-              {isMobile ? "Legal Assistant" : "VakilGPT Legal Assistant"}
-            </h1>
+    <OptimizedAppLayout>
+      <Helmet>
+        <title>AI Legal Chat | VakilGPT</title>
+      </Helmet>
+      <div className="container mx-auto px-4 py-6">
+        <BackButton />
+        
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden mt-4">
+          {/* Browser-like top bar */}
+          <div className="flex items-center bg-gray-100 dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex space-x-2 mr-4">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            </div>
+            <h2 className="font-medium text-gray-700 dark:text-gray-200">VakilGPT Chat Interface</h2>
+          </div>
+          
+          {/* Chat interface container with Suspense */}
+          <div className="h-[calc(100vh-350px)] min-h-[500px]">
+            <Suspense fallback={<ChatLoadingSkeleton />}>
+              <ChatInterface />
+            </Suspense>
           </div>
         </div>
-        <ThemeToggle />
-      </header>
-      
-      <main className="flex-1 flex flex-col items-center py-3 sm:py-6 px-2 sm:px-4 overflow-hidden">
-        <div className="w-full max-w-4xl mb-2 sm:mb-4">
-          <div className="text-center mb-3 sm:mb-6">
-            <h2 className="text-base sm:text-lg font-medium text-gray-800 dark:text-gray-200">
-              AI-powered legal assistant for Indian law
-            </h2>
-            {!isMobile && (
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Ask legal questions, upload documents, or generate analyses based on Indian law
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="w-full max-w-4xl h-[calc(100vh-12rem)]">
-          <ChatInterface className="w-full h-full shadow-md rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700/50" />
-        </div>
-      </main>
-    </div>
+      </div>
+    </OptimizedAppLayout>
   );
 };
 
