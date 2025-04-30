@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -69,9 +68,10 @@ export type Case = {
   hearing_date: string | null;
   description: string | null;
   opposing_party: string | null;
-  documents: any; // Changed from any[] to any to accommodate both Json and array types
+  documents: any; 
   created_at: string;
   updated_at: string;
+  client_id: string | null; // Add this field
 };
 
 const CaseManagementPage = () => {

@@ -1,0 +1,92 @@
+
+import React from 'react';
+import { Bell, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+
+interface StatusUpdate {
+  id: string;
+  message: string;
+  created_at: string;
+  case_id: string;
+  case_title: string;
+  status: string;
+  is_read: boolean;
+}
+
+interface CaseStatusUpdatesProps {
+  updates: StatusUpdate[];
+  loading: boolean;
+  onMarkAsRead: (updateId: string) => void;
+}
+
+const CaseStatusUpdates = ({ updates, loading, onMarkAsRead }: CaseStatusUpdatesProps) => {
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
+        <p className="mt-4 text-gray-500">Loading updates...</p>
+      </div>
+    );
+  }
+  
+  if (updates.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Bell className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+        <h3 className="text-lg font-medium">No updates yet</h3>
+        <p className="text-gray-500 mt-2">
+          You'll receive updates here when there are changes to your cases
+        </p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+      {updates.map(update => (
+        <Card
+          key={update.id}
+          className={`p-4 border ${!update.is_read ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''}`}
+        >
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <div className="flex items-center">
+                <Badge variant={update.is_read ? "outline" : "default"}>
+                  {update.status}
+                </Badge>
+                {!update.is_read && (
+                  <Badge variant="secondary" className="ml-2">New</Badge>
+                )}
+              </div>
+              
+              <h4 className="font-medium mt-2">{update.case_title}</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{update.message}</p>
+              
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-xs text-gray-500">
+                  {new Date(update.created_at).toLocaleString()}
+                </span>
+                
+                {!update.is_read && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 text-xs"
+                    onClick={() => onMarkAsRead(update.id)}
+                  >
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Mark as read
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+export default CaseStatusUpdates;

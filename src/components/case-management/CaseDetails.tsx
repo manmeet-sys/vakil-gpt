@@ -1,55 +1,41 @@
-
-import React, { useState } from 'react';
-import { Case } from '@/pages/case-management/index';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, Clock, FilePlus, FileText, Trash2, User, Users, Edit, MapPin, Gavel, Save, X, AlertTriangle, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+import { Case } from '@/pages/case-management';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
 } from '@/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from 'lucide-react';
+import { CalendarDate } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
+import { File, Copy, Download, Edit, Trash2, Bell } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Link } from 'react-router-dom';
 
 interface CaseDetailsProps {
   caseData: Case;
@@ -57,532 +43,359 @@ interface CaseDetailsProps {
   onCaseDeleted: (caseId: string) => void;
 }
 
-const caseStatusOptions = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'active', label: 'Active' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'scheduled', label: 'Scheduled' },
-  { value: 'closed', label: 'Closed' },
-  { value: 'archived', label: 'Archived' },
-];
-
-const courtTypes = [
-  { value: 'supreme_court', label: 'Supreme Court' },
-  { value: 'high_court', label: 'High Court' },
-  { value: 'district_court', label: 'District Court' },
-  { value: 'sessions_court', label: 'Sessions Court' },
-  { value: 'family_court', label: 'Family Court' },
-  { value: 'consumer_court', label: 'Consumer Court' },
-  { value: 'tribunals', label: 'Tribunals' },
-  { value: 'other', label: 'Other' },
-];
-
 const CaseDetails: React.FC<CaseDetailsProps> = ({ caseData, onCaseUpdated, onCaseDeleted }) => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [currentTab, setCurrentTab] = useState('details');
-  
-  const form = useForm({
-    defaultValues: {
-      case_title: caseData.case_title || '',
-      case_number: caseData.case_number || '',
-      client_name: caseData.client_name || '',
-      court_name: caseData.court_name || '',
-      court_type: caseData.court_type || '',
-      jurisdiction: caseData.jurisdiction || '',
-      status: caseData.status || 'draft',
-      filing_type: caseData.filing_type || '',
-      description: caseData.description || '',
-      opposing_party: caseData.opposing_party || '',
-      filing_date: caseData.filing_date ? new Date(caseData.filing_date).toISOString().split('T')[0] : '',
-      hearing_date: caseData.hearing_date ? new Date(caseData.hearing_date).toISOString().split('T')[0] : '',
-    },
-  });
+  const [editedCase, setEditedCase] = useState<Case>(caseData);
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
+    caseData.hearing_date ? new Date(caseData.hearing_date) : undefined
+  );
 
-  const handleDeleteCase = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('court_filings')
-        .delete()
-        .eq('id', caseData.id);
-      
-      if (error) throw error;
-      
-      onCaseDeleted(caseData.id);
-    } catch (error: any) {
-      console.error('Error deleting case:', error.message);
-      toast.error('Failed to delete case. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    setEditedCase(caseData);
+    setSelectedDate(caseData.hearing_date ? new Date(caseData.hearing_date) : undefined);
+  }, [caseData]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEditedCase((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveChanges = async (data: any) => {
-    setLoading(true);
+  const handleDateChange = (date: Date | undefined) => {
+    setSelectedDate(date);
+    setEditedCase((prev) => ({ ...prev, hearing_date: date ? date.toISOString() : null }));
+  };
+
+  const handleUpdateCase = async () => {
     try {
-      const { data: updatedCase, error } = await supabase
+      const { data, error } = await supabase
         .from('court_filings')
-        .update({
-          case_title: data.case_title,
-          case_number: data.case_number,
-          client_name: data.client_name,
-          court_name: data.court_name,
-          court_type: data.court_type,
-          jurisdiction: data.jurisdiction,
-          status: data.status,
-          filing_type: data.filing_type,
-          description: data.description,
-          opposing_party: data.opposing_party,
-          filing_date: data.filing_date,
-          hearing_date: data.hearing_date || null,
-          updated_at: new Date().toISOString(),
-        })
+        .update(editedCase)
         .eq('id', caseData.id)
-        .select('*')
+        .select()
         .single();
-      
-      if (error) throw error;
-      
-      onCaseUpdated(updatedCase as Case);
+
+      if (error) {
+        throw error;
+      }
+
+      onCaseUpdated(data as Case);
       setIsEditing(false);
     } catch (error: any) {
       console.error('Error updating case:', error.message);
       toast.error('Failed to update case. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Not set';
-    return new Date(dateString).toLocaleDateString('en-IN');
+  const handleDeleteCase = async () => {
+    if (window.confirm('Are you sure you want to delete this case?')) {
+      try {
+        const { error } = await supabase
+          .from('court_filings')
+          .delete()
+          .eq('id', caseData.id);
+
+        if (error) {
+          throw error;
+        }
+
+        onCaseDeleted(caseData.id);
+        navigate('/case-management');
+      } catch (error: any) {
+        console.error('Error deleting case:', error.message);
+        toast.error('Failed to delete case. Please try again.');
+      }
+    }
   };
 
-  const getCaseStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>;
-      case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
-      case 'scheduled':
-        return <Badge className="bg-blue-500 hover:bg-blue-600">Scheduled</Badge>;
-      case 'closed':
-        return <Badge variant="outline">Closed</Badge>;
-      case 'archived':
-        return <Badge variant="outline" className="bg-gray-100 text-gray-500">Archived</Badge>;
-      default:
-        return <Badge variant="outline">Draft</Badge>;
+  const handleCopyCaseDetails = () => {
+    const caseDetailsText = `
+      Case Title: ${caseData.case_title || ''}
+      Case Number: ${caseData.case_number || ''}
+      Client Name: ${caseData.client_name || ''}
+      Court Name: ${caseData.court_name || ''}
+      Filing Date: ${caseData.filing_date ? new Date(caseData.filing_date).toLocaleDateString() : ''}
+      Hearing Date: ${caseData.hearing_date ? new Date(caseData.hearing_date).toLocaleDateString() : ''}
+      Status: ${caseData.status || ''}
+      Description: ${caseData.description || ''}
+    `;
+
+    navigator.clipboard.writeText(caseDetailsText);
+    toast.success('Case details copied to clipboard!');
+  };
+
+  const handleDownloadCaseDetails = () => {
+    const caseDetailsText = `
+      Case Title: ${caseData.case_title || ''}
+      Case Number: ${caseData.case_number || ''}
+      Client Name: ${caseData.client_name || ''}
+      Court Name: ${caseData.court_name || ''}
+      Filing Date: ${caseData.filing_date ? new Date(caseData.filing_date).toLocaleDateString() : ''}
+      Hearing Date: ${caseData.hearing_date ? new Date(caseData.hearing_date).toLocaleDateString() : ''}
+      Status: ${caseData.status || ''}
+      Description: ${caseData.description || ''}
+    `;
+
+    const element = document.createElement('a');
+    const file = new Blob([caseDetailsText], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = `${caseData.case_title?.replace(/\s+/g, '_').toLowerCase() || 'case_details'}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    toast.success('Case details downloaded successfully!');
+  };
+
+  // Add this new method to the CaseDetails component to send status updates to clients
+  const sendStatusUpdate = async (caseData: Case) => {
+    try {
+      if (!caseData.client_id) {
+        toast.error('No client associated with this case');
+        return;
+      }
+      
+      const message = `Your case "${caseData.case_title}" status has been updated to "${caseData.status}".`;
+      
+      const { data, error } = await supabase
+        .from('case_status_updates')
+        .insert([{
+          client_id: caseData.client_id,
+          case_id: caseData.id,
+          case_title: caseData.case_title,
+          status: caseData.status,
+          message: message,
+          is_read: false
+        }])
+        .select();
+        
+      if (error) throw error;
+      
+      toast.success('Status update sent to client');
+      
+    } catch (error) {
+      console.error('Error sending status update:', error);
+      toast.error('Failed to send status update');
     }
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+    <Card className="shadow-md border border-gray-200 dark:border-gray-700">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700">
         <div>
-          <CardTitle className="text-xl font-bold">
-            {isEditing ? (
-              <Input
-                className="font-bold text-xl h-8"
-                {...form.register('case_title')}
-                placeholder="Case Title"
-              />
-            ) : (
-              caseData.case_title || 'Untitled Case'
-            )}
-          </CardTitle>
-          <CardDescription className="mt-1 flex items-center space-x-1">
-            <FileText className="h-4 w-4" />
-            <span>
-              {isEditing ? (
-                <Input
-                  className="h-7 text-sm"
-                  {...form.register('case_number')}
-                  placeholder="Case Number"
-                />
-              ) : (
-                caseData.case_number || 'No case number'
-              )}
-            </span>
-          </CardDescription>
+          <CardTitle className="text-xl">{caseData.case_title || 'Case Details'}</CardTitle>
+          <CardDescription>View and manage case information</CardDescription>
         </div>
-        <div className="flex space-x-2">
-          {isEditing ? (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(false)}
-                disabled={loading}
-              >
-                <X className="h-4 w-4 mr-1" />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              Actions
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setIsEditing(true)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Case
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCopyCaseDetails}>
+              <Copy className="h-4 w-4 mr-2" />
+              Copy Details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDownloadCaseDetails}>
+              <Download className="h-4 w-4 mr-2" />
+              Download Details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => sendStatusUpdate(caseData)}>
+              <Bell className="h-4 w-4 mr-2" />
+              Send Status Update
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDeleteCase}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Case
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardHeader>
+      <CardContent className="p-4 md:p-6">
+        {isEditing ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="case_title">Case Title</Label>
+                <Input
+                  type="text"
+                  id="case_title"
+                  name="case_title"
+                  value={editedCase.case_title || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="case_number">Case Number</Label>
+                <Input
+                  type="text"
+                  id="case_number"
+                  name="case_number"
+                  value={editedCase.case_number || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="client_name">Client Name</Label>
+                <Input
+                  type="text"
+                  id="client_name"
+                  name="client_name"
+                  value={editedCase.client_name || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="court_name">Court Name</Label>
+                <Input
+                  type="text"
+                  id="court_name"
+                  name="court_name"
+                  value={editedCase.court_name || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Input
+                  type="text"
+                  id="status"
+                  name="status"
+                  value={editedCase.status || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="opposing_party">Opposing Party</Label>
+                <Input
+                  type="text"
+                  id="opposing_party"
+                  name="opposing_party"
+                  value={editedCase.opposing_party || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="filing_date">Filing Date</Label>
+                <Input
+                  type="text"
+                  id="filing_date"
+                  name="filing_date"
+                  value={editedCase.filing_date || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="hearing_date">Hearing Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !selectedDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {selectedDate ? (
+                        format(selectedDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarDate
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={handleDateChange}
+                      disabled={(date) =>
+                        date > new Date()
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={editedCase.description || ''}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="ghost" onClick={() => setIsEditing(false)}>
                 Cancel
               </Button>
-              <Button
-                size="sm"
-                onClick={form.handleSubmit(handleSaveChanges)}
-                disabled={loading}
-              >
-                <Save className="h-4 w-4 mr-1" />
-                Save
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete this case and all associated records.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteCase} className="bg-red-500 hover:bg-red-600">
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </>
-          )}
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="hearings">Hearings</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="details" className="space-y-4 pt-4">
-            {isEditing ? (
-              <Form {...form}>
-                <form className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="client_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Client Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Client name" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="opposing_party"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Opposing Party</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Opposing party name" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="court_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Court Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Court name" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="court_type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Court Type</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select court type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {courtTypes.map(type => (
-                                <SelectItem key={type.value} value={type.value}>
-                                  {type.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="jurisdiction"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Jurisdiction</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Jurisdiction" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="filing_type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Filing Type</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Filing type" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {caseStatusOptions.map(status => (
-                                <SelectItem key={status.value} value={status.value}>
-                                  {status.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="filing_date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Filing Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="hearing_date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Next Hearing Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Case Description</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Case description" {...field} rows={4} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</h3>
-                  <div className="mt-1">{getCaseStatusBadge(caseData.status || 'draft')}</div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Client</h3>
-                    <p className="mt-1 text-sm flex items-center">
-                      <User className="h-4 w-4 mr-1 text-gray-400" />
-                      {caseData.client_name || 'Not specified'}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Opposing Party</h3>
-                    <p className="mt-1 text-sm flex items-center">
-                      <Users className="h-4 w-4 mr-1 text-gray-400" />
-                      {caseData.opposing_party || 'Not specified'}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Court</h3>
-                    <p className="mt-1 text-sm flex items-center">
-                      <Gavel className="h-4 w-4 mr-1 text-gray-400" />
-                      {caseData.court_name || 'Not specified'} 
-                      {caseData.court_type ? ` (${courtTypes.find(c => c.value === caseData.court_type)?.label || caseData.court_type})` : ''}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Jurisdiction</h3>
-                    <p className="mt-1 text-sm flex items-center">
-                      <MapPin className="h-4 w-4 mr-1 text-gray-400" />
-                      {caseData.jurisdiction || 'Not specified'}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Filing Date</h3>
-                    <p className="mt-1 text-sm flex items-center">
-                      <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-                      {formatDate(caseData.filing_date)}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Next Hearing</h3>
-                    <p className="mt-1 text-sm flex items-center">
-                      <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                      {formatDate(caseData.hearing_date)}
-                    </p>
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</h3>
-                  <p className="mt-1 text-sm whitespace-pre-line">
-                    {caseData.description || 'No description provided.'}
-                  </p>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="hearings">
-            <div className="pt-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Hearing Schedule</h3>
-                <Button variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Hearing
-                </Button>
-              </div>
-              
-              {caseData.hearing_date ? (
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
-                        <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full mr-3">
-                          <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Next Hearing</p>
-                          <p className="text-sm text-gray-500">{formatDate(caseData.hearing_date)}</p>
-                        </div>
-                      </div>
-                      <Badge>Upcoming</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed rounded-lg">
-                  <Calendar className="h-8 w-8 text-gray-400 mb-2" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No Hearings Scheduled</h3>
-                  <p className="text-sm text-gray-500 max-w-md mt-1">
-                    There are no upcoming hearings for this case. Click the "Add Hearing" button to schedule a new one.
-                  </p>
-                </div>
-              )}
+              <Button onClick={handleUpdateCase}>Update Case</Button>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="documents">
-            <div className="pt-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Case Documents</h3>
-                <Button variant="outline" size="sm">
-                  <FilePlus className="h-4 w-4 mr-1" />
-                  Upload Document
-                </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm font-medium">Case Title</div>
+                <div className="text-gray-600 dark:text-gray-400">{caseData.case_title || '—'}</div>
               </div>
-              
-              {caseData.documents && caseData.documents.length > 0 ? (
-                <div className="grid grid-cols-1 gap-2">
-                  {caseData.documents.map((doc: any, index: number) => (
-                    <Card key={index}>
-                      <CardContent className="p-3 flex justify-between items-center">
-                        <div className="flex items-center">
-                          <FileText className="h-5 w-5 text-gray-400 mr-2" />
-                          <div>
-                            <p className="font-medium">{doc.name || `Document ${index + 1}`}</p>
-                            <p className="text-xs text-gray-500">{doc.type || 'Unknown type'}</p>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="sm">View</Button>
-                      </CardContent>
-                    </Card>
-                  ))}
+              <div>
+                <div className="text-sm font-medium">Case Number</div>
+                <div className="text-gray-600 dark:text-gray-400">{caseData.case_number || '—'}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Client Name</div>
+                <div className="text-gray-600 dark:text-gray-400">{caseData.client_name || '—'}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Court Name</div>
+                <div className="text-gray-600 dark:text-gray-400">{caseData.court_name || '—'}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Status</div>
+                <div>
+                  <Badge variant={
+                      caseData.status === "active"
+                        ? "default"
+                        : caseData.status === "pending"
+                        ? "secondary"
+                        : caseData.status === "scheduled"
+                        ? "outline"
+                        : "secondary"
+                    }>
+                    {caseData.status || '—'}
+                  </Badge>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed rounded-lg">
-                  <FileText className="h-8 w-8 text-gray-400 mb-2" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No Documents</h3>
-                  <p className="text-sm text-gray-500 max-w-md mt-1">
-                    There are no documents attached to this case. Upload important case documents for easy access.
-                  </p>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Opposing Party</div>
+                <div className="text-gray-600 dark:text-gray-400">{caseData.opposing_party || '—'}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Filing Date</div>
+                <div className="text-gray-600 dark:text-gray-400">
+                  {caseData.filing_date ? new Date(caseData.filing_date).toLocaleDateString() : '—'}
                 </div>
-              )}
+              </div>
+              <div>
+                <div className="text-sm font-medium">Hearing Date</div>
+                <div className="text-gray-600 dark:text-gray-400">
+                  {caseData.hearing_date ? new Date(caseData.hearing_date).toLocaleDateString() : '—'}
+                </div>
+              </div>
             </div>
-          </TabsContent>
-        </Tabs>
+            <div>
+              <div className="text-sm font-medium">Description</div>
+              <div className="text-gray-600 dark:text-gray-400">{caseData.description || '—'}</div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
