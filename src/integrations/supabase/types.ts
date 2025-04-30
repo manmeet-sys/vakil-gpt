@@ -635,28 +635,37 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bar_number: string | null
+          encryption_key: string | null
           enrollment_date: string | null
           full_name: string | null
           id: string
           jurisdiction: string | null
+          two_factor_enabled: boolean | null
+          two_factor_secret: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
           bar_number?: string | null
+          encryption_key?: string | null
           enrollment_date?: string | null
           full_name?: string | null
           id: string
           jurisdiction?: string | null
+          two_factor_enabled?: boolean | null
+          two_factor_secret?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
           bar_number?: string | null
+          encryption_key?: string | null
           enrollment_date?: string | null
           full_name?: string | null
           id?: string
           jurisdiction?: string | null
+          two_factor_enabled?: boolean | null
+          two_factor_secret?: string | null
           updated_at?: string | null
         }
         Relationships: []

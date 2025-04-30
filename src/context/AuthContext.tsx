@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { BillingProvider } from './BillingContext';
 import { encryptData, decryptData, generateEncryptionKey, exportKey, importKey, generateOTPSecret } from '@/utils/crypto';
 
-// Define the UserProfile interface
+// Define the UserProfile interface with the new fields
 interface UserProfile {
   id: string;
   full_name: string | null;
