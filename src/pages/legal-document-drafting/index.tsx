@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FileText, Pen, Copy, Download, Sparkles, MessageCircle, Book, History, HelpCircle, Users } from 'lucide-react';
 import { toast } from 'sonner';
@@ -249,7 +248,7 @@ const LegalDocumentDraftingPage = () => {
                 <span className="hidden sm:inline">Structured</span> Form
               </TabsTrigger>
               <TabsTrigger value="prompt" className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
+                <MessageCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">AI</span> Prompt
               </TabsTrigger>
               <TabsTrigger value="collaborative" className="flex items-center gap-2">
