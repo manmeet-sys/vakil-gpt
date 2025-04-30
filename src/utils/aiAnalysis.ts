@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for AI analysis with focus on Indian law
  */
@@ -34,34 +33,62 @@ Please analyze this legal document and provide:
 
 Format your response with clear sections and be thorough yet concise in your legal analysis.`;
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${getApiKey('gemini')}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        { role: 'user', parts: [{ text: systemPrompt }] },
-        { role: 'model', parts: [{ text: 'I will analyze the legal document as VakilGPT, with specific focus on Indian law, constitutional considerations, and the new criminal laws.' }] },
-        { role: 'user', parts: [{ text }] }
-      ],
-      generationConfig: {
-        temperature: 0.4,
-        maxOutputTokens: 4000,
-        topK: 40,
-        topP: 0.95
-      }
-    })
-  });
+  // Check if filename indicates this is for document generation rather than analysis
+  const isGeneratingDocument = filename.includes('Document Draft') || text.includes('Create a professional');
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || `API error: ${response.status}`);
-  }
+  // Adjust prompt for document generation
+  const generationPrompt = isGeneratingDocument ? 
+    `You are VakilGPT, an expert legal document drafter specialized in Indian law. 
+    
+    Create a professional Indian legal document based on the following request:
+    
+    "${text}"
+    
+    Please draft a comprehensive document that:
+    1. Follows all Indian legal drafting standards and conventions
+    2. Includes all necessary sections and clauses for this type of document
+    3. Uses formal legal language appropriate for Indian courts
+    4. Follows proper formatting with paragraphs, numbering, etc.
+    5. References relevant Indian laws, acts and precedents
+    6. Is ready for use in the appropriate Indian jurisdiction
+    
+    Format your response as the complete text of the document only, without any explanations or commentary outside the document itself.` : systemPrompt;
 
-  const data = await response.json();
-  if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-    return data.candidates[0].content.parts[0].text;
-  } else {
-    throw new Error('Invalid response format from Gemini API');
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${getApiKey('gemini')}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          { role: 'user', parts: [{ text: isGeneratingDocument ? generationPrompt : systemPrompt }] },
+          { role: 'model', parts: [{ text: isGeneratingDocument ? 
+            'I will draft a professional Indian legal document following all proper formatting and standards.' : 
+            'I will analyze the legal document as VakilGPT, with specific focus on Indian law, constitutional considerations, and the new criminal laws.' }] },
+          { role: 'user', parts: [{ text }] }
+        ],
+        generationConfig: {
+          temperature: isGeneratingDocument ? 0.2 : 0.4,
+          maxOutputTokens: 4000,
+          topK: 40,
+          topP: 0.95
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || `API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+      return data.candidates[0].content.parts[0].text;
+    } else {
+      throw new Error('Invalid response format from Gemini API');
+    }
+  } catch (error) {
+    console.error("Error in generateGeminiAnalysis:", error);
+    throw new Error(`Failed to generate analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 
@@ -86,6 +113,27 @@ Please analyze this legal document and provide:
 7. Recommendations or areas of concern for Indian practice
 
 Format your response with clear sections and be thorough yet concise in your legal analysis.`;
+
+  // Check if this is for document generation
+  const isGeneratingDocument = filename.includes('Document Draft') || text.includes('Create a professional');
+
+  // Adjust prompt for document generation
+  const generationPrompt = isGeneratingDocument ? 
+    `You are VakilGPT, an expert legal document drafter specialized in Indian law. 
+    
+    Create a professional Indian legal document based on the following request:
+    
+    "${text}"
+    
+    Please draft a comprehensive document that:
+    1. Follows all Indian legal drafting standards and conventions
+    2. Includes all necessary sections and clauses for this type of document
+    3. Uses formal legal language appropriate for Indian courts
+    4. Follows proper formatting with paragraphs, numbering, etc.
+    5. References relevant Indian laws, acts and precedents
+    6. Is ready for use in the appropriate Indian jurisdiction
+    
+    Format your response as the complete text of the document only, without any explanations or commentary outside the document itself.` : systemPrompt;
   
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
@@ -96,10 +144,10 @@ Format your response with clear sections and be thorough yet concise in your leg
     body: JSON.stringify({
       model: 'deepseek-chat',
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: isGeneratingDocument ? generationPrompt : systemPrompt },
         { role: 'user', content: text }
       ],
-      temperature: 0.4,
+      temperature: isGeneratingDocument ? 0.2 : 0.4,
       max_tokens: 4000
     })
   });
