@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -107,29 +108,21 @@ const ClientPortalPage = () => {
     try {
       setLoading(true);
       
-      // Fetch client documents using RPC function with proper type assertion for Args and Returns
-      const { data: documentsData, error: documentsError } = await supabase
-        .rpc<ClientPortalRPC['get_client_documents']['Returns'], ClientPortalRPC['get_client_documents']['Args']>(
-          'get_client_documents',
-          {
-            p_client_id: user?.id || ''
-          }
-        );
+      // Fetch client documents using RPC function
+      const { data: documentsData, error: documentsError } = await supabase.rpc('get_client_documents', {
+        p_client_id: user?.id || ''
+      });
       
       if (documentsError) throw documentsError;
       
-      // Fetch status updates using RPC function with proper type assertion for Args and Returns
-      const { data: updatesData, error: updatesError } = await supabase
-        .rpc<ClientPortalRPC['get_client_status_updates']['Returns'], ClientPortalRPC['get_client_status_updates']['Args']>(
-          'get_client_status_updates',
-          {
-            p_client_id: user?.id || ''
-          }
-        );
+      // Fetch status updates using RPC function
+      const { data: updatesData, error: updatesError } = await supabase.rpc('get_client_status_updates', {
+        p_client_id: user?.id || ''
+      });
       
       if (updatesError) throw updatesError;
       
-      // Count unread updates with type safety
+      // Count unread updates
       const unread = updatesData ? (updatesData as StatusUpdate[]).filter(update => !update.is_read).length : 0;
       
       // Fetch cases
@@ -173,14 +166,10 @@ const ClientPortalPage = () => {
   
   const markUpdateAsRead = async (updateId: string) => {
     try {
-      // Use RPC function to mark status update as read with proper type assertion
-      const { error } = await supabase
-        .rpc<ClientPortalRPC['mark_status_update_read']['Returns'], ClientPortalRPC['mark_status_update_read']['Args']>(
-          'mark_status_update_read',
-          {
-            p_update_id: updateId
-          }
-        );
+      // Use RPC function to mark status update as read
+      const { error } = await supabase.rpc('mark_status_update_read', {
+        p_update_id: updateId
+      });
       
       if (error) throw error;
       

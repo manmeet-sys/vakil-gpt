@@ -60,7 +60,7 @@ export interface ClientMessage {
   created_at: string;
 }
 
-// Custom Types for RPC functions with proper parameter types
+// Custom Types for RPC functions
 export interface ClientPortalRPC {
   add_client_document: {
     Args: {
