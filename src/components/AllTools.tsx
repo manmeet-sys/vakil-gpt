@@ -8,7 +8,7 @@ import {
   Heart, 
   Home, 
   FileSearch, 
-  File আইন, 
+  File,
   IndianRupee, 
   BarChart2,
   Gavel
@@ -65,42 +65,42 @@ const AllTools = () => {
       id: "legal-document-drafting",
       title: "Legal Document Drafting",
       description: "Draft legal documents with AI-powered templates and suggestions",
-      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      icon: <File className="h-5 w-5 text-blue-600" />,
       path: "/legal-document-drafting"
     },
     {
       id: "legal-brief-generation",
       title: "Legal Brief Generation",
       description: "Generate legal briefs with AI-powered analysis and arguments",
-      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      icon: <File className="h-5 w-5 text-blue-600" />,
       path: "/legal-brief-generation"
     },
     {
       id: "contract-review",
       title: "AI Contract Review",
       description: "Review contracts for risks, compliance issues, and negotiation points",
-      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      icon: <File className="h-5 w-5 text-blue-600" />,
       path: "/contract-review"
     },
     {
       id: "legal-template-library",
       title: "Legal Template Library",
       description: "Access a library of legal document templates for various purposes",
-      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      icon: <File className="h-5 w-5 text-blue-600" />,
       path: "/legal-template-library"
     },
     {
       id: "legal-form-filler",
       title: "Legal Form Filler",
       description: "Fill out legal forms with AI-powered assistance",
-      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      icon: <File className="h-5 w-5 text-blue-600" />,
       path: "/legal-form-filler"
     },
     {
       id: "legal-document-automation",
       title: "Legal Document Automation",
       description: "Automate the creation of legal documents with AI-powered workflows",
-      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      icon: <File className="h-5 w-5 text-blue-600" />,
       path: "/legal-document-automation"
     },
   ];
