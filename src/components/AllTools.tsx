@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
   Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
   FileSearch, List, Clipboard, BarChart2, AlertTriangle, Landmark, User,
-  CalendarClock, Gavel, Calculator, IndianRupee, ChevronRight, ArrowRight } from 'lucide-react';
+  CalendarClock, Gavel, Calculator, IndianRupee, ChevronRight, ArrowRight, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +32,12 @@ const AllTools = () => {
           name: 'Deadline Management', 
           icon: <CalendarClock className="h-5 w-5" />, 
           path: '/deadline-management',
+          badge: 'New'
+        },
+        { 
+          name: 'Document Drafting', 
+          icon: <PenLine className="h-5 w-5" />, 
+          path: '/legal-document-drafting',
           badge: 'New'
         }
       ]

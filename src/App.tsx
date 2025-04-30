@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -85,6 +84,9 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// New import for the Legal Document Drafting page
+import LegalDocumentDraftingPage from "./pages/legal-document-drafting";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -313,6 +315,12 @@ const App = () => (
                   <Route path="/regulatory-reporting" element={
                     <ProtectedRoute>
                       <PlaceholderToolPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/legal-document-drafting" element={
+                    <ProtectedRoute>
+                      <LegalDocumentDraftingPage />
                     </ProtectedRoute>
                   } />
                   

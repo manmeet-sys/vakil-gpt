@@ -18,7 +18,8 @@ import {
   IndianRupee,
   CalendarClock,
   Gavel,
-  Search
+  Search,
+  PenLine
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -72,6 +73,12 @@ const ToolsPage = () => {
           name: 'Deadline Management', 
           icon: CalendarClock, 
           path: '/deadline-management',
+          badge: 'New'
+        },
+        { 
+          name: 'Document Drafting', 
+          icon: PenLine, 
+          path: '/legal-document-drafting',
           badge: 'New'
         }
       ]
