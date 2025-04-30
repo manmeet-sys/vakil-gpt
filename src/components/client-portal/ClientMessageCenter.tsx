@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -79,11 +78,10 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
     const fetchMessages = async () => {
       try {
         const { data, error } = await supabase
-          .rpc('get_client_advocate_messages', {
+          .rpc<ClientMessage[]>('get_client_advocate_messages', {
             p_client_id: clientId,
             p_advocate_id: selectedAdvocate
-          })
-          .returns<ClientMessage[]>();
+          });
           
         if (error) throw error;
         
@@ -100,8 +98,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
             await supabase
               .rpc('mark_messages_read', {
                 p_message_ids: unreadMessages
-              })
-              .returns<null>();
+              });
           }
         }
         
@@ -141,14 +138,13 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       
       // Send message using RPC with proper type assertion
       const { data, error } = await supabase
-        .rpc('add_client_message', {
+        .rpc<ClientMessage>('add_client_message', {
           p_content: newMessage.trim(),
           p_sender_id: clientId,
           p_sender_name: user?.user_metadata?.full_name || 'Client',
           p_receiver_id: selectedAdvocate,
           p_is_read: false
-        })
-        .returns<ClientMessage>();
+        });
       
       if (error) throw error;
       

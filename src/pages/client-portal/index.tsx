@@ -109,19 +109,17 @@ const ClientPortalPage = () => {
       
       // Fetch client documents using RPC function with type assertion
       const { data: documentsData, error: documentsError } = await supabase
-        .rpc('get_client_documents', {
+        .rpc<ClientDocument[]>('get_client_documents', {
           p_client_id: user?.id || ''
-        })
-        .returns<ClientDocument[]>();
+        });
       
       if (documentsError) throw documentsError;
       
       // Fetch status updates using RPC function with type assertion
       const { data: updatesData, error: updatesError } = await supabase
-        .rpc('get_client_status_updates', {
+        .rpc<StatusUpdate[]>('get_client_status_updates', {
           p_client_id: user?.id || ''
-        })
-        .returns<StatusUpdate[]>();
+        });
       
       if (updatesError) throw updatesError;
       
@@ -173,8 +171,7 @@ const ClientPortalPage = () => {
       const { error } = await supabase
         .rpc('mark_status_update_read', {
           p_update_id: updateId
-        })
-        .returns<null>();
+        });
       
       if (error) throw error;
       
