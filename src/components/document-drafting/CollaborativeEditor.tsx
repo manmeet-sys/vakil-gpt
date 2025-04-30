@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Loader2, Users, Save, UserPlus, MessageCircle, Clock, History } from 'lucide-react';
+import { Loader2, Users, Save, UserPlus, MessageCircle, Clock, History, X } from 'lucide-react';
 import { 
   Tooltip,
   TooltipContent,

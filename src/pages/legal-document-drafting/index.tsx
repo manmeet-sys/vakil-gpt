@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FileText, Pen, Copy, Download, Sparkles, MessageSquare, Book, History, HelpCircle } from 'lucide-react';
+import { FileText, Pen, Copy, Download, Sparkles, MessageCircle, Book, History, HelpCircle, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import LegalToolLayout from '@/components/LegalToolLayout';
@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import CollaborativeEditor from '@/components/document-drafting/CollaborativeEditor';
 import PdfUploader from '@/components/PdfUploader';
+import { Button } from '@/components/ui/button';
 import { 
   Tooltip, 
   TooltipContent, 
