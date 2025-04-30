@@ -6,13 +6,14 @@ import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Key, Smartphone, AlertCircle, Check, Loader2, Download, QrCode, Copy, Eye, EyeOff } from 'lucide-react';
+import { Shield, Key, Smartphone, AlertCircle, Check, Loader2, Download, Copy, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import QRCode from 'qrcode';
 
 const SecuritySettingsPage = () => {
   const { user, userProfile, twoFactorEnabled, enableTwoFactor, disableTwoFactor, verifyTwoFactor } = useAuth();
@@ -25,6 +26,7 @@ const SecuritySettingsPage = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [showEncryptionKey, setShowEncryptionKey] = useState(false);
   const [dummyEncryptionKey, setDummyEncryptionKey] = useState(""); // For demonstration only
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   
   useEffect(() => {
     // Generate a dummy encryption key for demonstration
@@ -34,7 +36,27 @@ const SecuritySettingsPage = () => {
       ).join('');
       setDummyEncryptionKey(key);
     }
-  }, []);
+  }, [dummyEncryptionKey]);
+  
+  // Generate QR code when two-factor secret is available
+  useEffect(() => {
+    const generateQRCode = async () => {
+      if (twoFactorSecret && user?.email) {
+        try {
+          // Create otpauth URL for authenticator apps
+          // Format: otpauth://totp/APP_NAME:USER_IDENTIFIER?secret=SECRET&issuer=ISSUER_NAME&algorithm=SHA1&digits=6&period=30
+          const otpauthUrl = `otpauth://totp/VakilGPT:${user.email}?secret=${twoFactorSecret}&issuer=VakilGPT&algorithm=SHA1&digits=6&period=30`;
+          const qrCode = await QRCode.toDataURL(otpauthUrl);
+          setQrCodeUrl(qrCode);
+        } catch (error) {
+          console.error('Error generating QR code:', error);
+          toast.error('Failed to generate QR code');
+        }
+      }
+    };
+
+    generateQRCode();
+  }, [twoFactorSecret, user?.email]);
   
   // Check if user is authenticated
   useEffect(() => {
@@ -68,6 +90,7 @@ const SecuritySettingsPage = () => {
       if (success) {
         toast.success('Two-factor authentication has been disabled');
         setTwoFactorSecret(null);
+        setQrCodeUrl("");
       } else {
         toast.error('Failed to disable two-factor authentication');
       }
@@ -90,7 +113,8 @@ const SecuritySettingsPage = () => {
       const success = await verifyTwoFactor(verificationCode);
       if (success) {
         toast.success('Two-factor authentication has been enabled');
-        setTwoFactorSecret(null); // Clear the secret after verification
+        setTwoFactorSecret(null);
+        setQrCodeUrl("");
       } else {
         toast.error('Invalid verification code');
       }
@@ -160,8 +184,17 @@ const SecuritySettingsPage = () => {
                       
                       <div className="flex flex-col items-center space-y-4">
                         <div className="bg-white p-4 rounded-lg w-48 h-48 flex items-center justify-center">
-                          {/* This would be a QR code in a real app */}
-                          <QrCode className="h-32 w-32 text-gray-800" />
+                          {qrCodeUrl ? (
+                            <img 
+                              src={qrCodeUrl} 
+                              alt="Two-factor authentication QR code"
+                              className="w-full h-full"
+                            />
+                          ) : (
+                            <div className="animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 w-full h-full flex items-center justify-center">
+                              <Loader2 className="h-8 w-8 text-gray-400 dark:text-gray-500 animate-spin" />
+                            </div>
+                          )}
                         </div>
                         
                         <div className="flex items-center space-x-2">
