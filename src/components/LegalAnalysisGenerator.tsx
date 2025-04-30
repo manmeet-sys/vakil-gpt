@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { FileText, Loader2, InfoIcon, HelpCircle } from 'lucide-react';
+import { FileText, Loader2, InfoIcon, HelpCircle, Calendar, Clock, FileSpreadsheet } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -10,25 +10,40 @@ import { toast } from '@/hooks/use-toast';
 import { getGeminiResponse } from './GeminiProIntegration';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useNavigate } from 'react-router-dom';
 
 interface LegalAnalysisGeneratorProps {
   apiProvider: 'gemini' | 'deepseek';
   onAnalysisComplete: (analysis: string) => void;
   buttonLabel?: string;
   iconOnly?: boolean;
+  caseId?: string;
+  caseName?: string;
 }
 
 const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({ 
   apiProvider, 
   onAnalysisComplete,
   buttonLabel = "Legal Analysis",
-  iconOnly = false
+  iconOnly = false,
+  caseId,
+  caseName
 }) => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [analysisType, setAnalysisType] = useState('legal-brief');
   const [text, setText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('regular');
+  const [relatedTools, setRelatedTools] = useState<{
+    showDeadlines: boolean;
+    showDocuments: boolean;
+    showBilling: boolean;
+  }>({
+    showDeadlines: false,
+    showDocuments: false,
+    showBilling: false
+  });
   
   const analysisOptions = [
     { value: 'legal-brief', label: 'Legal Brief Generation', description: 'Creates a structured legal brief with citations from Indian courts' },
@@ -47,6 +62,60 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
     { value: 'property', label: 'Property Law', analysisType: 'compliance-check' },
     { value: 'ipr', label: 'Intellectual Property', analysisType: 'risk-assessment' }
   ];
+
+  // Update related tools based on analysis type
+  useEffect(() => {
+    switch(analysisType) {
+      case 'legal-brief':
+        setRelatedTools({
+          showDeadlines: true,
+          showDocuments: true,
+          showBilling: false
+        });
+        break;
+      case 'contract-analysis':
+        setRelatedTools({
+          showDeadlines: true,
+          showDocuments: true,
+          showBilling: true
+        });
+        break;
+      case 'case-precedent':
+        setRelatedTools({
+          showDeadlines: false,
+          showDocuments: true,
+          showBilling: false
+        });
+        break;
+      case 'compliance-check':
+        setRelatedTools({
+          showDeadlines: true,
+          showDocuments: false,
+          showBilling: true
+        });
+        break;
+      case 'risk-assessment':
+        setRelatedTools({
+          showDeadlines: true,
+          showDocuments: true,
+          showBilling: true
+        });
+        break;
+      case 'document-summary':
+        setRelatedTools({
+          showDeadlines: false,
+          showDocuments: true,
+          showBilling: false
+        });
+        break;
+      default:
+        setRelatedTools({
+          showDeadlines: false,
+          showDocuments: false,
+          showBilling: false
+        });
+    }
+  }, [analysisType]);
 
   const getPromptTemplate = (type: string, content: string): string => {
     const templates: Record<string, string> = {
@@ -132,6 +201,19 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
     }
   };
 
+  // Handle navigation to related tools
+  const navigateToDeadlines = () => {
+    navigate('/deadline-management', { state: { caseId, caseName } });
+  };
+
+  const navigateToDocuments = () => {
+    navigate('/legal-document-drafting', { state: { caseId, caseName } });
+  };
+
+  const navigateToBilling = () => {
+    navigate('/billing-tracking', { state: { caseId, caseName } });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -149,6 +231,7 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
           <DialogTitle>Indian Legal Analysis Generator</DialogTitle>
           <DialogDescription>
             Generate legal analysis tailored to Indian law, with citations from Indian courts
+            {caseName && <span className="font-medium text-blue-600 dark:text-blue-400 ml-1">for case: {caseName}</span>}
           </DialogDescription>
         </DialogHeader>
         
@@ -244,6 +327,77 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
             </TabsContent>
           ))}
         </Tabs>
+        
+        {/* Related Tools Section */}
+        {(relatedTools.showDeadlines || relatedTools.showDocuments || relatedTools.showBilling) && (
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-2">
+            <h4 className="text-sm font-medium mb-2">Related Tools</h4>
+            <div className="flex flex-wrap gap-2">
+              {relatedTools.showDeadlines && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={navigateToDeadlines}
+                        className="flex items-center gap-1 text-xs"
+                      >
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>Deadlines</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Track important deadlines related to this matter</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              
+              {relatedTools.showDocuments && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={navigateToDocuments}
+                        className="flex items-center gap-1 text-xs"
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>Documents</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Create or manage documents for this matter</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              
+              {relatedTools.showBilling && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={navigateToBilling}
+                        className="flex items-center gap-1 text-xs"
+                      >
+                        <FileSpreadsheet className="h-3.5 w-3.5" />
+                        <span>Billing</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Record billable time for this legal work</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+          </div>
+        )}
         
         <DialogFooter>
           <Button 
