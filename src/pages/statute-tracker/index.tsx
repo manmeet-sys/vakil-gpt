@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { BookOpen, Search, Loader2, AlertCircle, Filter, Clock, Download, BookOpenCheck, FileCog } from 'lucide-react';
@@ -777,4 +778,233 @@ ${results}
                                 </Button>
                               </div>
                             </PopoverContent>
-                          </
+                          </Popover>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <Label htmlFor="relevance" className="text-sm font-medium">Relevance Threshold ({searchOptions.relevance}%)</Label>
+                        </div>
+                        <Slider
+                          id="relevance"
+                          min={50}
+                          max={100}
+                          step={5}
+                          value={[searchOptions.relevance]}
+                          onValueChange={(value) => handleSettingChange('relevance', value[0])}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>Broader Results</span>
+                          <span>Precise Results</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="includeRepealed"
+                            checked={searchOptions.includeRepealed}
+                            onCheckedChange={(checked) => handleSettingChange('includeRepealed', !!checked)}
+                          />
+                          <Label htmlFor="includeRepealed" className="text-sm cursor-pointer">
+                            Include Repealed Statutes
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="includeAmendments"
+                            checked={searchOptions.includeAmendments}
+                            onCheckedChange={(checked) => handleSettingChange('includeAmendments', !!checked)}
+                          />
+                          <Label htmlFor="includeAmendments" className="text-sm cursor-pointer">
+                            Include Amendments
+                          </Label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setQuery('');
+                        setResults('');
+                        logAction('clear_search', {});
+                      }}
+                    >
+                      Clear
+                    </Button>
+                    <Button
+                      onClick={handleSearch}
+                      disabled={isSearching}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {isSearching ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Researching...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="mr-2 h-4 w-4" />
+                          Search Statutes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+              
+              {results && (
+                <CardFooter className="flex flex-col pt-6">
+                  <div className="border-t w-full pt-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold">Research Results</h3>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleExportCitations}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Extract Citations
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleDownloadResults}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="prose dark:prose-invert max-w-none">
+                      <pre className="whitespace-pre-wrap text-sm bg-gray-50 dark:bg-zinc-900 p-4 rounded-md border overflow-auto max-h-[600px]">
+                        {results}
+                      </pre>
+                    </div>
+                  </div>
+                </CardFooter>
+              )}
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="statute-list">
+            <Card>
+              <CardHeader>
+                <CardTitle>Indian Statutes Library</CardTitle>
+                <CardDescription>
+                  Browse the collection of important Indian statutes with latest updates and amendments
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <Input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search statutes by name or keyword..."
+                    className="max-w-md"
+                  />
+                  
+                  <Accordion type="single" collapsible className="w-full">
+                    {mockStatutes
+                      .filter(statute => 
+                        !searchTerm || 
+                        statute.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        statute.details.keyTerms.some(term => term.toLowerCase().includes(searchTerm.toLowerCase()))
+                      )
+                      .map(statute => (
+                        <AccordionItem key={statute.id} value={statute.id}>
+                          <AccordionTrigger className="hover:bg-gray-50 dark:hover:bg-zinc-900 px-4 py-2 rounded-md">
+                            <div className="flex flex-col items-start text-left">
+                              <div className="flex items-center gap-2">
+                                <span>{statute.name}</span>
+                                {statute.recentChanges.length > 0 && (
+                                  <Badge variant="outline" className="text-xs bg-yellow-100 dark:bg-yellow-900 border-yellow-200 dark:border-yellow-800">
+                                    Recently Updated
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
+                                Last updated: {statute.lastUpdated}
+                              </span>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pl-4">
+                            <div className="space-y-4 py-2">
+                              <p className="text-sm">{statute.details.description}</p>
+                              
+                              {statute.details.keyTerms.length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-medium mb-2">Key Terms:</h4>
+                                  <div className="flex flex-wrap gap-2">
+                                    {statute.details.keyTerms.map(term => (
+                                      <Badge key={term} variant="secondary" className="text-xs" onClick={() => handleSuggestedQuery(term)}>
+                                        {term}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {statute.recentChanges.length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-medium mb-2">Recent Changes:</h4>
+                                  <ul className="list-disc list-inside text-sm space-y-1">
+                                    {statute.recentChanges.map((change, i) => (
+                                      <li key={i}>{change}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              
+                              {statute.details.relatedRules.length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-medium mb-2">Related Rules:</h4>
+                                  <ul className="list-disc list-inside text-sm space-y-1">
+                                    {statute.details.relatedRules.map((rule, i) => (
+                                      <li key={i} className="cursor-pointer hover:text-blue-600" onClick={() => handleSuggestedQuery(rule)}>
+                                        {rule}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              
+                              <div className="flex justify-between items-center pt-2">
+                                <Button 
+                                  variant="link" 
+                                  className="text-blue-600 dark:text-blue-400 p-0 h-auto text-sm"
+                                  onClick={() => window.open(statute.details.fullTextLink, '_blank')}
+                                >
+                                  View Full Text <FileCog className="ml-1 h-3 w-3" />
+                                </Button>
+                                
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleSuggestedQuery(`Key provisions of ${statute.name}`)}
+                                >
+                                  Research This Statute
+                                </Button>
+                              </div>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                  </Accordion>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </LegalToolLayout>
+  );
+};
+
+export default StatuteTrackerPage;
