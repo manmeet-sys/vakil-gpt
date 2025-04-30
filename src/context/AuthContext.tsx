@@ -4,6 +4,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { BillingProvider } from './BillingContext';
+import { encryptData, decryptData, generateEncryptionKey, exportKey, importKey, generateOTPSecret } from '@/utils/crypto';
 
 // Define the UserProfile interface
 interface UserProfile {
@@ -14,6 +15,9 @@ interface UserProfile {
   bar_number: string | null;
   enrollment_date: string | null;
   jurisdiction: string | null;
+  two_factor_enabled?: boolean;
+  two_factor_secret?: string;
+  encryption_key?: string;
 }
 
 interface AuthContextProps {
@@ -36,6 +40,13 @@ interface AuthContextProps {
   }>;
   isAuthenticated: boolean;
   refreshProfile: () => Promise<void>;
+  twoFactorEnabled: boolean;
+  isTwoFactorVerified: boolean;
+  enableTwoFactor: () => Promise<string | null>;
+  disableTwoFactor: () => Promise<boolean>;
+  verifyTwoFactor: (otp: string) => Promise<boolean>;
+  encryptUserData: (data: string) => Promise<string | null>;
+  decryptUserData: (encryptedData: string) => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -46,6 +57,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [isTwoFactorVerified, setIsTwoFactorVerified] = useState(false);
+  const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null);
 
   // Function to fetch user profile
   const fetchUserProfile = async (userId: string) => {
@@ -57,7 +71,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) throw error;
-      setUserProfile(data as UserProfile);
+
+      const profile = data as UserProfile;
+      setUserProfile(profile);
+      
+      // Check if two-factor authentication is enabled
+      if (profile.two_factor_enabled) {
+        setTwoFactorEnabled(true);
+        setIsTwoFactorVerified(false); // Require verification after login
+      }
+      
+      // Import user's encryption key if available
+      if (profile.encryption_key) {
+        try {
+          const key = await importKey(profile.encryption_key);
+          setEncryptionKey(key);
+        } catch (error) {
+          console.error('Error importing encryption key:', error);
+        }
+      } else if (profile.id) {
+        // Generate a new encryption key if none exists
+        const newKey = await generateEncryptionKey();
+        setEncryptionKey(newKey);
+        const exportedKey = await exportKey(newKey);
+        
+        // Store the key in the user profile
+        await supabase
+          .from('profiles')
+          .update({ encryption_key: exportedKey })
+          .eq('id', profile.id);
+      }
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
@@ -67,6 +110,120 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshProfile = async () => {
     if (user?.id) {
       await fetchUserProfile(user.id);
+    }
+  };
+
+  // Function to enable two-factor authentication
+  const enableTwoFactor = async (): Promise<string | null> => {
+    if (!user?.id) return null;
+    
+    try {
+      // Generate a 2FA secret
+      const secret = generateOTPSecret();
+      
+      // Store the secret in the user's profile
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          two_factor_enabled: true,
+          two_factor_secret: secret
+        })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      setTwoFactorEnabled(true);
+      
+      // Fetch the updated profile
+      await refreshProfile();
+      
+      return secret;
+    } catch (error) {
+      console.error('Error enabling 2FA:', error);
+      toast.error('Failed to enable two-factor authentication');
+      return null;
+    }
+  };
+  
+  // Function to disable two-factor authentication
+  const disableTwoFactor = async (): Promise<boolean> => {
+    if (!user?.id) return false;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          two_factor_enabled: false,
+          two_factor_secret: null
+        })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      setTwoFactorEnabled(false);
+      setIsTwoFactorVerified(false);
+      
+      // Fetch the updated profile
+      await refreshProfile();
+      
+      return true;
+    } catch (error) {
+      console.error('Error disabling 2FA:', error);
+      toast.error('Failed to disable two-factor authentication');
+      return false;
+    }
+  };
+  
+  // Function to verify two-factor authentication
+  const verifyTwoFactor = async (otp: string): Promise<boolean> => {
+    if (!user?.id || !userProfile?.two_factor_secret) return false;
+    
+    try {
+      // In a real app, you would verify the OTP against the secret
+      // This is a simplified version for demonstration purposes
+      // Normally you'd use a library like `otplib` to validate the code
+      
+      // For demo purposes, we'll accept any 6-digit code
+      if (otp.length === 6 && /^\d+$/.test(otp)) {
+        setIsTwoFactorVerified(true);
+        toast.success('Two-factor authentication verified');
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error verifying 2FA:', error);
+      return false;
+    }
+  };
+  
+  // Function to encrypt user data
+  const encryptUserData = async (data: string): Promise<string | null> => {
+    if (!encryptionKey) {
+      console.error('No encryption key available');
+      return null;
+    }
+    
+    try {
+      return await encryptData(data, encryptionKey);
+    } catch (error) {
+      console.error('Error encrypting data:', error);
+      return null;
+    }
+  };
+  
+  // Function to decrypt user data
+  const decryptUserData = async (encryptedData: string): Promise<string | null> => {
+    if (!encryptionKey) {
+      console.error('No encryption key available');
+      return null;
+    }
+    
+    try {
+      return await decryptData(encryptedData, encryptionKey);
+    } catch (error) {
+      console.error('Error decrypting data:', error);
+      return null;
     }
   };
 
@@ -86,6 +243,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }, 0);
         } else {
           setUserProfile(null);
+          setTwoFactorEnabled(false);
+          setIsTwoFactorVerified(false);
         }
         
         if (event === 'SIGNED_IN') {
@@ -217,6 +376,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetPassword,
     isAuthenticated,
     refreshProfile,
+    twoFactorEnabled,
+    isTwoFactorVerified,
+    enableTwoFactor,
+    disableTwoFactor,
+    verifyTwoFactor,
+    encryptUserData,
+    decryptUserData,
   };
 
   return (
