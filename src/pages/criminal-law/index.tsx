@@ -1,7 +1,7 @@
 
 import React from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { Gavel, Library, BookOpen, Scale, AlertTriangle, FileText } from 'lucide-react';
+import { Gavel, Library, BookOpen, Scale, AlertTriangle, FileText, ArrowRight } from 'lucide-react';
 import PracticeAreaTools from '@/components/PracticeAreaTools';
 import BackButton from '@/components/BackButton';
 
