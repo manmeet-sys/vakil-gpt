@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Database, Loader2, Search, Gavel, BookOpen, Bookmark, Clock, Badge, Filter } from 'lucide-react';
+import { Database, Loader2, Search, Gavel, BookOpen, Bookmark, Clock, Badge, Filter, FileText, Globe, Landmark } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
