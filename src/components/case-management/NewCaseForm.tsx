@@ -119,7 +119,8 @@ const NewCaseForm: React.FC<NewCaseFormProps> = ({ onCaseCreated, onCancel }) =>
       
       if (error) throw error;
       
-      onCaseCreated(newCase as Case);
+      // Type assertion to match the expected Case type
+      onCaseCreated({...(newCase as any), client_id: newCase.client_id || null} as Case);
     } catch (error: any) {
       console.error('Error creating new case:', error.message);
       toast.error('Failed to create case. Please try again.');

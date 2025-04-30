@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import BackButton from './BackButton';
@@ -28,19 +29,26 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
+interface NavigationItem {
+  name: string;
+  path: string;
+  icon: React.FC<{ className?: string }>;
+  current?: boolean;
+}
+
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/reset-password';
   const { user, signOut, userProfile } = useAuth();
 
-  const mainNavigationItems = [
+  const mainNavigationItems: NavigationItem[] = [
     { name: 'Tools', path: '/tools', icon: Settings },
     { name: 'Legal Chat', path: '/chat', icon: BellRing },
     { name: 'Knowledge', path: '/knowledge', icon: BookOpen },
     {
       name: "Client Portal",
-      href: "/client-portal",
-      icon: <Shield className="h-5 w-5" />,
+      path: "/client-portal",
+      icon: Shield,
       current: location.pathname === "/client-portal",
     },
   ];
@@ -65,21 +73,24 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </Link>
           
           <div className="hidden md:flex items-center space-x-6 ml-8">
-            {mainNavigationItems.map((item) => (
-              <Link 
-                key={item.name}
-                to={item.path} 
-                className={cn(
-                  "text-sm font-medium flex items-center gap-1.5 transition-colors", 
-                  location.pathname === item.path || location.pathname.startsWith(`${item.path}/`) 
-                    ? "text-legal-accent dark:text-legal-accent" 
-                    : "text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.name}
-              </Link>
-            ))}
+            {mainNavigationItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <Link 
+                  key={item.name}
+                  to={item.path} 
+                  className={cn(
+                    "text-sm font-medium flex items-center gap-1.5 transition-colors", 
+                    location.pathname === item.path || location.pathname.startsWith(`${item.path}/`) 
+                      ? "text-legal-accent dark:text-legal-accent" 
+                      : "text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
+                  )}
+                >
+                  <IconComponent className="h-4 w-4" />
+                  {item.name}
+                </Link>
+              );
+            })}
           </div>
         </div>
         
@@ -186,24 +197,27 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   
                   <nav className="flex-1 pt-4">
                     <ul className="space-y-2">
-                      {mainNavigationItems.map((item) => (
-                        <li key={item.name}>
-                          <SheetClose asChild>
-                            <Link
-                              to={item.path}
-                              className={cn(
-                                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                                location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
-                                  ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
-                                  : "hover:bg-gray-50 dark:hover:bg-gray-800"
-                              )}
-                            >
-                              <item.icon className="h-5 w-5" />
-                              {item.name}
-                            </Link>
-                          </SheetClose>
-                        </li>
-                      ))}
+                      {mainNavigationItems.map((item) => {
+                        const IconComponent = item.icon;
+                        return (
+                          <li key={item.name}>
+                            <SheetClose asChild>
+                              <Link
+                                to={item.path}
+                                className={cn(
+                                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                                  location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
+                                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+                                    : "hover:bg-gray-50 dark:hover:bg-gray-800"
+                                )}
+                              >
+                                <IconComponent className="h-5 w-5" />
+                                {item.name}
+                              </Link>
+                            </SheetClose>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </nav>
                   

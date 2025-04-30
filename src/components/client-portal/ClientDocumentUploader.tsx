@@ -30,13 +30,19 @@ interface FileWithPreview extends File {
   id?: string;
 }
 
+// Helper interface for case dropdown
+interface ClientCase {
+  id: string;
+  title: string;
+}
+
 const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUploaderProps) => {
   const { user } = useAuth();
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [uploading, setUploading] = useState(false);
   const [notes, setNotes] = useState('');
   const [selectedCase, setSelectedCase] = useState<string>('');
-  const [cases, setCases] = useState<{id: string, title: string}[]>([]);
+  const [cases, setCases] = useState<ClientCase[]>([]);
   
   React.useEffect(() => {
     // Fetch client cases
@@ -101,20 +107,21 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
           
         if (storageError) throw storageError;
         
-        // Create database entry
-        const { data: docData, error: docError } = await supabase
-          .from('client_documents')
-          .insert([{
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            path: filePath,
-            client_id: clientId,
-            notes: notes,
-            case_id: selectedCase || null,
-            status: 'pending_review',
-            uploaded_by: user?.id
-          }]);
+        // Create database entry using RPC function
+        const { data: docData, error: docError } = await supabase.rpc(
+          'add_client_document',
+          {
+            p_name: file.name,
+            p_size: file.size,
+            p_type: file.type,
+            p_path: filePath,
+            p_client_id: clientId,
+            p_notes: notes,
+            p_case_id: selectedCase || null,
+            p_status: 'pending_review',
+            p_uploaded_by: user?.id
+          }
+        );
           
         if (docError) throw docError;
         

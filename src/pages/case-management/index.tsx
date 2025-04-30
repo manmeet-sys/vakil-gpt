@@ -71,7 +71,7 @@ export type Case = {
   documents: any; 
   created_at: string;
   updated_at: string;
-  client_id: string | null; // Add this field
+  client_id: string | null;
 };
 
 const CaseManagementPage = () => {

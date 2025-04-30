@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,8 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from 'lucide-react';
-import { CalendarDate } from '@/components/ui/calendar';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -79,7 +80,8 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ caseData, onCaseUpdated, onCa
         throw error;
       }
 
-      onCaseUpdated(data as Case);
+      // Type assertion to match the Case type
+      onCaseUpdated({...(data as any), client_id: data.client_id || null} as Case);
       setIsEditing(false);
     } catch (error: any) {
       console.error('Error updating case:', error.message);
@@ -146,7 +148,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ caseData, onCaseUpdated, onCa
     toast.success('Case details downloaded successfully!');
   };
 
-  // Add this new method to the CaseDetails component to send status updates to clients
+  // Modified method to send status updates to clients
   const sendStatusUpdate = async (caseData: Case) => {
     try {
       if (!caseData.client_id) {
@@ -156,18 +158,22 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ caseData, onCaseUpdated, onCa
       
       const message = `Your case "${caseData.case_title}" status has been updated to "${caseData.status}".`;
       
-      const { data, error } = await supabase
-        .from('case_status_updates')
-        .insert([{
+      // Use custom function to add status update since we don't have the table in Supabase types yet
+      const { error } = await fetch('/api/send-status-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           client_id: caseData.client_id,
           case_id: caseData.id,
           case_title: caseData.case_title,
           status: caseData.status,
           message: message,
           is_read: false
-        }])
-        .select();
-        
+        }),
+      }).then(res => res.json());
+      
       if (error) throw error;
       
       toast.success('Status update sent to client');
@@ -300,7 +306,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ caseData, onCaseUpdated, onCa
                         !selectedDate && "text-muted-foreground"
                       )}
                     >
-                      <Calendar className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 h-4 w-4" />
                       {selectedDate ? (
                         format(selectedDate, "PPP")
                       ) : (
@@ -309,7 +315,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ caseData, onCaseUpdated, onCa
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarDate
+                    <Calendar
                       mode="single"
                       selected={selectedDate}
                       onSelect={handleDateChange}
@@ -317,6 +323,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ caseData, onCaseUpdated, onCa
                         date > new Date()
                       }
                       initialFocus
+                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
