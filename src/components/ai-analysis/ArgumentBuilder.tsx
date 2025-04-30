@@ -34,7 +34,7 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
   const [clientPosition, setClientPosition] = useState<string>('plaintiff');
   const [caseType, setCaseType] = useState<string>('civil');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [arguments, setArguments] = useState<ArgumentBuilderType | null>(null);
+  const [legalArguments, setLegalArguments] = useState<ArgumentBuilderType | null>(null);
   const [activeTab, setActiveTab] = useState<string>('input');
 
   // Case types
@@ -118,7 +118,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
           jsonResponse = JSON.parse(response);
         }
         
-        setArguments(jsonResponse);
+        setLegalArguments(jsonResponse);
         setActiveTab('results');
         
         if (onAnalysisComplete) {
@@ -153,7 +153,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
     try {
       // Parse JSON from the analysis
       const jsonResponse: ArgumentBuilderType = JSON.parse(analysis);
-      setArguments(jsonResponse);
+      setLegalArguments(jsonResponse);
       setActiveTab('results');
       
       if (onAnalysisComplete) {
@@ -175,7 +175,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
   };
   
   const reset = () => {
-    setArguments(null);
+    setLegalArguments(null);
     setActiveTab('input');
   };
 
@@ -205,7 +205,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="input">Case Information</TabsTrigger>
-          <TabsTrigger value="results" disabled={!arguments}>Results</TabsTrigger>
+          <TabsTrigger value="results" disabled={!legalArguments}>Results</TabsTrigger>
         </TabsList>
         
         <TabsContent value="input" className="mt-4 space-y-4">
@@ -288,7 +288,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
         </TabsContent>
         
         <TabsContent value="results" className="mt-4">
-          {arguments && (
+          {legalArguments && (
             <div className="space-y-6">
               {/* Main Arguments */}
               <Card>
@@ -302,7 +302,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {arguments.mainArguments.map((arg, index) => (
+                  {legalArguments.mainArguments.map((arg, index) => (
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex justify-between items-center mb-2">
                         <h3 className="font-medium text-lg">{arg.title}</h3>
@@ -348,7 +348,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {arguments.counterArguments.map((counter, index) => (
+                  {legalArguments.counterArguments.map((counter, index) => (
                     <div key={index} className="border rounded-lg p-4">
                       <h3 className="font-medium text-lg mb-2">{counter.title}</h3>
                       <div className="space-y-3">
@@ -383,7 +383,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
                   <div className="space-y-3">
                     <h3 className="text-sm font-medium">Statutory References</h3>
                     <ul className="list-disc pl-5 space-y-1">
-                      {arguments.statutoryReferences.map((statute, index) => (
+                      {legalArguments.statutoryReferences.map((statute, index) => (
                         <li key={index} className="text-sm text-gray-700 dark:text-gray-300">{statute}</li>
                       ))}
                     </ul>
@@ -392,17 +392,17 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
                   <div className="space-y-3">
                     <h3 className="text-sm font-medium">Case References</h3>
                     <ul className="list-disc pl-5 space-y-1">
-                      {arguments.caseReferences.map((caseRef, index) => (
+                      {legalArguments.caseReferences.map((caseRef, index) => (
                         <li key={index} className="text-sm text-gray-700 dark:text-gray-300">{caseRef}</li>
                       ))}
                     </ul>
                   </div>
                   
-                  {arguments.constitutionalProvisions && arguments.constitutionalProvisions.length > 0 && (
+                  {legalArguments.constitutionalProvisions && legalArguments.constitutionalProvisions.length > 0 && (
                     <div className="space-y-3">
                       <h3 className="text-sm font-medium">Constitutional Provisions</h3>
                       <ul className="list-disc pl-5 space-y-1">
-                        {arguments.constitutionalProvisions.map((provision, index) => (
+                        {legalArguments.constitutionalProvisions.map((provision, index) => (
                           <li key={index} className="text-sm text-gray-700 dark:text-gray-300">{provision}</li>
                         ))}
                       </ul>
@@ -415,7 +415,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
                   </Button>
                   <Button 
                     onClick={() => {
-                      navigator.clipboard.writeText(JSON.stringify(arguments, null, 2));
+                      navigator.clipboard.writeText(JSON.stringify(legalArguments, null, 2));
                       toast({
                         title: "Copied",
                         description: "Arguments data copied to clipboard",
