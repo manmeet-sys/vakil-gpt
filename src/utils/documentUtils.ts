@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for document formatting and handling
  */
@@ -236,3 +235,160 @@ export const isValidCaseNumber = (
   }
 };
 
+/**
+ * Creates a document structure based on a natural language prompt
+ * @param prompt The natural language prompt describing the document needs
+ * @returns Object with document structure and metadata
+ */
+export const createDocumentFromPrompt = (prompt: string): {
+  title: string;
+  type: string;
+  parties?: string;
+  jurisdiction?: string;
+  content: string;
+} => {
+  // This is a placeholder function - in real implementation, this would use AI
+  // For now, we'll implement a very basic keyword extraction
+  
+  const lowerPrompt = prompt.toLowerCase();
+  let documentType = 'other';
+  let title = '';
+  let parties = '';
+  let jurisdiction = '';
+  let content = '';
+  
+  // Determine document type
+  if (lowerPrompt.includes('affidavit')) {
+    documentType = 'affidavit';
+    title = 'Affidavit';
+  } else if (lowerPrompt.includes('pil') || lowerPrompt.includes('public interest')) {
+    documentType = 'pil';
+    title = 'Public Interest Litigation';
+  } else if (lowerPrompt.includes('writ') && lowerPrompt.includes('petition')) {
+    documentType = 'writ_petition';
+    title = 'Writ Petition';
+  } else if (lowerPrompt.includes('notice') && (lowerPrompt.includes('legal') || lowerPrompt.includes('law'))) {
+    documentType = 'legal_notice';
+    title = 'Legal Notice';
+  } else if (lowerPrompt.includes('vakalatnama')) {
+    documentType = 'vakalatnama';
+    title = 'Vakalatnama';
+  } else {
+    title = 'Legal Document';
+  }
+  
+  // Extract jurisdiction
+  if (lowerPrompt.includes('supreme court') || lowerPrompt.includes('supreme')) {
+    jurisdiction = 'supreme_court';
+  } else if (lowerPrompt.includes('delhi high') || lowerPrompt.includes('high court of delhi')) {
+    jurisdiction = 'delhi_hc';
+  } else if (lowerPrompt.includes('bombay high') || lowerPrompt.includes('high court of bombay')) {
+    jurisdiction = 'bombay_hc';
+  }
+  
+  // Extract parties (crude approximation)
+  if (lowerPrompt.includes('versus') || lowerPrompt.includes(' vs ') || lowerPrompt.includes(' v. ')) {
+    const vsIndex = Math.max(
+      lowerPrompt.indexOf('versus'),
+      lowerPrompt.indexOf(' vs '),
+      lowerPrompt.indexOf(' v. ')
+    );
+    
+    if (vsIndex > 0) {
+      const beforeVs = prompt.substring(0, vsIndex).trim();
+      const afterVs = prompt.substring(vsIndex + 2).trim();
+      const lastNameBeforeVs = beforeVs.split(' ').slice(-2).join(' ');
+      const firstNameAfterVs = afterVs.split(' ').slice(0, 2).join(' ');
+      parties = `${lastNameBeforeVs} vs ${firstNameAfterVs}`;
+    }
+  }
+  
+  // Generate placeholder content based on document type
+  const currentDate = formatLegalDate();
+  switch (documentType) {
+    case 'affidavit':
+      content = `BEFORE ${getCourtVenueName(jurisdiction)}\n\nAFFIDAVIT\n\nI, [NAME], son/daughter of [FATHER'S NAME], aged [AGE] years, resident of [ADDRESS], do hereby solemnly affirm and declare as follows:\n\n1. That I am the [DESIGNATION] in the above matter and am well conversant with the facts and circumstances of the case.\n\n2. [CONTENT BASED ON PROMPT]\n\n3. That the contents of this affidavit are true and correct to the best of my knowledge and belief. Nothing material has been concealed therefrom.\n\nVERIFICATION:\nVerified at [PLACE] on this ${currentDate} that the contents of the above affidavit are true and correct to my knowledge and belief and nothing material has been concealed therefrom.\n\nDEPONENT`;
+      break;
+    // ... other document types
+    default:
+      content = `[This document will be generated based on your prompt: "${prompt}"]\n\nDate: ${currentDate}`;
+  }
+  
+  return {
+    title,
+    type: documentType,
+    parties,
+    jurisdiction,
+    content
+  };
+};
+
+/**
+ * Extracts structured information from a legal document
+ * @param content The document content to analyze
+ * @returns Object with extracted information
+ */
+export const extractDocumentInfo = (content: string): {
+  court?: string;
+  parties?: string;
+  caseNumber?: string;
+  filingDate?: string;
+  keyPoints: string[];
+} => {
+  const lines = content.split('\n').map(line => line.trim());
+  const result: {
+    court?: string;
+    parties?: string;
+    caseNumber?: string;
+    filingDate?: string;
+    keyPoints: string[];
+  } = {
+    keyPoints: []
+  };
+  
+  // Extract court name
+  const courtLineIndex = lines.findIndex(line => 
+    line.includes('COURT') || line.includes('TRIBUNAL') || line.includes('COMMISSION') || 
+    line.includes('FORUM') || line.startsWith('IN THE') || line.startsWith('BEFORE')
+  );
+  
+  if (courtLineIndex >= 0) {
+    result.court = lines[courtLineIndex];
+  }
+  
+  // Extract case number
+  const caseNoLineIndex = lines.findIndex(line => 
+    (line.includes('NO.') || line.includes('NUMBER')) && 
+    (line.includes('/') || /\d{4}/.test(line))
+  );
+  
+  if (caseNoLineIndex >= 0) {
+    result.caseNumber = lines[caseNoLineIndex];
+  }
+  
+  // Extract parties
+  const partiesLineIndex = lines.findIndex(line => 
+    (line.includes('VERSUS') || line.includes(' VS ') || line.includes(' V. ')) ||
+    (lines.indexOf('PETITIONER') >= 0 && lines.indexOf('RESPONDENT') >= 0)
+  );
+  
+  if (partiesLineIndex >= 0) {
+    result.parties = lines[partiesLineIndex];
+  }
+  
+  // Extract filing date - look for date formats
+  const dateLineIndex = lines.findIndex(line => 
+    line.includes('DATED') || line.includes('DATED:') || 
+    /\d{1,2}(st|nd|rd|th)\s+day\s+of\s+\w+,\s+\d{4}/.test(line)
+  );
+  
+  if (dateLineIndex >= 0) {
+    result.filingDate = lines[dateLineIndex];
+  }
+  
+  // Extract key points - look for numbered paragraphs
+  const numberedLines = lines.filter(line => /^\d+\./.test(line));
+  result.keyPoints = numberedLines.slice(0, 5); // Get first 5 numbered paragraphs
+  
+  return result;
+};

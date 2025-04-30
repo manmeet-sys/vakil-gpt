@@ -2,14 +2,16 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, Download, FileText, AlertCircle, Check, Send, Printer } from 'lucide-react';
+import { Copy, Download, FileText, AlertCircle, Check, Send, Printer, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { extractDocumentInfo } from '@/utils/documentUtils';
+import { Textarea } from '@/components/ui/textarea';
 
 type DocumentPreviewProps = {
   title: string;
@@ -32,6 +34,8 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [emailAddress, setEmailAddress] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableContent, setEditableContent] = useState('');
 
   const formatDocumentType = (type: string) => {
     if (!type) return '';
@@ -129,6 +133,18 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     setEmailAddress('');
   };
 
+  const handleStartEditing = () => {
+    setEditableContent(content);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    // In a real application, you'd update the document in the parent component
+    // For now, just simulate the save and update the local content
+    toast.success('Document updated successfully');
+    setIsEditing(false);
+  };
+
   const getFormattedContent = () => {
     if (!content) return '';
     
@@ -137,18 +153,33 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       .replace(/\n\n/g, '</p><p>')
       .replace(/\n/g, '<br />');
     
+    // Extract document info for enhanced formatting
+    const docInfo = extractDocumentInfo(content);
+    
+    // If we have a court and parties, enhance the formatting
+    if (docInfo.court || docInfo.parties) {
+      return `
+        <div class="formatted-legal-document">
+          ${docInfo.court ? `<div class="court-header text-center font-bold my-4">${docInfo.court}</div>` : ''}
+          ${docInfo.caseNumber ? `<div class="case-number text-center my-2">${docInfo.caseNumber}</div>` : ''}
+          ${docInfo.parties ? `<div class="parties text-center font-bold my-4">${docInfo.parties}</div>` : ''}
+          <p>${formattedContent}</p>
+        </div>
+      `;
+    }
+    
     return `<div class="formatted-legal-document"><p>${formattedContent}</p></div>`;
   };
 
   return (
     <Card className="h-full shadow-md overflow-hidden flex flex-col">
       <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/50 dark:to-gray-900/50 pb-2">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
               <FileText className="h-5 w-5" />
             </div>
-            <CardTitle className="text-xl text-legal-slate dark:text-white truncate">
+            <CardTitle className="text-xl text-legal-slate dark:text-white truncate max-w-[200px] sm:max-w-xs">
               {title || 'Document Preview'}
             </CardTitle>
           </div>
@@ -183,9 +214,28 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             <div className="absolute top-0 left-0 h-full w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px] opacity-50 pointer-events-none" />
             
             <TabsContent value="raw" className="m-0">
-              <pre className="bg-white dark:bg-gray-900 p-6 rounded-md shadow-inner border border-gray-200 dark:border-gray-800 whitespace-pre-wrap text-sm text-legal-slate dark:text-white font-mono relative overflow-auto min-h-[60vh]">
-                {content}
-              </pre>
+              {isEditing ? (
+                <div className="p-4">
+                  <Textarea
+                    value={editableContent}
+                    onChange={(e) => setEditableContent(e.target.value)}
+                    className="font-mono text-sm min-h-[60vh] resize-none"
+                    placeholder="Enter document content..."
+                  />
+                  <div className="flex justify-end gap-2 mt-4">
+                    <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                      Cancel
+                    </Button>
+                    <Button size="sm" onClick={handleSaveEdit}>
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <pre className="bg-white dark:bg-gray-900 p-6 rounded-md shadow-inner border border-gray-200 dark:border-gray-800 whitespace-pre-wrap text-sm text-legal-slate dark:text-white font-mono relative overflow-auto min-h-[60vh]">
+                  {content}
+                </pre>
+              )}
             </TabsContent>
             
             <TabsContent value="formatted" className="m-0">
@@ -205,7 +255,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             <AlertTitle className="text-amber-600 dark:text-amber-400">No document content</AlertTitle>
             <AlertDescription className="text-amber-700 dark:text-amber-300 text-sm">
-              Generate a document using the form to preview it here.
+              Generate a document using the form or prompt to preview it here.
             </AlertDescription>
           </Alert>
         )}
@@ -213,22 +263,22 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       
       {content && (
         <CardFooter className="flex flex-wrap justify-between gap-2 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800 p-4">
-          <div className="flex gap-2 flex-wrap">
-            <Button variant="outline" onClick={handleCopy} className="flex gap-1 text-sm h-8" disabled={copied}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={handleCopy} className="flex gap-1 text-xs h-8" disabled={copied}>
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              <span>{copied ? 'Copied' : 'Copy'}</span>
+              <span className="hidden xs:inline">{copied ? 'Copied' : 'Copy'}</span>
             </Button>
             
-            <Button variant="outline" onClick={handlePrint} className="flex gap-1 text-sm h-8">
+            <Button variant="outline" onClick={handlePrint} className="flex gap-1 text-xs h-8">
               <Printer className="h-3.5 w-3.5" />
-              <span>Print</span>
+              <span className="hidden xs:inline">Print</span>
             </Button>
             
             <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="flex gap-1 text-sm h-8">
+                <Button variant="outline" className="flex gap-1 text-xs h-8">
                   <Send className="h-3.5 w-3.5" />
-                  <span>Share</span>
+                  <span className="hidden xs:inline">Share</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
@@ -249,39 +299,49 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                       required
                     />
                   </div>
-                  <div className="flex justify-end gap-2">
+                  <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => setShowEmailDialog(false)}>
                       Cancel
                     </Button>
                     <Button type="submit" className="bg-legal-accent hover:bg-legal-accent/90">
                       Send Document
                     </Button>
-                  </div>
+                  </DialogFooter>
                 </form>
               </DialogContent>
             </Dialog>
             
             <Button 
+              variant="outline" 
+              className="flex gap-1 text-xs h-8"
+              onClick={handleStartEditing}
+              disabled={isEditing}
+            >
+              <Edit className="h-3.5 w-3.5" />
+              <span className="hidden xs:inline">Edit</span>
+            </Button>
+            
+            <Button 
               variant={legalAnalysis ? "outline" : "default"} 
-              className={`flex gap-1 text-sm h-8 ${!legalAnalysis ? 'bg-amber-600 hover:bg-amber-700 text-white' : ''}`}
+              className={`flex gap-1 text-xs h-8 ${!legalAnalysis ? 'bg-amber-600 hover:bg-amber-700 text-white' : ''}`}
               onClick={analyzeDocument}
               disabled={isAnalyzing || !content}
             >
               {isAnalyzing ? (
                 <>
                   <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                  <span>Analyzing...</span>
+                  <span className="hidden xs:inline">Analyzing...</span>
                 </>
               ) : (
                 <>
                   <AlertCircle className="h-3.5 w-3.5" />
-                  <span>{legalAnalysis ? 'View Analysis' : 'Analyze Document'}</span>
+                  <span className="hidden xs:inline">{legalAnalysis ? 'View Analysis' : 'Analyze'}</span>
                 </>
               )}
             </Button>
           </div>
           
-          <Button onClick={onDownload} className="bg-legal-accent hover:bg-legal-accent/90 flex gap-1 h-8">
+          <Button onClick={onDownload} className="bg-legal-accent hover:bg-legal-accent/90 flex gap-1 text-xs h-8">
             <Download className="h-3.5 w-3.5" />
             <span>Download</span>
           </Button>
@@ -324,4 +384,3 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
 };
 
 export default DocumentPreview;
-

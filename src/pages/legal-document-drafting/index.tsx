@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FileText, Pen, Copy, Download, Sparkles } from 'lucide-react';
+import { FileText, Pen, Copy, Download, Sparkles, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import LegalToolLayout from '@/components/LegalToolLayout';
@@ -8,11 +8,14 @@ import DocumentDraftingForm from '@/components/document-drafting/DocumentDraftin
 import DocumentPreview from '@/components/document-drafting/DocumentPreview';
 import DocumentTemplateList from '@/components/document-drafting/DocumentTemplateList';
 import GeminiFlashAnalyzer from '@/components/GeminiFlashAnalyzer';
+import PromptBasedGenerator from '@/components/document-drafting/PromptBasedGenerator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const LegalDocumentDraftingPage = () => {
   const [draftContent, setDraftContent] = useState('');
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentType, setDocumentType] = useState('');
+  const [activeTab, setActiveTab] = useState<'form' | 'prompt'>('form');
   
   const handleDraftGenerated = (title: string, type: string, content: string) => {
     setDocumentTitle(title);
@@ -80,13 +83,13 @@ const LegalDocumentDraftingPage = () => {
         animate="animate"
         variants={pageVariants}
       >
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
               <FileText className="h-6 w-6 text-legal-accent" />
               <span>Indian Legal Document Drafting</span>
             </h1>
-            <p className="text-legal-muted dark:text-gray-400">
+            <p className="text-legal-muted dark:text-gray-400 text-sm md:text-base">
               Draft professional legal documents compliant with Indian laws and judicial requirements
             </p>
           </div>
@@ -95,11 +98,35 @@ const LegalDocumentDraftingPage = () => {
           </div>
         </div>
         
+        <div className="mb-6">
+          <Tabs 
+            defaultValue="form" 
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as 'form' | 'prompt')}
+            className="w-full"
+          >
+            <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+              <TabsTrigger value="form" className="flex items-center gap-2">
+                <Pen className="h-4 w-4" />
+                <span className="hidden sm:inline">Structured</span> Form
+              </TabsTrigger>
+              <TabsTrigger value="prompt" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">AI</span> Prompt
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Form and Templates */}
           <motion.div className="lg:col-span-1 space-y-6" variants={itemVariants}>
-            {/* Document Generation Form */}
-            <DocumentDraftingForm onDraftGenerated={handleDraftGenerated} />
+            {/* Document Generation (Form or Prompt based on activeTab) */}
+            {activeTab === 'form' ? (
+              <DocumentDraftingForm onDraftGenerated={handleDraftGenerated} />
+            ) : (
+              <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
+            )}
             
             {/* Document Templates Section */}
             <DocumentTemplateList onTemplateSelect={(template) => {
@@ -163,4 +190,3 @@ const LegalDocumentDraftingPage = () => {
 };
 
 export default LegalDocumentDraftingPage;
-

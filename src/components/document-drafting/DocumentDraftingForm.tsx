@@ -13,6 +13,7 @@ import { FileText, PenLine, Loader2, Sparkles } from 'lucide-react';
 import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { motion } from 'framer-motion';
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'Document title is required' }),
@@ -215,7 +216,7 @@ Please generate a complete and professional legal document following Indian lega
       </CardHeader>
       <CardContent className="pt-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 text-base">
             <FormField
               control={form.control}
               name="title"
@@ -241,7 +242,7 @@ Please generate a complete and professional legal document following Indian lega
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-12">
                         <SelectValue placeholder="Select document type" />
                       </SelectTrigger>
                     </FormControl>
@@ -269,7 +270,7 @@ Please generate a complete and professional legal document following Indian lega
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-12">
                         <SelectValue placeholder="Select jurisdiction" />
                       </SelectTrigger>
                     </FormControl>
@@ -294,7 +295,7 @@ Please generate a complete and professional legal document following Indian lega
                   value={selectedVenue}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12">
                       <SelectValue placeholder="Select specific venue" />
                     </SelectTrigger>
                   </FormControl>
@@ -386,32 +387,37 @@ Please generate a complete and professional legal document following Indian lega
               />
             )}
             
-            <Button 
-              type="submit" 
-              className="w-full bg-legal-accent hover:bg-legal-accent/90"
-              disabled={isGenerating}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
             >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {useAIAssistant ? 'Generating Document...' : 'Creating Document...'}
-                </>
-              ) : (
-                <>
-                  {useAIAssistant ? (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Generate Document
-                    </>
-                  ) : (
-                    <>
-                      <PenLine className="mr-2 h-4 w-4" />
-                      Create Document
-                    </>
-                  )}
-                </>
-              )}
-            </Button>
+              <Button 
+                type="submit" 
+                className="w-full bg-legal-accent hover:bg-legal-accent/90"
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {useAIAssistant ? 'Generating Document...' : 'Creating Document...'}
+                  </>
+                ) : (
+                  <>
+                    {useAIAssistant ? (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Generate Document
+                      </>
+                    ) : (
+                      <>
+                        <PenLine className="mr-2 h-4 w-4" />
+                        Create Document
+                      </>
+                    )}
+                  </>
+                )}
+              </Button>
+            </motion.div>
           </form>
         </Form>
       </CardContent>
@@ -420,4 +426,3 @@ Please generate a complete and professional legal document following Indian lega
 };
 
 export default DocumentDraftingForm;
-
