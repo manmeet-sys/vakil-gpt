@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FileText, Pen, Copy, Download, Sparkles, MessageSquare } from 'lucide-react';
+import { FileText, Pen, Copy, Download, Sparkles, MessageSquare, Book, History, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import LegalToolLayout from '@/components/LegalToolLayout';
@@ -10,12 +10,43 @@ import DocumentTemplateList from '@/components/document-drafting/DocumentTemplat
 import GeminiFlashAnalyzer from '@/components/GeminiFlashAnalyzer';
 import PromptBasedGenerator from '@/components/document-drafting/PromptBasedGenerator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
+import CollaborativeEditor from '@/components/document-drafting/CollaborativeEditor';
+import PdfUploader from '@/components/PdfUploader';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from '@/components/ui/badge';
+
+// Extended template interface to include date and category
+interface ExtendedTemplate {
+  id: string;
+  title: string;
+  type: string;
+  description: string;
+  content: string;
+  category: string;
+  dateAdded: string;
+  popularity: number;
+}
 
 const LegalDocumentDraftingPage = () => {
   const [draftContent, setDraftContent] = useState('');
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentType, setDocumentType] = useState('');
-  const [activeTab, setActiveTab] = useState<'form' | 'prompt'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'prompt' | 'collaborative'>('form');
+  const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
+  const [expandedTemplates, setExpandedTemplates] = useState(false);
   
   const handleDraftGenerated = (title: string, type: string, content: string) => {
     setDocumentTitle(title);
@@ -50,6 +81,85 @@ const LegalDocumentDraftingPage = () => {
     toast.success('Advanced analysis generated. You can use this to enhance your document.');
   };
 
+  const handleDocumentUpload = (files: File[], extractedText?: string) => {
+    setAttachedDocuments([...attachedDocuments, ...files]);
+    
+    if (extractedText && !draftContent) {
+      setDraftContent(extractedText);
+      toast.success('Text extracted from PDF and added to editor');
+    }
+  };
+
+  const handleRemoveDocument = (index: number) => {
+    const updatedDocs = [...attachedDocuments];
+    updatedDocs.splice(index, 1);
+    setAttachedDocuments(updatedDocs);
+  };
+
+  // Extended templates with categories
+  const extendedTemplates: ExtendedTemplate[] = [
+    {
+      id: "1",
+      title: "Civil Suit Plaint",
+      type: "Litigation",
+      description: "Standard format for filing a civil suit in Indian district courts",
+      content: "IN THE COURT OF CIVIL JUDGE (JUNIOR DIVISION) AT [PLACE]...",
+      category: "Litigation",
+      dateAdded: "2023-11-15",
+      popularity: 127
+    },
+    {
+      id: "2",
+      title: "Rental Agreement",
+      type: "Contract",
+      description: "Comprehensive rental agreement template compliant with Rent Control Acts",
+      content: "THIS RENTAL AGREEMENT is made on this [DATE]...",
+      category: "Property",
+      dateAdded: "2023-10-22",
+      popularity: 245
+    },
+    {
+      id: "3",
+      title: "Will Testament",
+      type: "Estate Planning",
+      description: "Simple will format compliant with Indian Succession Act",
+      content: "THIS IS THE LAST WILL AND TESTAMENT OF [NAME]...",
+      category: "Family Law",
+      dateAdded: "2023-09-05",
+      popularity: 89
+    },
+    {
+      id: "4",
+      title: "Power of Attorney",
+      type: "Authorization",
+      description: "General Power of Attorney document with customizable powers",
+      content: "KNOW ALL MEN BY THESE PRESENTS THAT I, [NAME]...",
+      category: "Personal",
+      dateAdded: "2023-12-12",
+      popularity: 178
+    },
+    {
+      id: "5",
+      title: "Affidavit Format",
+      type: "Court Document",
+      description: "General affidavit format with proper verification clause",
+      content: "I, [NAME], son/daughter/wife of [NAME], aged [AGE], resident of [ADDRESS], do hereby solemnly affirm and declare as under:...",
+      category: "Court Filing",
+      dateAdded: "2024-01-18",
+      popularity: 203
+    },
+    {
+      id: "6",
+      title: "Non-Disclosure Agreement",
+      type: "Contract",
+      description: "Comprehensive NDA for business purposes with Indian law compliance",
+      content: "THIS NON-DISCLOSURE AGREEMENT (\"Agreement\") is made and entered into on this [DATE]...",
+      category: "Business",
+      dateAdded: "2024-02-20",
+      popularity: 156
+    }
+  ];
+
   // Animation variants
   const pageVariants = {
     initial: { opacity: 0 },
@@ -70,6 +180,15 @@ const LegalDocumentDraftingPage = () => {
       transition: { duration: 0.4 }
     }
   };
+
+  // Group templates by category
+  const templatesByCategory = extendedTemplates.reduce((acc, template) => {
+    if (!acc[template.category]) {
+      acc[template.category] = [];
+    }
+    acc[template.category].push(template);
+    return acc;
+  }, {} as Record<string, ExtendedTemplate[]>);
 
   return (
     <LegalToolLayout
@@ -95,6 +214,24 @@ const LegalDocumentDraftingPage = () => {
           </div>
           <div className="flex items-center gap-2">
             <GeminiFlashAnalyzer onAnalysisComplete={handleAdvancedAnalysis} />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="flex items-center gap-1 text-xs bg-amber-100 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded">
+                    <HelpCircle className="h-3 w-3" />
+                    Quick Tips
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <ul className="text-xs space-y-1">
+                    <li>• Use the "Collaborative" tab for multiple editors</li>
+                    <li>• Upload existing PDFs to extract text</li>
+                    <li>• Try the expanded template library for more formats</li>
+                    <li>• Save versions to track document changes</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
         
@@ -102,10 +239,10 @@ const LegalDocumentDraftingPage = () => {
           <Tabs 
             defaultValue="form" 
             value={activeTab}
-            onValueChange={(value) => setActiveTab(value as 'form' | 'prompt')}
+            onValueChange={(value) => setActiveTab(value as 'form' | 'prompt' | 'collaborative')}
             className="w-full"
           >
-            <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+            <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
               <TabsTrigger value="form" className="flex items-center gap-2">
                 <Pen className="h-4 w-4" />
                 <span className="hidden sm:inline">Structured</span> Form
@@ -114,38 +251,134 @@ const LegalDocumentDraftingPage = () => {
                 <MessageSquare className="h-4 w-4" />
                 <span className="hidden sm:inline">AI</span> Prompt
               </TabsTrigger>
+              <TabsTrigger value="collaborative" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Collaborative</span> Edit
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - Form and Templates */}
+          {/* Left column - Form/Prompt and Templates */}
           <motion.div className="lg:col-span-1 space-y-6" variants={itemVariants}>
-            {/* Document Generation (Form or Prompt based on activeTab) */}
+            {/* Document Generation (Form, Prompt, or Collaborative based on activeTab) */}
             {activeTab === 'form' ? (
               <DocumentDraftingForm onDraftGenerated={handleDraftGenerated} />
-            ) : (
+            ) : activeTab === 'prompt' ? (
               <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
+            ) : (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4 text-blue-500" />
+                  Collaborative Session
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Invite colleagues to work on this document in real-time. Changes will be visible to all participants.
+                </p>
+                <PdfUploader 
+                  onUpload={handleDocumentUpload} 
+                  onRemove={handleRemoveDocument} 
+                  documents={attachedDocuments}
+                  documentId="123456"
+                  showVersionHistory={true}
+                />
+              </div>
             )}
             
-            {/* Document Templates Section */}
-            <DocumentTemplateList onTemplateSelect={(template) => {
-              setDocumentTitle(template.title);
-              setDocumentType(template.type);
-              setDraftContent(template.content);
-              toast.success(`${template.title} template loaded!`);
-            }} />
+            {/* Document Templates Section - Enhanced with categories */}
+            <div className="border rounded-lg p-4 bg-white dark:bg-gray-950">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium flex items-center gap-2">
+                  <Book className="h-4 w-4 text-blue-500" />
+                  Document Templates
+                </h3>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setExpandedTemplates(!expandedTemplates)}
+                  className="text-xs"
+                >
+                  {expandedTemplates ? 'Show Less' : 'Show All'}
+                </Button>
+              </div>
+              
+              {expandedTemplates ? (
+                <Accordion type="single" collapsible className="w-full">
+                  {Object.entries(templatesByCategory).map(([category, templates]) => (
+                    <AccordionItem key={category} value={category}>
+                      <AccordionTrigger className="text-sm">
+                        {category} <Badge className="ml-2">{templates.length}</Badge>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3 pt-2">
+                          {templates.map(template => (
+                            <div 
+                              key={template.id}
+                              className="p-3 border border-gray-200 dark:border-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900/50 cursor-pointer"
+                              onClick={() => {
+                                setDocumentTitle(template.title);
+                                setDocumentType(template.type);
+                                setDraftContent(template.content);
+                                toast.success(`${template.title} template loaded!`);
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-medium text-sm">{template.title}</h4>
+                                <Badge variant="outline" className="text-xs">
+                                  {template.type}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                {template.description}
+                              </p>
+                              <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+                                <span className="flex items-center">
+                                  <History className="h-3 w-3 mr-1" />
+                                  Added {new Date(template.dateAdded).toLocaleDateString()}
+                                </span>
+                                <span className="flex items-center">
+                                  <Users className="h-3 w-3 mr-1" />
+                                  {template.popularity} uses
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              ) : (
+                <DocumentTemplateList onTemplateSelect={(template) => {
+                  setDocumentTitle(template.title);
+                  setDocumentType(template.type);
+                  setDraftContent(template.content);
+                  toast.success(`${template.title} template loaded!`);
+                }} />
+              )}
+            </div>
           </motion.div>
           
-          {/* Right column - Document Preview */}
+          {/* Right column - Document Preview or Collaborative Editor */}
           <motion.div className="lg:col-span-2" variants={itemVariants}>
-            <DocumentPreview 
-              title={documentTitle}
-              type={documentType}
-              content={draftContent}
-              onCopy={handleCopyContent}
-              onDownload={handleDownloadDocument}
-            />
+            {activeTab === 'collaborative' ? (
+              <CollaborativeEditor 
+                documentId="123456"
+                initialContent={draftContent || "Start collaborating on your legal document here..."}
+                onChange={setDraftContent}
+                title={documentTitle || "Collaborative Document"}
+                documentType={documentType || "Legal Draft"}
+              />
+            ) : (
+              <DocumentPreview 
+                title={documentTitle}
+                type={documentType}
+                content={draftContent}
+                onCopy={handleCopyContent}
+                onDownload={handleDownloadDocument}
+              />
+            )}
           </motion.div>
         </div>
         
