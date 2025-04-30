@@ -1,302 +1,241 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { BookOpen, Scale, FileText, Shield, CheckCircle, ClipboardList, 
-  Briefcase, Handshake, UserPlus, DollarSign, TrendingUp, Lock, MessageSquare, 
-  FileSearch, List, Clipboard, BarChart2, AlertTriangle, Landmark, User,
-  CalendarClock, Gavel, Calculator, IndianRupee, ChevronRight, ArrowRight, PenLine } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import ToolCategory from './ToolsCategories';
+import { 
+  FileText, 
+  BookOpen, 
+  Scale, 
+  Briefcase, 
+  Heart, 
+  Home, 
+  FileSearch, 
+  File আইন, 
+  IndianRupee, 
+  BarChart2,
+  Gavel
+} from 'lucide-react';
 
 const AllTools = () => {
-  const toolCategories = [
+  const researchTools = [
     {
-      id: 'user-tools',
-      title: 'Advocate Tools',
-      tools: [
-        { 
-          name: 'Billing Tracking', 
-          icon: <IndianRupee className="h-5 w-5" />, 
-          path: '/billing-tracking',
-          badge: 'Popular'
-        },
-        { 
-          name: 'Case Management', 
-          icon: <FileText className="h-5 w-5" />, 
-          path: '/court-filing' 
-        },
-        { 
-          name: 'Deadline Management', 
-          icon: <CalendarClock className="h-5 w-5" />, 
-          path: '/deadline-management',
-          badge: 'New'
-        },
-        { 
-          name: 'Document Drafting', 
-          icon: <PenLine className="h-5 w-5" />, 
-          path: '/legal-document-drafting',
-          badge: 'New'
-        }
-      ]
+      id: "legal-research",
+      title: "AI Legal Researcher",
+      description: "Research case law, statutes, and legal articles with AI-powered search",
+      icon: <FileSearch className="h-5 w-5 text-blue-600" />,
+      path: "/legal-research"
     },
     {
-      id: 'ai-assistance',
-      title: 'AI Legal Assistant',
-      tools: [
-        { 
-          name: 'Legal Chat Bot', 
-          icon: <MessageSquare className="h-5 w-5" />, 
-          path: '/chat',
-          badge: 'Popular'
-        },
-        { 
-          name: 'Legal Document Analyzer', 
-          icon: <FileSearch className="h-5 w-5" />, 
-          path: '/legal-document-analyzer' 
-        },
-        { 
-          name: 'Legal Brief Generation', 
-          icon: <BookOpen className="h-5 w-5" />, 
-          path: '/legal-brief-generation' 
-        }
-      ]
+      id: "legal-document-analyzer",
+      title: "Legal Document Analyzer",
+      description: "Analyze legal documents for key clauses, risks, and compliance issues",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/legal-document-analyzer"
     },
     {
-      id: 'legal-research',
-      title: 'Indian Legal Research',
-      tools: [
-        { 
-          name: 'Indian Case Law Research', 
-          icon: <Scale className="h-5 w-5" />, 
-          path: '/case-law-research' 
-        },
-        { 
-          name: 'Statute Tracker (BNS/BNSS/BSA)', 
-          icon: <List className="h-5 w-5" />, 
-          path: '/statute-tracker',
-          badge: 'Updated'
-        },
-        { 
-          name: 'Legal Knowledge Base', 
-          icon: <BookOpen className="h-5 w-5" />, 
-          path: '/knowledge' 
-        }
-      ]
+      id: "ai-legal-summarizer",
+      title: "AI Legal Summarizer",
+      description: "Summarize lengthy legal documents and extract key information",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/ai-legal-summarizer"
     },
     {
-      id: 'document-automation',
-      title: 'Document & Compliance',
-      tools: [
-        { 
-          name: 'Indian Contract Tools', 
-          icon: <Clipboard className="h-5 w-5" />, 
-          path: '/contract-drafting' 
-        },
-        { 
-          name: 'DPDP & Data Compliance', 
-          icon: <Shield className="h-5 w-5" />, 
-          path: '/gdpr-compliance',
-          badge: 'Critical'
-        },
-        { 
-          name: 'AML Compliance', 
-          icon: <AlertTriangle className="h-5 w-5" />, 
-          path: '/aml-compliance' 
-        }
-      ]
+      id: "ai-legal-translator",
+      title: "AI Legal Translator",
+      description: "Translate legal documents between different languages",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/ai-legal-translator"
     },
     {
-      id: 'risk-assessment',
-      title: 'Risk & Criminal Justice',
-      tools: [
-        { 
-          name: 'Legal Risk Assessment', 
-          icon: <BarChart2 className="h-5 w-5" />, 
-          path: '/legal-risk-assessment' 
-        },
-        { 
-          name: 'Indian Litigation Predictor', 
-          icon: <Landmark className="h-5 w-5" />, 
-          path: '/litigation-prediction',
-          badge: 'AI-Powered'
-        },
-        { 
-          name: 'Legal Due Diligence', 
-          icon: <CheckCircle className="h-5 w-5" />, 
-          path: '/legal-due-diligence' 
-        },
-        { 
-          name: 'Plea Bargain Assistant', 
-          icon: <Gavel className="h-5 w-5" />, 
-          path: '/plea-bargain',
-          badge: 'New'
-        },
-        { 
-          name: 'Sentencing Predictor', 
-          icon: <Scale className="h-5 w-5" />, 
-          path: '/sentencing-predictor' 
-        }
-      ]
+      id: "ai-legal-citation",
+      title: "AI Legal Citation Generator",
+      description: "Generate legal citations in various formats",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/ai-legal-citation"
     },
     {
-      id: 'business-tools',
-      title: 'Business Legal Tools',
-      tools: [
-        { 
-          name: 'Startup Legal Toolkit', 
-          icon: <Briefcase className="h-5 w-5" />, 
-          path: '/startup-toolkit' 
-        },
-        { 
-          name: 'M&A Due Diligence', 
-          icon: <Handshake className="h-5 w-5" />, 
-          path: '/m&a-due-diligence',
-          badge: 'Premium'
-        },
-        { 
-          name: 'IP Protection', 
-          icon: <Shield className="h-5 w-5" />, 
-          path: '/ip-protection' 
-        }
-      ]
+      id: "ai-legal-query",
+      title: "AI Legal Query Generator",
+      description: "Generate legal queries based on case details",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/ai-legal-query"
+    },
+  ];
+
+  const documentTools = [
+    {
+      id: "legal-document-drafting",
+      title: "Legal Document Drafting",
+      description: "Draft legal documents with AI-powered templates and suggestions",
+      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      path: "/legal-document-drafting"
     },
     {
-      id: 'financial-legal',
-      title: 'Financial Legal Tools',
-      tools: [
-        { 
-          name: 'Financial Obligations', 
-          icon: <FileText className="h-5 w-5" />, 
-          path: '/financial-obligations' 
-        },
-        { 
-          name: 'Financial Fraud Detector', 
-          icon: <Lock className="h-5 w-5" />, 
-          path: '/fraud-detector',
-          badge: 'AI-Powered'
-        },
-        { 
-          name: 'Tax Compliance', 
-          icon: <Calculator className="h-5 w-5" />, 
-          path: '/tax-compliance' 
-        }
-      ]
+      id: "legal-brief-generation",
+      title: "Legal Brief Generation",
+      description: "Generate legal briefs with AI-powered analysis and arguments",
+      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      path: "/legal-brief-generation"
+    },
+    {
+      id: "contract-review",
+      title: "AI Contract Review",
+      description: "Review contracts for risks, compliance issues, and negotiation points",
+      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      path: "/contract-review"
+    },
+    {
+      id: "legal-template-library",
+      title: "Legal Template Library",
+      description: "Access a library of legal document templates for various purposes",
+      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      path: "/legal-template-library"
+    },
+    {
+      id: "legal-form-filler",
+      title: "Legal Form Filler",
+      description: "Fill out legal forms with AI-powered assistance",
+      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      path: "/legal-form-filler"
+    },
+    {
+      id: "legal-document-automation",
+      title: "Legal Document Automation",
+      description: "Automate the creation of legal documents with AI-powered workflows",
+      icon: <File আইন className="h-5 w-5 text-blue-600" />,
+      path: "/legal-document-automation"
+    },
+  ];
+
+  const complianceTools = [
+    {
+      id: "compliance-assistance",
+      title: "Compliance Assistance",
+      description: "Ensure compliance with relevant laws and regulations",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/compliance-assistance"
+    },
+    {
+      id: "deadline-management",
+      title: "Deadline Management",
+      description: "Manage deadlines for legal tasks and filings",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/deadline-management"
+    },
+    {
+      id: "legal-audit",
+      title: "Legal Audit",
+      description: "Conduct legal audits to identify potential risks and compliance issues",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/legal-audit"
+    },
+    {
+      id: "regulatory-alerts",
+      title: "Regulatory Alerts",
+      description: "Receive alerts about changes in laws and regulations",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/regulatory-alerts"
+    },
+    {
+      id: "policy-generator",
+      title: "Policy Generator",
+      description: "Generate legal policies for your organization",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/policy-generator"
+    },
+    {
+      id: "risk-assessment",
+      title: "Risk Assessment",
+      description: "Assess legal risks and develop mitigation strategies",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/risk-assessment"
+    },
+  ];
+
+  const specializedTools = [
+    {
+      id: "legal-calculator",
+      title: "Legal Calculator",
+      description: "Calculate legal fees, damages, and other amounts",
+      icon: <IndianRupee className="h-5 w-5 text-blue-600" />,
+      path: "/legal-calculator"
+    },
+    {
+      id: "litigation-prediction",
+      title: "Litigation Prediction",
+      description: "Predict the outcome of litigation based on case details",
+      icon: <BarChart2 className="h-5 w-5 text-blue-600" />,
+      path: "/litigation-prediction"
+    },
+    {
+      id: "startup-toolkit",
+      title: "Startup Toolkit",
+      description: "Access resources for starting and running a business",
+      icon: <Briefcase className="h-5 w-5 text-blue-600" />,
+      path: "/startup-toolkit"
+    },
+  ];
+
+  // Add a new category for Practice-Specific Tools
+  const practiceAreaTools = [
+    {
+      id: "practice-areas",
+      title: "Practice Areas Hub",
+      description: "Access specialized tools for different practice areas of Indian law",
+      icon: <BookOpen className="h-5 w-5 text-blue-600" />,
+      path: "/practice-areas"
+    },
+    {
+      id: "criminal-law",
+      title: "Criminal Law Tools",
+      description: "Specialized tools for BNS code, sentencing prediction and defense strategies",
+      icon: <Gavel className="h-5 w-5 text-blue-600" />,
+      path: "/criminal-law"
+    },
+    {
+      id: "civil-law",
+      title: "Civil Law Tools",
+      description: "Cause of action analysis, limitation calculator, and relief generator",
+      icon: <Scale className="h-5 w-5 text-blue-600" />,
+      path: "/civil-law"
     }
   ];
 
-  // Animation variants for staggered animations
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15
-      }
-    }
-  };
-
-  const getBadgeVariant = (badgeText?: string) => {
-    if (!badgeText) return '';
-    
-    switch (badgeText.toLowerCase()) {
-      case 'new':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800/30';
-      case 'popular':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800/30';
-      case 'updated':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800/30';
-      case 'ai-powered':
-        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/30';
-      case 'premium':
-        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800/30';
-      case 'critical':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800/30';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border-gray-200 dark:border-gray-800/30';
-    }
-  };
-
   return (
-    <motion.div 
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {toolCategories.map((category) => (
-        <motion.div 
-          key={category.id}
-          variants={itemVariants}
-          className="relative group"
-        >
-          <Card 
-            className="p-6 rounded-xl border border-legal-border dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-sm hover:shadow-md transition-all duration-300 h-full"
-          >
-            <CardHeader className="p-0 pb-4">
-              <CardTitle className="text-xl font-semibold text-legal-slate dark:text-white flex items-center gap-2">
-                {category.title}
-              </CardTitle>
-            </CardHeader>
-            
-            <CardContent className="p-0">
-              <ul className="space-y-3">
-                {category.tools.map((tool) => (
-                  <li key={tool.name}>
-                    <Link 
-                      to={tool.path}
-                      className="flex items-center justify-between group p-2 -mx-2 rounded-md hover:bg-legal-accent/5 dark:hover:bg-legal-accent/10 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-legal-accent/10 text-legal-accent">
-                          {tool.icon}
-                        </div>
-                        <span className="text-legal-slate dark:text-white/90 font-medium">{tool.name}</span>
-                        {tool.badge && (
-                          <Badge variant="outline" className={cn("text-xs py-0 h-5", getBadgeVariant(tool.badge))}>
-                            {tool.badge}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center bg-legal-accent/10 text-legal-accent transform transition-transform group-hover:translate-x-1 duration-200">
-                        <ChevronRight className="h-4 w-4" />
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            
-            <CardFooter className="p-0 mt-4 pt-4 border-t border-legal-border/20 dark:border-legal-slate/20">
-              <Link to="/tools" className="w-full">
-                <Button variant="ghost" className="text-legal-accent hover:text-legal-accent/90 hover:bg-legal-accent/10 w-full justify-center group">
-                  View All Tools
-                  <ArrowRight className="ml-1 h-3.5 w-3.5 transform transition-transform group-hover:translate-x-1 duration-200" />
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
-          
-          {/* Decorative gradient element */}
-          <div className="absolute -z-10 inset-0 bg-gradient-to-br from-legal-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl blur-xl" />
-        </motion.div>
-      ))}
-    </motion.div>
+    <div className="space-y-10 pb-10">
+      {/* Legal Research & Analysis */}
+      <ToolCategory
+        title="Legal Research & Analysis"
+        description="AI-powered tools to research case law, analyze legal issues, and predict outcomes"
+        tools={researchTools}
+      />
+      
+      {/* Add our new Practice Area Tools category */}
+      <ToolCategory
+        title="Practice-Specific Tools"
+        description="Specialized tools and resources for different areas of legal practice"
+        tools={practiceAreaTools}
+      />
+      
+      {/* Document Drafting & Management */}
+      <ToolCategory
+        title="Document Drafting & Management"
+        description="Create, customize, and manage legal documents quickly and efficiently"
+        tools={documentTools}
+      />
+      
+      {/* Compliance & Risk Management */}
+      <ToolCategory
+        title="Compliance & Risk Management"
+        description="Ensure compliance with laws, manage deadlines, and assess legal risks"
+        tools={complianceTools}
+      />
+      
+      {/* Specialized Tools */}
+      <ToolCategory
+        title="Specialized Tools"
+        description="Unique tools for specific legal tasks and calculations"
+        tools={specializedTools}
+      />
+    </div>
   );
 };
 

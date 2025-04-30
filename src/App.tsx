@@ -88,11 +88,19 @@ const queryClient = new QueryClient({
 // New import for the Legal Document Drafting page
 import LegalDocumentDraftingPage from "./pages/legal-document-drafting";
 
+// New imports for practice areas
+import PracticeAreasPage from "./pages/practice-areas";
+import CriminalLawPage from "./pages/criminal-law";
+import CivilLawPage from "./pages/civil-law";
+import CorporateLawPage from "./pages/corporate-law";
+import FamilyLawPage from "./pages/family-law";
+import RealEstateLawPage from "./pages/real-estate-law";
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <HelmetProvider>
-        <ThemeProvider defaultTheme="light">
+        <ThemeProvider defaultTheme="light" storageKey="vakilgpt-theme">
           <AuthProvider>
             <TooltipProvider>
               <AnalyticsWrapper>
@@ -323,6 +331,13 @@ const App = () => (
                       <LegalDocumentDraftingPage />
                     </ProtectedRoute>
                   } />
+                  
+                  <Route path="/practice-areas" element={<PracticeAreasPage />} />
+                  <Route path="/criminal-law" element={<CriminalLawPage />} />
+                  <Route path="/civil-law" element={<CivilLawPage />} />
+                  <Route path="/corporate-law" element={<CorporateLawPage />} />
+                  <Route path="/family-law" element={<FamilyLawPage />} />
+                  <Route path="/real-estate-law" element={<RealEstateLawPage />} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>

@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, BookOpen, Gavel, Scale, Briefcase, Heart, Home } from 'lucide-react';
 
 interface Tool {
   id: string;
@@ -82,6 +82,20 @@ const ToolCategory = ({
           </Card>
         ))}
       </div>
+      
+      {title === "Legal Research & Analysis" && (
+        <div className="pt-2">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={() => handleNavigation("/practice-areas")}
+          >
+            <BookOpen className="h-4 w-4" />
+            Browse All Practice Area Tools
+            <ArrowRight className="ml-1 h-3.5 w-3.5" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
