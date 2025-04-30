@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from '@/components/ThemeToggle';
 import KnowledgeManager from '@/components/KnowledgeManager';
+import KnowledgeStats from '@/components/KnowledgeStats';
 
 const KnowledgePage = () => {
   const { theme } = useTheme();
@@ -20,7 +21,8 @@ const KnowledgePage = () => {
       </header>
       
       <main className="flex-1 flex flex-col items-center py-6 px-4 overflow-hidden">
-        <div className="w-full max-w-4xl">
+        <div className="w-full max-w-6xl space-y-6">
+          <KnowledgeStats />
           <KnowledgeManager />
         </div>
       </main>
