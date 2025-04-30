@@ -45,6 +45,7 @@ import { Link } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Case as ClientCase } from '@/types/ClientPortalTypes';
 
 type Court = {
   id: string;
@@ -54,6 +55,7 @@ type Court = {
   state: string;
 };
 
+// Define Case type specifically for this component
 export type Case = {
   id: string;
   case_number: string;
@@ -72,18 +74,24 @@ export type Case = {
   created_at: string;
   updated_at: string;
   client_id: string | null;
+  user_id: string;
 };
+
+// Custom case and client interfaces for this component
+interface InternalCase extends Case {
+  // No additional properties needed, just creating a distinct type
+}
 
 const CaseManagementPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
-  const [cases, setCases] = useState<Case[]>([]);
-  const [filteredCases, setFilteredCases] = useState<Case[]>([]);
+  const [cases, setCases] = useState<InternalCase[]>([]);
+  const [filteredCases, setFilteredCases] = useState<InternalCase[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+  const [selectedCase, setSelectedCase] = useState<InternalCase | null>(null);
   const [showNewCaseForm, setShowNewCaseForm] = useState(false);
   const [activeTab, setActiveTab] = useState('active-cases');
   const [showClientManagement, setShowClientManagement] = useState(false);
@@ -108,7 +116,7 @@ const CaseManagementPage = () => {
         const casesData = data?.map(item => ({
           ...item,
           documents: item.documents || [] // Ensure documents is always an array
-        })) as Case[];
+        })) as InternalCase[];
         
         setCases(casesData || []);
         setFilteredCases(casesData || []);
@@ -169,7 +177,7 @@ const CaseManagementPage = () => {
     }
   }, [location]);
 
-  const handleCaseClick = (caseItem: Case) => {
+  const handleCaseClick = (caseItem: InternalCase) => {
     setSelectedCase(caseItem);
     setShowNewCaseForm(false);
     setShowClientManagement(false);
@@ -187,14 +195,14 @@ const CaseManagementPage = () => {
     setShowClientManagement(true);
   };
 
-  const handleCaseCreated = (newCase: Case) => {
+  const handleCaseCreated = (newCase: InternalCase) => {
     setCases((prev) => [newCase, ...prev]);
     setShowNewCaseForm(false);
     setSelectedCase(newCase);
     toast.success('New case created successfully!');
   };
 
-  const handleCaseUpdated = (updatedCase: Case) => {
+  const handleCaseUpdated = (updatedCase: InternalCase) => {
     setCases((prev) =>
       prev.map((c) => (c.id === updatedCase.id ? updatedCase : c))
     );

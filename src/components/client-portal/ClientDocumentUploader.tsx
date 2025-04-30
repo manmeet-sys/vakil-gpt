@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ClientPortalRPC } from '@/types/ClientPortalTypes';
+import { ClientDocument } from '@/types/ClientPortalTypes';
 
 interface ClientDocumentUploaderProps {
   clientId: string;
@@ -108,27 +107,20 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
           
         if (storageError) throw storageError;
         
-        // Create database entry using fetch directly to the API endpoint
-        const response = await fetch('/api/client-documents', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            path: filePath,
-            client_id: clientId,
-            notes: notes || null,
-            case_id: selectedCase || null,
-            status: 'pending_review',
-            uploaded_by: user?.id
-          }),
+        // Create database entry using RPC function
+        const { data, error } = await supabase.rpc('add_client_document', {
+          p_name: file.name,
+          p_size: file.size,
+          p_type: file.type,
+          p_path: filePath,
+          p_client_id: clientId,
+          p_notes: notes || null,
+          p_case_id: selectedCase || null,
+          p_status: 'pending_review',
+          p_uploaded_by: user?.id || ''
         });
         
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error);
+        if (error) throw error;
         
         return { success: true };
       });

@@ -34,7 +34,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         // Fetch advocates assigned to this client
         const { data: advocatesData, error: advocatesError } = await supabase
           .from('court_filings')
-          .select('user_id, profiles:user_id(id, full_name)')
+          .select('user_id, profiles(id, full_name)')
           .eq('client_id', clientId)
           .order('created_at', { ascending: false });
           
@@ -74,13 +74,15 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
   useEffect(() => {
     if (!clientId || !selectedAdvocate) return;
     
-    // Fetch messages using API since we can't directly query the table
+    // Fetch messages using RPC function
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`/api/client-messages?clientId=${clientId}&advocateId=${selectedAdvocate}`);
-        const data = await response.json();
+        const { data, error } = await supabase.rpc('get_client_advocate_messages', {
+          p_client_id: clientId,
+          p_advocate_id: selectedAdvocate
+        });
           
-        if (!response.ok) throw new Error(data.error);
+        if (error) throw error;
         
         setMessages(data || []);
         
@@ -90,13 +92,9 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         ).map((m: ClientMessage) => m.id);
         
         if (unreadMessages && unreadMessages.length > 0) {
-          // Mark messages as read using API
-          await fetch('/api/mark-messages-read', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ messageIds: unreadMessages }),
+          // Mark messages as read using RPC
+          await supabase.rpc('mark_messages_read', {
+            p_message_ids: unreadMessages
           });
         }
         
@@ -134,26 +132,21 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
     try {
       setSending(true);
       
-      // Send message using API
-      const response = await fetch('/api/send-message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: newMessage.trim(),
-          sender_id: clientId,
-          sender_name: user?.user_metadata?.full_name || 'Client',
-          receiver_id: selectedAdvocate,
-          is_read: false
-        }),
+      // Send message using RPC
+      const { data, error } = await supabase.rpc('add_client_message', {
+        p_content: newMessage.trim(),
+        p_sender_id: clientId,
+        p_sender_name: user?.user_metadata?.full_name || 'Client',
+        p_receiver_id: selectedAdvocate,
+        p_is_read: false
       });
       
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      if (error) throw error;
       
       // Add the new message to the list
-      setMessages(prev => [...prev, data]);
+      if (data) {
+        setMessages(prev => [...prev, data]);
+      }
       
       // Clear input after sending
       setNewMessage('');

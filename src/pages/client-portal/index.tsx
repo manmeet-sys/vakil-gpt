@@ -49,7 +49,7 @@ import {
 import ClientDocumentUploader from '@/components/client-portal/ClientDocumentUploader';
 import CaseStatusUpdates from '@/components/client-portal/CaseStatusUpdates';
 import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter';
-import { ClientDocument, StatusUpdate } from '@/types/ClientPortalTypes';
+import { ClientDocument, StatusUpdate as ClientStatusUpdate } from '@/types/ClientPortalTypes';
 
 // Types for client portal data
 interface Document {
@@ -64,6 +64,7 @@ interface Document {
   notes?: string;
 }
 
+// Local interface for status updates (avoid conflict with imported type)
 interface StatusUpdate {
   id: string;
   message: string;
@@ -72,6 +73,7 @@ interface StatusUpdate {
   case_title: string;
   status: string;
   is_read: boolean;
+  client_id: string; // Added to match the imported type
 }
 
 interface ClientCase {
@@ -128,17 +130,19 @@ const ClientPortalPage = () => {
     try {
       setLoading(true);
       
-      // Fetch client documents using the API
-      const documentsResponse = await fetch(`/api/get-client-documents?clientId=${user?.id}`);
-      const documentsData = await documentsResponse.json();
+      // Fetch client documents using RPC function
+      const { data: documentsData, error: documentsError } = await supabase.rpc('get_client_documents', {
+        p_client_id: user?.id || ''
+      });
       
-      if (!documentsResponse.ok) throw new Error(documentsData.error);
+      if (documentsError) throw documentsError;
       
-      // Fetch status updates
-      const updatesResponse = await fetch(`/api/get-status-updates?clientId=${user?.id}`);
-      const updatesData = await updatesResponse.json();
+      // Fetch status updates using RPC function
+      const { data: updatesData, error: updatesError } = await supabase.rpc('get_client_status_updates', {
+        p_client_id: user?.id || ''
+      });
       
-      if (!updatesResponse.ok) throw new Error(updatesData.error);
+      if (updatesError) throw updatesError;
       
       // Count unread updates
       const unread = updatesData?.filter((update: StatusUpdate) => !update.is_read).length || 0;
@@ -184,16 +188,12 @@ const ClientPortalPage = () => {
   
   const markUpdateAsRead = async (updateId: string) => {
     try {
-      const response = await fetch('/api/mark-status-read', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ updateId }),
+      // Use RPC function to mark status update as read
+      const { error } = await supabase.rpc('mark_status_update_read', {
+        p_update_id: updateId
       });
       
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      if (error) throw error;
       
       setStatusUpdates(prev => prev.map(update => 
         update.id === updateId ? { ...update, is_read: true } : update
@@ -390,7 +390,7 @@ const ClientPortalPage = () => {
                               <TableCell>
                                 <Badge 
                                   variant={
-                                    document.status === 'approved' ? 'success' :
+                                    document.status === 'approved' ? 'default' :
                                     document.status === 'rejected' ? 'destructive' :
                                     document.status === 'pending_review' ? 'secondary' :
                                     'outline'
@@ -503,7 +503,7 @@ const ClientPortalPage = () => {
                 </CardHeader>
                 <CardContent>
                   <CaseStatusUpdates 
-                    updates={statusUpdates} 
+                    updates={statusUpdates as ClientStatusUpdate[]} 
                     loading={loading}
                     onMarkAsRead={markUpdateAsRead}
                   />

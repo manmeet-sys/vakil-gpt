@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { StatusUpdate } from '@/types/ClientPortalTypes';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CaseStatusUpdatesProps {
   updates: StatusUpdate[];

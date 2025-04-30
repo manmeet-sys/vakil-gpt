@@ -20,6 +20,7 @@ export interface Case {
   user_id: string;
   created_at?: string;
   updated_at?: string;
+  documents?: any; // Added to align with case-management definition
 }
 
 // Define types for the new tables
@@ -85,5 +86,36 @@ export type ClientPortalRPC = Database['public']['Functions'] & {
       p_is_read: boolean;
     };
     Returns: { id: string; created_at: string };
+  };
+  get_client_documents: {
+    Args: {
+      p_client_id: string;
+    };
+    Returns: ClientDocument[];
+  };
+  get_client_status_updates: {
+    Args: {
+      p_client_id: string;
+    };
+    Returns: StatusUpdate[];
+  };
+  get_client_advocate_messages: {
+    Args: {
+      p_client_id: string;
+      p_advocate_id: string;
+    };
+    Returns: ClientMessage[];
+  };
+  mark_status_update_read: {
+    Args: {
+      p_update_id: string;
+    };
+    Returns: void;
+  };
+  mark_messages_read: {
+    Args: {
+      p_message_ids: string[];
+    };
+    Returns: void;
   };
 }
