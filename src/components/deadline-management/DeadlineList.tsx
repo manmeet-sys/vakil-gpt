@@ -327,12 +327,12 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
             <Table>
               <TableHeader className="bg-indigo-50/50 dark:bg-indigo-900/10">
                 <TableRow className="hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/20">
-                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium">Priority</TableHead>
+                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium w-[120px]">Priority</TableHead>
                   <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium">Title</TableHead>
-                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium">Deadline</TableHead>
-                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium">Time Left</TableHead>
-                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium">Status</TableHead>
-                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium">Actions</TableHead>
+                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium hidden md:table-cell">Deadline</TableHead>
+                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium hidden sm:table-cell">Time Left</TableHead>
+                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium hidden sm:table-cell">Status</TableHead>
+                  <TableHead className="text-indigo-700 dark:text-indigo-300 font-medium text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <motion.tbody
@@ -358,25 +358,48 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                         "hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                       )}
                     >
-                      <TableCell>
+                      <TableCell className="align-top">
                         <Badge className={cn("px-2 py-1 text-xs font-medium", getPriorityColor(deadline.priority))}>
                           {deadline.priority}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium text-indigo-800 dark:text-indigo-200">
-                        <div className="flex items-center space-x-2">
-                          <span className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                            <DeadlineIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        <div className="flex items-start space-x-2">
+                          <span className="h-7 w-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <DeadlineIcon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                           </span>
                           <div>
-                            <span className="text-sm md:text-base truncate max-w-[150px] md:max-w-[200px] inline-block">{deadline.title}</span>
+                            <div className="text-sm md:text-base font-medium line-clamp-1 max-w-[150px] sm:max-w-[200px] md:max-w-[250px]">
+                              {deadline.title || "Untitled"}
+                            </div>
                             {deadline.description && (
-                              <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-1 line-clamp-1 max-w-[150px] md:max-w-[200px]">
+                              <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-0.5 line-clamp-1 max-w-[150px] sm:max-w-[200px] md:max-w-[250px]">
                                 {deadline.description}
                               </p>
                             )}
+                            {/* Show on mobile only */}
+                            <div className="sm:hidden mt-1 flex flex-col gap-1">
+                              <div className="flex items-center text-xs text-indigo-500">
+                                <CalendarDays className="h-3 w-3 mr-1" />
+                                <span>{deadline.due_date && format(new Date(deadline.due_date), "dd MMM")}</span>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "font-normal text-xs w-fit",
+                                  deadline.status === 'completed'
+                                    ? "border-green-400 text-green-600 dark:border-green-800 dark:text-green-400"
+                                    : approaching
+                                    ? "border-orange-400 text-orange-600 dark:border-orange-800 dark:text-orange-400"
+                                    : "border-blue-400 text-blue-600 dark:border-blue-800 dark:text-blue-400"
+                                )}
+                              >
+                                <Clock className="h-3 w-3 mr-1" />
+                                {deadline.status === 'completed' ? "Completed" : timeRemaining}
+                              </Badge>
+                            </div>
                             {approaching && deadline.status !== 'completed' && (
-                              <Badge variant="outline" className="mt-1 border-red-400 text-red-600 text-xs w-fit">
+                              <Badge variant="outline" className="mt-1 border-red-400 text-red-600 text-xs w-fit hidden sm:flex">
                                 <AlertTriangle className="h-3 w-3 mr-1" />
                                 Approaching
                               </Badge>
@@ -384,21 +407,21 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-indigo-700 dark:text-indigo-300 text-xs md:text-sm">
+                      <TableCell className="text-indigo-700 dark:text-indigo-300 text-xs md:text-sm hidden md:table-cell">
                         <div className="flex flex-col">
                           <div className="flex items-center">
                             <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-indigo-500 dark:text-indigo-400" />
                             <span className="whitespace-nowrap">{deadline.due_date && format(new Date(deadline.due_date), "dd MMM yyyy")}</span>
                           </div>
                           {deadline.reminder_date && (
-                            <div className="flex items-center mt-2 text-xs text-indigo-500 dark:text-indigo-400">
+                            <div className="flex items-center mt-1.5 text-xs text-indigo-500 dark:text-indigo-400">
                               <Bell className="h-3 w-3 mr-1" />
-                              Reminder: {format(new Date(deadline.reminder_date), "dd MMM")}
+                              <span>Reminder: {format(new Date(deadline.reminder_date), "dd MMM")}</span>
                             </div>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         <Badge
                           variant="outline"
                           className={cn(
@@ -416,7 +439,7 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                           {timeRemaining}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         <Badge 
                           variant="secondary" 
                           className={cn(
@@ -446,8 +469,8 @@ const DeadlineList: React.FC<DeadlineListProps> = ({
                           )}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-1 md:space-x-2">
+                      <TableCell className="text-right">
+                        <div className="flex space-x-1 md:space-x-2 justify-end">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -10,7 +11,7 @@ import {
 } from '@/components/ui/tabs';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, Calendar, FilePlus, Filter, Inbox, Plus, Search, User, Users, Clock } from 'lucide-react';
+import { Briefcase, Calendar, Filter, Plus, Search, User, Users, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import CaseDetails from '@/components/case-management/CaseDetails';
 import NewCaseForm from '@/components/case-management/NewCaseForm';
 import ClientsList from '@/components/case-management/ClientsList';
@@ -44,6 +45,7 @@ import UpcomingHearings from '@/components/case-management/UpcomingHearings';
 import { Link } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 type Court = {
   id: string;
@@ -206,14 +208,27 @@ const CaseManagementPage = () => {
     toast.success('Case deleted successfully!');
   };
 
+  // Animation variants
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+  };
+
   return (
     <AppLayout>
       <Helmet>
         <title>Case Management | VakilGPT</title>
       </Helmet>
       
-      <div className="container px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="container px-4 py-6 max-w-7xl mx-auto">
+        <Toaster richColors position="top-right" />
+        
+        <motion.div 
+          className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4"
+          initial="hidden"
+          animate="visible"
+          variants={fadeIn}
+        >
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Case Management</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">Track and manage all your legal cases efficiently</p>
@@ -221,18 +236,25 @@ const CaseManagementPage = () => {
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleShowClientManagement} className="flex items-center gap-1">
               <Users className="h-4 w-4" />
-              Manage Clients
+              <span className="hidden sm:inline">Manage Clients</span>
+              <span className="sm:hidden">Clients</span>
             </Button>
             <Button onClick={handleCreateNew} className="flex items-center gap-1">
               <Plus className="h-4 w-4" />
-              Create New Case
+              <span className="hidden sm:inline">Create New Case</span>
+              <span className="sm:hidden">New Case</span>
             </Button>
           </div>
-        </div>
+        </motion.div>
         
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left side - Cases list */}
-          <div className="lg:col-span-1 space-y-4">
+          <motion.div 
+            className="lg:col-span-1 space-y-4"
+            variants={fadeIn}
+            initial="hidden"
+            animate="visible"
+          >
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">Case Directory</CardTitle>
@@ -242,7 +264,7 @@ const CaseManagementPage = () => {
                     <Input
                       type="search"
                       placeholder="Search cases..."
-                      className="pl-8 w-full"
+                      className="pl-8 w-full pointer-events-auto"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -250,11 +272,11 @@ const CaseManagementPage = () => {
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon" className="ml-2">
+                      <Button variant="outline" size="icon" className="ml-2 pointer-events-auto">
                         <Filter className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent className="pointer-events-auto">
                       <DropdownMenuItem onClick={() => setStatusFilter(null)}>
                         All Statuses
                       </DropdownMenuItem>
@@ -277,17 +299,23 @@ const CaseManagementPage = () => {
               
               <CardContent className="p-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-2 pointer-events-auto">
                     <TabsTrigger value="active-cases">Active Cases</TabsTrigger>
                     <TabsTrigger value="closed-cases">Closed Cases</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="active-cases" className="mt-0">
-                    <div className="overflow-y-auto max-h-[70vh]">
+                    <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
                       {loading ? (
-                        <div className="p-4 text-center text-gray-500">Loading cases...</div>
-                      ) : filteredCases.length === 0 ? (
                         <div className="p-4 text-center text-gray-500">
+                          <div className="flex justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+                          </div>
+                          <p className="mt-2">Loading cases...</p>
+                        </div>
+                      ) : filteredCases.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500">
+                          <Briefcase className="h-12 w-12 mx-auto text-gray-300 mb-3" />
                           {searchTerm
                             ? "No cases match your search criteria"
                             : "No active cases found. Create a new case to get started."}
@@ -305,11 +333,11 @@ const CaseManagementPage = () => {
                               onClick={() => handleCaseClick(caseItem)}
                             >
                               <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="font-medium text-gray-900 dark:text-white">
+                                <div className="truncate pr-2">
+                                  <p className="font-medium text-gray-900 dark:text-white truncate">
                                     {caseItem.case_title || "Untitled Case"}
                                   </p>
-                                  <p className="text-sm text-gray-500">
+                                  <p className="text-sm text-gray-500 truncate">
                                     {caseItem.case_number || "No case number"}
                                   </p>
                                 </div>
@@ -323,22 +351,22 @@ const CaseManagementPage = () => {
                                       ? "outline"
                                       : "secondary"
                                   }
-                                  className="text-xs"
+                                  className="text-xs whitespace-nowrap"
                                 >
                                   {caseItem.status || "draft"}
                                 </Badge>
                               </div>
-                              <div className="mt-2 flex items-center text-xs text-gray-500">
-                                <User className="h-3 w-3 mr-1" />
-                                <span>{caseItem.client_name || "No client"}</span>
+                              <div className="mt-2 flex items-center text-xs text-gray-500 truncate">
+                                <User className="h-3 w-3 mr-1 flex-shrink-0" />
+                                <span className="truncate">{caseItem.client_name || "No client"}</span>
                               </div>
-                              <div className="mt-1 flex items-center text-xs text-gray-500">
-                                <Briefcase className="h-3 w-3 mr-1" />
-                                <span>{caseItem.court_name || "No court"}</span>
+                              <div className="mt-1 flex items-center text-xs text-gray-500 truncate">
+                                <Briefcase className="h-3 w-3 mr-1 flex-shrink-0" />
+                                <span className="truncate">{caseItem.court_name || "No court"}</span>
                               </div>
                               {caseItem.hearing_date && (
                                 <div className="mt-1 flex items-center text-xs text-gray-500">
-                                  <Calendar className="h-3 w-3 mr-1" />
+                                  <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
                                   <span>
                                     {new Date(caseItem.hearing_date).toLocaleDateString(
                                       "en-IN"
@@ -354,11 +382,17 @@ const CaseManagementPage = () => {
                   </TabsContent>
                   
                   <TabsContent value="closed-cases" className="mt-0">
-                    <div className="overflow-y-auto max-h-[70vh]">
+                    <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
                       {loading ? (
-                        <div className="p-4 text-center text-gray-500">Loading cases...</div>
-                      ) : filteredCases.length === 0 ? (
                         <div className="p-4 text-center text-gray-500">
+                          <div className="flex justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+                          </div>
+                          <p className="mt-2">Loading cases...</p>
+                        </div>
+                      ) : filteredCases.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500">
+                          <Briefcase className="h-12 w-12 mx-auto text-gray-300 mb-3" />
                           No closed cases found.
                         </div>
                       ) : (
@@ -374,11 +408,11 @@ const CaseManagementPage = () => {
                               onClick={() => handleCaseClick(caseItem)}
                             >
                               <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="font-medium text-gray-900 dark:text-white">
+                                <div className="truncate pr-2">
+                                  <p className="font-medium text-gray-900 dark:text-white truncate">
                                     {caseItem.case_title || "Untitled Case"}
                                   </p>
-                                  <p className="text-sm text-gray-500">
+                                  <p className="text-sm text-gray-500 truncate">
                                     {caseItem.case_number || "No case number"}
                                   </p>
                                 </div>
@@ -389,13 +423,13 @@ const CaseManagementPage = () => {
                                   {caseItem.status || "archived"}
                                 </Badge>
                               </div>
-                              <div className="mt-2 flex items-center text-xs text-gray-500">
-                                <User className="h-3 w-3 mr-1" />
-                                <span>{caseItem.client_name || "No client"}</span>
+                              <div className="mt-2 flex items-center text-xs text-gray-500 truncate">
+                                <User className="h-3 w-3 mr-1 flex-shrink-0" />
+                                <span className="truncate">{caseItem.client_name || "No client"}</span>
                               </div>
-                              <div className="mt-1 flex items-center text-xs text-gray-500">
-                                <Briefcase className="h-3 w-3 mr-1" />
-                                <span>{caseItem.court_name || "No court"}</span>
+                              <div className="mt-1 flex items-center text-xs text-gray-500 truncate">
+                                <Briefcase className="h-3 w-3 mr-1 flex-shrink-0" />
+                                <span className="truncate">{caseItem.court_name || "No court"}</span>
                               </div>
                             </div>
                           ))}
@@ -412,13 +446,13 @@ const CaseManagementPage = () => {
                 <CardTitle className="text-lg">Quick Links</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Link to="/deadline-management">
+                <Link to="/deadline-management" className="block w-full">
                   <Button variant="outline" className="w-full justify-start" size="sm">
                     <Calendar className="mr-2 h-4 w-4" />
                     Manage Deadlines
                   </Button>
                 </Link>
-                <Link to="/user-profile">
+                <Link to="/user-profile" className="block w-full">
                   <Button variant="outline" className="w-full justify-start" size="sm">
                     <User className="mr-2 h-4 w-4" />
                     Advocate Profile
@@ -426,10 +460,15 @@ const CaseManagementPage = () => {
                 </Link>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
           
           {/* Right side - Case details or form */}
-          <div className="lg:col-span-2">
+          <motion.div 
+            className="lg:col-span-2"
+            variants={fadeIn}
+            initial="hidden"
+            animate="visible"
+          >
             {showNewCaseForm ? (
               <NewCaseForm onCaseCreated={handleCaseCreated} onCancel={() => setShowNewCaseForm(false)} />
             ) : showClientManagement ? (
@@ -446,7 +485,7 @@ const CaseManagementPage = () => {
                 <UpcomingHearings />
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </AppLayout>
@@ -542,8 +581,8 @@ const ClientManagement = () => {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+    <Card className="overflow-hidden shadow-md border border-gray-200 dark:border-gray-700">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700">
         <div>
           <CardTitle className="text-xl">Client Management</CardTitle>
           <CardDescription>Manage your clients and their information</CardDescription>
@@ -553,7 +592,7 @@ const ClientManagement = () => {
           Add New Client
         </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 md:p-6">
         {showAddForm && (
           <Card className="mb-6 border-dashed">
             <CardHeader className="pb-2">
@@ -571,6 +610,7 @@ const ClientManagement = () => {
                       onChange={handleInputChange}
                       placeholder="Enter client's full name"
                       required
+                      className="pointer-events-auto"
                     />
                   </div>
                   <div className="space-y-2">
@@ -582,6 +622,7 @@ const ClientManagement = () => {
                       onChange={handleInputChange}
                       type="email"
                       placeholder="Email address"
+                      className="pointer-events-auto"
                     />
                   </div>
                   <div className="space-y-2">
@@ -592,6 +633,7 @@ const ClientManagement = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       placeholder="Phone number"
+                      className="pointer-events-auto"
                     />
                   </div>
                   <div className="space-y-2">
@@ -602,6 +644,7 @@ const ClientManagement = () => {
                       value={formData.address}
                       onChange={handleInputChange}
                       placeholder="Address"
+                      className="pointer-events-auto"
                     />
                   </div>
                 </div>
@@ -613,14 +656,14 @@ const ClientManagement = () => {
                     value={formData.notes}
                     onChange={handleInputChange}
                     placeholder="Additional notes about the client"
-                    className="min-h-[100px]"
+                    className="min-h-[100px] pointer-events-auto"
                   />
                 </div>
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" type="button" onClick={() => setShowAddForm(false)}>
+                  <Button variant="outline" type="button" onClick={() => setShowAddForm(false)} className="pointer-events-auto">
                     Cancel
                   </Button>
-                  <Button type="submit">
+                  <Button type="submit" className="pointer-events-auto">
                     Save Client
                   </Button>
                 </div>
@@ -630,48 +673,60 @@ const ClientManagement = () => {
         )}
 
         {loading ? (
-          <div className="text-center py-8">Loading clients data...</div>
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-4 text-gray-500">Loading clients data...</p>
+          </div>
         ) : clients.length === 0 ? (
           <div className="text-center py-8">
             <Users className="mx-auto h-12 w-12 text-gray-400 mb-3" />
             <h3 className="text-lg font-medium">No clients found</h3>
             <p className="text-gray-500 mt-2 mb-4">Add your first client to get started</p>
-            <Button onClick={() => setShowAddForm(true)}>
+            <Button onClick={() => setShowAddForm(true)} className="pointer-events-auto">
               <Plus className="mr-2 h-4 w-4" />
               Add Client
             </Button>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Client Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Address</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {clients.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      {client.email && <div className="text-sm">{client.email}</div>}
-                      {client.phone && <div className="text-sm">{client.phone}</div>}
-                    </div>
-                  </TableCell>
-                  <TableCell>{client.address || '—'}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleDelete(client.id)}>
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Delete</span>
-                    </Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-1/3">Client Name</TableHead>
+                  <TableHead className="w-1/3">Contact</TableHead>
+                  <TableHead className="hidden sm:table-cell w-1/3">Address</TableHead>
+                  <TableHead className="text-right w-16">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {clients.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell className="font-medium">{client.name}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        {client.email && <div className="text-sm truncate max-w-[180px]">{client.email}</div>}
+                        {client.phone && <div className="text-sm">{client.phone}</div>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <div className="truncate max-w-[180px]">{client.address || '—'}</div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 pointer-events-auto" 
+                        onClick={() => handleDelete(client.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>

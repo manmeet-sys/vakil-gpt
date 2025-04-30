@@ -115,7 +115,7 @@ const DeadlineManagementPage = () => {
       <Toaster richColors position="top-right" />
       
       <motion.div 
-        className="container mx-auto px-4 py-6"
+        className="container mx-auto px-4 py-6 max-w-7xl"
         initial="initial"
         animate="animate"
         variants={pageVariants}
@@ -130,9 +130,9 @@ const DeadlineManagementPage = () => {
           />
         </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Form */}
-          <motion.div className="md:col-span-1" variants={itemVariants}>
+          <motion.div className="lg:col-span-1 order-2 lg:order-1" variants={itemVariants}>
             <DeadlineForm 
               onDeadlineAdded={handleDeadlineAdded}
               currentUserId={currentUserId}
@@ -160,7 +160,7 @@ const DeadlineManagementPage = () => {
           </motion.div>
           
           {/* Right column - Deadlines list */}
-          <motion.div className="md:col-span-2" variants={itemVariants}>
+          <motion.div className="lg:col-span-2 order-1 lg:order-2" variants={itemVariants}>
             <DeadlineList 
               deadlines={deadlines}
               isLoading={isLoading}

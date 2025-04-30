@@ -148,7 +148,7 @@ const UserProfilePage = () => {
         <title>Advocate Profile | VakilGPT</title>
       </Helmet>
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         {loading ? (
           <div className="flex justify-center items-center min-h-[500px]">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-600"></div>
@@ -177,7 +177,7 @@ const UserProfilePage = () => {
                     <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                       {profile?.full_name || 'Advocate'}
                     </h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-gray-500 dark:text-gray-400 mt-1 break-words text-sm">
                       {user?.email}
                     </p>
                     <div className="mt-3 flex justify-center">
@@ -196,9 +196,9 @@ const UserProfilePage = () => {
                         <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-full mr-3">
                           <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                         </div>
-                        <div>
+                        <div className="overflow-hidden">
                           <p className="text-sm text-gray-500 dark:text-gray-400">Bar Council Number</p>
-                          <p className="font-medium text-gray-800 dark:text-gray-200">{profile.bar_number}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-200 truncate">{profile.bar_number}</p>
                         </div>
                       </div>
                     )}
@@ -208,9 +208,9 @@ const UserProfilePage = () => {
                         <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-full mr-3">
                           <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <div>
+                        <div className="overflow-hidden">
                           <p className="text-sm text-gray-500 dark:text-gray-400">Enrollment Date</p>
-                          <p className="font-medium text-gray-800 dark:text-gray-200">{profile.enrollment_date}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-200 truncate">{profile.enrollment_date}</p>
                         </div>
                       </div>
                     )}
@@ -220,9 +220,9 @@ const UserProfilePage = () => {
                         <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full mr-3">
                           <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <div>
+                        <div className="overflow-hidden">
                           <p className="text-sm text-gray-500 dark:text-gray-400">Jurisdiction</p>
-                          <p className="font-medium text-gray-800 dark:text-gray-200">{profile.jurisdiction}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-200 truncate">{profile.jurisdiction}</p>
                         </div>
                       </div>
                     )}
@@ -328,25 +328,25 @@ const UserProfilePage = () => {
                     Manage your legal practice workflow
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <motion.div 
                       whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
                       className="group"
                     >
                       <Button 
                         variant="outline" 
-                        className="h-24 w-full justify-start border-2 border-blue-200 dark:border-blue-800/30 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-all duration-200 group-hover:shadow-md" 
+                        className="h-auto min-h-[96px] w-full justify-start border-2 border-blue-200 dark:border-blue-800/30 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-all duration-200 group-hover:shadow-md" 
                         onClick={() => navigate('/case-management')}
                       >
-                        <div className="flex flex-col items-start mr-3">
-                          <div className="h-12 w-12 rounded-full bg-blue-200 dark:bg-blue-800/30 flex items-center justify-center mb-1 group-hover:bg-blue-300 dark:group-hover:bg-blue-700/40 transition-colors">
-                            <Briefcase className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center p-1">
+                          <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-blue-200 dark:bg-blue-800/30 flex items-center justify-center mb-2 sm:mb-0 sm:mr-3 group-hover:bg-blue-300 dark:group-hover:bg-blue-700/40 transition-colors">
+                            <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                           </div>
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-medium text-blue-900 dark:text-blue-100">Case Management</h3>
-                          <p className="text-sm text-blue-600 dark:text-blue-400">Track and manage your legal cases</p>
+                          <div className="text-left">
+                            <h3 className="font-medium text-blue-900 dark:text-blue-100 text-sm sm:text-base">Case Management</h3>
+                            <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400">Track and manage your legal cases</p>
+                          </div>
                         </div>
                       </Button>
                     </motion.div>
@@ -357,17 +357,17 @@ const UserProfilePage = () => {
                     >
                       <Button 
                         variant="outline" 
-                        className="h-24 w-full justify-start border-2 border-purple-200 dark:border-purple-800/30 bg-purple-50/50 dark:bg-purple-900/10 hover:bg-purple-100 dark:hover:bg-purple-900/20 transition-all duration-200 group-hover:shadow-md" 
+                        className="h-auto min-h-[96px] w-full justify-start border-2 border-purple-200 dark:border-purple-800/30 bg-purple-50/50 dark:bg-purple-900/10 hover:bg-purple-100 dark:hover:bg-purple-900/20 transition-all duration-200 group-hover:shadow-md" 
                         onClick={() => navigate('/deadline-management')}
                       >
-                        <div className="flex flex-col items-start mr-3">
-                          <div className="h-12 w-12 rounded-full bg-purple-200 dark:bg-purple-800/30 flex items-center justify-center mb-1 group-hover:bg-purple-300 dark:group-hover:bg-purple-700/40 transition-colors">
-                            <Clock className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center p-1">
+                          <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-purple-200 dark:bg-purple-800/30 flex items-center justify-center mb-2 sm:mb-0 sm:mr-3 group-hover:bg-purple-300 dark:group-hover:bg-purple-700/40 transition-colors">
+                            <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
                           </div>
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-medium text-purple-900 dark:text-purple-100">Deadline Tracking</h3>
-                          <p className="text-sm text-purple-600 dark:text-purple-400">Manage important dates and deadlines</p>
+                          <div className="text-left">
+                            <h3 className="font-medium text-purple-900 dark:text-purple-100 text-sm sm:text-base">Deadline Tracking</h3>
+                            <p className="text-xs sm:text-sm text-purple-600 dark:text-purple-400">Manage important dates and deadlines</p>
+                          </div>
                         </div>
                       </Button>
                     </motion.div>
@@ -378,17 +378,17 @@ const UserProfilePage = () => {
                     >
                       <Button 
                         variant="outline" 
-                        className="h-24 w-full justify-start border-2 border-green-200 dark:border-green-800/30 bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100 dark:hover:bg-green-900/20 transition-all duration-200 group-hover:shadow-md" 
+                        className="h-auto min-h-[96px] w-full justify-start border-2 border-green-200 dark:border-green-800/30 bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100 dark:hover:bg-green-900/20 transition-all duration-200 group-hover:shadow-md" 
                         onClick={() => navigate('/case-management')}
                       >
-                        <div className="flex flex-col items-start mr-3">
-                          <div className="h-12 w-12 rounded-full bg-green-200 dark:bg-green-800/30 flex items-center justify-center mb-1 group-hover:bg-green-300 dark:group-hover:bg-green-700/40 transition-colors">
-                            <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center p-1">
+                          <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-green-200 dark:bg-green-800/30 flex items-center justify-center mb-2 sm:mb-0 sm:mr-3 group-hover:bg-green-300 dark:group-hover:bg-green-700/40 transition-colors">
+                            <Users className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
                           </div>
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-medium text-green-900 dark:text-green-100">Client Management</h3>
-                          <p className="text-sm text-green-600 dark:text-green-400">Maintain your client database</p>
+                          <div className="text-left">
+                            <h3 className="font-medium text-green-900 dark:text-green-100 text-sm sm:text-base">Client Management</h3>
+                            <p className="text-xs sm:text-sm text-green-600 dark:text-green-400">Maintain your client database</p>
+                          </div>
                         </div>
                       </Button>
                     </motion.div>
@@ -399,17 +399,17 @@ const UserProfilePage = () => {
                     >
                       <Button 
                         variant="outline" 
-                        className="h-24 w-full justify-start border-2 border-amber-200 dark:border-amber-800/30 bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-all duration-200 group-hover:shadow-md" 
+                        className="h-auto min-h-[96px] w-full justify-start border-2 border-amber-200 dark:border-amber-800/30 bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-all duration-200 group-hover:shadow-md" 
                         onClick={() => navigate('/court-filing')}
                       >
-                        <div className="flex flex-col items-start mr-3">
-                          <div className="h-12 w-12 rounded-full bg-amber-200 dark:bg-amber-800/30 flex items-center justify-center mb-1 group-hover:bg-amber-300 dark:group-hover:bg-amber-700/40 transition-colors">
-                            <FileText className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center p-1">
+                          <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-amber-200 dark:bg-amber-800/30 flex items-center justify-center mb-2 sm:mb-0 sm:mr-3 group-hover:bg-amber-300 dark:group-hover:bg-amber-700/40 transition-colors">
+                            <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400" />
                           </div>
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-medium text-amber-900 dark:text-amber-100">Court Filings</h3>
-                          <p className="text-sm text-amber-600 dark:text-amber-400">Track court documents and filings</p>
+                          <div className="text-left">
+                            <h3 className="font-medium text-amber-900 dark:text-amber-100 text-sm sm:text-base">Court Filings</h3>
+                            <p className="text-xs sm:text-sm text-amber-600 dark:text-amber-400">Track court documents and filings</p>
+                          </div>
                         </div>
                       </Button>
                     </motion.div>

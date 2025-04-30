@@ -108,7 +108,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
 
   return (
     <motion.div 
-      className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
+      className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6"
       variants={container}
       initial="hidden"
       animate="show"
@@ -122,20 +122,20 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
           )}>
             <CardContent className="p-0">
               <div className="flex items-stretch h-full">
-                <div className={cn("w-3", card.colors.bar)}></div>
+                <div className={cn("w-2", card.colors.bar)}></div>
                 <div className="flex-1 p-4 flex items-center justify-between">
-                  <div className="overflow-hidden">
-                    <p className={cn("text-sm font-medium flex items-center truncate max-w-[120px] md:max-w-full", card.colors.text)}>
+                  <div className="overflow-hidden pr-2">
+                    <p className={cn("text-sm font-medium flex items-center", card.colors.text)}>
                       <card.icon className="h-4 w-4 mr-1.5 flex-shrink-0" />
                       <span className="truncate">{card.title}</span>
                     </p>
                     <div className="flex items-end mt-1">
                       <h3 className={cn("text-2xl font-bold", card.colors.number)}>{card.count}</h3>
-                      <p className={cn("text-xs ml-1.5 mb-0.5 whitespace-nowrap", card.colors.text)}>{card.label}</p>
+                      <p className={cn("text-xs ml-1.5 mb-0.5", card.colors.text)}>{card.label}</p>
                     </div>
                   </div>
-                  <div className={cn("w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center shadow-inner", card.colors.background)}>
-                    <card.icon className={cn("h-6 w-6", card.colors.iconColor)} />
+                  <div className={cn("w-10 h-10 md:w-12 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center shadow-inner", card.colors.background)}>
+                    <card.icon className={cn("h-5 w-5 md:h-6 md:w-6", card.colors.iconColor)} />
                   </div>
                 </div>
               </div>
