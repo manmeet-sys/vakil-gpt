@@ -19,9 +19,15 @@ const SearchDocuments: React.FC<SearchDocumentsProps> = ({ onSearch }) => {
 
   // Load recent searches from localStorage on component mount
   useEffect(() => {
-    const savedSearches = localStorage.getItem('recentDocumentSearches');
-    if (savedSearches) {
-      setRecentSearches(JSON.parse(savedSearches));
+    try {
+      const savedSearches = localStorage.getItem('recentDocumentSearches');
+      if (savedSearches) {
+        setRecentSearches(JSON.parse(savedSearches));
+      }
+    } catch (error) {
+      console.error('Error loading recent searches:', error);
+      // Reset if there's an error with the stored data
+      localStorage.removeItem('recentDocumentSearches');
     }
   }, []);
 
@@ -29,16 +35,23 @@ const SearchDocuments: React.FC<SearchDocumentsProps> = ({ onSearch }) => {
   const saveSearch = (query: string) => {
     if (!query.trim()) return;
     
-    const updatedSearches = [query, ...recentSearches.filter(s => s !== query)].slice(0, 5);
-    setRecentSearches(updatedSearches);
-    localStorage.setItem('recentDocumentSearches', JSON.stringify(updatedSearches));
+    try {
+      const updatedSearches = [query, ...recentSearches.filter(s => s !== query)].slice(0, 5);
+      setRecentSearches(updatedSearches);
+      localStorage.setItem('recentDocumentSearches', JSON.stringify(updatedSearches));
+    } catch (error) {
+      console.error('Error saving search:', error);
+      toast.error('Could not save your search history');
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(searchQuery, documentType, dateRange);
-    saveSearch(searchQuery);
-    toast.success('Search filters applied');
+    if (searchQuery.trim()) {
+      saveSearch(searchQuery);
+      toast.success('Search filters applied');
+    }
   };
 
   const handleClearSearch = () => {
@@ -59,7 +72,11 @@ const SearchDocuments: React.FC<SearchDocumentsProps> = ({ onSearch }) => {
     e.stopPropagation();
     const updatedSearches = recentSearches.filter(s => s !== search);
     setRecentSearches(updatedSearches);
-    localStorage.setItem('recentDocumentSearches', JSON.stringify(updatedSearches));
+    try {
+      localStorage.setItem('recentDocumentSearches', JSON.stringify(updatedSearches));
+    } catch (error) {
+      console.error('Error removing search:', error);
+    }
   };
 
   return (

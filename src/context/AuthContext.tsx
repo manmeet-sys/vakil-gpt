@@ -47,6 +47,7 @@ interface AuthContextProps {
   verifyTwoFactor: (otp: string) => Promise<boolean>;
   encryptUserData: (data: string) => Promise<string | null>;
   decryptUserData: (encryptedData: string) => Promise<string | null>;
+  updateProfile: (profileData: Partial<UserProfile>) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -103,6 +104,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
+    }
+  };
+
+  // Function to update user profile
+  const updateProfile = async (profileData: Partial<UserProfile>): Promise<boolean> => {
+    if (!user?.id) return false;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          ...profileData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      // Refresh profile data
+      await refreshProfile();
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      return false;
     }
   };
 
@@ -342,10 +368,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       toast.success('Successfully signed out');
       
-      // Force page refresh to clear any cached state
-      // This is commented out for now, but can be uncommented if needed
-      // window.location.href = '/';
-      
     } catch (error) {
       console.error('Error signing out:', error);
       toast.error('Error signing out. Please try again.');
@@ -383,6 +405,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     verifyTwoFactor,
     encryptUserData,
     decryptUserData,
+    updateProfile,
   };
 
   return (

@@ -22,8 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import ClearAnalyticsButton from './ClearAnalyticsButton';
-import { UserCog, Upload, Shield, Info, Calendar, BadgeCheck, Check, X, AlertCircle, Loader2, Edit, Eye } from 'lucide-react';
+import { UserCog, Upload, Shield, Info, Calendar, BadgeCheck, Check, X, AlertCircle, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -50,7 +49,7 @@ const indianJurisdictions = [
 
 const ProfileManager: React.FC = () => {
   const { user, userProfile, refreshProfile } = useAuth();
-  const { updateProfileData } = useAnalytics();
+  const { logAction } = useAnalytics();
   const [isLoading, setIsLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -86,7 +85,7 @@ const ProfileManager: React.FC = () => {
       errors.full_name = 'Full name is required';
     }
     
-    if (formData.bar_number && !formData.bar_number.match(/^[A-Z]\/\d+\/\d+$/)) {
+    if (formData.bar_number && !formData.bar_number.match(/^[A-Za-z]\/\d+\/\d+$/)) {
       errors.bar_number = 'Format should be like D/123/2020';
     }
     
@@ -162,30 +161,46 @@ const ProfileManager: React.FC = () => {
   const uploadAvatar = async (): Promise<string | null> => {
     if (!avatarFile || !user) return avatarUrl;
 
-    const stopSimulation = simulateUploadProgress();
-    
     try {
+      const stopSimulation = simulateUploadProgress();
+      
+      // Check if avatars bucket exists and create it if not
+      try {
+        const { error: bucketError } = await supabase
+          .storage
+          .getBucket('avatars');
+        
+        if (bucketError && bucketError.message.includes('not found')) {
+          await supabase.storage.createBucket('avatars', {
+            public: true,
+            fileSizeLimit: 1024 * 1024 * 2 // 2MB
+          });
+        }
+      } catch (error) {
+        console.error('Error checking bucket:', error);
+      }
+      
+      // Upload file to avatars bucket
       const fileExt = avatarFile.name.split('.').pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
+      const filePath = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(filePath, avatarFile, { upsert: true });
+        .from('avatars')
+        .upload(filePath, avatarFile);
         
       if (uploadError) throw uploadError;
       
+      // Get public URL
       const { data: publicURL } = supabase.storage
-        .from('documents')
+        .from('avatars')
         .getPublicUrl(filePath);
       
       completeUploadProgress();
-      stopSimulation();
       
       return publicURL.publicUrl;
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast.error('Avatar upload failed');
-      stopSimulation();
       setIsUploading(false);
       return null;
     }
@@ -199,33 +214,47 @@ const ProfileManager: React.FC = () => {
       return;
     }
     
+    if (!user) {
+      toast.error('You must be logged in to update your profile');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
       // Upload avatar if a new one was selected
       const newAvatarUrl = avatarFile ? await uploadAvatar() : avatarUrl;
       
-      // Update profile data
-      const success = await updateProfileData({
-        ...formData,
-        avatar_url: newAvatarUrl
+      // Update profile in database
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.full_name,
+          bar_number: formData.bar_number || null,
+          enrollment_date: formData.enrollment_date || null,
+          jurisdiction: formData.jurisdiction || null,
+          avatar_url: newAvatarUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      // Log the action
+      logAction('profile_update', {
+        fields_updated: Object.keys(formData).filter(key => formData[key as keyof typeof formData] !== '')
       });
       
-      if (success) {
-        toast.success('Profile updated', {
-          description: 'Your profile information has been saved'
-        });
-        // Refresh profile data to reflect changes
-        await refreshProfile();
-        setIsEditMode(false);
-      } else {
-        throw new Error('Failed to update profile');
-      }
+      toast.success('Profile updated successfully');
+      
+      // Refresh profile data
+      await refreshProfile();
+      
+      // Exit edit mode
+      setIsEditMode(false);
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Update failed', {
-        description: 'There was a problem updating your profile'
-      });
+      toast.error('Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
       setAvatarFile(null); // Clear the file selection
@@ -248,7 +277,7 @@ const ProfileManager: React.FC = () => {
     setValidationErrors({});
     setAvatarFile(null);
     
-    toast.info('Editing cancelled');
+    toast.info('Changes discarded');
   };
 
   const handleEditClick = () => {
@@ -279,11 +308,11 @@ const ProfileManager: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="shadow-md overflow-hidden border-legal-border dark:border-legal-slate/20">
-        <CardHeader className="bg-gradient-to-r from-legal-accent/10 to-legal-light dark:from-legal-slate/30 dark:to-legal-slate/10 border-b border-legal-border/20 dark:border-legal-slate/10 px-6 py-5">
+      <Card className="shadow-md overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-b border-indigo-100 dark:border-indigo-800/20 px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <UserCog size={20} className="text-legal-accent" />
+              <UserCog size={20} className="text-indigo-600" />
               <CardTitle>Advocate Profile</CardTitle>
             </div>
             <TooltipProvider>
@@ -309,7 +338,7 @@ const ProfileManager: React.FC = () => {
                 className="ml-3 h-7 px-2 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
                 onClick={handleEditClick}
               >
-                <Edit className="h-3.5 w-3.5 mr-1" />
+                <BadgeCheck className="h-3.5 w-3.5 mr-1" />
                 Edit
               </Button>
             )}
@@ -321,7 +350,7 @@ const ProfileManager: React.FC = () => {
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex flex-col items-center md:w-1/3 lg:w-1/4">
                   <div 
-                    className="relative w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border border-legal-border dark:border-legal-slate/20 mb-4 shadow-sm group"
+                    className="relative w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 mb-4 shadow-sm group"
                   >
                     {avatarUrl ? (
                       <img 
@@ -355,7 +384,7 @@ const ProfileManager: React.FC = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full border-dashed hover:bg-legal-accent/5"
+                        className="w-full border-dashed hover:bg-indigo-50"
                         disabled={isLoading || isUploading}
                       >
                         <Upload className="w-4 h-4 mr-2" />
@@ -388,7 +417,7 @@ const ProfileManager: React.FC = () => {
                       onChange={handleInputChange}
                       placeholder="Enter your full legal name"
                       className={cn(
-                        "border-legal-border/30",
+                        "border-gray-300",
                         validationErrors.full_name && "border-destructive focus-visible:ring-destructive"
                       )}
                       disabled={isLoading}
@@ -420,7 +449,7 @@ const ProfileManager: React.FC = () => {
                         onChange={handleInputChange}
                         placeholder="e.g., D/123/2020"
                         className={cn(
-                          "border-legal-border/30",
+                          "border-gray-300",
                           validationErrors.bar_number && "border-destructive focus-visible:ring-destructive"
                         )}
                         disabled={isLoading}
@@ -451,7 +480,7 @@ const ProfileManager: React.FC = () => {
                         value={formData.enrollment_date}
                         onChange={handleInputChange}
                         className={cn(
-                          "border-legal-border/30",
+                          "border-gray-300",
                           validationErrors.enrollment_date && "border-destructive focus-visible:ring-destructive"
                         )}
                         disabled={isLoading}
@@ -484,7 +513,7 @@ const ProfileManager: React.FC = () => {
                       <SelectTrigger 
                         id="jurisdiction" 
                         className={cn(
-                          "border-legal-border/30",
+                          "border-gray-300",
                           validationErrors.jurisdiction && "border-destructive focus-visible:ring-destructive"
                         )}
                       >
@@ -513,7 +542,7 @@ const ProfileManager: React.FC = () => {
                 </AlertDescription>
               </Alert>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-legal-border/10 dark:border-legal-slate/10 mt-6">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800 mt-6">
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -527,7 +556,7 @@ const ProfileManager: React.FC = () => {
                 <Button 
                   type="submit" 
                   disabled={isLoading}
-                  className="bg-legal-accent hover:bg-legal-accent/90 text-white gap-1"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white gap-1"
                 >
                   {isLoading ? (
                     <>
@@ -548,7 +577,7 @@ const ProfileManager: React.FC = () => {
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex flex-col items-center md:w-1/3 lg:w-1/4">
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border border-legal-border dark:border-legal-slate/20 mb-4 shadow-md">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 mb-4 shadow-md">
                     {avatarUrl ? (
                       <img 
                         src={avatarUrl} 
@@ -607,7 +636,7 @@ const ProfileManager: React.FC = () => {
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-between bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/10 border-t border-legal-border/20 dark:border-legal-slate/10 px-6 py-4">
+        <CardFooter className="flex justify-between bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/10 border-t border-gray-100 dark:border-gray-800/30 px-6 py-4">
           <div className="flex items-center gap-2">
             <Shield size={14} className="text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
@@ -615,14 +644,12 @@ const ProfileManager: React.FC = () => {
             </p>
           </div>
           {!isEditMode && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs gap-1 bg-white dark:bg-gray-800"
-              onClick={handleEditClick}
+            <Button 
+              onClick={navigateToEditProfile} 
+              className="text-xs gap-1 bg-indigo-600 hover:bg-indigo-700 text-white"
             >
-              <Edit className="h-3 w-3" />
-              Edit Profile
+              <UserCog className="h-3 w-3" />
+              Full Profile Settings
             </Button>
           )}
         </CardFooter>

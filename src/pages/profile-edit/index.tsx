@@ -134,6 +134,22 @@ const ProfileEditPage = () => {
 
     setIsLoading(true);
     try {
+      // Make sure the avatar bucket exists
+      try {
+        const { error: bucketError } = await supabase
+          .storage
+          .getBucket('avatars');
+
+        if (bucketError && bucketError.message.includes('not found')) {
+          await supabase.storage.createBucket('avatars', {
+            public: true,
+            fileSizeLimit: 1024 * 1024 * 2, // 2MB
+          });
+        }
+      } catch (error) {
+        console.error('Error checking avatar bucket:', error);
+      }
+      
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -177,15 +193,20 @@ const ProfileEditPage = () => {
     const stopProgressAnimation = simulateUploadProgress();
     
     try {
-      const { data: bucketData, error: bucketError } = await supabase
-        .storage
-        .getBucket('avatars');
+      // Check if avatars bucket exists and create it if it doesn't
+      try {
+        const { data: bucketData, error: bucketError } = await supabase
+          .storage
+          .getBucket('avatars');
 
-      if (bucketError && bucketError.message.includes('not found')) {
-        await supabase.storage.createBucket('avatars', {
-          public: true,
-          fileSizeLimit: 1024 * 1024 * 2,
-        });
+        if (bucketError && bucketError.message.includes('not found')) {
+          await supabase.storage.createBucket('avatars', {
+            public: true,
+            fileSizeLimit: 1024 * 1024 * 2,
+          });
+        }
+      } catch (error) {
+        console.error('Error checking bucket:', error);
       }
 
       const { error: uploadError } = await supabase.storage
@@ -217,6 +238,10 @@ const ProfileEditPage = () => {
 
       setAvatarUrl(avatarUrl);
       toast.success('Avatar updated successfully');
+      
+      // Refresh profile to update the avatar in the app
+      refreshProfile();
+      
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast.error('Failed to upload avatar');
@@ -421,6 +446,27 @@ const ProfileEditPage = () => {
                               Your profile information is used to enhance AI-powered legal tools.
                             </AlertDescription>
                           </Alert>
+
+                          <div className="flex justify-end gap-3 pt-4">
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={() => navigate('/user-profile')}
+                              className="border-gray-300 dark:border-gray-700"
+                              disabled={isLoading}
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Cancel
+                            </Button>
+                            <Button 
+                              type="submit"
+                              disabled={isLoading || !form.formState.isDirty}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white pointer-events-auto"
+                            >
+                              {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                              Save Changes
+                            </Button>
+                          </div>
                         </form>
                       </Form>
                     </div>

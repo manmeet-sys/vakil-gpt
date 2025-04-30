@@ -44,13 +44,15 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({ onS
 
   // Load recently used templates from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('recentlyUsedTemplates');
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem('recentlyUsedTemplates');
+      if (saved) {
         setRecentlyUsed(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to parse recently used templates', e);
       }
+    } catch (e) {
+      console.error('Failed to parse recently used templates', e);
+      // Reset if there's an error with the stored data
+      localStorage.removeItem('recentlyUsedTemplates');
     }
   }, []);
 
@@ -94,16 +96,20 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({ onS
     }
     
     if (selectedTemplate) {
-      // Update recently used templates
-      const updatedRecent = [
-        selectedTemplate, 
-        ...recentlyUsed.filter(t => t.id !== templateId)
-      ].slice(0, 5);
-      
-      setRecentlyUsed(updatedRecent);
-      localStorage.setItem('recentlyUsedTemplates', JSON.stringify(updatedRecent));
-      
-      toast.success(`Selected template: ${selectedTemplate.title}`);
+      try {
+        // Update recently used templates
+        const updatedRecent = [
+          selectedTemplate, 
+          ...recentlyUsed.filter(t => t.id !== templateId)
+        ].slice(0, 5);
+        
+        setRecentlyUsed(updatedRecent);
+        localStorage.setItem('recentlyUsedTemplates', JSON.stringify(updatedRecent));
+        
+        toast.success(`Selected template: ${selectedTemplate.title}`);
+      } catch (error) {
+        console.error('Error saving template selection:', error);
+      }
     }
     
     onSelect(templateId);
