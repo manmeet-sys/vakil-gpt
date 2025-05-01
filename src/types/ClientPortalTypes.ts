@@ -103,7 +103,7 @@ export interface DocumentInfo {
   parties?: string;
 }
 
-// Client Portal RPC function types - Updated with correct return types
+// Client Portal RPC function types - Fixed to use proper TypeScript generics
 export type ClientPortalRPCTypes = {
   add_client_document: {
     Args: {

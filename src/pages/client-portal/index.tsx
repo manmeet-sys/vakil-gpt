@@ -117,9 +117,8 @@ const ClientPortalPage = () => {
       
       // Fetch client documents using RPC function
       const documentsResponse = await supabase.rpc<
-        'get_client_documents',
-        ClientPortalRPCTypes['get_client_documents']['Args'],
-        ClientPortalRPCTypes['get_client_documents']['Returns']
+        keyof ClientPortalRPCTypes,
+        ClientPortalRPCTypes['get_client_documents']['Args']
       >(
         'get_client_documents',
         {
@@ -131,9 +130,8 @@ const ClientPortalPage = () => {
       
       // Fetch status updates using RPC function
       const updatesResponse = await supabase.rpc<
-        'get_client_status_updates',
-        ClientPortalRPCTypes['get_client_status_updates']['Args'],
-        ClientPortalRPCTypes['get_client_status_updates']['Returns']
+        keyof ClientPortalRPCTypes,
+        ClientPortalRPCTypes['get_client_status_updates']['Args']
       >(
         'get_client_status_updates',
         {
@@ -144,7 +142,7 @@ const ClientPortalPage = () => {
       if (updatesResponse.error) throw updatesResponse.error;
       
       // Count unread updates
-      const updatesData = updatesResponse.data || [];
+      const updatesData = updatesResponse.data as StatusUpdate[] || [];
       const unread = updatesData.filter(update => !update.is_read).length;
       
       // Fetch cases
@@ -162,8 +160,8 @@ const ClientPortalPage = () => {
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      setDocuments(documentsResponse.data || []);
-      setStatusUpdates(updatesResponse.data || []);
+      setDocuments(documentsResponse.data as ClientDocument[] || []);
+      setStatusUpdates(updatesData);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
@@ -191,9 +189,8 @@ const ClientPortalPage = () => {
     try {
       // Use RPC function to mark status update as read
       const { error } = await supabase.rpc<
-        'mark_status_update_read',
-        ClientPortalRPCTypes['mark_status_update_read']['Args'],
-        ClientPortalRPCTypes['mark_status_update_read']['Returns']
+        keyof ClientPortalRPCTypes,
+        ClientPortalRPCTypes['mark_status_update_read']['Args']
       >(
         'mark_status_update_read',
         {
