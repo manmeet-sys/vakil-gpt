@@ -40,7 +40,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               transition={{ duration: 0.3 }}
               className={cn(
                 design.text.heading,
-                "text-xl font-semibold flex items-center"
+                "text-xl flex items-center"
               )}
             >
               VakilGPT
@@ -78,7 +78,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </header>
       
       <main className={cn(
-        "flex-1 flex flex-col py-6 overflow-hidden",
+        "flex-1 flex flex-col py-6 md:py-8 overflow-hidden",
         design.spacing.container
       )}>
         {children}
