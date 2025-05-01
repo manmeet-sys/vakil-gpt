@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import BackButton from './BackButton';
 import { Link, useLocation } from 'react-router-dom';
-import { LogIn, LogOut, User, Menu, X, Shield, BookOpen, Settings, BellRing, Bell } from 'lucide-react';
+import { LogIn, LogOut, User, Menu, X, Shield, BookOpen, Settings, BellRing, Bell, Book } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -45,10 +46,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { name: 'Legal Chat', path: '/chat', icon: BellRing },
     { name: 'Knowledge', path: '/knowledge', icon: BookOpen },
     {
-      name: "Advocate Portal",
-      path: "/client-portal",
-      icon: Shield,
-      current: location.pathname === "/client-portal",
+      name: "Practice Areas",
+      path: "/practice-areas",
+      icon: Book,
+      current: location.pathname === "/practice-areas",
     },
   ];
   

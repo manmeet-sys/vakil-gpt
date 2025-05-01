@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Moon, Sun, User, LogOut, Settings, ChevronDown, Book, FileText, HelpCircle, CreditCard, Shield } from 'lucide-react';
@@ -109,12 +110,12 @@ const Header = () => {
               } transition-colors`}>
               Tools
             </Link>
-            <Link to="/client-portal" className={`px-3 py-2 ${
-              location.pathname === '/client-portal' 
+            <Link to="/practice-areas" className={`px-3 py-2 ${
+              location.pathname === '/practice-areas' 
                 ? 'text-legal-accent font-medium' 
                 : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
               } transition-colors`}>
-              Advocate Portal
+              Practice Areas
             </Link>
             <Link to="/pricing" className={`px-3 py-2 ${
               location.pathname === '/pricing' 
@@ -288,12 +289,12 @@ const Header = () => {
               } transition-colors`}>
               Tools
             </Link>
-            <Link to="/client-portal" className={`px-3 py-2 ${
-              location.pathname === '/client-portal' 
+            <Link to="/practice-areas" className={`px-3 py-2 ${
+              location.pathname === '/practice-areas' 
                 ? 'text-legal-accent font-medium' 
                 : 'text-legal-slate dark:text-white/90 hover:text-legal-accent dark:hover:text-legal-accent'
               } transition-colors`}>
-              Advocate Portal
+              Practice Areas
             </Link>
             <Link to="/pricing" className={`px-3 py-2 ${
               location.pathname === '/pricing' 
