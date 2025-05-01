@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ToolCategory from './ToolsCategories';
 import { 
@@ -11,10 +12,83 @@ import {
   File,
   IndianRupee, 
   BarChart2,
-  Gavel
+  Gavel,
+  Accessibility
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const AllTools = () => {
+  // Practice area tools are now prominently featured at the top
+  const practiceAreaTools = [
+    {
+      id: "practice-areas",
+      title: "Practice Areas Hub",
+      description: "Access specialized tools for different practice areas of Indian law",
+      icon: <BookOpen className="h-5 w-5 text-blue-600" />,
+      path: "/practice-areas"
+    },
+    {
+      id: "criminal-law",
+      title: "Criminal Law Tools",
+      description: "Specialized tools for BNS code, sentencing prediction and defense strategies",
+      icon: <Gavel className="h-5 w-5 text-blue-600" />,
+      path: "/criminal-law"
+    },
+    {
+      id: "civil-law",
+      title: "Civil Law Tools",
+      description: "Cause of action analysis, limitation calculator, and relief generator",
+      icon: <Scale className="h-5 w-5 text-blue-600" />,
+      path: "/civil-law"
+    },
+    {
+      id: "corporate-law",
+      title: "Corporate Law",
+      description: "Company formation, due diligence, and compliance management tools",
+      icon: <Briefcase className="h-5 w-5 text-blue-600" />,
+      path: "/corporate-law"
+    },
+    {
+      id: "family-law",
+      title: "Family Law",
+      description: "Maintenance calculation, custody analysis, and family law document generation",
+      icon: <Heart className="h-5 w-5 text-blue-600" />,
+      path: "/family-law"
+    },
+    {
+      id: "real-estate-law",
+      title: "Real Estate Law",
+      description: "Title search, RERA compliance, and property document generation tools",
+      icon: <Home className="h-5 w-5 text-blue-600" />,
+      path: "/real-estate-law"
+    }
+  ];
+
+  const accessibilityTools = [
+    {
+      id: "screen-reader",
+      title: "Screen Reader Mode",
+      description: "Optimized interface for screen reader accessibility",
+      icon: <Accessibility className="h-5 w-5 text-blue-600" />,
+      path: "/settings?tab=accessibility"
+    },
+    {
+      id: "text-options",
+      title: "Text Options",
+      description: "Adjust text size, contrast and spacing for better readability",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/settings?tab=accessibility"
+    },
+    {
+      id: "voice-navigation",
+      title: "Voice Navigation",
+      description: "Navigate and control the application using voice commands",
+      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      path: "/settings?tab=accessibility"
+    }
+  ];
+
   const researchTools = [
     {
       id: "legal-research",
@@ -174,45 +248,37 @@ const AllTools = () => {
     },
   ];
 
-  // Add a new category for Practice-Specific Tools
-  const practiceAreaTools = [
-    {
-      id: "practice-areas",
-      title: "Practice Areas Hub",
-      description: "Access specialized tools for different practice areas of Indian law",
-      icon: <BookOpen className="h-5 w-5 text-blue-600" />,
-      path: "/practice-areas"
-    },
-    {
-      id: "criminal-law",
-      title: "Criminal Law Tools",
-      description: "Specialized tools for BNS code, sentencing prediction and defense strategies",
-      icon: <Gavel className="h-5 w-5 text-blue-600" />,
-      path: "/criminal-law"
-    },
-    {
-      id: "civil-law",
-      title: "Civil Law Tools",
-      description: "Cause of action analysis, limitation calculator, and relief generator",
-      icon: <Scale className="h-5 w-5 text-blue-600" />,
-      path: "/civil-law"
-    }
-  ];
-
   return (
     <div className="space-y-10 pb-10">
+      {/* Practice Area Tools - Promoted to top position for better accessibility */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 p-6 rounded-xl shadow-sm">
+        <ToolCategory
+          title="Practice-Specific Legal Tools"
+          description="Specialized tools and resources for different areas of legal practice"
+          tools={practiceAreaTools}
+          className="mb-2"
+        />
+        <div className="mt-4 flex justify-center">
+          <Link to="/practice-areas">
+            <Button variant="outline" size="lg" className="font-medium">
+              Explore All Practice Areas
+            </Button>
+          </Link>
+        </div>
+      </div>
+      
+      {/* Accessibility Tools */}
+      <ToolCategory
+        title="Accessibility Features"
+        description="Tools to customize your experience for better accessibility"
+        tools={accessibilityTools}
+      />
+      
       {/* Legal Research & Analysis */}
       <ToolCategory
         title="Legal Research & Analysis"
         description="AI-powered tools to research case law, analyze legal issues, and predict outcomes"
         tools={researchTools}
-      />
-      
-      {/* Add our new Practice Area Tools category */}
-      <ToolCategory
-        title="Practice-Specific Tools"
-        description="Specialized tools and resources for different areas of legal practice"
-        tools={practiceAreaTools}
       />
       
       {/* Document Drafting & Management */}

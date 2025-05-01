@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, UserCircle, Shield, Bell, Monitor, Palette, EyeIcon, MessageSquare } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  UserCircle, 
+  Shield, 
+  Bell, 
+  Palette, 
+  MessageSquare, 
+  CheckCircle,
+  Accessibility
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -19,14 +29,41 @@ const AppearanceSettings = React.lazy(() => import('./AppearanceSettings'));
 const SecuritySettings = React.lazy(() => import('./SecuritySettings'));
 const NotificationSettings = React.lazy(() => import('./NotificationSettings'));
 const AISettings = React.lazy(() => import('./AISettings'));
+const AccessibilitySettings = React.lazy(() => import('./AccessibilitySettings'));
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
+  const [savePreferences, setSavePreferences] = useState(false);
+  
+  // Get tab from URL if available
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab && ['profile', 'security', 'notifications', 'appearance', 'ai', 'accessibility'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, []);
+  
+  // Update URL when tab changes
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', activeTab);
+    window.history.replaceState({}, '', url);
+  }, [activeTab]);
 
   const handleGoBack = () => {
     navigate(-1);
+  };
+  
+  const handleTabChange = (value: string) => {
+    // Save any pending changes if switching tabs
+    if (savePreferences) {
+      toast.success("Settings saved successfully");
+      setSavePreferences(false);
+    }
+    setActiveTab(value);
   };
 
   return (
@@ -56,7 +93,7 @@ const SettingsPage: React.FC = () => {
                 <Tabs 
                   orientation="vertical" 
                   value={activeTab}
-                  onValueChange={setActiveTab}
+                  onValueChange={handleTabChange}
                   className="w-full"
                 >
                   <TabsList className="flex flex-col w-full h-auto bg-transparent gap-1">
@@ -94,6 +131,13 @@ const SettingsPage: React.FC = () => {
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       AI Settings
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="accessibility"
+                      className="w-full justify-start py-2 px-3 data-[state=active]:bg-accent"
+                    >
+                      <Accessibility className="h-4 w-4 mr-2" />
+                      Accessibility
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -136,6 +180,12 @@ const SettingsPage: React.FC = () => {
                 <TabsContent value="ai" className="mt-0">
                   <LazyComponent>
                     <AISettings />
+                  </LazyComponent>
+                </TabsContent>
+                
+                <TabsContent value="accessibility" className="mt-0">
+                  <LazyComponent>
+                    <AccessibilitySettings />
                   </LazyComponent>
                 </TabsContent>
               </Tabs>
