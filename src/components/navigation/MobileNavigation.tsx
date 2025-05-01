@@ -13,6 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useNavigation } from '@/context/NavigationContext';
+import { design } from '@/lib/design-system';
 
 const MobileNavigation: React.FC = () => {
   const { user, userProfile, signOut } = useAuth();
@@ -27,10 +28,10 @@ const MobileNavigation: React.FC = () => {
             <span className="sr-only">Toggle menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[85vw] max-w-[350px] p-0 border-l border-gray-200 dark:border-gray-800">
+        <SheetContent side="right" className="p-0 border-l border-gray-200 dark:border-gray-800">
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-              <h2 className="text-lg font-semibold">
+              <h2 className={cn(design.text.heading, design.text.sizes.lg)}>
                 Menu
                 <Badge variant="outline" className="ml-2 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full">
                   BETA
@@ -60,7 +61,7 @@ const MobileNavigation: React.FC = () => {
                               : "hover:bg-gray-50 dark:hover:bg-gray-800"
                           )}
                         >
-                          <IconComponent className="h-5 w-5" />
+                          <IconComponent className="h-5 w-5" aria-hidden="true" />
                           {item.name}
                         </Link>
                       </SheetClose>
@@ -70,7 +71,7 @@ const MobileNavigation: React.FC = () => {
               </ul>
               
               <div className="mt-2 pt-4 px-4 border-t border-gray-100 dark:border-gray-800">
-                <h3 className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Resources</h3>
+                <h3 className={cn(design.text.caption, "uppercase tracking-wider text-gray-500 dark:text-gray-400")}>Resources</h3>
                 <ul className="mt-2 space-y-1">
                   {resourceItems.map((item) => {
                     const IconComponent = item.icon;
@@ -86,7 +87,7 @@ const MobileNavigation: React.FC = () => {
                                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                             )}
                           >
-                            <IconComponent className="h-4 w-4" />
+                            <IconComponent className="h-4 w-4" aria-hidden="true" />
                             {item.name}
                           </Link>
                         </SheetClose>
@@ -101,15 +102,15 @@ const MobileNavigation: React.FC = () => {
               {user ? (
                 <div className="flex flex-col space-y-3">
                   <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <p className="text-sm font-medium">{userProfile?.full_name || 'User'}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    <p className={cn(design.text.body, design.text.sizes.sm, "font-medium")}>{userProfile?.full_name || 'User'}</p>
+                    <p className={cn(design.text.caption, "truncate")}>{user.email}</p>
                   </div>
                   <SheetClose asChild>
                     <Link
                       to="/user-profile"
                       className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                     >
-                      <User className="h-5 w-5" />
+                      <User className="h-5 w-5" aria-hidden="true" />
                       My Profile
                     </Link>
                   </SheetClose>
@@ -121,7 +122,7 @@ const MobileNavigation: React.FC = () => {
                       setIsMobileMenuOpen(false);
                     }}
                   >
-                    <LogOut className="h-5 w-5 mr-2" />
+                    <LogOut className="h-5 w-5 mr-2" aria-hidden="true" />
                     Log out
                   </Button>
                 </div>
@@ -132,7 +133,7 @@ const MobileNavigation: React.FC = () => {
                       to="/login"
                       className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
                     >
-                      <LogIn className="h-4 w-4" />
+                      <LogIn className="h-4 w-4" aria-hidden="true" />
                       <span>Log In</span>
                     </Link>
                   </SheetClose>
@@ -141,7 +142,7 @@ const MobileNavigation: React.FC = () => {
                       to="/signup"
                       className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
                     >
-                      <User className="h-4 w-4" />
+                      <User className="h-4 w-4" aria-hidden="true" />
                       <span>Sign Up</span>
                     </Link>
                   </SheetClose>

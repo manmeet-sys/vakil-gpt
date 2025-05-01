@@ -11,15 +11,18 @@ interface AuthButtonsProps {
   isMobile?: boolean;
 }
 
-const AuthButtons: React.FC<AuthButtonsProps> = ({ isMobile = false }) => {
+const AuthButtons: React.FC<AuthButtonsProps> = ({ isMobile }) => {
   const { user, isAuthenticated } = useAuth();
-  const { currentPath } = useNavigation();
+  const { currentPath, isMobile: isViewportMobile } = useNavigation();
+  
+  // Use the prop if provided, otherwise use the context value
+  const isMobileView = isMobile !== undefined ? isMobile : isViewportMobile;
   
   if (isAuthenticated) {
     return <UserMenuButton />;
   }
   
-  if (isMobile) {
+  if (isMobileView) {
     return null; // Mobile buttons are handled in the mobile menu
   }
   
