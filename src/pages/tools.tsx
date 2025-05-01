@@ -57,34 +57,34 @@ const ToolsPage = () => {
   // Set up practice area tools as a featured category
   const featuredPracticeAreas = [
     { 
-      name: 'Practice Areas Hub', 
+      name: 'Practice Areas', 
       icon: BookOpen, 
       path: '/practice-areas',
       badge: 'Featured'
     },
     { 
-      name: 'Criminal Law', 
+      name: 'Criminal', 
       icon: Gavel, 
       path: '/criminal-law',
       badge: 'Popular'
     },
     { 
-      name: 'Civil Law', 
+      name: 'Civil', 
       icon: Scale, 
       path: '/civil-law' 
     },
     { 
-      name: 'Corporate Law', 
+      name: 'Corporate', 
       icon: Briefcase, 
       path: '/corporate-law' 
     },
     { 
-      name: 'Family Law', 
+      name: 'Family', 
       icon: Heart, 
       path: '/family-law' 
     },
     { 
-      name: 'Real Estate Law', 
+      name: 'Real Estate', 
       icon: Home, 
       path: '/real-estate-law',
       badge: 'New' 
@@ -97,24 +97,24 @@ const ToolsPage = () => {
         <title>Indian Legal Tools | VakilGPT</title>
       </Helmet>
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         {/* Hero section with search */}
         <motion.div
-          className="mb-10"
+          className="mb-8"
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-6 md:p-8 rounded-2xl shadow-elegant">
-            <div className="text-center md:text-left max-w-2xl">
-              <h1 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-3 tracking-tight">
-                Indian Legal Tools Suite
+          <div className="flex flex-col md:flex-row items-center justify-between gap-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 md:p-6 rounded-xl shadow-sm">
+            <div className="text-center md:text-left">
+              <h1 className="text-2xl md:text-3xl font-bold text-legal-slate dark:text-white mb-2 tracking-tight">
+                Indian Legal Tools
               </h1>
-              <p className="text-legal-muted dark:text-gray-300 text-lg">
-                Access specialized tools for Indian legal practitioners
+              <p className="text-legal-muted dark:text-gray-300 text-sm md:text-base">
+                Specialized tools for legal practitioners
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
               <div className="relative w-full md:w-64">
                 <Input
                   type="text"
@@ -129,39 +129,36 @@ const ToolsPage = () => {
           </div>
         </motion.div>
 
-        {/* Featured Practice Areas - New prominent section */}
+        {/* Featured Practice Areas - Compact Grid */}
         {!searchTerm && (
           <motion.div 
-            className="mb-10"
+            className="mb-8"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 p-6 rounded-xl shadow-sm mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-full bg-blue-600/10 flex items-center justify-center">
-                  <Scale className="h-5 w-5 text-blue-600" />
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 p-4 rounded-xl shadow-sm mb-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center">
+                  <Scale className="h-4 w-4 text-blue-600" />
                 </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-legal-slate dark:text-white">Practice-Specific Legal Tools</h2>
-                  <p className="text-sm text-legal-muted dark:text-gray-400">Specialized tools for different areas of Indian law</p>
-                </div>
+                <h2 className="text-lg font-semibold text-legal-slate dark:text-white">Practice Areas</h2>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                 {featuredPracticeAreas.map((area) => (
                   <Button
                     key={area.path}
                     variant="outline"
-                    className="h-auto py-3 px-3 flex flex-col items-center justify-center gap-2 text-center"
+                    className="h-auto py-2 px-2 flex flex-col items-center justify-center gap-1.5 text-center"
                     onClick={() => navigateToTool(area.path)}
                   >
-                    <div className="h-10 w-10 rounded-full bg-blue-600/10 flex items-center justify-center">
-                      <area.icon className="h-5 w-5 text-blue-600" />
+                    <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center">
+                      <area.icon className="h-4 w-4 text-blue-600" />
                     </div>
-                    <span className="text-sm font-medium">{area.name}</span>
+                    <span className="text-xs font-medium">{area.name}</span>
                     {area.badge && (
-                      <Badge variant="outline" className={`text-xs py-0 h-5 ${
+                      <Badge variant="outline" className={`text-xs py-0 h-4 ${
                         area.badge === 'New' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                         area.badge === 'Popular' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
                         'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
