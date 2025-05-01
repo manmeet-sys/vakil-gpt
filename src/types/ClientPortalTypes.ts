@@ -93,12 +93,6 @@ export interface ArgumentBuilder {
   constitutionalProvisions?: string[];
 }
 
-// Define proper types for RPC functions
-export type RPCFunctionReturnType<T> = {
-  data: T;
-  error: Error | null;
-};
-
 // Client Portal RPC function types
 export interface ClientPortalRPCTypes {
   add_client_document: {
@@ -166,6 +160,15 @@ export interface ClientPortalRPCTypes {
       p_message_ids: string[];
     };
     Returns: null;
+  };
+}
+
+// Utils function for document extraction
+export function extractDocumentInfo(file: File): { name: string; type: string; size: number } {
+  return {
+    name: file.name,
+    type: file.type,
+    size: file.size
   };
 }
 

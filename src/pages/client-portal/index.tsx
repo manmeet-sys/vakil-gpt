@@ -117,7 +117,7 @@ const ClientPortalPage = () => {
       
       // Fetch client documents using RPC function
       const documentsResponse = await supabase.rpc<
-        ClientPortalRPCTypes['get_client_documents']['Returns'],
+        ClientDocument[],
         ClientPortalRPCTypes['get_client_documents']['Args']
       >(
         'get_client_documents',
@@ -130,7 +130,7 @@ const ClientPortalPage = () => {
       
       // Fetch status updates using RPC function
       const updatesResponse = await supabase.rpc<
-        ClientPortalRPCTypes['get_client_status_updates']['Returns'],
+        StatusUpdate[],
         ClientPortalRPCTypes['get_client_status_updates']['Args']
       >(
         'get_client_status_updates',
@@ -144,7 +144,7 @@ const ClientPortalPage = () => {
       // Count unread updates
       const updatesData = updatesResponse.data || [];
       const unread = updatesData ? 
-        updatesData.filter(update => !update.is_read).length : 0;
+        (updatesData as StatusUpdate[]).filter(update => !update.is_read).length : 0;
       
       // Fetch cases
       const casesResponse = await supabase
@@ -161,8 +161,8 @@ const ClientPortalPage = () => {
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      setDocuments(documentsResponse.data || []);
-      setStatusUpdates(updatesResponse.data || []);
+      setDocuments(documentsResponse.data as ClientDocument[] || []);
+      setStatusUpdates(updatesResponse.data as StatusUpdate[] || []);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
@@ -190,7 +190,7 @@ const ClientPortalPage = () => {
     try {
       // Use RPC function to mark status update as read
       const { error } = await supabase.rpc<
-        ClientPortalRPCTypes['mark_status_update_read']['Returns'],
+        null,
         ClientPortalRPCTypes['mark_status_update_read']['Args']
       >(
         'mark_status_update_read',
