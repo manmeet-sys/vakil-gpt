@@ -51,7 +51,14 @@ import {
 import ClientDocumentUploader from '@/components/client-portal/ClientDocumentUploader';
 import CaseStatusUpdates from '@/components/client-portal/CaseStatusUpdates';
 import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter';
-import { ClientDocument, StatusUpdate, ClientPortalRPCFunctions, ClientPortalRPCArgs, ClientPortalRPCReturns } from '@/types/ClientPortalTypes';
+import { 
+  ClientDocument, 
+  StatusUpdate, 
+  ClientPortalRPCFunctions, 
+  ClientPortalRPCArgs, 
+  ClientPortalRPCReturns, 
+  clientPortalRPC 
+} from '@/types/ClientPortalTypes';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 

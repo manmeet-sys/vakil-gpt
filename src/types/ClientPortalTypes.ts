@@ -1,5 +1,3 @@
-
-
 import { Database } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 
