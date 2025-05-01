@@ -143,11 +143,8 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
         if (storageError) throw storageError;
         
         // Create database entry using RPC function
-        const { data, error } = await supabase.rpc<
-          ClientPortalRPCReturns<'add_client_document'>,
-          'add_client_document'
-        >(
-          'add_client_document',
+        const { data, error } = await supabase.rpc(
+          'add_client_document' as ClientPortalRPCFunctions,
           {
             p_name: file.name,
             p_size: file.size,

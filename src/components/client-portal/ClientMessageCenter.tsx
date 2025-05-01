@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -84,11 +85,8 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       try {
         setError(null);
         
-        const { data, error } = await supabase.rpc<
-          ClientPortalRPCReturns<'get_client_advocate_messages'>,
-          'get_client_advocate_messages'
-        >(
-          'get_client_advocate_messages',
+        const { data, error } = await supabase.rpc(
+          'get_client_advocate_messages' as ClientPortalRPCFunctions,
           {
             p_client_id: clientId,
             p_advocate_id: selectedAdvocate
@@ -108,11 +106,8 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           
           if (unreadMessages && unreadMessages.length > 0) {
             // Mark messages as read using RPC
-            await supabase.rpc<
-              ClientPortalRPCReturns<'mark_messages_read'>,
-              'mark_messages_read'
-            >(
-              'mark_messages_read',
+            await supabase.rpc(
+              'mark_messages_read' as ClientPortalRPCFunctions,
               {
                 p_message_ids: unreadMessages
               } as ClientPortalRPCArgs<'mark_messages_read'>
@@ -160,11 +155,8 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       setError(null);
       
       // Send message using RPC
-      const { data, error } = await supabase.rpc<
-        ClientPortalRPCReturns<'add_client_message'>,
-        'add_client_message'
-      >(
-        'add_client_message',
+      const { data, error } = await supabase.rpc(
+        'add_client_message' as ClientPortalRPCFunctions,
         {
           p_content: newMessage.trim(),
           p_sender_id: clientId,

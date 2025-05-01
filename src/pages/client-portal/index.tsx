@@ -116,11 +116,8 @@ const ClientPortalPage = () => {
       setError(null);
       
       // Fetch client documents using RPC function
-      const documentsResponse = await supabase.rpc<
-        ClientPortalRPCReturns<'get_client_documents'>,
-        'get_client_documents'
-      >(
-        'get_client_documents',
+      const documentsResponse = await supabase.rpc(
+        'get_client_documents' as ClientPortalRPCFunctions,
         {
           p_client_id: user.id
         } as ClientPortalRPCArgs<'get_client_documents'>
@@ -129,11 +126,8 @@ const ClientPortalPage = () => {
       if (documentsResponse.error) throw documentsResponse.error;
       
       // Fetch status updates using RPC function
-      const updatesResponse = await supabase.rpc<
-        ClientPortalRPCReturns<'get_client_status_updates'>, 
-        'get_client_status_updates'
-      >(
-        'get_client_status_updates',
+      const updatesResponse = await supabase.rpc(
+        'get_client_status_updates' as ClientPortalRPCFunctions,
         {
           p_client_id: user.id
         } as ClientPortalRPCArgs<'get_client_status_updates'>
@@ -190,11 +184,8 @@ const ClientPortalPage = () => {
   const markUpdateAsRead = async (updateId: string) => {
     try {
       // Use RPC function to mark status update as read
-      const { error } = await supabase.rpc<
-        ClientPortalRPCReturns<'mark_status_update_read'>, 
-        'mark_status_update_read'
-      >(
-        'mark_status_update_read',
+      const { error } = await supabase.rpc(
+        'mark_status_update_read' as ClientPortalRPCFunctions,
         {
           p_update_id: updateId
         } as ClientPortalRPCArgs<'mark_status_update_read'>
