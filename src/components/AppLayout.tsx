@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import { Link, useLocation } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
@@ -8,13 +8,22 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import DesktopNavigation from './navigation/DesktopNavigation';
 import AuthButtons from './navigation/AuthButtons';
-import MobileNavigation from './navigation/MobileNavigation';
 import { design } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy-loaded MobileNavigation
+const MobileNavigation = lazy(() => import('./navigation/MobileNavigation'));
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
+
+const MobileMenuFallback = () => (
+  <div className="h-9 w-9 rounded-full">
+    <Skeleton className="h-9 w-9 rounded-full" />
+  </div>
+);
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
@@ -59,8 +68,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           )}
           <ThemeToggle />
           
-          {/* Mobile Menu - Direct component instead of wrapper */}
-          <MobileNavigation />
+          {/* Mobile Navigation - Lazy loaded with proper suspense */}
+          <div className="md:hidden">
+            <Suspense fallback={<MobileMenuFallback />}>
+              <MobileNavigation />
+            </Suspense>
+          </div>
         </div>
       </header>
       

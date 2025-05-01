@@ -74,6 +74,14 @@ const CorporateLawPage = lazy(() => import("./pages/corporate-law"));
 const FamilyLawPage = lazy(() => import("./pages/family-law"));
 const RealEstateLawPage = lazy(() => import("./pages/real-estate-law"));
 
+// Lazy loaded components for advanced AI features
+const AdvancedAIAnalysisPage = lazy(() => 
+  import("./pages/advanced-ai-analysis").then(module => {
+    console.log("Advanced AI Analysis page loaded");
+    return module;
+  })
+);
+
 // ScrollToTop component to handle scrolling to top on route changes
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -362,6 +370,13 @@ const App = () => (
                       <Route path="/corporate-law" element={<CorporateLawPage />} />
                       <Route path="/family-law" element={<FamilyLawPage />} />
                       <Route path="/real-estate-law" element={<RealEstateLawPage />} />
+                      
+                      {/* Add advanced AI analysis route */}
+                      <Route path="/advanced-ai-analysis" element={
+                        <ProtectedRoute>
+                          <AdvancedAIAnalysisPage />
+                        </ProtectedRoute>
+                      } />
                       
                       <Route path="*" element={<NotFound />} />
                     </Routes>
