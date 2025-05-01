@@ -22,6 +22,47 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 
 const AllTools = () => {
+  // Practice Area Tools - Added back with concise descriptions
+  const practiceAreaTools = [
+    {
+      id: "criminal-law",
+      title: "Criminal",
+      description: "BNS codes and criminal defense tools",
+      icon: <Gavel className="h-5 w-5 text-blue-600" />,
+      path: "/criminal-law",
+      isPopular: true
+    },
+    {
+      id: "civil-law",
+      title: "Civil",
+      description: "Civil litigation and case management",
+      icon: <Scale className="h-5 w-5 text-blue-600" />,
+      path: "/civil-law"
+    },
+    {
+      id: "family-law",
+      title: "Family",
+      description: "Maintenance and custody resources",
+      icon: <Heart className="h-5 w-5 text-blue-600" />,
+      path: "/family-law"
+    },
+    {
+      id: "real-estate-law",
+      title: "Real Estate",
+      description: "Property and RERA compliance",
+      icon: <Home className="h-5 w-5 text-blue-600" />,
+      path: "/real-estate-law",
+      isNew: true
+    },
+    {
+      id: "corporate-law",
+      title: "Corporate",
+      description: "Company and compliance tools",
+      icon: <Briefcase className="h-5 w-5 text-blue-600" />,
+      path: "/corporate-law"
+    }
+  ];
+
   // Advocate Tools - More concise descriptions
   const advocateTools = [
     {
@@ -128,7 +169,14 @@ const AllTools = () => {
   ];
 
   return (
-    <div className="space-y-8 pb-8">      
+    <div className="space-y-8 pb-8">
+      {/* Practice Area Tools - First section */}
+      <ToolCategory
+        title="Practice Areas"
+        description="Specialized tools for different practice areas"
+        tools={practiceAreaTools}
+      />
+      
       {/* Advocate Practice Tools */}
       <ToolCategory
         title="Advocate Efficiency Tools"

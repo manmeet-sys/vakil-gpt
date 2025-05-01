@@ -54,13 +54,13 @@ const ToolCategory = ({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
+        staggerChildren: 0.05
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: { 
       opacity: 1, 
       y: 0,
@@ -73,14 +73,14 @@ const ToolCategory = ({
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("space-y-3", className)}>
       <div className="space-y-1">
-        <h3 className="text-xl font-bold text-legal-slate dark:text-white">{title}</h3>
+        <h3 className="text-xl font-semibold text-legal-slate dark:text-white">{title}</h3>
         <p className="text-legal-muted dark:text-gray-400 text-sm">{description}</p>
       </div>
       
       <motion.div 
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-3"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
@@ -90,38 +90,40 @@ const ToolCategory = ({
           <motion.div key={tool.id} variants={itemVariants}>
             <Card 
               className="border border-legal-border/60 dark:border-legal-slate/20 bg-white dark:bg-legal-slate/10 shadow-sm hover:shadow-md transition-all duration-300 h-full"
+              onClick={() => handleNavigation(tool.path)}
             >
-              <CardHeader className="pb-1 pt-3 px-4">
+              <CardHeader className="pb-1 pt-3 px-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-legal-accent/10 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-full bg-legal-accent/10 flex items-center justify-center">
                       {tool.icon}
                     </div>
-                    <CardTitle className="text-base font-semibold text-legal-slate dark:text-white">
+                    <CardTitle className="text-sm font-semibold text-legal-slate dark:text-white">
                       {tool.title}
                     </CardTitle>
                   </div>
-                  {tool.isNew && (
-                    <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs px-1.5 py-0">New</Badge>
-                  )}
-                  {tool.isPopular && (
-                    <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs px-1.5 py-0">Popular</Badge>
-                  )}
-                  {tool.badge && (
-                    <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 text-xs px-1.5 py-0">{tool.badge}</Badge>
-                  )}
+                  <div className="flex">
+                    {tool.isNew && (
+                      <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-1 py-0">New</Badge>
+                    )}
+                    {tool.isPopular && (
+                      <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] px-1 py-0 ml-1">Popular</Badge>
+                    )}
+                    {tool.badge && (
+                      <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 text-[10px] px-1 py-0 ml-1">{tool.badge}</Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-4 py-2">
-                <CardDescription className="text-xs text-legal-muted dark:text-gray-400">
+              <CardContent className="px-3 py-1">
+                <CardDescription className="text-xs text-legal-muted dark:text-gray-400 line-clamp-2">
                   {tool.description}
                 </CardDescription>
               </CardContent>
-              <CardFooter className="px-4 pt-0 pb-3">
+              <CardFooter className="px-3 pt-0 pb-2">
                 <Button 
                   variant="ghost" 
-                  className="text-legal-accent hover:text-legal-accent/90 hover:bg-legal-accent/10 p-0 h-7 w-full justify-start text-xs"
-                  onClick={() => handleNavigation(tool.path)}
+                  className="text-legal-accent hover:text-legal-accent/90 hover:bg-legal-accent/10 p-0 h-6 w-full justify-start text-xs"
                 >
                   Explore
                   <ArrowRight className="ml-1 h-3 w-3" />

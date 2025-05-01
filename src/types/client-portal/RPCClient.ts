@@ -9,7 +9,7 @@ export async function clientPortalRPC<T extends ClientPortalRPCFunctions>(
 ): Promise<{ data: ClientPortalRPCReturns<T> | null; error: any }> {
   // Work around TypeScript constraints by using type assertions
   const rpcFunction = functionName as string;
-  const rpcParams = params as Record<string, unknown>;
+  const rpcParams = params as object;
   
   // Call the Supabase RPC method with the correctly typed parameters
   const { data, error } = await supabase.rpc(rpcFunction, rpcParams);

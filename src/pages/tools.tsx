@@ -3,25 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { 
-  Shield, 
-  FileText, 
   Scale, 
-  MessageSquare,
-  FileSearch,
-  BookOpen,
-  Clipboard,
-  BarChart2,
-  AlertTriangle,
-  Briefcase,
-  Handshake,
-  Calculator,
-  IndianRupee,
-  CalendarClock,
-  Gavel,
   Search,
-  PenLine,
+  Gavel,
+  Heart,
   Home,
-  Heart
+  Briefcase,
+  BookOpen
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -57,10 +45,10 @@ const ToolsPage = () => {
   // Set up practice area tools as a featured category
   const featuredPracticeAreas = [
     { 
-      name: 'Practice Areas', 
+      name: 'All Areas', 
       icon: BookOpen, 
       path: '/practice-areas',
-      badge: 'Featured'
+      badge: 'Overview'
     },
     { 
       name: 'Criminal', 
@@ -100,17 +88,17 @@ const ToolsPage = () => {
       <div className="container mx-auto px-4 py-6">
         {/* Hero section with search */}
         <motion.div
-          className="mb-8"
+          className="mb-6"
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 md:p-6 rounded-xl shadow-sm">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-4 md:p-5 rounded-xl shadow-sm">
             <div className="text-center md:text-left">
-              <h1 className="text-2xl md:text-3xl font-bold text-legal-slate dark:text-white mb-2 tracking-tight">
+              <h1 className="text-xl md:text-2xl font-bold text-legal-slate dark:text-white mb-1 tracking-tight">
                 Indian Legal Tools
               </h1>
-              <p className="text-legal-muted dark:text-gray-300 text-sm md:text-base">
+              <p className="text-legal-muted dark:text-gray-300 text-sm">
                 Specialized tools for legal practitioners
               </p>
             </div>
@@ -123,6 +111,7 @@ const ToolsPage = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               </div>
               <AnimatedLogo className="hidden md:block" />
             </div>
@@ -132,33 +121,33 @@ const ToolsPage = () => {
         {/* Featured Practice Areas - Compact Grid */}
         {!searchTerm && (
           <motion.div 
-            className="mb-8"
+            className="mb-6"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 p-4 rounded-xl shadow-sm mb-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 p-3 rounded-xl shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-7 w-7 rounded-full bg-blue-600/10 flex items-center justify-center">
                   <Scale className="h-4 w-4 text-blue-600" />
                 </div>
-                <h2 className="text-lg font-semibold text-legal-slate dark:text-white">Practice Areas</h2>
+                <h2 className="text-base font-medium text-legal-slate dark:text-white">Practice Areas</h2>
               </div>
               
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {featuredPracticeAreas.map((area) => (
                   <Button
                     key={area.path}
                     variant="outline"
-                    className="h-auto py-2 px-2 flex flex-col items-center justify-center gap-1.5 text-center"
+                    className="h-auto py-2 px-2 flex flex-col items-center justify-center gap-1 text-center"
                     onClick={() => navigateToTool(area.path)}
                   >
-                    <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center">
-                      <area.icon className="h-4 w-4 text-blue-600" />
+                    <div className="h-7 w-7 rounded-full bg-blue-600/10 flex items-center justify-center">
+                      <area.icon className="h-3.5 w-3.5 text-blue-600" />
                     </div>
                     <span className="text-xs font-medium">{area.name}</span>
                     {area.badge && (
-                      <Badge variant="outline" className={`text-xs py-0 h-4 ${
+                      <Badge variant="outline" className={`text-[10px] py-0 h-4 ${
                         area.badge === 'New' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                         area.badge === 'Popular' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
                         'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
