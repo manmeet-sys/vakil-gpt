@@ -10,7 +10,7 @@ export async function clientPortalRPC<T extends ClientPortalRPCFunctions>(
   // Use the Supabase rpc method with correct type parameters
   const { data, error } = await supabase.rpc(
     functionName,
-    params as any
+    params as Record<string, unknown>
   );
   
   return { 
