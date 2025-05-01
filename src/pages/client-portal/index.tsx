@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -6,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
+import { downloadFile } from '@/utils/documentUtils';
 import { 
   File, 
   FileClock, 
@@ -210,15 +210,9 @@ const ClientPortalPage = () => {
         
       if (error) throw error;
       
-      // Create a download link
+      // Create a download link using our utility function
       const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = document.name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      downloadFile(url, document.name);
       
       toast.success('Document download started');
     } catch (error) {

@@ -93,7 +93,7 @@ export interface ArgumentBuilder {
   constitutionalProvisions?: string[];
 }
 
-// Define proper types for RPC functions to fix the "does not satisfy the constraint 'never'" errors
+// Define proper types for RPC functions to fix the TypeScript errors
 export type DatabaseFunctions = Database['public']['Functions'];
 
 export interface ClientPortalRPCTypes {
