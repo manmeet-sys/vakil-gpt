@@ -7,32 +7,39 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const PracticeArea = ({ title, description, icon, path, features, delay }) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: delay }}
+      transition={{ duration: 0.5, delay: isMobile ? 0.1 : delay }}
     >
       <Card className="overflow-hidden border border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-zinc-800/70 hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
         <CardHeader>
           <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mb-2">
             {icon}
           </div>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
+          <CardTitle className="text-lg">{title}</CardTitle>
+          <CardDescription className="line-clamp-2">{description}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
           <ul className="text-sm space-y-1.5 text-gray-600 dark:text-gray-300">
-            {features.map((feature, i) => (
+            {features.slice(0, isMobile ? 2 : 4).map((feature, i) => (
               <li key={i} className="flex items-start">
                 <span className="mr-2">•</span>
                 <span>{feature}</span>
               </li>
             ))}
+            {isMobile && features.length > 2 && (
+              <li className="text-xs text-muted-foreground italic">
+                +{features.length - 2} more features
+              </li>
+            )}
           </ul>
         </CardContent>
         <CardFooter>
@@ -41,7 +48,7 @@ const PracticeArea = ({ title, description, icon, path, features, delay }) => {
             className="w-full group"
             variant="outline"
           >
-            Explore {title} Tools
+            <span>Explore {isMobile ? '' : title + ' Tools'}</span>
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Button>
         </CardFooter>
@@ -53,6 +60,7 @@ const PracticeArea = ({ title, description, icon, path, features, delay }) => {
 const PracticeAreasPage = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const practiceAreas = [
     {
@@ -146,24 +154,25 @@ const PracticeAreasPage = () => {
         <ThemeToggle />
       </header>
       
-      <main className="flex-1 flex flex-col py-6 px-4">
+      <main className="flex-1 flex flex-col py-4 px-3 md:py-6 md:px-4">
         <div className="w-full max-w-6xl mx-auto">
           <motion.div 
-            className="text-center mb-8"
+            className="text-center mb-6 md:mb-8"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <BookOpen className="h-10 w-10 text-blue-600 mx-auto" />
-            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-2">
+            <BookOpen className="h-8 w-8 md:h-10 md:w-10 text-blue-600 mx-auto" />
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-2">
               Practice-Specific Legal Tools
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-2xl mx-auto">
-              VakilGPT provides specialized tools for different practice areas of Indian law to enhance your legal practice
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-2xl mx-auto px-4">
+              {isMobile ? "Specialized tools for different legal practice areas" : 
+                "VakilGPT provides specialized tools for different practice areas of Indian law to enhance your legal practice"}
             </p>
           </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-2 md:px-0">
             {practiceAreas.map((area, index) => (
               <PracticeArea 
                 key={index}

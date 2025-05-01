@@ -27,9 +27,9 @@ const MobileNavigation: React.FC = () => {
             <span className="sr-only">Toggle menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[300px] sm:w-[350px] border-l border-gray-200 dark:border-gray-800">
+        <SheetContent side="right" className="w-[85vw] max-w-[350px] p-0 border-l border-gray-200 dark:border-gray-800">
           <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-lg font-semibold">
                 Menu
                 <Badge variant="outline" className="ml-2 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full">
@@ -44,8 +44,8 @@ const MobileNavigation: React.FC = () => {
               </SheetClose>
             </div>
             
-            <nav className="flex-1 pt-4">
-              <ul className="space-y-2">
+            <nav className="flex-1 overflow-y-auto">
+              <ul className="space-y-1 p-4">
                 {mainItems.map((item) => {
                   const IconComponent = item.icon;
                   return (
@@ -69,8 +69,8 @@ const MobileNavigation: React.FC = () => {
                 })}
               </ul>
               
-              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                <h3 className="px-4 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Resources</h3>
+              <div className="mt-2 pt-4 px-4 border-t border-gray-100 dark:border-gray-800">
+                <h3 className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Resources</h3>
                 <ul className="mt-2 space-y-1">
                   {resourceItems.map((item) => {
                     const IconComponent = item.icon;
@@ -80,7 +80,7 @@ const MobileNavigation: React.FC = () => {
                           <Link
                             to={item.path}
                             className={cn(
-                              "flex items-center gap-2 px-4 py-2 text-sm transition-colors rounded-md",
+                              "flex items-center gap-2 px-4 py-2.5 text-sm transition-colors rounded-md",
                               currentPath === item.path
                                 ? "text-blue-700 dark:text-blue-400"
                                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -97,12 +97,12 @@ const MobileNavigation: React.FC = () => {
               </div>
             </nav>
             
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="p-4 border-t border-gray-100 dark:border-gray-800">
               {user ? (
                 <div className="flex flex-col space-y-3">
-                  <div className="px-4 py-2">
+                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                     <p className="text-sm font-medium">{userProfile?.full_name || 'User'}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
                   <SheetClose asChild>
                     <Link
@@ -115,15 +115,18 @@ const MobileNavigation: React.FC = () => {
                   </SheetClose>
                   <Button
                     variant="outline"
-                    className="mx-4 justify-start"
-                    onClick={() => signOut()}
+                    className="justify-start"
+                    onClick={() => {
+                      signOut();
+                      setIsMobileMenuOpen(false);
+                    }}
                   >
                     <LogOut className="h-5 w-5 mr-2" />
                     Log out
                   </Button>
                 </div>
               ) : (
-                <div className="flex flex-col space-y-3 px-4">
+                <div className="flex flex-col space-y-3">
                   <SheetClose asChild>
                     <Link
                       to="/login"

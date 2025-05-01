@@ -6,6 +6,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add responsive viewport meta to ensure proper mobile display */
 @layer base {
   :root {
     --background: 210 30% 98%;
@@ -70,6 +71,36 @@
   }
 }
 
+/* Add better mobile tap targets and touch interactions */
+@layer utilities {
+  .tap-highlight-transparent {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .touch-callout-none {
+    -webkit-touch-callout: none;
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .mobile-snap-scroll {
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Responsive Typography */
+  .mobile-text-balance {
+    text-wrap: balance;
+    max-width: 100%;
+  }
+}
+
 @layer components {
   .apple-button {
     @apply rounded-full bg-blue-accent text-white font-medium py-3 px-6 transition-all;
@@ -83,7 +114,7 @@
 }
 
 * {
-  @apply border-border;
+  @apply border-border tap-highlight-transparent;
 }
 
 html {
@@ -96,6 +127,13 @@ body {
   @apply bg-background text-foreground font-sans antialiased;
   overflow-x: hidden;
   letter-spacing: -0.011em;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* Fix for iOS height issues */
+html {
+  height: -webkit-fill-available;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -343,10 +381,14 @@ textarea {
   @apply form-input;
 }
 
-/* Mobile-optimized styles */
+/* Mobile-optimized styles - improved */
 @media (max-width: 768px) {
+  body {
+    @apply text-[15px]; /* Slightly larger base font for mobile */
+  }
+  
   .apple-button, .apple-button-secondary {
-    @apply py-2.5 px-5 text-sm w-full;
+    @apply py-2.5 px-5 text-sm;
   }
   
   .apple-card {
@@ -361,6 +403,16 @@ textarea {
   .ui-card-content,
   .ui-card-footer {
     @apply p-4;
+  }
+  
+  /* Better touch targets */
+  button, a, [role="button"], input[type="submit"], input[type="button"], .clickable {
+    @apply min-h-10 min-w-10;
+  }
+  
+  /* Fix for mobile Safari bottom bar */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
   }
 }
 
