@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { extractDocumentInfo } from '@/utils/documentUtils';
+import { extractDocumentInfo, extractLegalDocumentInfo } from '@/utils/documentUtils';
 import { Textarea } from '@/components/ui/textarea';
 
 type DocumentPreviewProps = {
@@ -153,8 +152,8 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       .replace(/\n\n/g, '</p><p>')
       .replace(/\n/g, '<br />');
     
-    // Extract document info for enhanced formatting
-    const docInfo = extractDocumentInfo(content);
+    // Extract document info from content for enhanced formatting
+    const docInfo = extractLegalDocumentInfo(content);
     
     // If we have a court and parties, enhance the formatting
     if (docInfo.court || docInfo.parties) {

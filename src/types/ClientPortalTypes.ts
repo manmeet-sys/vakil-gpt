@@ -93,6 +93,16 @@ export interface ArgumentBuilder {
   constitutionalProvisions?: string[];
 }
 
+// Extended document info type for legal document formatting
+export interface DocumentInfo {
+  name: string;
+  type: string;
+  size: number;
+  court?: string;
+  caseNumber?: string;
+  parties?: string;
+}
+
 // Client Portal RPC function types
 export interface ClientPortalRPCTypes {
   add_client_document: {
