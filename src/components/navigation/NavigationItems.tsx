@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Book, BookOpen, Settings, Bell, Calculator, Search } from 'lucide-react';
+import { Book, BookOpen, Settings, Bell } from 'lucide-react';
 
 export interface NavigationItem {
   name: string;
@@ -33,18 +33,6 @@ export const mainNavigationItems = (currentPath: string): NavigationItem[] => [
     path: "/practice-areas",
     icon: Book,
     current: currentPath === "/practice-areas" || currentPath.startsWith('/practice-areas/'),
-  },
-  {
-    name: "Legal Calculator",
-    path: "/legal-calculator",
-    icon: Calculator,
-    current: currentPath === "/legal-calculator",
-  },
-  {
-    name: "Advanced Search",
-    path: "/advanced-ai-search",
-    icon: Search,
-    current: currentPath === "/advanced-ai-search",
   },
 ];
 

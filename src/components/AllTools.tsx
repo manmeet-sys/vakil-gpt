@@ -247,7 +247,8 @@ const AllTools = () => {
       title: "Legal Calculator",
       description: "Calculate legal fees, damages, and other amounts",
       icon: <Calculator className="h-5 w-5 text-blue-600" />,
-      path: "/legal-calculator"
+      path: "/legal-calculator",
+      badge: "Featured"
     },
     {
       id: "litigation-prediction",
@@ -267,7 +268,27 @@ const AllTools = () => {
 
   return (
     <div className="space-y-10 pb-10">
-      {/* Practice Area Tools - Promoted to top position for better accessibility */}
+      {/* Specialized Tools - Moved to top position for better visibility of Legal Calculator */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 p-6 rounded-xl shadow-sm">
+        <ToolCategory
+          title="Specialized Legal Tools"
+          description="Essential calculation and prediction tools for legal professionals"
+          tools={specializedTools}
+          className="mb-2"
+        />
+      </div>
+      
+      {/* Research Tools - Moved up for better visibility of Advanced Search */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 p-6 rounded-xl shadow-sm">
+        <ToolCategory
+          title="Legal Research & Analysis"
+          description="AI-powered tools to research case law, analyze legal issues, and search documents"
+          tools={researchTools}
+          className="mb-2"
+        />
+      </div>
+      
+      {/* Practice Area Tools */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 p-6 rounded-xl shadow-sm">
         <ToolCategory
           title="Practice-Specific Legal Tools"
@@ -284,20 +305,6 @@ const AllTools = () => {
         </div>
       </div>
       
-      {/* Accessibility Tools */}
-      <ToolCategory
-        title="Accessibility Features"
-        description="Tools to customize your experience for better accessibility"
-        tools={accessibilityTools}
-      />
-      
-      {/* Legal Research & Analysis */}
-      <ToolCategory
-        title="Legal Research & Analysis"
-        description="AI-powered tools to research case law, analyze legal issues, and predict outcomes"
-        tools={researchTools}
-      />
-      
       {/* Document Drafting & Management */}
       <ToolCategory
         title="Document Drafting & Management"
@@ -312,11 +319,11 @@ const AllTools = () => {
         tools={complianceTools}
       />
       
-      {/* Specialized Tools */}
+      {/* Accessibility Tools */}
       <ToolCategory
-        title="Specialized Tools"
-        description="Unique tools for specific legal tasks and calculations"
-        tools={specializedTools}
+        title="Accessibility Features"
+        description="Tools to customize your experience for better accessibility"
+        tools={accessibilityTools}
       />
     </div>
   );
