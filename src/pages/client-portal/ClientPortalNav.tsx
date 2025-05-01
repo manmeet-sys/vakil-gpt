@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,11 +14,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 
-interface AdvocateNavProps {
+interface ClientNavProps {
   unreadCount?: number;
 }
 
-const AdvocatePortalNav = ({ unreadCount = 0 }: AdvocateNavProps) => {
+const ClientPortalNav = ({ unreadCount = 0 }: ClientNavProps) => {
   const location = useLocation();
   const { user } = useAuth();
   const isActive = (path: string) => location.pathname === path;
@@ -70,4 +71,4 @@ const AdvocatePortalNav = ({ unreadCount = 0 }: AdvocateNavProps) => {
   );
 };
 
-export default AdvocatePortalNav;
+export default ClientPortalNav;

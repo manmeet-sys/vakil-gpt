@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -18,7 +19,14 @@ import {
   ChevronRight,
   Search,
   Filter,
-  Download
+  Download,
+  BookOpen,
+  Gavel,
+  Scale,
+  Briefcase,
+  Heart,
+  Home,
+  ArrowRight
 } from 'lucide-react';
 import { 
   Card, 
@@ -71,7 +79,7 @@ interface ClientCase {
   progress: number;
 }
 
-const AdvocatePortalPage = () => {
+const ClientPortalPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -83,6 +91,40 @@ const AdvocatePortalPage = () => {
   const [unreadUpdates, setUnreadUpdates] = useState(0);
   const [error, setError] = useState<string | null>(null);
   
+  // Practice areas data
+  const practiceAreas = [
+    {
+      title: "Criminal Law",
+      description: "Tools for criminal defense under BNS, BNSS codes",
+      icon: <Gavel className="h-5 w-5 text-blue-600" />,
+      path: "/criminal-law"
+    },
+    {
+      title: "Civil Law",
+      description: "Cause of action analysis and relief generation",
+      icon: <Scale className="h-5 w-5 text-blue-600" />,
+      path: "/civil-law"
+    },
+    {
+      title: "Corporate Law",
+      description: "Company formation and compliance tools",
+      icon: <Briefcase className="h-5 w-5 text-blue-600" />,
+      path: "/corporate-law"
+    },
+    {
+      title: "Family Law",
+      description: "Maintenance calculation and custody analysis",
+      icon: <Heart className="h-5 w-5 text-blue-600" />,
+      path: "/family-law"
+    },
+    {
+      title: "Real Estate Law",
+      description: "Title search and property document tools",
+      icon: <Home className="h-5 w-5 text-blue-600" />,
+      path: "/real-estate-law"
+    }
+  ];
+  
   useEffect(() => {
     if (!user) {
       navigate('/login', { state: { returnTo: '/client-portal' } });
@@ -93,7 +135,7 @@ const AdvocatePortalPage = () => {
     
     // Subscribe to realtime updates for status changes
     const channel = supabase
-      .channel('advocate-portal-updates')
+      .channel('client-portal-updates')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
@@ -317,7 +359,7 @@ const AdvocatePortalPage = () => {
   return (
     <AppLayout>
       <Helmet>
-        <title>Advocate Portal | VakilGPT</title>
+        <title>Client Portal | VakilGPT</title>
       </Helmet>
       
       <div className="container px-4 py-6 max-w-7xl mx-auto">
@@ -334,7 +376,7 @@ const AdvocatePortalPage = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Shield className="h-6 w-6 text-indigo-500" />
-                Advocate Portal
+                Client Portal
               </h1>
               <p className="text-gray-500 dark:text-gray-400 mt-1">
                 Securely access your case documents and updates
@@ -360,6 +402,48 @@ const AdvocatePortalPage = () => {
                 <File className="h-4 w-4 mr-2" />
                 Upload Document
               </Button>
+            </div>
+          </motion.div>
+          
+          {/* Practice Areas Featured Section */}
+          <motion.div 
+            className="mb-8"
+            variants={itemVariants}
+          >
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 rounded-xl shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="h-5 w-5 text-blue-600" />
+                <h2 className="text-lg font-semibold">Practice Areas</h2>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                {practiceAreas.map((area, index) => (
+                  <Card 
+                    key={index}
+                    className="border border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-zinc-800/70 hover:shadow transition-shadow"
+                  >
+                    <CardHeader className="p-3">
+                      <div className="flex flex-col items-center text-center">
+                        <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mb-2">
+                          {area.icon}
+                        </div>
+                        <CardTitle className="text-base">{area.title}</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardFooter className="p-3 pt-0">
+                      <Button 
+                        onClick={() => navigate(area.path)} 
+                        className="w-full"
+                        variant="outline"
+                        size="sm"
+                      >
+                        Open
+                        <ArrowRight className="ml-2 h-3 w-3" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
             </div>
           </motion.div>
           
@@ -680,4 +764,4 @@ const AdvocatePortalPage = () => {
   );
 };
 
-export default AdvocatePortalPage;
+export default ClientPortalPage;
