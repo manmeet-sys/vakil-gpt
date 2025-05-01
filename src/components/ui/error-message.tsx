@@ -62,10 +62,12 @@ const ErrorMessage = ({
     }
   };
 
+  // Handle long messages better on mobile with automatic word wrapping
   return (
     <div 
       className={cn(
-        'flex items-start gap-2 text-sm p-2 rounded border',
+        'flex items-start gap-2 text-sm p-3 rounded border break-words',
+        'motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300',
         getColorClasses(),
         className
       )}
@@ -80,8 +82,9 @@ const ErrorMessage = ({
       {onDismiss && (
         <button 
           onClick={onDismiss}
-          className="flex-shrink-0 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-300 rounded"
+          className="flex-shrink-0 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-300 rounded p-1"
           aria-label="Dismiss message"
+          type="button"
         >
           <XCircle className="h-4 w-4" aria-hidden="true" />
         </button>
