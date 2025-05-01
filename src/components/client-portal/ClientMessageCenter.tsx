@@ -84,18 +84,22 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       try {
         setError(null);
         
-        const { data, error } = await supabase.rpc(
+        const { data, error } = await supabase.rpc<
+          'get_client_advocate_messages',
+          ClientPortalRPCTypes['get_client_advocate_messages']['Args'],
+          ClientPortalRPCTypes['get_client_advocate_messages']['Returns']
+        >(
           'get_client_advocate_messages',
           {
             p_client_id: clientId,
             p_advocate_id: selectedAdvocate
           }
-        ) as { data: ClientMessage[] | null, error: any };
+        );
           
         if (error) throw error;
         
         if (data) {
-          setMessages(data as ClientMessage[]);
+          setMessages(data);
           
           // Mark received messages as read
           const unreadMessages = data.filter(m => 
@@ -104,12 +108,16 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           
           if (unreadMessages && unreadMessages.length > 0) {
             // Mark messages as read using RPC
-            await supabase.rpc(
+            await supabase.rpc<
+              'mark_messages_read',
+              ClientPortalRPCTypes['mark_messages_read']['Args'],
+              ClientPortalRPCTypes['mark_messages_read']['Returns']
+            >(
               'mark_messages_read',
               {
                 p_message_ids: unreadMessages
               }
-            ) as { data: null, error: any };
+            );
           }
         }
         
@@ -153,7 +161,11 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       setError(null);
       
       // Send message using RPC
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.rpc<
+        'add_client_message',
+        ClientPortalRPCTypes['add_client_message']['Args'],
+        ClientPortalRPCTypes['add_client_message']['Returns']
+      >(
         'add_client_message',
         {
           p_content: newMessage.trim(),
@@ -162,13 +174,13 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           p_receiver_id: selectedAdvocate,
           p_is_read: false
         }
-      ) as { data: ClientMessage | null, error: any };
+      );
       
       if (error) throw error;
       
       // Add the new message to the list
       if (data) {
-        setMessages(prev => [...prev, data as ClientMessage]);
+        setMessages(prev => [...prev, data]);
       }
       
       // Clear input after sending

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -143,7 +144,11 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
         if (storageError) throw storageError;
         
         // Create database entry using RPC function
-        const { data, error } = await supabase.rpc(
+        const { data, error } = await supabase.rpc<
+          'add_client_document',
+          ClientPortalRPCTypes['add_client_document']['Args'],
+          ClientPortalRPCTypes['add_client_document']['Returns']
+        >(
           'add_client_document',
           {
             p_name: file.name,
@@ -156,7 +161,7 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
             p_status: 'pending_review',
             p_uploaded_by: user?.id || ''
           }
-        ) as { data: { id: string; created_at: string } | null, error: any };
+        );
         
         if (error) throw error;
         

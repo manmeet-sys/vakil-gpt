@@ -103,8 +103,8 @@ export interface DocumentInfo {
   parties?: string;
 }
 
-// Client Portal RPC function types
-export interface ClientPortalRPCTypes {
+// Client Portal RPC function types - Updated with correct return types
+export type ClientPortalRPCTypes = {
   add_client_document: {
     Args: {
       p_name: string;
