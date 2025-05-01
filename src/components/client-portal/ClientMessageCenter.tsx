@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -85,11 +84,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       try {
         setError(null);
         
-        const { data, error } = await supabase.rpc<
-          'get_client_advocate_messages', 
-          ClientPortalRPCTypes['get_client_advocate_messages']['Args'], 
-          ClientPortalRPCTypes['get_client_advocate_messages']['Returns']
-        >(
+        const { data, error } = await supabase.rpc(
           'get_client_advocate_messages',
           {
             p_client_id: clientId,
@@ -103,17 +98,13 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           setMessages(data as ClientMessage[]);
           
           // Mark received messages as read
-          const unreadMessages = data.filter(m => 
+          const unreadMessages = (data as ClientMessage[]).filter(m => 
             m.receiver_id === clientId && !m.is_read
           ).map(m => m.id);
           
           if (unreadMessages && unreadMessages.length > 0) {
             // Mark messages as read using RPC
-            await supabase.rpc<
-              'mark_messages_read',
-              ClientPortalRPCTypes['mark_messages_read']['Args'],
-              ClientPortalRPCTypes['mark_messages_read']['Returns']
-            >(
+            await supabase.rpc(
               'mark_messages_read',
               {
                 p_message_ids: unreadMessages
@@ -162,11 +153,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       setError(null);
       
       // Send message using RPC
-      const { data, error } = await supabase.rpc<
-        'add_client_message',
-        ClientPortalRPCTypes['add_client_message']['Args'],
-        ClientPortalRPCTypes['add_client_message']['Returns']
-      >(
+      const { data, error } = await supabase.rpc(
         'add_client_message',
         {
           p_content: newMessage.trim(),

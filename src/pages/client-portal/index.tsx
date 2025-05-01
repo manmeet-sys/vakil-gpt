@@ -63,7 +63,7 @@ interface ClientCase {
   status: string;
   court_name: string;
   filing_date?: string;
-  hearing_date?: string;
+  hearing_date?: string | null;
   progress: number;
 }
 
@@ -116,28 +116,29 @@ const ClientPortalPage = () => {
       setError(null);
       
       // Fetch client documents using RPC function
-      const documentsResponse = await supabase.rpc<ClientDocument[]>(
+      const documentsResponse = await supabase.rpc(
         'get_client_documents',
         {
           p_client_id: user.id
-        } as ClientPortalRPCTypes['get_client_documents']['Args']
+        }
       );
       
       if (documentsResponse.error) throw documentsResponse.error;
       
       // Fetch status updates using RPC function
-      const updatesResponse = await supabase.rpc<StatusUpdate[]>(
+      const updatesResponse = await supabase.rpc(
         'get_client_status_updates',
         {
           p_client_id: user.id
-        } as ClientPortalRPCTypes['get_client_status_updates']['Args']
+        }
       );
       
       if (updatesResponse.error) throw updatesResponse.error;
       
       // Count unread updates
-      const unread = updatesResponse.data ? 
-        updatesResponse.data.filter(update => !update.is_read).length : 0;
+      const updatesData = updatesResponse.data as StatusUpdate[];
+      const unread = updatesData ? 
+        updatesData.filter(update => !update.is_read).length : 0;
       
       // Fetch cases
       const casesResponse = await supabase
@@ -154,8 +155,8 @@ const ClientPortalPage = () => {
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      if (documentsResponse.data) setDocuments(documentsResponse.data);
-      if (updatesResponse.data) setStatusUpdates(updatesResponse.data);
+      setDocuments(documentsResponse.data as ClientDocument[] || []);
+      setStatusUpdates(updatesResponse.data as StatusUpdate[] || []);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
@@ -186,7 +187,7 @@ const ClientPortalPage = () => {
         'mark_status_update_read',
         {
           p_update_id: updateId
-        } as ClientPortalRPCTypes['mark_status_update_read']['Args']
+        }
       );
       
       if (error) throw error;
