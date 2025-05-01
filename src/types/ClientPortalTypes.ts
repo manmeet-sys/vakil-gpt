@@ -179,7 +179,7 @@ export async function clientPortalRPC<T extends ClientPortalRPCFunctions>(
   params: ClientPortalRPCArgs<T>
 ): Promise<{ data: ClientPortalRPCReturns<T> | null; error: any }> {
   const { data, error } = await supabase.rpc(
-    functionName,
+    functionName as string,  // Add explicit type casting to string here
     params as any
   );
   
