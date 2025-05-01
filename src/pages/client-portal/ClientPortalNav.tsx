@@ -14,11 +14,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 
-interface ClientNavProps {
+interface AdvocateNavProps {
   unreadCount?: number;
 }
 
-const AdvocatePortalNav = ({ unreadCount = 0 }: ClientNavProps) => {
+const AdvocatePortalNav = ({ unreadCount = 0 }: AdvocateNavProps) => {
   const location = useLocation();
   const { user } = useAuth();
   const isActive = (path: string) => location.pathname === path;
