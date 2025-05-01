@@ -4,7 +4,7 @@ import { Bell, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { StatusUpdate } from '@/types/ClientPortalTypes';
+import { StatusUpdate } from '@/types/client-portal/CommunicationTypes';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface CaseStatusUpdatesProps {

@@ -54,11 +54,8 @@ import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter'
 import { 
   ClientDocument, 
   StatusUpdate, 
-  ClientPortalRPCFunctions, 
-  ClientPortalRPCArgs, 
-  ClientPortalRPCReturns, 
   clientPortalRPC 
-} from '@/types/ClientPortalTypes';
+} from '@/types/client-portal';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
