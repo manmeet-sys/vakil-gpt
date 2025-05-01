@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -86,14 +85,13 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         setError(null);
         
         const { data, error } = await supabase.rpc<
-          ClientPortalRPCReturns<'get_client_advocate_messages'>,
-          ClientPortalRPCArgs<'get_client_advocate_messages'>
+          ClientMessage[]
         >(
-          'get_client_advocate_messages' as any,
+          'get_client_advocate_messages',
           {
             p_client_id: clientId,
             p_advocate_id: selectedAdvocate
-          }
+          } as ClientPortalRPCArgs<'get_client_advocate_messages'>
         );
           
         if (error) throw error;
@@ -109,13 +107,12 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           if (unreadMessages && unreadMessages.length > 0) {
             // Mark messages as read using RPC
             await supabase.rpc<
-              ClientPortalRPCReturns<'mark_messages_read'>,
-              ClientPortalRPCArgs<'mark_messages_read'>
+              null
             >(
-              'mark_messages_read' as any,
+              'mark_messages_read',
               {
                 p_message_ids: unreadMessages
-              }
+              } as ClientPortalRPCArgs<'mark_messages_read'>
             );
           }
         }
@@ -161,17 +158,16 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       
       // Send message using RPC
       const { data, error } = await supabase.rpc<
-        ClientPortalRPCReturns<'add_client_message'>,
-        ClientPortalRPCArgs<'add_client_message'>
+        ClientMessage
       >(
-        'add_client_message' as any,
+        'add_client_message',
         {
           p_content: newMessage.trim(),
           p_sender_id: clientId,
           p_sender_name: user?.user_metadata?.full_name || 'Client',
           p_receiver_id: selectedAdvocate,
           p_is_read: false
-        }
+        } as ClientPortalRPCArgs<'add_client_message'>
       );
       
       if (error) throw error;

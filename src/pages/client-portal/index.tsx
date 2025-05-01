@@ -51,7 +51,7 @@ import {
 import ClientDocumentUploader from '@/components/client-portal/ClientDocumentUploader';
 import CaseStatusUpdates from '@/components/client-portal/CaseStatusUpdates';
 import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter';
-import { ClientDocument, StatusUpdate, ClientPortalRPCTypes } from '@/types/ClientPortalTypes';
+import { ClientDocument, StatusUpdate, ClientPortalRPCFunctions, ClientPortalRPCArgs, ClientPortalRPCReturns } from '@/types/ClientPortalTypes';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -117,26 +117,24 @@ const ClientPortalPage = () => {
       
       // Fetch client documents using RPC function
       const documentsResponse = await supabase.rpc<
-        ClientPortalRPCReturns<'get_client_documents'>,
-        ClientPortalRPCArgs<'get_client_documents'>
+        ClientDocument[]
       >(
-        'get_client_documents' as any,
+        'get_client_documents',
         {
           p_client_id: user.id
-        }
+        } as ClientPortalRPCArgs<'get_client_documents'>
       );
       
       if (documentsResponse.error) throw documentsResponse.error;
       
       // Fetch status updates using RPC function
       const updatesResponse = await supabase.rpc<
-        ClientPortalRPCReturns<'get_client_status_updates'>,
-        ClientPortalRPCArgs<'get_client_status_updates'>
+        StatusUpdate[]
       >(
-        'get_client_status_updates' as any,
+        'get_client_status_updates',
         {
           p_client_id: user.id
-        }
+        } as ClientPortalRPCArgs<'get_client_status_updates'>
       );
       
       if (updatesResponse.error) throw updatesResponse.error;
@@ -189,13 +187,12 @@ const ClientPortalPage = () => {
     try {
       // Use RPC function to mark status update as read
       const { error } = await supabase.rpc<
-        ClientPortalRPCReturns<'mark_status_update_read'>,
-        ClientPortalRPCArgs<'mark_status_update_read'>
+        null
       >(
-        'mark_status_update_read' as any,
+        'mark_status_update_read',
         {
           p_update_id: updateId
-        }
+        } as ClientPortalRPCArgs<'mark_status_update_read'>
       );
       
       if (error) throw error;
