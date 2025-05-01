@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +12,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import OptimizedAppLayout from '@/components/OptimizedAppLayout';
 import LazyComponent from '@/components/LazyComponent';
-import { ProfileManager } from '@/components/ProfileManager';
+import ProfileManager from '@/components/ProfileManager';
 
 const ProfileSettings = React.lazy(() => import('./ProfileSettings'));
 const AppearanceSettings = React.lazy(() => import('./AppearanceSettings'));

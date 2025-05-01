@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ProfileManager } from '@/components/ProfileManager';
+import ProfileManager from '@/components/ProfileManager';
 
 const ProfileSettings: React.FC = () => {
   return (
