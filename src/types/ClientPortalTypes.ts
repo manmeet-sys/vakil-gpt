@@ -1,4 +1,3 @@
-
 import { Database } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -178,8 +177,8 @@ export async function clientPortalRPC<T extends ClientPortalRPCFunctions>(
   functionName: T,
   params: ClientPortalRPCArgs<T>
 ): Promise<{ data: ClientPortalRPCReturns<T> | null; error: any }> {
-  // Fix the type error by using a properly typed generic call
-  const { data, error } = await supabase.rpc<ClientPortalRPCReturns<T>>(
+  // Fix the type error by providing both type parameters to rpc
+  const { data, error } = await supabase.rpc<ClientPortalRPCReturns<T>, ClientPortalRPCArgs<T>>(
     functionName,
     params as any
   );
