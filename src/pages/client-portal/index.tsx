@@ -115,27 +115,28 @@ const ClientPortalPage = () => {
       setError(null);
       
       // Fetch client documents using RPC function
-      const documentsResponse = await supabase.rpc<
-        ClientPortalRPCs['get_client_documents']['Args'],
-        ClientPortalRPCs['get_client_documents']['Returns']
-      >('get_client_documents', {
-        p_client_id: user.id
-      });
+      const documentsResponse = await supabase.rpc(
+        'get_client_documents',
+        {
+          p_client_id: user.id
+        } as ClientPortalRPCs['get_client_documents']['Args']
+      );
       
       if (documentsResponse.error) throw documentsResponse.error;
       
       // Fetch status updates using RPC function
-      const updatesResponse = await supabase.rpc<
-        ClientPortalRPCs['get_client_status_updates']['Args'],
-        ClientPortalRPCs['get_client_status_updates']['Returns']
-      >('get_client_status_updates', {
-        p_client_id: user.id
-      });
+      const updatesResponse = await supabase.rpc(
+        'get_client_status_updates',
+        {
+          p_client_id: user.id
+        } as ClientPortalRPCs['get_client_status_updates']['Args']
+      );
       
       if (updatesResponse.error) throw updatesResponse.error;
       
       // Count unread updates
-      const unread = updatesResponse.data ? updatesResponse.data.filter((update: StatusUpdate) => !update.is_read).length : 0;
+      const unread = updatesResponse.data ? 
+        (updatesResponse.data as StatusUpdate[]).filter(update => !update.is_read).length : 0;
       
       // Fetch cases
       const casesResponse = await supabase
@@ -152,8 +153,8 @@ const ClientPortalPage = () => {
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      if (documentsResponse.data) setDocuments(documentsResponse.data);
-      if (updatesResponse.data) setStatusUpdates(updatesResponse.data);
+      if (documentsResponse.data) setDocuments(documentsResponse.data as ClientDocument[]);
+      if (updatesResponse.data) setStatusUpdates(updatesResponse.data as StatusUpdate[]);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
@@ -180,12 +181,12 @@ const ClientPortalPage = () => {
   const markUpdateAsRead = async (updateId: string) => {
     try {
       // Use RPC function to mark status update as read
-      const { error } = await supabase.rpc<
-        ClientPortalRPCs['mark_status_update_read']['Args'],
-        ClientPortalRPCs['mark_status_update_read']['Returns']
-      >('mark_status_update_read', {
-        p_update_id: updateId
-      });
+      const { error } = await supabase.rpc(
+        'mark_status_update_read',
+        {
+          p_update_id: updateId
+        } as ClientPortalRPCs['mark_status_update_read']['Args']
+      );
       
       if (error) throw error;
       
@@ -215,8 +216,8 @@ const ClientPortalPage = () => {
       a.download = document.name;
       document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       
       toast.success('Document download started');
     } catch (error) {
@@ -502,7 +503,10 @@ const ClientPortalPage = () => {
                                   variant="ghost" 
                                   size="sm"
                                   className="flex items-center gap-1"
-                                  onClick={() => handleDocumentDownload(document)}
+                                  onClick={() => {
+                                    // Fixed document download function to use the browser's document API
+                                    handleDocumentDownload(document);
+                                  }}
                                 >
                                   <Download className="h-3 w-3" />
                                   View

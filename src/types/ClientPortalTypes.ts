@@ -93,12 +93,7 @@ export interface ArgumentBuilder {
   constitutionalProvisions?: string[];
 }
 
-// Properly define RPC function interfaces with their argument and return types
-export type SupabaseRPCReturnType<Args, Returns> = {
-  data: Returns | null;
-  error: Error | null;
-};
-
+// Define proper types for RPC functions to fix the "does not satisfy the constraint 'never'" errors
 export interface ClientPortalRPCs {
   add_client_document: {
     Args: {
