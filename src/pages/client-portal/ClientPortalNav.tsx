@@ -10,6 +10,7 @@ import {
   Bell,
   Upload,
   Calendar,
+  BookOpen,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
@@ -23,10 +24,10 @@ const ClientPortalNav = ({ unreadCount = 0 }: ClientNavProps) => {
   const { user } = useAuth();
   const isActive = (path: string) => location.pathname === path;
   
-  // Define navigation items with path and icon
+  // Define navigation items with path and icon, featuring Practice Areas first
   const navItems = [
-    { path: '/client-portal', label: 'Dashboard', icon: FileText },
-    { path: '/client-portal/documents', label: 'Documents', icon: Shield },
+    { path: '/client-portal', label: 'Practice Areas', icon: BookOpen },
+    { path: '/client-portal/documents', label: 'Documents', icon: FileText },
     { path: '/client-portal/messages', label: 'Messages', icon: MessageSquare },
     { 
       path: '/client-portal/updates', 

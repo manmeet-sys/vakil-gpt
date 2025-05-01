@@ -6,15 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { downloadFile } from '@/utils/documentUtils';
 import { 
   File, 
-  FileClock, 
-  FileCheck, 
   Bell, 
-  User, 
   Shield, 
-  Clock, 
   Calendar, 
   ChevronRight,
   Search,
@@ -49,13 +44,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Progress } from '@/components/ui/progress';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { downloadFile } from '@/utils/documentUtils';
 import ClientDocumentUploader from '@/components/client-portal/ClientDocumentUploader';
 import CaseStatusUpdates from '@/components/client-portal/CaseStatusUpdates';
 import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter';
@@ -67,27 +56,14 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Types for advocate portal data
-interface ClientCase {
-  id: string;
-  case_title: string;
-  case_number: string;
-  status: string;
-  court_name: string;
-  filing_date?: string;
-  hearing_date?: string | null;
-  progress: number;
-}
-
 const ClientPortalPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState<ClientDocument[]>([]);
   const [statusUpdates, setStatusUpdates] = useState<StatusUpdate[]>([]);
-  const [clientCases, setClientCases] = useState<ClientCase[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('documents');
+  const [activeTab, setActiveTab] = useState('practiceAreas');
   const [unreadUpdates, setUnreadUpdates] = useState(0);
   const [error, setError] = useState<string | null>(null);
   
@@ -95,33 +71,58 @@ const ClientPortalPage = () => {
   const practiceAreas = [
     {
       title: "Criminal Law",
-      description: "Tools for criminal defense under BNS, BNSS codes",
-      icon: <Gavel className="h-5 w-5 text-blue-600" />,
-      path: "/criminal-law"
+      description: "Specialized tools for criminal defense under BNS, BNSS codes",
+      icon: <Gavel className="h-10 w-10 text-blue-600" />,
+      path: "/criminal-law",
+      tools: [
+        "Case Law Analysis", 
+        "Sentencing Guidelines",
+        "BNS Code References"
+      ]
     },
     {
       title: "Civil Law",
-      description: "Cause of action analysis and relief generation",
-      icon: <Scale className="h-5 w-5 text-blue-600" />,
-      path: "/civil-law"
+      description: "Cause of action analysis and relief generation tools",
+      icon: <Scale className="h-10 w-10 text-blue-600" />,
+      path: "/civil-law",
+      tools: [
+        "Limitation Calculator", 
+        "Relief Clause Generator",
+        "Case Precedent Finder"
+      ]
     },
     {
       title: "Corporate Law",
-      description: "Company formation and compliance tools",
-      icon: <Briefcase className="h-5 w-5 text-blue-600" />,
-      path: "/corporate-law"
+      description: "Company formation and compliance management tools",
+      icon: <Briefcase className="h-10 w-10 text-blue-600" />,
+      path: "/corporate-law",
+      tools: [
+        "Due Diligence", 
+        "Corporate Structure",
+        "Compliance Tracking"
+      ]
     },
     {
       title: "Family Law",
-      description: "Maintenance calculation and custody analysis",
-      icon: <Heart className="h-5 w-5 text-blue-600" />,
-      path: "/family-law"
+      description: "Maintenance calculation and custody analysis tools",
+      icon: <Heart className="h-10 w-10 text-blue-600" />,
+      path: "/family-law",
+      tools: [
+        "Maintenance Calculator", 
+        "Custody Rights",
+        "Settlement Templates"
+      ]
     },
     {
       title: "Real Estate Law",
       description: "Title search and property document tools",
-      icon: <Home className="h-5 w-5 text-blue-600" />,
-      path: "/real-estate-law"
+      icon: <Home className="h-10 w-10 text-blue-600" />,
+      path: "/real-estate-law",
+      tools: [
+        "Title Analysis", 
+        "RERA Compliance",
+        "Property Documentation"
+      ]
     }
   ];
   
@@ -188,23 +189,6 @@ const ClientPortalPage = () => {
       // Count unread updates
       const updatesData = updatesResponse.data || [];
       const unread = updatesData.filter(update => !update.is_read).length;
-      
-      // Fetch cases
-      const casesResponse = await supabase
-        .from('court_filings')
-        .select('*')
-        .eq('client_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (casesResponse.error) throw casesResponse.error;
-      
-      // Transform case data to include progress
-      const transformedCases = casesResponse.data?.map(caseItem => ({
-        ...caseItem,
-        progress: calculateCaseProgress(caseItem.status || 'draft')
-      })) as ClientCase[];
-      
-      setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
       console.error('Error fetching client data:', error);
@@ -212,18 +196,6 @@ const ClientPortalPage = () => {
       toast.error('Failed to load your data. Please try again.');
     } finally {
       setLoading(false);
-    }
-  };
-  
-  const calculateCaseProgress = (status: string): number => {
-    switch (status) {
-      case 'draft': return 10;
-      case 'filed': return 30;
-      case 'pending': return 50;
-      case 'scheduled': return 70;
-      case 'active': return 80;
-      case 'closed': return 100;
-      default: return 0;
     }
   };
   
@@ -258,7 +230,6 @@ const ClientPortalPage = () => {
         
       if (error) throw error;
       
-      // Create a download link using our utility function
       if (data instanceof Blob) {
         const url = URL.createObjectURL(data);
         downloadFile(url, document.name);
@@ -300,66 +271,10 @@ const ClientPortalPage = () => {
     }
   };
 
-  if (error) {
-    return (
-      <AppLayout>
-        <div className="container px-4 py-12 max-w-5xl mx-auto">
-          <Alert variant="destructive" className="mb-6">
-            <AlertDescription>
-              {error}. Please reload the page or contact support.
-            </AlertDescription>
-          </Alert>
-          <Button onClick={() => fetchClientData()}>Retry</Button>
-        </div>
-      </AppLayout>
-    );
-  }
-
-  const renderDocumentsSkeletons = () => (
-    <>
-      {[1, 2, 3].map(i => (
-        <TableRow key={i}>
-          <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-        </TableRow>
-      ))}
-    </>
-  );
-
-  const renderCaseSkeletons = () => (
-    <>
-      {[1, 2].map(i => (
-        <div key={i} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
-          <div className="flex flex-col md:flex-row md:items-center justify-between">
-            <div>
-              <Skeleton className="h-5 w-64 mb-2" />
-              <Skeleton className="h-4 w-40" />
-            </div>
-            <Skeleton className="h-5 w-24 mt-2 md:mt-0" />
-          </div>
-          
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-sm mb-1">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-8" />
-            </div>
-            <Skeleton className="h-2 w-full" />
-          </div>
-          
-          <div className="mt-4 pt-4 border-t">
-            <Skeleton className="h-8 w-32" />
-          </div>
-        </div>
-      ))}
-    </>
-  );
-
   return (
     <AppLayout>
       <Helmet>
-        <title>Client Portal | VakilGPT</title>
+        <title>Legal Practice Hub | VakilGPT</title>
       </Helmet>
       
       <div className="container px-4 py-6 max-w-7xl mx-auto">
@@ -375,11 +290,11 @@ const ClientPortalPage = () => {
           >
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Shield className="h-6 w-6 text-indigo-500" />
-                Client Portal
+                <BookOpen className="h-6 w-6 text-indigo-500" />
+                Legal Practice Hub
               </h1>
               <p className="text-gray-500 dark:text-gray-400 mt-1">
-                Securely access your case documents and updates
+                Access specialized tools for different practice areas of Indian law
               </p>
             </div>
             <div className="flex gap-2">
@@ -405,64 +320,22 @@ const ClientPortalPage = () => {
             </div>
           </motion.div>
           
-          {/* Practice Areas Featured Section */}
-          <motion.div 
-            className="mb-8"
-            variants={itemVariants}
-          >
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 rounded-xl shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <BookOpen className="h-5 w-5 text-blue-600" />
-                <h2 className="text-lg font-semibold">Practice Areas</h2>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {practiceAreas.map((area, index) => (
-                  <Card 
-                    key={index}
-                    className="border border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-zinc-800/70 hover:shadow transition-shadow"
-                  >
-                    <CardHeader className="p-3">
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mb-2">
-                          {area.icon}
-                        </div>
-                        <CardTitle className="text-base">{area.title}</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardFooter className="p-3 pt-0">
-                      <Button 
-                        onClick={() => navigate(area.path)} 
-                        className="w-full"
-                        variant="outline"
-                        size="sm"
-                      >
-                        Open
-                        <ArrowRight className="ml-2 h-3 w-3" />
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-          
           <Tabs 
-            defaultValue="documents" 
+            defaultValue="practiceAreas" 
             value={activeTab}
             onValueChange={setActiveTab}
             className="w-full"
           >
             <TabsList className="grid w-full max-w-3xl grid-cols-4 mb-6">
+              <TabsTrigger value="practiceAreas" className="flex items-center gap-1">
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Practice Areas</span>
+                <span className="sm:hidden">Areas</span>
+              </TabsTrigger>
               <TabsTrigger value="documents" className="flex items-center gap-1">
                 <File className="h-4 w-4" />
                 <span className="hidden sm:inline">Documents</span>
                 <span className="sm:hidden">Docs</span>
-              </TabsTrigger>
-              <TabsTrigger value="cases" className="flex items-center gap-1">
-                <FileClock className="h-4 w-4" />
-                <span className="hidden sm:inline">My Cases</span>
-                <span className="sm:hidden">Cases</span>
               </TabsTrigger>
               <TabsTrigger value="updates" className="flex items-center gap-1 relative">
                 <Bell className="h-4 w-4" />
@@ -475,11 +348,61 @@ const ClientPortalPage = () => {
                 )}
               </TabsTrigger>
               <TabsTrigger value="upload" className="flex items-center gap-1">
-                <FileCheck className="h-4 w-4" />
+                <File className="h-4 w-4" />
                 <span className="hidden sm:inline">Upload</span>
                 <span className="sm:hidden">Upload</span>
               </TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="practiceAreas">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Legal Practice Areas</CardTitle>
+                  <CardDescription>
+                    Explore specialized tools for different areas of Indian legal practice
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {practiceAreas.map((area, idx) => (
+                      <Card key={idx} className="overflow-hidden border border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-zinc-800/70 hover:shadow-lg transition-shadow duration-300">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                              {area.icon}
+                            </div>
+                            <div>
+                              <CardTitle className="text-xl">{area.title}</CardTitle>
+                              <CardDescription className="text-sm">{area.description}</CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pb-2">
+                          <div className="text-sm">
+                            <h4 className="font-medium mb-2">Available Tools:</h4>
+                            <ul className="space-y-1 list-disc pl-5 text-gray-600 dark:text-gray-400">
+                              {area.tools.map((tool, i) => (
+                                <li key={i}>{tool}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </CardContent>
+                        <CardFooter>
+                          <Button 
+                            onClick={() => navigate(area.path)} 
+                            className="w-full"
+                            variant="outline"
+                          >
+                            Explore {area.title} Tools
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
             
             <TabsContent value="documents">
               <Card>
@@ -498,27 +421,6 @@ const ClientPortalPage = () => {
                         onChange={e => setSearchTerm(e.target.value)}
                       />
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                          <Filter className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => setSearchTerm('')}>
-                          All Documents
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSearchTerm('pdf')}>
-                          PDF Documents
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSearchTerm('shared')}>
-                          Shared With Me
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSearchTerm('approved')}>
-                          Approved Documents
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -534,7 +436,14 @@ const ClientPortalPage = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {renderDocumentsSkeletons()}
+                          {[1, 2, 3].map(i => (
+                            <TableRow key={i}>
+                              <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                              <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                              <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                              <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                            </TableRow>
+                          ))}
                         </TableBody>
                       </Table>
                     </div>
@@ -543,7 +452,7 @@ const ClientPortalPage = () => {
                       <File className="mx-auto h-12 w-12 text-gray-400 mb-3" />
                       <h3 className="text-lg font-medium">No documents found</h3>
                       <p className="text-gray-500 mt-2 mb-4">
-                        {searchTerm ? 'No documents match your search criteria' : 'Your advocate hasn\'t shared any documents yet'}
+                        {searchTerm ? 'No documents match your search criteria' : 'No documents available yet'}
                       </p>
                       <Button variant="outline" onClick={() => setActiveTab('upload')}>
                         Upload Your Document
@@ -599,89 +508,6 @@ const ClientPortalPage = () => {
                           ))}
                         </TableBody>
                       </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="cases">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">My Cases</CardTitle>
-                  <CardDescription>
-                    Track the progress of your legal cases
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <div className="space-y-6">
-                      {renderCaseSkeletons()}
-                    </div>
-                  ) : clientCases.length === 0 ? (
-                    <div className="text-center py-12">
-                      <FileClock className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                      <h3 className="text-lg font-medium">No cases found</h3>
-                      <p className="text-gray-500 mt-2">
-                        You don't have any active cases at the moment
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {clientCases.map(caseItem => (
-                        <div key={caseItem.id} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between">
-                            <div>
-                              <h3 className="font-semibold text-lg">{caseItem.case_title || 'Untitled Case'}</h3>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {caseItem.case_number || 'No case number'} • {caseItem.court_name || 'No court assigned'}
-                              </p>
-                            </div>
-                            <Badge className="mt-2 md:mt-0">
-                              {caseItem.status || 'Draft'}
-                            </Badge>
-                          </div>
-                          
-                          <div className="mt-4">
-                            <div className="flex items-center justify-between text-sm mb-1">
-                              <span>Case Progress</span>
-                              <span>{caseItem.progress}%</span>
-                            </div>
-                            <Progress value={caseItem.progress} className="h-2" />
-                          </div>
-                          
-                          {(caseItem.filing_date || caseItem.hearing_date) && (
-                            <div className="mt-4 flex flex-col sm:flex-row gap-4 text-sm">
-                              {caseItem.filing_date && (
-                                <div className="flex items-center">
-                                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                                  <span className="text-gray-500 dark:text-gray-400">Filed: </span>
-                                  <span className="ml-1">{new Date(caseItem.filing_date).toLocaleDateString()}</span>
-                                </div>
-                              )}
-                              {caseItem.hearing_date && (
-                                <div className="flex items-center">
-                                  <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                                  <span className="text-gray-500 dark:text-gray-400">Next Hearing: </span>
-                                  <span className="ml-1">{new Date(caseItem.hearing_date).toLocaleDateString()}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          <div className="mt-4 pt-4 border-t">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="text-xs"
-                              onClick={() => toast.info(`Case details for ${caseItem.case_title || 'this case'} will be available soon.`)}
-                            >
-                              View Case Details
-                              <ChevronRight className="ml-1 h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
                     </div>
                   )}
                 </CardContent>
