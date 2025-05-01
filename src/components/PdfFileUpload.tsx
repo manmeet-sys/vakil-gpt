@@ -1,25 +1,44 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { FileText } from 'lucide-react';
+import { toast } from 'sonner';
+import { extractTextFromPdf } from '@/utils/pdfExtraction';
 
 interface PdfFileUploadProps {
   onChange: (file: File | null) => void;
   pdfFile: File | null;
+  onTextExtracted?: (text: string) => void;
 }
 
-const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onChange, pdfFile }) => {
+const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onChange, pdfFile, onTextExtracted }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    
     if (file && file.type === 'application/pdf') {
       onChange(file);
+      
+      if (onTextExtracted) {
+        setIsExtracting(true);
+        try {
+          const text = await extractTextFromPdf(file);
+          onTextExtracted(text);
+        } catch (error) {
+          console.error("Failed to extract text from PDF:", error);
+          toast.error("Failed to extract text from PDF");
+        } finally {
+          setIsExtracting(false);
+        }
+      }
     } else if (file) {
       onChange(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      toast.error("Please upload a valid PDF file");
     }
   };
 
@@ -40,7 +59,15 @@ const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onChange, pdfFile }) => {
           dark:file:bg-blue-900/20 dark:file:text-blue-400
           hover:file:bg-blue-100 dark:hover:file:bg-blue-800/30
           cursor-pointer"
+        disabled={isExtracting}
       />
+      
+      {isExtracting && (
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md flex items-center text-sm">
+          <span className="animate-pulse mr-2">⏳</span>
+          <span>Extracting text from PDF...</span>
+        </div>
+      )}
       
       {pdfFile && (
         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md flex items-center text-sm">

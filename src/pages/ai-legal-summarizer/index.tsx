@@ -30,10 +30,15 @@ const AILegalSummarizerPage: React.FC = () => {
   const [documentText, setDocumentText] = useState('');
   const [summary, setSummary] = useState<Summary | null>(null);
   const [pdfText, setPdfText] = useState('');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState<string>('paste');
   
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDocumentText(e.target.value);
+  };
+  
+  const handlePdfChange = (file: File | null) => {
+    setPdfFile(file);
   };
   
   const handlePdfTextExtracted = (text: string) => {
@@ -50,6 +55,7 @@ const AILegalSummarizerPage: React.FC = () => {
   const handleClear = () => {
     setDocumentText('');
     setPdfText('');
+    setPdfFile(null);
     setSummary(null);
   };
 
@@ -108,7 +114,11 @@ const AILegalSummarizerPage: React.FC = () => {
                     
                     <TabsContent value="pdf" className="mt-0">
                       <div className="mb-4">
-                        <PdfFileUpload onTextExtracted={handlePdfTextExtracted} />
+                        <PdfFileUpload 
+                          onChange={handlePdfChange} 
+                          pdfFile={pdfFile} 
+                          onTextExtracted={handlePdfTextExtracted}
+                        />
                       </div>
                       
                       {pdfText && (

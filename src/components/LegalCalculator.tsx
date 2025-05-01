@@ -75,7 +75,10 @@ const LegalCalculator: React.FC = () => {
       }
       
       setResult(`₹${courtFee.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`);
-      toast.success("Court fee calculated successfully");
+      toast({
+        title: "Success",
+        description: "Court fee calculated successfully"
+      });
     } else if (calculationType === 'interest') {
       const numDays = parseFloat(days);
       const numRate = parseFloat(rate);
@@ -93,7 +96,10 @@ const LegalCalculator: React.FC = () => {
       // Simple interest calculation
       const interest = (numAmount * numRate * numDays) / (100 * 365);
       setResult(`₹${interest.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`);
-      toast.success("Interest calculated successfully");
+      toast({
+        title: "Success",
+        description: "Interest calculated successfully"
+      });
     }
   };
   
