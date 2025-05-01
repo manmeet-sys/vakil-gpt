@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { StatusUpdate } from '@/types/ClientPortalTypes';
-import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface CaseStatusUpdatesProps {
   updates: StatusUpdate[];
@@ -16,9 +16,25 @@ interface CaseStatusUpdatesProps {
 const CaseStatusUpdates = ({ updates, loading, onMarkAsRead }: CaseStatusUpdatesProps) => {
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
-        <p className="mt-4 text-gray-500">Loading updates...</p>
+      <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+        {[1, 2, 3].map(i => (
+          <Card key={i} className="p-4 border">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-5 w-10 ml-2 rounded-full" />
+                </div>
+                <Skeleton className="h-5 w-3/4 mt-2" />
+                <Skeleton className="h-4 w-full mt-1" />
+                <div className="flex items-center justify-between mt-3">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              </div>
+            </div>
+          </Card>
+        ))}
       </div>
     );
   }

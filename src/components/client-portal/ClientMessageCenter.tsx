@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ClientMessage, ClientPortalRPCs } from '@/types/ClientPortalTypes';
+import { ClientMessage } from '@/types/ClientPortalTypes';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ClientMessageCenterProps {
   clientId: string;
@@ -22,6 +24,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
   const [newMessage, setNewMessage] = useState('');
   const [advocates, setAdvocates] = useState<{id: string, name: string}[]>([]);
   const [selectedAdvocate, setSelectedAdvocate] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -31,6 +34,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
         // Fetch advocates assigned to this client
         const { data: advocatesData, error: advocatesError } = await supabase
@@ -61,8 +65,9 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           setSelectedAdvocate(uniqueAdvocates[0].id);
         }
         
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching data:', error);
+        setError(error.message || 'Failed to load communications data');
         toast.error('Failed to load communications data');
       } finally {
         setLoading(false);
@@ -78,7 +83,9 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
     // Fetch messages using RPC function
     const fetchMessages = async () => {
       try {
-        const { data, error } = await supabase.rpc<'get_client_advocate_messages'>(
+        setError(null);
+        
+        const { data, error } = await supabase.rpc(
           'get_client_advocate_messages',
           {
             p_client_id: clientId,
@@ -89,16 +96,16 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         if (error) throw error;
         
         if (data) {
-          setMessages(data);
+          setMessages(data as ClientMessage[]);
           
           // Mark received messages as read
-          const unreadMessages = data.filter(m => 
+          const unreadMessages = (data as ClientMessage[]).filter(m => 
             m.receiver_id === clientId && !m.is_read
           ).map(m => m.id);
           
           if (unreadMessages && unreadMessages.length > 0) {
             // Mark messages as read using RPC
-            await supabase.rpc<'mark_messages_read'>(
+            await supabase.rpc(
               'mark_messages_read', 
               {
                 p_message_ids: unreadMessages
@@ -107,8 +114,9 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           }
         }
         
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching messages:', error);
+        setError(error.message || 'Failed to load messages');
       }
     };
     
@@ -136,13 +144,17 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
   };
   
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedAdvocate) return;
+    if (!newMessage.trim() || !selectedAdvocate || !user) {
+      toast.error('Please enter a message and select an advocate');
+      return;
+    }
     
     try {
       setSending(true);
+      setError(null);
       
       // Send message using RPC
-      const { data, error } = await supabase.rpc<'add_client_message'>(
+      const { data, error } = await supabase.rpc(
         'add_client_message',
         {
           p_content: newMessage.trim(),
@@ -157,14 +169,16 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       
       // Add the new message to the list
       if (data) {
-        setMessages(prev => [...prev, data]);
+        setMessages(prev => [...prev, data as ClientMessage]);
       }
       
       // Clear input after sending
       setNewMessage('');
+      toast.success('Message sent');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
+      setError(error.message || 'Failed to send message');
       toast.error('Failed to send message. Please try again.');
     } finally {
       setSending(false);
@@ -173,9 +187,18 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
 
   if (loading) {
     return (
-      <div className="text-center py-6">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
-        <p className="mt-3 text-sm text-gray-500">Loading messages...</p>
+      <div className="flex flex-col h-[400px]">
+        <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
+          <Skeleton className="h-9 w-32 rounded" />
+          <Skeleton className="h-9 w-32 rounded" />
+        </div>
+        
+        <Skeleton className="flex-1 rounded-md mb-4" />
+        
+        <div className="flex gap-2 items-center">
+          <Skeleton className="flex-1 h-10 rounded" />
+          <Skeleton className="h-10 w-20 rounded" />
+        </div>
       </div>
     );
   }
@@ -189,6 +212,14 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           You'll be able to communicate with your legal team here once an advocate is assigned to your case
         </p>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 

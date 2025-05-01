@@ -1,15 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { FileUp, Trash2, File, Check } from 'lucide-react';
+import { FileUp, Trash2, File, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Card, 
   CardContent,
-  CardFooter
 } from '@/components/ui/card';
 import {
   Select,
@@ -19,7 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ClientDocument, ClientPortalRPCs } from '@/types/ClientPortalTypes';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ClientDocument } from '@/types/ClientPortalTypes';
 
 interface ClientDocumentUploaderProps {
   clientId: string;
@@ -44,10 +44,25 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
   const [notes, setNotes] = useState('');
   const [selectedCase, setSelectedCase] = useState<string>('');
   const [cases, setCases] = useState<ClientCase[]>([]);
+  const [error, setError] = useState<string | null>(null);
   
-  React.useEffect(() => {
+  // Define allowed file types and max size
+  const allowedTypes = [
+    'application/pdf', 
+    'image/png', 
+    'image/jpeg', 
+    'image/jpg',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+    'application/msword' // doc
+  ];
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  
+  useEffect(() => {
+    if (!clientId) return;
+    
     // Fetch client cases
     const fetchCases = async () => {
+      setError(null);
       try {
         const { data, error } = await supabase
           .from('court_filings')
@@ -60,8 +75,9 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
           id: c.id,
           title: c.case_title || 'Untitled Case'
         })) || []);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching cases:', error);
+        setError(error.message || 'Failed to fetch case data');
       }
     };
     
@@ -70,17 +86,35 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
     }
   }, [clientId]);
 
+  const validateFile = (file: File): boolean => {
+    // Check file type
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(`Invalid file type: ${file.name}. Please upload PDF, PNG, JPG, or DOCX files only.`);
+      return false;
+    }
+    
+    // Check file size
+    if (file.size > maxSize) {
+      toast.error(`File too large: ${file.name}. Maximum file size is 10MB.`);
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
-    const newFiles = Array.from(e.target.files).map(file => 
+    const validFiles = Array.from(e.target.files).filter(validateFile).map(file => 
       Object.assign(file, {
         preview: URL.createObjectURL(file),
         id: Math.random().toString(36).substring(2)
       })
     );
     
-    setFiles(prev => [...prev, ...newFiles]);
+    if (validFiles.length > 0) {
+      setFiles(prev => [...prev, ...validFiles]);
+    }
   };
 
   const removeFile = (fileToRemove: FileWithPreview) => {
@@ -96,6 +130,7 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
     
     try {
       setUploading(true);
+      setError(null);
       
       // Upload each file to storage
       const uploadPromises = files.map(async (file) => {
@@ -109,7 +144,7 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
         if (storageError) throw storageError;
         
         // Create database entry using RPC function
-        const { data, error } = await supabase.rpc<'add_client_document'>(
+        const { data, error } = await supabase.rpc(
           'add_client_document',
           {
             p_name: file.name,
@@ -138,13 +173,23 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
       setFiles([]);
       setNotes('');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading documents:', error);
+      setError(error.message || 'Failed to upload documents');
       toast.error('Failed to upload documents. Please try again.');
     } finally {
       setUploading(false);
     }
   };
+
+  if (error) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">

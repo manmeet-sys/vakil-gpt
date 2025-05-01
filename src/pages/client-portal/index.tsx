@@ -17,7 +17,8 @@ import {
   Calendar, 
   ChevronRight,
   Search,
-  Filter
+  Filter,
+  Download
 } from 'lucide-react';
 import { 
   Card, 
@@ -51,6 +52,8 @@ import ClientDocumentUploader from '@/components/client-portal/ClientDocumentUpl
 import CaseStatusUpdates from '@/components/client-portal/CaseStatusUpdates';
 import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter';
 import { ClientDocument, StatusUpdate, ClientPortalRPCs } from '@/types/ClientPortalTypes';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Types for client portal data
 interface ClientCase {
@@ -74,6 +77,7 @@ const ClientPortalPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('documents');
   const [unreadUpdates, setUnreadUpdates] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     if (!user) {
@@ -105,53 +109,57 @@ const ClientPortalPage = () => {
   }, [user, navigate]);
   
   const fetchClientData = async () => {
+    if (!user) return;
+    
     try {
       setLoading(true);
+      setError(null);
       
       // Fetch client documents using RPC function
-      const { data: documentsData, error: documentsError } = await supabase.rpc<'get_client_documents'>(
+      const documentsResponse = await supabase.rpc(
         'get_client_documents',
         {
-          p_client_id: user?.id || ''
+          p_client_id: user.id
         }
       );
       
-      if (documentsError) throw documentsError;
+      if (documentsResponse.error) throw documentsResponse.error;
       
       // Fetch status updates using RPC function
-      const { data: updatesData, error: updatesError } = await supabase.rpc<'get_client_status_updates'>(
+      const updatesResponse = await supabase.rpc(
         'get_client_status_updates',
         {
-          p_client_id: user?.id || ''
+          p_client_id: user.id
         }
       );
       
-      if (updatesError) throw updatesError;
+      if (updatesResponse.error) throw updatesResponse.error;
       
       // Count unread updates
-      const unread = updatesData ? updatesData.filter(update => !update.is_read).length : 0;
+      const unread = updatesResponse.data ? updatesResponse.data.filter((update: StatusUpdate) => !update.is_read).length : 0;
       
       // Fetch cases
-      const { data: casesData, error: casesError } = await supabase
+      const casesResponse = await supabase
         .from('court_filings')
         .select('*')
-        .eq('client_id', user?.id)
+        .eq('client_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (casesError) throw casesError;
+      if (casesResponse.error) throw casesResponse.error;
       
       // Transform case data to include progress
-      const transformedCases = casesData?.map(caseItem => ({
+      const transformedCases = casesResponse.data?.map(caseItem => ({
         ...caseItem,
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      if (documentsData) setDocuments(documentsData);
-      if (updatesData) setStatusUpdates(updatesData);
+      if (documentsResponse.data) setDocuments(documentsResponse.data as ClientDocument[]);
+      if (updatesResponse.data) setStatusUpdates(updatesResponse.data as StatusUpdate[]);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching client data:', error);
+      setError(error.message || 'Failed to load your data');
       toast.error('Failed to load your data. Please try again.');
     } finally {
       setLoading(false);
@@ -173,7 +181,7 @@ const ClientPortalPage = () => {
   const markUpdateAsRead = async (updateId: string) => {
     try {
       // Use RPC function to mark status update as read
-      const { error } = await supabase.rpc<'mark_status_update_read'>(
+      const { error } = await supabase.rpc(
         'mark_status_update_read',
         {
           p_update_id: updateId
@@ -187,8 +195,34 @@ const ClientPortalPage = () => {
       ));
       
       setUnreadUpdates(prev => Math.max(0, prev - 1));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error marking update as read:', error);
+      toast.error('Failed to mark update as read');
+    }
+  };
+
+  const handleDocumentDownload = async (document: ClientDocument) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('client-documents')
+        .download(document.path);
+        
+      if (error) throw error;
+      
+      // Create a download link
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = document.name;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Document download started');
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      toast.error('Failed to download document');
     }
   };
   
@@ -197,7 +231,8 @@ const ClientPortalPage = () => {
     
     return documents.filter(doc => 
       doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.type.toLowerCase().includes(searchTerm.toLowerCase())
+      doc.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (doc.status && doc.status.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   };
   
@@ -220,6 +255,62 @@ const ClientPortalPage = () => {
       transition: { duration: 0.4 }
     }
   };
+
+  if (error) {
+    return (
+      <AppLayout>
+        <div className="container px-4 py-12 max-w-5xl mx-auto">
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>
+              {error}. Please reload the page or contact support.
+            </AlertDescription>
+          </Alert>
+          <Button onClick={() => fetchClientData()}>Retry</Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const renderDocumentsSkeletons = () => (
+    <>
+      {[1, 2, 3].map(i => (
+        <TableRow key={i}>
+          <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+          <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+          <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+          <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
+
+  const renderCaseSkeletons = () => (
+    <>
+      {[1, 2].map(i => (
+        <div key={i} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
+          <div className="flex flex-col md:flex-row md:items-center justify-between">
+            <div>
+              <Skeleton className="h-5 w-64 mb-2" />
+              <Skeleton className="h-4 w-40" />
+            </div>
+            <Skeleton className="h-5 w-24 mt-2 md:mt-0" />
+          </div>
+          
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-sm mb-1">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-8" />
+            </div>
+            <Skeleton className="h-2 w-full" />
+          </div>
+          
+          <div className="mt-4 pt-4 border-t">
+            <Skeleton className="h-8 w-32" />
+          </div>
+        </div>
+      ))}
+    </>
+  );
 
   return (
     <AppLayout>
@@ -248,10 +339,16 @@ const ClientPortalPage = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => fetchClientData()}>
+              <Button 
+                variant="outline" 
+                onClick={fetchClientData}
+                disabled={loading}
+                className="relative"
+              >
                 <Bell className="h-4 w-4 mr-2" />
-                Updates {unreadUpdates > 0 && (
-                  <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 flex items-center justify-center rounded-full">
+                {loading ? 'Refreshing...' : 'Updates'} 
+                {unreadUpdates > 0 && (
+                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
                     {unreadUpdates}
                   </Badge>
                 )}
@@ -273,15 +370,18 @@ const ClientPortalPage = () => {
             <TabsList className="grid w-full max-w-3xl grid-cols-4 mb-6">
               <TabsTrigger value="documents" className="flex items-center gap-1">
                 <File className="h-4 w-4" />
-                <span>Documents</span>
+                <span className="hidden sm:inline">Documents</span>
+                <span className="sm:hidden">Docs</span>
               </TabsTrigger>
               <TabsTrigger value="cases" className="flex items-center gap-1">
                 <FileClock className="h-4 w-4" />
-                <span>My Cases</span>
+                <span className="hidden sm:inline">My Cases</span>
+                <span className="sm:hidden">Cases</span>
               </TabsTrigger>
               <TabsTrigger value="updates" className="flex items-center gap-1 relative">
                 <Bell className="h-4 w-4" />
-                <span>Updates</span>
+                <span className="hidden sm:inline">Updates</span>
+                <span className="sm:hidden">Updates</span>
                 {unreadUpdates > 0 && (
                   <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center rounded-full text-[10px]">
                     {unreadUpdates}
@@ -290,7 +390,8 @@ const ClientPortalPage = () => {
               </TabsTrigger>
               <TabsTrigger value="upload" className="flex items-center gap-1">
                 <FileCheck className="h-4 w-4" />
-                <span>Upload</span>
+                <span className="hidden sm:inline">Upload</span>
+                <span className="sm:hidden">Upload</span>
               </TabsTrigger>
             </TabsList>
             
@@ -336,9 +437,20 @@ const ClientPortalPage = () => {
                 </CardHeader>
                 <CardContent>
                   {loading ? (
-                    <div className="text-center py-8">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
-                      <p className="mt-4 text-gray-500">Loading your documents...</p>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Document</TableHead>
+                            <TableHead>Date Added</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Action</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {renderDocumentsSkeletons()}
+                        </TableBody>
+                      </Table>
                     </div>
                   ) : filteredDocuments.length === 0 ? (
                     <div className="text-center py-12">
@@ -383,11 +495,17 @@ const ClientPortalPage = () => {
                                     'outline'
                                   }
                                 >
-                                  {document.status.replace('_', ' ')}
+                                  {document.status?.replace('_', ' ')}
                                 </Badge>
                               </TableCell>
                               <TableCell>
-                                <Button variant="ghost" size="sm">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="flex items-center gap-1"
+                                  onClick={() => handleDocumentDownload(document)}
+                                >
+                                  <Download className="h-3 w-3" />
                                   View
                                 </Button>
                               </TableCell>
@@ -411,9 +529,8 @@ const ClientPortalPage = () => {
                 </CardHeader>
                 <CardContent>
                   {loading ? (
-                    <div className="text-center py-8">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
-                      <p className="mt-4 text-gray-500">Loading your cases...</p>
+                    <div className="space-y-6">
+                      {renderCaseSkeletons()}
                     </div>
                   ) : clientCases.length === 0 ? (
                     <div className="text-center py-12">
@@ -429,13 +546,13 @@ const ClientPortalPage = () => {
                         <div key={caseItem.id} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
                           <div className="flex flex-col md:flex-row md:items-center justify-between">
                             <div>
-                              <h3 className="font-semibold text-lg">{caseItem.case_title}</h3>
+                              <h3 className="font-semibold text-lg">{caseItem.case_title || 'Untitled Case'}</h3>
                               <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {caseItem.case_number} • {caseItem.court_name}
+                                {caseItem.case_number || 'No case number'} • {caseItem.court_name || 'No court assigned'}
                               </p>
                             </div>
                             <Badge className="mt-2 md:mt-0">
-                              {caseItem.status}
+                              {caseItem.status || 'Draft'}
                             </Badge>
                           </div>
                           
@@ -467,9 +584,14 @@ const ClientPortalPage = () => {
                           )}
                           
                           <div className="mt-4 pt-4 border-t">
-                            <Button size="sm" variant="outline" className="text-xs">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-xs"
+                              onClick={() => toast.info(`Case details for ${caseItem.case_title || 'this case'} will be available soon.`)}
+                            >
                               View Case Details
-                              <ChevronRight className="h-3 w-3 ml-1" />
+                              <ChevronRight className="ml-1 h-3 w-3" />
                             </Button>
                           </div>
                         </div>
@@ -507,13 +629,19 @@ const ClientPortalPage = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ClientDocumentUploader 
-                    clientId={user?.id || ''} 
-                    onUploadSuccess={() => {
-                      toast.success('Document uploaded successfully');
-                      fetchClientData();
-                    }}
-                  />
+                  {!user ? (
+                    <div className="text-center py-6">
+                      <p>Please login to upload documents</p>
+                    </div>
+                  ) : (
+                    <ClientDocumentUploader 
+                      clientId={user.id} 
+                      onUploadSuccess={() => {
+                        toast.success('Document uploaded successfully');
+                        fetchClientData();
+                      }}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -535,7 +663,13 @@ const ClientPortalPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ClientMessageCenter clientId={user?.id || ''} />
+              {!user ? (
+                <div className="text-center py-6">
+                  <p>Please login to access the message center</p>
+                </div>
+              ) : (
+                <ClientMessageCenter clientId={user.id} />
+              )}
             </CardContent>
           </Card>
         </motion.div>

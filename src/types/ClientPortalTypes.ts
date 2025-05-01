@@ -163,17 +163,8 @@ export interface ClientPortalRPCs {
   };
 }
 
-// Import this type into the supabase client
-declare module '@supabase/supabase-js' {
-  interface SupabaseClient {
-    rpc<
-      FunctionName extends keyof ClientPortalRPCs,
-      Args extends ClientPortalRPCs[FunctionName]['Args'] = ClientPortalRPCs[FunctionName]['Args'],
-      Returns = ClientPortalRPCs[FunctionName]['Returns']
-    >(
-      fn: FunctionName,
-      args: Args,
-      options?: {}
-    ): { data: Returns; error: any };
+declare global {
+  interface Window {
+    Stripe?: any;
   }
 }
