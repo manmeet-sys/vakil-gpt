@@ -61,9 +61,9 @@ const SheetContent = React.forwardRef<
     <SheetPrimitive.Content
       ref={ref}
       className={cn(sheetVariants({ side }), className)}
-      aria-label={props['aria-label'] || "Sheet content"}
       role="dialog"
       aria-modal="true"
+      aria-label={props['aria-label'] || "Sheet"}
       {...props}
     >
       {children}

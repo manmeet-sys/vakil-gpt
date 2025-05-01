@@ -8,8 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import DesktopNavigation from './navigation/DesktopNavigation';
 import AuthButtons from './navigation/AuthButtons';
-import { useNavigation } from '@/context/NavigationContext';
-import MobileMenu from './navigation/MobileMenu';
+import MobileNavigation from './navigation/MobileNavigation';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -18,7 +17,6 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/reset-password';
-  const { mainItems } = useNavigation();
   
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
@@ -56,8 +54,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           )}
           <ThemeToggle />
           
-          {/* Mobile Menu */}
-          <MobileMenu />
+          {/* Mobile Menu - Direct component instead of wrapper */}
+          <MobileNavigation />
         </div>
       </header>
       

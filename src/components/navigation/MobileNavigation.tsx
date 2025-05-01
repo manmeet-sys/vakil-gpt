@@ -1,12 +1,11 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { X, User, LogOut, LogIn, Menu } from 'lucide-react';
+import { X, User, LogOut, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
-  SheetTrigger,
   SheetClose
 } from '@/components/ui/sheet';
 import { useAuth } from '@/context/AuthContext';
@@ -22,13 +21,11 @@ const MobileNavigation: React.FC = () => {
   return (
     <div className="md:hidden">
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="p-0 border-l border-gray-200 dark:border-gray-800">
+        <SheetContent 
+          side="right" 
+          className={cn("p-0 border-l border-gray-200 dark:border-gray-800", design.animation.fadeIn)}
+          aria-label="Mobile navigation menu"
+        >
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
               <h2 className={cn(design.text.heading, design.text.sizes.lg)}>
