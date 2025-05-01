@@ -38,6 +38,13 @@
     --ring: 220 70% 50%;
 
     --radius: 0.5rem;
+    
+    /* Accessibility variables */
+    --enable-animations: 1;
+    --cursor-size: medium;
+    --focus-ring-width: 2px;
+    --focus-ring-color: rgb(59, 130, 246);
+    --focus-ring-offset: 2px;
   }
 
   .dark {
@@ -68,6 +75,79 @@
     --border: 220 15% 25%;
     --input: 220 15% 25%;
     --ring: 220 70% 50%;
+    
+    /* Accessibility variables - dark mode */
+    --focus-ring-color: rgb(96, 165, 250);
+  }
+  
+  /* High Contrast Mode */
+  .high-contrast {
+    --foreground: 0 0% 0%;
+    --background: 0 0% 100%;
+    
+    --card: 0 0% 95%;
+    --card-foreground: 0 0% 0%;
+    
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    
+    --primary: 220 100% 20%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --accent: 220 100% 30%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --focus-ring-color: black;
+    --focus-ring-width: 3px;
+  }
+  
+  .high-contrast.dark {
+    --foreground: 0 0% 100%;
+    --background: 0 0% 0%;
+    
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    
+    --border: 0 0% 100%;
+    --input: 0 0% 100%;
+    
+    --primary: 220 100% 70%;
+    --primary-foreground: 0 0% 0%;
+    
+    --secondary: 0 0% 85%;
+    --secondary-foreground: 0 0% 0%;
+    
+    --accent: 220 100% 60%;
+    --accent-foreground: 0 0% 0%;
+    
+    --focus-ring-color: white;
+    --focus-ring-width: 3px;
+  }
+  
+  /* Reading Mode */
+  .reading-mode {
+    font-family: 'Merriweather', serif;
+    --foreground: 40 30% 10%;
+    --background: 40 30% 98%;
+    line-height: 1.8;
+    letter-spacing: 0.01em;
+  }
+  
+  .reading-mode.dark {
+    --foreground: 40 10% 95%;
+    --background: 40 20% 10%;
+  }
+  
+  .reading-mode p {
+    max-width: 70ch;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
@@ -99,17 +179,15 @@
     text-wrap: balance;
     max-width: 100%;
   }
-}
 
-@layer components {
-  .apple-button {
-    @apply rounded-full bg-blue-accent text-white font-medium py-3 px-6 transition-all;
-    @apply hover:bg-blue-accent/90 active:scale-98 focus:outline-none focus:ring-2 focus:ring-blue-accent/50;
+  /* Accessibility utilities */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
   
-  .apple-button-secondary {
-    @apply rounded-full bg-blue-light text-blue-slate font-medium py-3 px-6 transition-all;
-    @apply hover:bg-blue-light/90 active:scale-98 focus:outline-none focus:ring-2 focus:ring-blue-muted/50;
+  /* Skip to content link - accessibility feature */
+  .skip-to-content {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:p-4 focus:bg-background focus:text-foreground focus:outline-none focus:ring-2 focus:ring-ring;
   }
 }
 
@@ -510,4 +588,88 @@ textarea {
   50% {
     opacity: 0.3;
   }
+}
+
+/* Improved accessibility focus styles */
+:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, rgb(59, 130, 246));
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.reduce-motion *, 
+.reduce-motion ::before, 
+.reduce-motion ::after,
+:root[data-reduce-motion="true"] *,
+:root[data-reduce-motion="true"] ::before,
+:root[data-reduce-motion="true"] ::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Accessibility - Cursor Size */
+:root[data-cursor="large"],
+:root[style*="--cursor-size:large"] {
+  cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M6 6l12 12"></path><path d="M12 12h.01"></path></svg>') 12 12, auto;
+}
+
+/* Focus Mode - reduce visual noise */
+.focus-mode {
+  --muted-opacity: 0.3;
+}
+
+.focus-mode *:not(:focus, :focus-within, .focus-exempt, .focus-exempt *, h1, h2, h3, h4, h5, h6, p, a, button, [role="button"]) {
+  opacity: var(--muted-opacity);
+  filter: grayscale(30%);
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.focus-mode *:hover:not(.focus-exempt, .focus-exempt *) {
+  opacity: 0.8;
+}
+
+.focus-mode *:focus, 
+.focus-mode *:focus-within,
+.focus-mode h1,
+.focus-mode h2, 
+.focus-mode h3, 
+.focus-mode a:hover, 
+.focus-mode button:hover, 
+.focus-mode [role="button"]:hover {
+  opacity: 1;
+  filter: none;
+}
+
+/* Keyboard navigation focus styles */
+:root[data-keyboard-navigation="true"] * {
+  outline: none;
+}
+
+:root[data-keyboard-navigation="true"] *:focus {
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, rgb(59, 130, 246));
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+/* Screen reader only content - accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

@@ -84,10 +84,11 @@ Format the response as JSON with the following structure:
           <button 
             onClick={runFlashAnalysis}
             disabled={isAnalyzing}
-            className={`inline-flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white 
-              transition-all hover:from-blue-600 hover:to-indigo-700 focus:ring-2 focus:ring-blue-300 
-              ${isAnalyzing ? 'opacity-70 cursor-wait' : 'cursor-pointer'}`}
             aria-label="Run Gemini Flash Analysis"
+            aria-busy={isAnalyzing}
+            className={`inline-flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white 
+              transition-all hover:from-blue-600 hover:to-indigo-700 focus:ring-2 focus:ring-blue-300 focus-visible:outline-none
+              ${isAnalyzing ? 'opacity-70 cursor-wait' : 'cursor-pointer'}`}
           >
             <Sparkles className="h-3 w-3" />
           </button>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AlertCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { AlertCircle, XCircle, AlertTriangle, InfoIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type ErrorSeverity = 'error' | 'warning' | 'info';
@@ -10,24 +10,29 @@ interface ErrorMessageProps {
   severity?: ErrorSeverity;
   className?: string;
   onDismiss?: () => void;
+  id?: string;
 }
 
 const ErrorMessage = ({ 
   message, 
   severity = 'error',
   className,
-  onDismiss
+  onDismiss,
+  id
 }: ErrorMessageProps) => {
+  // Generate a unique ID if not provided
+  const messageId = id || `message-${Math.random().toString(36).substr(2, 9)}`;
+  
   const getIcon = () => {
     switch (severity) {
       case 'error':
-        return <AlertCircle className="h-4 w-4" />;
+        return <AlertCircle className="h-4 w-4" aria-hidden="true" />;
       case 'warning':
-        return <AlertTriangle className="h-4 w-4" />;
+        return <AlertTriangle className="h-4 w-4" aria-hidden="true" />;
       case 'info':
-        return <AlertCircle className="h-4 w-4" />;
+        return <InfoIcon className="h-4 w-4" aria-hidden="true" />;
       default:
-        return <AlertCircle className="h-4 w-4" />;
+        return <AlertCircle className="h-4 w-4" aria-hidden="true" />;
     }
   };
 
@@ -44,12 +49,30 @@ const ErrorMessage = ({
     }
   };
 
+  const getAriaRole = () => {
+    switch (severity) {
+      case 'error':
+        return 'alert';
+      case 'warning':
+        return 'status';
+      case 'info':
+        return 'status';
+      default:
+        return 'alert';
+    }
+  };
+
   return (
-    <div className={cn(
-      'flex items-start gap-2 text-sm p-2 rounded border',
-      getColorClasses(),
-      className
-    )}>
+    <div 
+      className={cn(
+        'flex items-start gap-2 text-sm p-2 rounded border',
+        getColorClasses(),
+        className
+      )}
+      role={getAriaRole()}
+      aria-live={severity === 'error' ? 'assertive' : 'polite'}
+      id={messageId}
+    >
       <span className="mt-0.5 flex-shrink-0">
         {getIcon()}
       </span>
@@ -57,10 +80,10 @@ const ErrorMessage = ({
       {onDismiss && (
         <button 
           onClick={onDismiss}
-          className="flex-shrink-0 hover:opacity-70 transition-opacity"
-          aria-label="Dismiss error message"
+          className="flex-shrink-0 hover:opacity-70 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-300 rounded"
+          aria-label="Dismiss message"
         >
-          <XCircle className="h-4 w-4" />
+          <XCircle className="h-4 w-4" aria-hidden="true" />
         </button>
       )}
     </div>
