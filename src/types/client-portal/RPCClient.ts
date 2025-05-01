@@ -10,8 +10,8 @@ export async function clientPortalRPC<T extends ClientPortalRPCFunctions>(
   // Call the Supabase RPC method without generic type parameters
   // Use type assertions instead to maintain type safety
   const { data, error } = await supabase.rpc(
-    functionName,
-    params
+    functionName as any,
+    params as any
   );
   
   return { 
