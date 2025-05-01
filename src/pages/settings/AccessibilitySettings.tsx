@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -122,7 +121,7 @@ const AccessibilitySettings: React.FC = () => {
   }, []);
 
   return (
-    <Card as="section" aria-labelledby="accessibility-heading">
+    <Card className="section" role="region" aria-labelledby="accessibility-heading">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Accessibility className="h-5 w-5 text-blue-600" aria-hidden="true" />
