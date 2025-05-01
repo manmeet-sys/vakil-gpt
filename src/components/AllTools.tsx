@@ -14,7 +14,9 @@ import {
   BarChart2,
   Gavel,
   Accessibility,
-  Clock
+  Clock,
+  Calculator,
+  Search
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -105,6 +107,14 @@ const AllTools = () => {
       description: "Summarize lengthy legal documents and extract key information",
       icon: <FileText className="h-5 w-5 text-blue-600" />,
       path: "/ai-legal-summarizer",
+      badge: "New"
+    },
+    {
+      id: "advanced-ai-search",
+      title: "Advanced AI Search",
+      description: "Perform advanced AI-powered searches across legal documents",
+      icon: <Search className="h-5 w-5 text-blue-600" />,
+      path: "/advanced-ai-search",
       badge: "New"
     },
     {
@@ -236,7 +246,7 @@ const AllTools = () => {
       id: "legal-calculator",
       title: "Legal Calculator",
       description: "Calculate legal fees, damages, and other amounts",
-      icon: <IndianRupee className="h-5 w-5 text-blue-600" />,
+      icon: <Calculator className="h-5 w-5 text-blue-600" />,
       path: "/legal-calculator"
     },
     {

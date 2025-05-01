@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Compass, Sparkles, CheckCircle, Shield } from 'lucide-react';
+import { ArrowRight, Compass, Sparkles, CheckCircle, Shield, Calculator, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,20 +51,20 @@ const ExploreToolsSection = () => {
       path: "/tools#ai-assistance"
     },
     {
-      title: "Legal Research",
-      description: "Case law, statutes & knowledge base",
-      icon: <Compass className="h-5 w-5 text-white" />,
+      title: "Legal Calculator",
+      description: "Court fees, interest & financial computations",
+      icon: <Calculator className="h-5 w-5 text-white" />,
       color: "from-amber-500 to-orange-700",
       textColor: "text-amber-50",
-      path: "/tools#legal-research"
+      path: "/legal-calculator"
     },
     {
-      title: "Compliance",
-      description: "DPDP, AML & contract management",
-      icon: <Shield className="h-5 w-5 text-white" />,
+      title: "Advanced Search",
+      description: "AI-powered legal document search",
+      icon: <Search className="h-5 w-5 text-white" />,
       color: "from-emerald-600 to-green-700",
       textColor: "text-emerald-50",
-      path: "/tools#document-automation"
+      path: "/advanced-ai-search"
     }
   ];
 
