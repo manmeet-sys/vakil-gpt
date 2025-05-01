@@ -1,3 +1,4 @@
+
 import { Database } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -103,7 +104,7 @@ export interface DocumentInfo {
   parties?: string;
 }
 
-// Client Portal RPC function types 
+// Define literal types for valid function names to avoid "never" type errors
 export type ClientPortalRPCFunctions = 
   | 'add_client_document'
   | 'add_client_message'
