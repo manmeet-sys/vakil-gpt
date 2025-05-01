@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -143,7 +144,10 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
         if (storageError) throw storageError;
         
         // Create database entry using RPC function
-        const { data, error } = await supabase.rpc(
+        const { data, error } = await supabase.rpc<
+          ClientPortalRPCTypes['add_client_document']['Returns'],
+          ClientPortalRPCTypes['add_client_document']['Args']
+        >(
           'add_client_document',
           {
             p_name: file.name,

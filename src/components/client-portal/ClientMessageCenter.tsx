@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -84,7 +85,10 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       try {
         setError(null);
         
-        const { data, error } = await supabase.rpc(
+        const { data, error } = await supabase.rpc<
+          ClientPortalRPCTypes['get_client_advocate_messages']['Returns'],
+          ClientPortalRPCTypes['get_client_advocate_messages']['Args']
+        >(
           'get_client_advocate_messages',
           {
             p_client_id: clientId,
@@ -95,16 +99,19 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         if (error) throw error;
         
         if (data) {
-          setMessages(data as ClientMessage[]);
+          setMessages(data);
           
           // Mark received messages as read
-          const unreadMessages = (data as ClientMessage[]).filter(m => 
+          const unreadMessages = data.filter(m => 
             m.receiver_id === clientId && !m.is_read
           ).map(m => m.id);
           
           if (unreadMessages && unreadMessages.length > 0) {
             // Mark messages as read using RPC
-            await supabase.rpc(
+            await supabase.rpc<
+              ClientPortalRPCTypes['mark_messages_read']['Returns'],
+              ClientPortalRPCTypes['mark_messages_read']['Args']
+            >(
               'mark_messages_read',
               {
                 p_message_ids: unreadMessages
@@ -153,7 +160,10 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       setError(null);
       
       // Send message using RPC
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.rpc<
+        ClientPortalRPCTypes['add_client_message']['Returns'],
+        ClientPortalRPCTypes['add_client_message']['Args']
+      >(
         'add_client_message',
         {
           p_content: newMessage.trim(),
@@ -168,7 +178,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       
       // Add the new message to the list
       if (data) {
-        setMessages(prev => [...prev, data as ClientMessage]);
+        setMessages(prev => [...prev, data]);
       }
       
       // Clear input after sending

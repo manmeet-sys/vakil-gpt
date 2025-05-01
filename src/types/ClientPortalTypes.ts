@@ -93,9 +93,13 @@ export interface ArgumentBuilder {
   constitutionalProvisions?: string[];
 }
 
-// Define proper types for RPC functions to fix the TypeScript errors
-export type DatabaseFunctions = Database['public']['Functions'];
+// Define proper types for RPC functions
+export type RPCFunctionReturnType<T> = {
+  data: T;
+  error: Error | null;
+};
 
+// Client Portal RPC function types
 export interface ClientPortalRPCTypes {
   add_client_document: {
     Args: {
