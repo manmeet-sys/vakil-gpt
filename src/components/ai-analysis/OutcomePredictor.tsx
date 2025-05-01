@@ -8,7 +8,7 @@ import { Loader2, Scale, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import GeminiFlashAnalyzer from '@/components/GeminiFlashAnalyzer';
-import { LazyComponent } from '@/components/LazyComponent';
+import LazyComponent from '@/components/LazyComponent';
 import AIAnalysisSkeleton from '../SkeletonLoaders/AIAnalysisSkeleton';
 
 const OutcomePredictor = () => {
