@@ -9,6 +9,8 @@ import { motion } from 'framer-motion';
 import DesktopNavigation from './navigation/DesktopNavigation';
 import AuthButtons from './navigation/AuthButtons';
 import MobileNavigation from './navigation/MobileNavigation';
+import { design } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -19,15 +21,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/reset-password';
   
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
-      <header className="sticky top-0 z-40 border-b border-gray-200 dark:border-zinc-700/50 py-3 px-4 backdrop-blur-sm bg-white/90 dark:bg-zinc-900/90 flex items-center justify-between">
+    <div className="min-h-screen w-full flex flex-col bg-background transition-colors duration-300">
+      <header className="sticky top-0 z-40 border-b border-border py-3 px-4 backdrop-blur-sm bg-background/90 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
             <motion.h1 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
-              className="text-xl font-semibold text-gray-800 dark:text-white flex items-center"
+              className={cn(
+                design.text.heading,
+                "text-xl font-semibold flex items-center"
+              )}
             >
               VakilGPT
               <span className="text-orange-500 text-xs font-medium ml-1">IN</span>
@@ -44,7 +49,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {isAuthPage ? (
             <Link 
               to={location.pathname === '/login' ? '/signup' : '/login'} 
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border text-sm font-medium text-foreground hover:bg-accent/50 transition-all"
             >
               <LogIn className="h-4 w-4" />
               <span>{location.pathname === '/login' ? 'Sign Up' : 'Log In'}</span>
@@ -59,7 +64,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
       </header>
       
-      <main className="flex-1 flex flex-col py-6 overflow-hidden">
+      <main className={cn(
+        "flex-1 flex flex-col py-6 overflow-hidden",
+        design.spacing.container
+      )}>
         {children}
       </main>
     </div>

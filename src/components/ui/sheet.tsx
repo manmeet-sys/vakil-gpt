@@ -5,6 +5,7 @@ import { X } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { design } from "@/lib/design-system"
 
 const Sheet = SheetPrimitive.Root
 
@@ -86,6 +87,7 @@ const SheetHeader = ({
   <div
     className={cn(
       "flex flex-col space-y-2 text-center sm:text-left",
+      design.card.header,
       className
     )}
     {...props}
@@ -100,6 +102,7 @@ const SheetFooter = ({
   <div
     className={cn(
       "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      design.card.footer,
       className
     )}
     {...props}
@@ -113,7 +116,7 @@ const SheetTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Title
     ref={ref}
-    className={cn("text-lg font-semibold text-foreground", className)}
+    className={cn(design.text.heading, "text-lg font-semibold text-foreground", className)}
     {...props}
   />
 ))
@@ -125,7 +128,7 @@ const SheetDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn(design.text.body, "text-sm text-muted-foreground", className)}
     {...props}
   />
 ))
