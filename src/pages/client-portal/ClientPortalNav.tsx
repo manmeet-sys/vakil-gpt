@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import {
   Bell,
   Upload,
   Calendar,
+  Users,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
@@ -26,6 +28,7 @@ const AdvocatePortalNav = ({ unreadCount = 0 }: AdvocateNavProps) => {
   const navItems = [
     { path: '/client-portal', label: 'Dashboard', icon: FileText },
     { path: '/client-portal/documents', label: 'Documents', icon: Shield },
+    { path: '/client-portal/community', label: 'Community', icon: Users },
     { path: '/client-portal/messages', label: 'Messages', icon: MessageSquare },
     { 
       path: '/client-portal/updates', 
@@ -33,7 +36,7 @@ const AdvocatePortalNav = ({ unreadCount = 0 }: AdvocateNavProps) => {
       icon: Bell, 
       badge: unreadCount > 0 ? unreadCount : undefined 
     },
-    { path: '/client-portal/upload', label: 'Upload', icon: Upload },
+    { path: '/client-portal/upload', label: 'Share', icon: Upload },
     { path: '/client-portal/calendar', label: 'Calendar', icon: Calendar },
   ];
 

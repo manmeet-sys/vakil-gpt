@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import AppLayout from '@/components/AppLayout';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { File, FileClock, Bell, FileCheck } from 'lucide-react';
+import { File, FileClock, Bell, FileCheck, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   Card, 
@@ -19,13 +18,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 
-// Import our new components
+// Import our components
 import ClientDocumentUploader from '@/components/client-portal/ClientDocumentUploader';
 import CaseStatusUpdates from '@/components/client-portal/CaseStatusUpdates';
 import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter';
 import DocumentList from '@/components/client-portal/DocumentList';
 import CaseList from '@/components/client-portal/CaseList';
 import PortalHeader from '@/components/client-portal/PortalHeader';
+import AdvocateCommunity from '@/components/client-portal/AdvocateCommunity';
 
 // Import our custom hook
 import { useClientPortal } from '@/hooks/useClientPortal';
@@ -114,7 +114,7 @@ const AdvocatePortalPage = () => {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full max-w-3xl grid-cols-4 mb-6">
+            <TabsList className="grid w-full max-w-3xl grid-cols-5 mb-6">
               <TabsTrigger value="documents" className="flex items-center gap-1">
                 <File className="h-4 w-4" />
                 <span className="hidden sm:inline">Documents</span>
@@ -122,7 +122,7 @@ const AdvocatePortalPage = () => {
               </TabsTrigger>
               <TabsTrigger value="cases" className="flex items-center gap-1">
                 <FileClock className="h-4 w-4" />
-                <span className="hidden sm:inline">My Cases</span>
+                <span className="hidden sm:inline">Cases</span>
                 <span className="sm:hidden">Cases</span>
               </TabsTrigger>
               <TabsTrigger value="updates" className="flex items-center gap-1 relative">
@@ -137,8 +137,13 @@ const AdvocatePortalPage = () => {
               </TabsTrigger>
               <TabsTrigger value="upload" className="flex items-center gap-1">
                 <FileCheck className="h-4 w-4" />
-                <span className="hidden sm:inline">Upload</span>
-                <span className="sm:hidden">Upload</span>
+                <span className="hidden sm:inline">Share</span>
+                <span className="sm:hidden">Share</span>
+              </TabsTrigger>
+              <TabsTrigger value="community" className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Community</span>
+                <span className="sm:hidden">Community</span>
               </TabsTrigger>
             </TabsList>
             
@@ -147,7 +152,7 @@ const AdvocatePortalPage = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Shared Documents</CardTitle>
                   <CardDescription>
-                    Access all documents related to your legal matters
+                    Access documents shared with the advocate community
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -166,9 +171,9 @@ const AdvocatePortalPage = () => {
             <TabsContent value="cases">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">My Cases</CardTitle>
+                  <CardTitle className="text-lg">Case Repository</CardTitle>
                   <CardDescription>
-                    Track the progress of your legal cases
+                    Track and share case progress with other advocates
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -185,7 +190,7 @@ const AdvocatePortalPage = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Status Updates</CardTitle>
                   <CardDescription>
-                    Receive the latest updates about your cases
+                    Receive the latest updates about shared cases
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -201,25 +206,39 @@ const AdvocatePortalPage = () => {
             <TabsContent value="upload">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Upload Documents</CardTitle>
+                  <CardTitle className="text-lg">Share Documents</CardTitle>
                   <CardDescription>
-                    Securely share documents with your advocate
+                    Share documents with the advocate community
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {!user ? (
                     <div className="text-center py-6">
-                      <p>Please login to upload documents</p>
+                      <p>Please login to share documents</p>
                     </div>
                   ) : (
                     <ClientDocumentUploader 
                       clientId={user.id} 
                       onUploadSuccess={() => {
-                        toast.success('Document uploaded successfully');
+                        toast.success('Document shared successfully');
                         fetchClientData();
                       }}
                     />
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="community">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Advocate Community</CardTitle>
+                  <CardDescription>
+                    Connect and collaborate with other advocates
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AdvocateCommunity />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -235,15 +254,15 @@ const AdvocatePortalPage = () => {
         >
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Message Center</CardTitle>
+              <CardTitle className="text-lg">Advocate Discussion Forum</CardTitle>
               <CardDescription>
-                Communicate securely with your legal team
+                Communicate securely with other advocates in the legal community
               </CardDescription>
             </CardHeader>
             <CardContent>
               {!user ? (
                 <div className="text-center py-6">
-                  <p>Please login to access the message center</p>
+                  <p>Please login to access the discussion forum</p>
                 </div>
               ) : (
                 <ClientMessageCenter clientId={user.id} />

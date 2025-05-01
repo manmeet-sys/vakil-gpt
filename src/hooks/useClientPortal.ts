@@ -10,7 +10,7 @@ import {
   clientPortalRPC 
 } from '@/types/client-portal';
 
-// Types for client portal data
+// Types for advocate portal data
 interface ClientCase {
   id: string;
   case_title: string;
@@ -56,7 +56,7 @@ export const useClientPortal = () => {
     };
   }, [user]);
   
-  // Fetch client data
+  // Fetch data for the advocate portal
   const fetchClientData = async () => {
     if (!user) return;
     
@@ -64,7 +64,7 @@ export const useClientPortal = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch client documents using RPC wrapper
+      // Fetch shared documents using RPC wrapper
       const documentsResponse = await clientPortalRPC(
         'get_client_documents',
         {
@@ -96,7 +96,6 @@ export const useClientPortal = () => {
       const casesResponse = await supabase
         .from('court_filings')
         .select('*')
-        .eq('client_id', user.id)
         .order('created_at', { ascending: false });
       
       if (casesResponse.error) throw casesResponse.error;
@@ -110,9 +109,9 @@ export const useClientPortal = () => {
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
-      console.error('Error fetching client data:', error);
+      console.error('Error fetching advocate data:', error);
       setError(error.message || 'Failed to load your data');
-      toast.error('Failed to load your data. Please try again.');
+      toast.error('Failed to load portal data. Please try again.');
     } finally {
       setLoading(false);
     }

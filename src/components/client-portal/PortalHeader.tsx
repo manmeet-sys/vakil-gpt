@@ -26,7 +26,7 @@ const PortalHeader = ({ unreadUpdates, loading, onRefresh, onUpload }: PortalHea
           Advocate Portal
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Securely access your case documents and updates
+          Collaborate with other advocates and share case insights
         </p>
       </div>
       <div className="flex gap-2">
@@ -47,7 +47,7 @@ const PortalHeader = ({ unreadUpdates, loading, onRefresh, onUpload }: PortalHea
         
         <Button onClick={onUpload}>
           <File className="h-4 w-4 mr-2" />
-          Upload Document
+          Share Document
         </Button>
       </div>
     </motion.div>

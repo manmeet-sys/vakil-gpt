@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import BackButton from './BackButton';
@@ -65,7 +64,7 @@ const OptimizedAppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { name: 'Legal Chat', path: '/chat', icon: Bell },
     { name: 'Knowledge', path: '/knowledge', icon: BookOpen },
     {
-      name: "Client Portal",
+      name: "Advocate Portal",
       path: "/client-portal",
       icon: Shield,
       current: location.pathname === "/client-portal",

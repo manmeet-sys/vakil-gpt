@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Clock, ChevronRight, FileClock } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, FileClock, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -67,7 +67,7 @@ const CaseList = ({ cases, loading }: CaseListProps) => {
         <FileClock className="mx-auto h-12 w-12 text-gray-400 mb-3" />
         <h3 className="text-lg font-medium">No cases found</h3>
         <p className="text-gray-500 mt-2">
-          You don't have any active cases at the moment
+          No cases have been shared in the advocate community yet
         </p>
       </div>
     );
@@ -84,9 +84,15 @@ const CaseList = ({ cases, loading }: CaseListProps) => {
                 {caseItem.case_number || 'No case number'} • {caseItem.court_name || 'No court assigned'}
               </p>
             </div>
-            <Badge className="mt-2 md:mt-0">
-              {caseItem.status || 'Draft'}
-            </Badge>
+            <div className="mt-2 md:mt-0 flex items-center gap-2">
+              <Badge className="">
+                {caseItem.status || 'Draft'}
+              </Badge>
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                Public
+              </Badge>
+            </div>
           </div>
           
           <div className="mt-4">
@@ -116,7 +122,7 @@ const CaseList = ({ cases, loading }: CaseListProps) => {
             </div>
           )}
           
-          <div className="mt-4 pt-4 border-t">
+          <div className="mt-4 pt-4 border-t flex justify-between">
             <Button 
               size="sm" 
               variant="outline" 
@@ -125,6 +131,15 @@ const CaseList = ({ cases, loading }: CaseListProps) => {
             >
               View Case Details
               <ChevronRight className="ml-1 h-3 w-3" />
+            </Button>
+            
+            <Button
+              size="sm"
+              variant="secondary"
+              className="text-xs"
+            >
+              <Users className="mr-1 h-3 w-3" />
+              Discuss with Advocates
             </Button>
           </div>
         </div>

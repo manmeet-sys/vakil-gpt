@@ -7,3 +7,6 @@ export * from './AIAnalysisTypes';
 export * from './RPCTypes';
 export * from './RPCClient';
 export * from './GlobalTypes';
+
+// Re-export with advocate portal naming
+export * as AdvocatePortalTypes from './index';
