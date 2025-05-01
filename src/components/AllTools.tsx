@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ToolCategory from './ToolsCategories';
 import { 
@@ -23,6 +22,28 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 const AllTools = () => {
+  // Feature highlighted tools at the top - Legal Calculator and Advanced AI Search
+  const highlightedTools = [
+    {
+      id: "legal-calculator",
+      title: "Legal Calculator",
+      description: "Calculate court fees, limitation periods, interest rates for legal cases",
+      icon: <Calculator className="h-5 w-5 text-amber-600" />,
+      path: "/legal-calculator",
+      badge: "Featured",
+      isPopular: true
+    },
+    {
+      id: "advanced-ai-search",
+      title: "Advanced AI Search",
+      description: "AI-powered search across legal documents with semantic understanding",
+      icon: <Search className="h-5 w-5 text-emerald-600" />,
+      path: "/advanced-ai-search",
+      badge: "New",
+      isPopular: true
+    },
+  ];
+
   // Practice area tools are now prominently featured at the top
   const practiceAreaTools = [
     {
@@ -268,7 +289,17 @@ const AllTools = () => {
 
   return (
     <div className="space-y-10 pb-10">
-      {/* Specialized Tools - Moved to top position for better visibility of Legal Calculator */}
+      {/* Highlighted Tools Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 p-6 rounded-xl shadow-md border border-purple-100 dark:border-purple-900/20">
+        <ToolCategory
+          title="Highlighted Tools"
+          description="Our most powerful and popular legal tools"
+          tools={highlightedTools}
+          className="mb-2"
+        />
+      </div>
+      
+      {/* Specialized Tools */}
       <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 p-6 rounded-xl shadow-sm">
         <ToolCategory
           title="Specialized Legal Tools"
@@ -278,7 +309,7 @@ const AllTools = () => {
         />
       </div>
       
-      {/* Research Tools - Moved up for better visibility of Advanced Search */}
+      {/* Research Tools */}
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 p-6 rounded-xl shadow-sm">
         <ToolCategory
           title="Legal Research & Analysis"

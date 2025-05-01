@@ -32,24 +32,8 @@ const ExploreToolsSection = () => {
     }
   };
 
-  // Categories to showcase
+  // Categories to showcase - Legal Calculator and Advanced Search promoted to top
   const featuredCategories = [
-    {
-      title: "Advocate Tools",
-      description: "Case management, deadlines & billing",
-      icon: <CheckCircle className="h-5 w-5 text-white" />,
-      color: "from-blue-600 to-blue-800",
-      textColor: "text-blue-50",
-      path: "/tools#advocate-tools"
-    },
-    {
-      title: "AI Assistant",
-      description: "24/7 legal Q&A and document analysis",
-      icon: <Sparkles className="h-5 w-5 text-white" />,
-      color: "from-purple-600 to-indigo-700",
-      textColor: "text-purple-50",
-      path: "/tools#ai-assistance"
-    },
     {
       title: "Legal Calculator",
       description: "Court fees, interest & financial computations",
@@ -65,6 +49,22 @@ const ExploreToolsSection = () => {
       color: "from-emerald-600 to-green-700",
       textColor: "text-emerald-50",
       path: "/advanced-ai-search"
+    },
+    {
+      title: "Advocate Tools",
+      description: "Case management, deadlines & billing",
+      icon: <CheckCircle className="h-5 w-5 text-white" />,
+      color: "from-blue-600 to-blue-800",
+      textColor: "text-blue-50",
+      path: "/tools#advocate-tools"
+    },
+    {
+      title: "AI Assistant",
+      description: "24/7 legal Q&A and document analysis",
+      icon: <Sparkles className="h-5 w-5 text-white" />,
+      color: "from-purple-600 to-indigo-700",
+      textColor: "text-purple-50",
+      path: "/tools#ai-assistance"
     }
   ];
 
