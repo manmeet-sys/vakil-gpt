@@ -13,10 +13,12 @@ import {
   IndianRupee, 
   BarChart2,
   Gavel,
-  Accessibility
+  Accessibility,
+  Clock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const AllTools = () => {
   // Practice area tools are now prominently featured at the top
@@ -91,13 +93,6 @@ const AllTools = () => {
 
   const researchTools = [
     {
-      id: "legal-research",
-      title: "AI Legal Researcher",
-      description: "Research case law, statutes, and legal articles with AI-powered search",
-      icon: <FileSearch className="h-5 w-5 text-blue-600" />,
-      path: "/legal-research"
-    },
-    {
       id: "legal-document-analyzer",
       title: "Legal Document Analyzer",
       description: "Analyze legal documents for key clauses, risks, and compliance issues",
@@ -109,28 +104,32 @@ const AllTools = () => {
       title: "AI Legal Summarizer",
       description: "Summarize lengthy legal documents and extract key information",
       icon: <FileText className="h-5 w-5 text-blue-600" />,
-      path: "/ai-legal-summarizer"
+      path: "/ai-legal-summarizer",
+      badge: "New"
     },
     {
       id: "ai-legal-translator",
       title: "AI Legal Translator",
       description: "Translate legal documents between different languages",
       icon: <FileText className="h-5 w-5 text-blue-600" />,
-      path: "/ai-legal-translator"
+      path: "/tools",
+      badge: "Coming Soon"
     },
     {
       id: "ai-legal-citation",
       title: "AI Legal Citation Generator",
       description: "Generate legal citations in various formats",
       icon: <FileText className="h-5 w-5 text-blue-600" />,
-      path: "/ai-legal-citation"
+      path: "/tools",
+      badge: "Coming Soon"
     },
     {
       id: "ai-legal-query",
       title: "AI Legal Query Generator",
       description: "Generate legal queries based on case details",
       icon: <FileText className="h-5 w-5 text-blue-600" />,
-      path: "/ai-legal-query"
+      path: "/tools",
+      badge: "Coming Soon"
     },
   ];
 
@@ -154,28 +153,32 @@ const AllTools = () => {
       title: "AI Contract Review",
       description: "Review contracts for risks, compliance issues, and negotiation points",
       icon: <File className="h-5 w-5 text-blue-600" />,
-      path: "/contract-review"
+      path: "/tools",
+      badge: "Coming Soon"
     },
     {
       id: "legal-template-library",
       title: "Legal Template Library",
       description: "Access a library of legal document templates for various purposes",
       icon: <File className="h-5 w-5 text-blue-600" />,
-      path: "/legal-template-library"
+      path: "/tools",
+      badge: "Coming Soon"
     },
     {
       id: "legal-form-filler",
       title: "Legal Form Filler",
       description: "Fill out legal forms with AI-powered assistance",
       icon: <File className="h-5 w-5 text-blue-600" />,
-      path: "/legal-form-filler"
+      path: "/tools",
+      badge: "Coming Soon"
     },
     {
       id: "legal-document-automation",
       title: "Legal Document Automation",
       description: "Automate the creation of legal documents with AI-powered workflows",
       icon: <File className="h-5 w-5 text-blue-600" />,
-      path: "/legal-document-automation"
+      path: "/tools",
+      badge: "Coming Soon"
     },
   ];
 
@@ -191,7 +194,7 @@ const AllTools = () => {
       id: "deadline-management",
       title: "Deadline Management",
       description: "Manage deadlines for legal tasks and filings",
-      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      icon: <Clock className="h-5 w-5 text-blue-600" />,
       path: "/deadline-management"
     },
     {
@@ -199,28 +202,32 @@ const AllTools = () => {
       title: "Legal Audit",
       description: "Conduct legal audits to identify potential risks and compliance issues",
       icon: <FileText className="h-5 w-5 text-blue-600" />,
-      path: "/legal-audit"
+      path: "/tools",
+      badge: "Coming Soon"
     },
     {
       id: "regulatory-alerts",
       title: "Regulatory Alerts",
       description: "Receive alerts about changes in laws and regulations",
       icon: <FileText className="h-5 w-5 text-blue-600" />,
-      path: "/regulatory-alerts"
+      path: "/tools",
+      badge: "Coming Soon"
     },
     {
       id: "policy-generator",
       title: "Policy Generator",
       description: "Generate legal policies for your organization",
       icon: <FileText className="h-5 w-5 text-blue-600" />,
-      path: "/policy-generator"
+      path: "/tools",
+      badge: "Coming Soon"
     },
     {
       id: "risk-assessment",
       title: "Risk Assessment",
       description: "Assess legal risks and develop mitigation strategies",
       icon: <FileText className="h-5 w-5 text-blue-600" />,
-      path: "/risk-assessment"
+      path: "/tools",
+      badge: "Coming Soon"
     },
   ];
 
