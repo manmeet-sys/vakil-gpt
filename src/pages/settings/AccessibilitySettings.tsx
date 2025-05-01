@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Accessibility, Type, Monitor, MousePointer, Eye, Keyboard, AlertCircle } from 'lucide-react';
 import designSystem from '@/lib/design-system-standards';
-import { ErrorMessage } from '@/components/ui/error-message';
+import ErrorMessage from '@/components/ui/error-message';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 

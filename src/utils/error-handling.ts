@@ -41,6 +41,7 @@ export class AppError extends Error {
   code?: string;
   statusCode?: number;
   context?: Record<string, unknown>;
+  causedBy?: Error;
 
   constructor(
     message: string,
@@ -55,7 +56,7 @@ export class AppError extends Error {
     this.name = 'AppError';
     this.code = options?.code;
     this.statusCode = options?.statusCode;
-    this.cause = options?.cause;
+    this.causedBy = options?.cause; // Using causedBy instead of cause
     this.context = options?.context;
   }
 }
