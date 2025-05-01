@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -343,18 +344,6 @@ const App = () => (
                       <Route path="/case-management" element={
                         <ProtectedRoute>
                           <CaseManagementPage />
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="/virtual-assistant" element={
-                        <ProtectedRoute>
-                          <PlaceholderToolPage />
-                        </ProtectedRoute>
-                      } />
-                      
-                      <Route path="/regulatory-reporting" element={
-                        <ProtectedRoute>
-                          <PlaceholderToolPage />
                         </ProtectedRoute>
                       } />
                       
