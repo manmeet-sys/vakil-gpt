@@ -117,7 +117,8 @@ const ClientPortalPage = () => {
       
       // Fetch client documents using RPC function
       const documentsResponse = await supabase.rpc<
-        ClientDocument[]
+        ClientPortalRPCReturns<'get_client_documents'>,
+        'get_client_documents'
       >(
         'get_client_documents',
         {
@@ -129,7 +130,8 @@ const ClientPortalPage = () => {
       
       // Fetch status updates using RPC function
       const updatesResponse = await supabase.rpc<
-        StatusUpdate[]
+        ClientPortalRPCReturns<'get_client_status_updates'>, 
+        'get_client_status_updates'
       >(
         'get_client_status_updates',
         {
@@ -187,7 +189,8 @@ const ClientPortalPage = () => {
     try {
       // Use RPC function to mark status update as read
       const { error } = await supabase.rpc<
-        null
+        ClientPortalRPCReturns<'mark_status_update_read'>, 
+        'mark_status_update_read'
       >(
         'mark_status_update_read',
         {

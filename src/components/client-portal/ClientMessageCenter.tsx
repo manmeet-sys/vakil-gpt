@@ -85,7 +85,8 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         setError(null);
         
         const { data, error } = await supabase.rpc<
-          ClientMessage[]
+          ClientPortalRPCReturns<'get_client_advocate_messages'>,
+          'get_client_advocate_messages'
         >(
           'get_client_advocate_messages',
           {
@@ -107,7 +108,8 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           if (unreadMessages && unreadMessages.length > 0) {
             // Mark messages as read using RPC
             await supabase.rpc<
-              null
+              ClientPortalRPCReturns<'mark_messages_read'>,
+              'mark_messages_read'
             >(
               'mark_messages_read',
               {
@@ -158,7 +160,8 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       
       // Send message using RPC
       const { data, error } = await supabase.rpc<
-        ClientMessage
+        ClientPortalRPCReturns<'add_client_message'>,
+        'add_client_message'
       >(
         'add_client_message',
         {

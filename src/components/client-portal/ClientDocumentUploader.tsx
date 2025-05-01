@@ -145,7 +145,8 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
         
         // Create database entry using RPC function
         const { data, error } = await supabase.rpc<
-          { id: string; created_at: string }
+          ClientPortalRPCReturns<'add_client_document'>,
+          'add_client_document'
         >(
           'add_client_document',
           {
