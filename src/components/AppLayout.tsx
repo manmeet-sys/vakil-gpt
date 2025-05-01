@@ -7,9 +7,9 @@ import { useAuth } from '@/context/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import DesktopNavigation from './navigation/DesktopNavigation';
-import MobileNavigation from './navigation/MobileNavigation';
 import AuthButtons from './navigation/AuthButtons';
 import { useNavigation } from '@/context/NavigationContext';
+import MobileMenu from './navigation/MobileMenu';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -56,8 +56,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           )}
           <ThemeToggle />
           
-          {/* Mobile Navigation Menu */}
-          <MobileNavigation />
+          {/* Mobile Menu */}
+          <MobileMenu />
         </div>
       </header>
       
