@@ -12,6 +12,7 @@ const navigationItems = [
   { name: "Home", path: "/", icon: Home },
   { name: "Chat", path: "/chat", icon: BookText },
   { name: "Tools", path: "/tools", icon: Gavel },
+  { name: "Advocate Portal", path: "/client-portal", icon: Shield },
   { name: "Blog", path: "/blog", icon: BookOpen },
   { name: "Guides", path: "/guides", icon: FileText },
   { name: "Legal Due Diligence", path: "/legal-due-diligence", icon: CheckCircle },

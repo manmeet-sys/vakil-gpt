@@ -62,7 +62,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Types for client portal data
+// Types for advocate portal data
 interface ClientCase {
   id: string;
   case_title: string;
@@ -74,7 +74,7 @@ interface ClientCase {
   progress: number;
 }
 
-const ClientPortalPage = () => {
+const AdvocatePortalPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -96,7 +96,7 @@ const ClientPortalPage = () => {
     
     // Subscribe to realtime updates for status changes
     const channel = supabase
-      .channel('client-portal-updates')
+      .channel('advocate-portal-updates')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
@@ -320,7 +320,7 @@ const ClientPortalPage = () => {
   return (
     <AppLayout>
       <Helmet>
-        <title>Client Portal | VakilGPT</title>
+        <title>Advocate Portal | VakilGPT</title>
       </Helmet>
       
       <div className="container px-4 py-6 max-w-7xl mx-auto">
@@ -337,7 +337,7 @@ const ClientPortalPage = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Shield className="h-6 w-6 text-indigo-500" />
-                Client Portal
+                Advocate Portal
               </h1>
               <p className="text-gray-500 dark:text-gray-400 mt-1">
                 Securely access your case documents and updates
@@ -683,4 +683,4 @@ const ClientPortalPage = () => {
   );
 };
 
-export default ClientPortalPage;
+export default AdvocatePortalPage;

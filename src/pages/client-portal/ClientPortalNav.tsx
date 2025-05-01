@@ -18,7 +18,7 @@ interface ClientNavProps {
   unreadCount?: number;
 }
 
-const ClientPortalNav = ({ unreadCount = 0 }: ClientNavProps) => {
+const AdvocatePortalNav = ({ unreadCount = 0 }: ClientNavProps) => {
   const location = useLocation();
   const { user } = useAuth();
   const isActive = (path: string) => location.pathname === path;
@@ -71,4 +71,4 @@ const ClientPortalNav = ({ unreadCount = 0 }: ClientNavProps) => {
   );
 };
 
-export default ClientPortalNav;
+export default AdvocatePortalNav;

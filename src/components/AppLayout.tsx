@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import BackButton from './BackButton';
@@ -46,7 +45,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { name: 'Legal Chat', path: '/chat', icon: BellRing },
     { name: 'Knowledge', path: '/knowledge', icon: BookOpen },
     {
-      name: "Client Portal",
+      name: "Advocate Portal",
       path: "/client-portal",
       icon: Shield,
       current: location.pathname === "/client-portal",
