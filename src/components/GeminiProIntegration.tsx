@@ -1,13 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Zap, FileText } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Loader2, Zap, FileText, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getGeminiResponse } from './GeminiProIntegration';
+import ErrorMessage from './ui/error-message';
+import InfoCard from './ui/info-card';
+import { useNavigate } from 'react-router-dom';
 
 interface GeminiProIntegrationProps {
   onAnalysisComplete: (analysis: string) => void;
@@ -23,6 +26,23 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('text');
   const [analysisType, setAnalysisType] = useState('legal-brief');
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // Check for API key on component mount and dialog open
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
+    
+    if (!apiKey) {
+      setApiKeyError(`No ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key found. Please set one in AI Settings.`);
+    } else {
+      setApiKeyError(null);
+    }
+  }, [isOpen]);
 
   const analysisOptions = [
     { value: 'legal-brief', label: 'Legal Brief Generation' },
@@ -46,6 +66,15 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
     return templates[type] || templates['document-summary'];
   };
 
+  const navigateToSettings = () => {
+    setIsOpen(false);
+    navigate('/settings/ai');
+    toast({
+      title: "API Key Required",
+      description: "Please set your API key in AI Settings",
+    });
+  };
+
   const generateAnalysis = async () => {
     if (!text.trim()) {
       toast({
@@ -59,7 +88,13 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
     const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
     const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
 
+    if (!apiKey) {
+      setApiKeyError(`No ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key found. Please set one in AI Settings.`);
+      return;
+    }
+
     setIsGenerating(true);
+    setApiKeyError(null);
 
     try {
       const prompt = getPromptTemplate(analysisType, text);
@@ -75,6 +110,8 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
       });
     } catch (error) {
       console.error(`Error generating analysis:`, error);
+      setApiKeyError(error instanceof Error ? error.message : "Failed to generate analysis. Please check your API key and try again.");
+      
       toast({
         variant: "destructive",
         title: "Analysis Failed",
@@ -101,69 +138,93 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
         <DialogHeader>
           <DialogTitle>Gemini Pro Legal Analysis</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-2">
-            <Select 
-              value={analysisType} 
-              onValueChange={setAnalysisType}
-            >
-              <SelectTrigger className="w-full sm:w-[250px]">
-                <SelectValue placeholder="Select analysis type" />
-              </SelectTrigger>
-              <SelectContent>
-                {analysisOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Tabs 
-              value={activeTab} 
-              onValueChange={setActiveTab} 
-              className="w-full sm:w-auto"
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="text">Text Input</TabsTrigger>
-                <TabsTrigger value="url" disabled>URL Input</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          
-          <TabsContent value="text" className="mt-0">
-            <Textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              className="min-h-[250px] resize-none dark:bg-zinc-800 dark:border-zinc-700"
-              placeholder={`Enter text for ${analysisOptions.find(opt => opt.value === analysisType)?.label}...`}
+        
+        {apiKeyError ? (
+          <div className="py-4 space-y-4">
+            <ErrorMessage 
+              message={apiKeyError} 
+              severity="error"
             />
-          </TabsContent>
-          
-          <TabsContent value="url" className="mt-0">
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-              URL analysis coming soon
+            
+            <InfoCard
+              title="API Key Required"
+              type="info"
+            >
+              <p className="mb-3">
+                To use this feature, you need to set up your Gemini API key in the AI Settings page.
+                You can get a free API key from the Google AI Studio.
+              </p>
+              
+              <Button onClick={navigateToSettings} className="mt-2">
+                Go to AI Settings
+              </Button>
+            </InfoCard>
+          </div>
+        ) : (
+          <div className="grid gap-4 py-4">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-2">
+              <Select 
+                value={analysisType} 
+                onValueChange={setAnalysisType}
+              >
+                <SelectTrigger className="w-full sm:w-[250px]">
+                  <SelectValue placeholder="Select analysis type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {analysisOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Tabs 
+                value={activeTab} 
+                onValueChange={setActiveTab} 
+                className="w-full sm:w-auto"
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="text">Text Input</TabsTrigger>
+                  <TabsTrigger value="url" disabled>URL Input</TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
-          </TabsContent>
-          
-          <Button 
-            onClick={generateAnalysis} 
-            disabled={isGenerating || !text.trim()}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating Analysis...
-              </>
-            ) : (
-              <>
-                <FileText className="mr-2 h-4 w-4" />
-                Generate {analysisOptions.find(opt => opt.value === analysisType)?.label}
-              </>
-            )}
-          </Button>
-        </div>
+            
+            <TabsContent value="text" className="mt-0">
+              <Textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                className="min-h-[250px] resize-none dark:bg-zinc-800 dark:border-zinc-700"
+                placeholder={`Enter text for ${analysisOptions.find(opt => opt.value === analysisType)?.label}...`}
+              />
+            </TabsContent>
+            
+            <TabsContent value="url" className="mt-0">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+                URL analysis coming soon
+              </div>
+            </TabsContent>
+            
+            <Button 
+              onClick={generateAnalysis} 
+              disabled={isGenerating || !text.trim()}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Analysis...
+                </>
+              ) : (
+                <>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Generate {analysisOptions.find(opt => opt.value === analysisType)?.label}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

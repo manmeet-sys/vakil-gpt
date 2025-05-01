@@ -12,21 +12,49 @@ import AIAnalysisSkeleton from '../SkeletonLoaders/AIAnalysisSkeleton';
 import { design } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import InfoCard from '../ui/info-card';
+import ErrorMessage from '../ui/error-message';
+import { getGeminiResponse } from '../GeminiProIntegration';
+import { useNavigate } from 'react-router-dom';
 
 const OutcomePredictor = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [caseDetail, setCaseDetail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<null | any>(null);
   const [geminiAnalysis, setGeminiAnalysis] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+
+  const checkApiKey = (): boolean => {
+    const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
+    
+    if (!apiKey) {
+      setApiKeyError(`No ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key found. Please set one in AI Settings.`);
+      return false;
+    }
+    
+    setApiKeyError(null);
+    return true;
+  };
+
+  const navigateToSettings = () => {
+    navigate('/settings/ai');
+    toast({
+      title: "API Key Required",
+      description: "Please set your API key in AI Settings",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Reset error state at the beginning of submission
+    // Reset error states at the beginning of submission
     setError(null);
+    setApiKeyError(null);
     
     if (!caseDetail.trim()) {
       toast({
@@ -37,28 +65,53 @@ const OutcomePredictor = () => {
       return;
     }
     
+    // Check if API key is available
+    if (!checkApiKey()) {
+      toast({
+        variant: "destructive",
+        title: "API Key Required",
+        description: "Please set your API key in Settings"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      // In a real app, this would call your API
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+      const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
       
-      // Simulate network request with potential failure
-      if (Math.random() > 0.9) {
-        throw new Error("Network request failed. Please try again.");
+      // Create a prompt for the AI
+      const prompt = `You are an AI legal assistant specializing in Indian law. Analyze the following case details and predict the likely outcome based on Indian legal precedents and statutes.
+      
+Case details:
+${caseDetail}
+
+Provide your analysis in JSON format with the following structure:
+{
+  "prediction": "Brief outcome prediction (1-2 sentences)",
+  "confidence": [Number between 0-100 representing confidence level],
+  "relevantCases": ["Case citation 1", "Case citation 2", "Case citation 3"],
+  "analysis": "Detailed analysis explaining the prediction (2-3 paragraphs)"
+}`;
+      
+      // Make the API call
+      const responseText = await getGeminiResponse(prompt, apiKey);
+      
+      // Parse the JSON response
+      let jsonResponse;
+      try {
+        // Find JSON content in the response (in case the AI wraps it in markdown code blocks)
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        const jsonString = jsonMatch ? jsonMatch[0] : responseText;
+        jsonResponse = JSON.parse(jsonString);
+      } catch (parseError) {
+        console.error("Error parsing AI response:", parseError);
+        throw new Error("Failed to parse AI response. Please try again.");
       }
       
-      // Mock result
-      setResult({
-        prediction: "Likely favorable outcome",
-        confidence: 78,
-        relevantCases: [
-          "Singh v. State of Maharashtra (2022)",
-          "Patel Industries Ltd. v. Union of India (2021)",
-          "Kumar Enterprises v. Tax Authority (2023)"
-        ],
-        analysis: "Based on precedents established by the Supreme Court of India in similar cases, there is a high likelihood of a favorable judgment. The statutory interpretation favors the petitioner's position, though some risk remains due to potentially conflicting High Court rulings."
-      });
+      // Set the result
+      setResult(jsonResponse);
       
       // Hide onboarding message after successful analysis
       setShowOnboarding(false);
@@ -122,31 +175,37 @@ const OutcomePredictor = () => {
             </h3>
           </div>
           
-          {showOnboarding && (
-            <Card className="mb-4 border-blue-200 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-900/10">
-              <CardContent className="pt-4">
-                <div className="flex gap-3">
-                  <div className="mt-1 shrink-0">
-                    <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-blue-700 dark:text-blue-300">How to use this tool</h4>
-                    <p className="text-sm text-blue-600/90 dark:text-blue-400/90 mt-1">
-                      Enter the details of your legal case including relevant facts, applicable laws, and jurisdiction information. 
-                      The AI will analyze your input and provide a prediction based on similar cases in Indian courts.
-                    </p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2 bg-white dark:bg-blue-950/50 text-xs"
-                      onClick={() => setShowOnboarding(false)}
-                    >
-                      Got it
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {apiKeyError && (
+            <InfoCard
+              title="API Key Required"
+              type="help"
+              className="mb-4"
+            >
+              <p className="mb-3">{apiKeyError}</p>
+              <Button 
+                onClick={navigateToSettings}
+                variant="outline" 
+                size="sm"
+                className="mt-2"
+              >
+                Go to AI Settings
+              </Button>
+            </InfoCard>
+          )}
+          
+          {showOnboarding && !apiKeyError && (
+            <InfoCard
+              title="How to use this tool"
+              type="info"
+              className="mb-4"
+              dismissible
+              onDismiss={() => setShowOnboarding(false)}
+            >
+              <p>
+                Enter the details of your legal case including relevant facts, applicable laws, and jurisdiction information. 
+                The AI will analyze your input and provide a prediction based on similar cases in Indian courts.
+              </p>
+            </InfoCard>
           )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -175,17 +234,18 @@ const OutcomePredictor = () => {
               />
               
               {error && (
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm mt-1">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>{error}</span>
-                </div>
+                <ErrorMessage 
+                  message={error}
+                  severity="error"
+                  className="mt-2"
+                />
               )}
             </div>
             
             <Button 
               type="submit" 
               className="w-full sm:w-auto" 
-              disabled={isLoading}
+              disabled={isLoading || !!apiKeyError}
             >
               {isLoading ? (
                 <>
