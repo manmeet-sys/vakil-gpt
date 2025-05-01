@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Case } from '@/types/ClientPortalTypes';
+import { Case } from '@/types/GlobalTypes';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useForm } from 'react-hook-form';

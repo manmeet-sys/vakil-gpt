@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Scale, BookOpen, CheckCircle, FilePenLine, AlignLeft, AlertTriangle, Sword, Info } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { getGeminiResponse } from '../GeminiProIntegration';
-import { ArgumentBuilder as ArgumentBuilderType } from '@/types/ClientPortalTypes';
+import { ArgumentBuilder as ArgumentBuilderType } from '@/types/GlobalTypes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Scale, AlignLeft, BarChart2, FileText, BadgeInfo } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { getGeminiResponse } from '../GeminiProIntegration';
-import { OutcomePrediction } from '@/types/ClientPortalTypes';
+import { OutcomePrediction } from '@/types/GlobalTypes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import GeminiFlashAnalyzer from '../GeminiFlashAnalyzer';

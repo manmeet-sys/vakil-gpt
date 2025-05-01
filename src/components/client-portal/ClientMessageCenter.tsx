@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -14,7 +13,7 @@ import {
   ClientPortalRPCArgs, 
   ClientPortalRPCReturns, 
   clientPortalRPC 
-} from '@/types/ClientPortalTypes';
+} from '@/types/GlobalTypes';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 

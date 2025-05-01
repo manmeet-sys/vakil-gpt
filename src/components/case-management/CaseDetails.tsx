@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Case } from '@/types/ClientPortalTypes';
+import { Case } from '@/types/GlobalTypes';
 import { 
   Card, 
   CardContent, 

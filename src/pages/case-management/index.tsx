@@ -45,7 +45,7 @@ import { Link } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Case as ClientCase } from '@/types/ClientPortalTypes';
+import { Case as ClientCase } from '@/types/GlobalTypes';
 
 type Court = {
   id: string;
