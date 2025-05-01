@@ -3,7 +3,7 @@ import React, { lazy, Suspense } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import BackButton from './BackButton';
 import { Link, useLocation } from 'react-router-dom';
-import { LogIn, LogOut, User, Menu, X, Shield, BookOpen, Settings, Bell } from 'lucide-react';
+import { LogIn, LogOut, User, Menu, X, Shield, BookOpen, Settings, Bell, Cog } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -125,47 +125,59 @@ const OptimizedAppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           ) : (
             <>
               {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-9 w-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={userProfile?.avatar_url || ''} alt={userProfile?.full_name || 'User'} />
-                        <AvatarFallback className="text-xs bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-                          {userProfile?.full_name 
-                            ? userProfile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
-                            : user.email?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{userProfile?.full_name || 'User'}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/user-profile" className="cursor-pointer flex items-center">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
-                        <Badge className="ml-auto bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Private
-                        </Badge>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="cursor-pointer text-red-500 dark:text-red-400 focus:text-red-500 dark:focus:text-red-400"
-                      onClick={() => signOut()}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <>
+                  <Link
+                    to="/settings"
+                    className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
+                  >
+                    <Cog className="h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-9 w-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={userProfile?.avatar_url || ''} alt={userProfile?.full_name || 'User'} />
+                          <AvatarFallback className="text-xs bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
+                            {userProfile?.full_name 
+                              ? userProfile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
+                              : user.email?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                      <DropdownMenuLabel>
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">{userProfile?.full_name || 'User'}</p>
+                          <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/user-profile" className="cursor-pointer flex items-center">
+                          <User className="mr-2 h-4 w-4" />
+                          <span>Profile</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/settings" className="cursor-pointer flex items-center">
+                          <Cog className="mr-2 h-4 w-4" />
+                          <span>Settings</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="cursor-pointer text-red-500 dark:text-red-400 focus:text-red-500 dark:focus:text-red-400"
+                        onClick={() => signOut()}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
               ) : (
                 <>
                   <Link 
@@ -238,6 +250,20 @@ const OptimizedAppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                             </li>
                           );
                         })}
+                        
+                        {user && (
+                          <li>
+                            <SheetClose asChild>
+                              <Link
+                                to="/settings"
+                                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                              >
+                                <Cog className="h-5 w-5" />
+                                Settings
+                              </Link>
+                            </SheetClose>
+                          </li>
+                        )}
                       </ul>
                     </nav>
                     

@@ -1,11 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, Star, Clock, ArrowUp, ArrowDown, Filter } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface Template {
   id: string;
@@ -40,7 +43,22 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({ onS
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [recentlyUsed, setRecentlyUsed] = useState<Template[]>([]);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [filteredTemplates, setFilteredTemplates] = useState<Record<string, Template[]>>(templates);
+  const [starred, setStarred] = useState<string[]>([]);
+  
+  // Load starred templates
+  useEffect(() => {
+    try {
+      const savedStarred = localStorage.getItem('starredTemplates');
+      if (savedStarred) {
+        setStarred(JSON.parse(savedStarred));
+      }
+    } catch (e) {
+      console.error('Failed to parse starred templates', e);
+      localStorage.removeItem('starredTemplates');
+    }
+  }, []);
 
   // Load recently used templates from localStorage on mount
   useEffect(() => {
@@ -56,14 +74,34 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({ onS
     }
   }, []);
 
-  // Filter templates based on category and search term
-  useEffect(() => {
-    if (selectedCategory === "all" && !searchTerm) {
-      setFilteredTemplates(templates);
-      return;
-    }
+  // Toggle star status of a template
+  const toggleStar = useCallback((templateId: string) => {
+    setStarred(prev => {
+      const isCurrentlyStarred = prev.includes(templateId);
+      let newStarred: string[];
+      
+      if (isCurrentlyStarred) {
+        newStarred = prev.filter(id => id !== templateId);
+        toast.info('Template removed from favorites');
+      } else {
+        newStarred = [...prev, templateId];
+        toast.success('Template added to favorites');
+      }
+      
+      try {
+        localStorage.setItem('starredTemplates', JSON.stringify(newStarred));
+      } catch (e) {
+        console.error('Failed to save starred templates', e);
+      }
+      
+      return newStarred;
+    });
+  }, []);
 
-    const filtered: Record<string, Template[]> = {};
+  // Filter templates based on category, search term and sort order
+  useEffect(() => {
+    // First filter by category and search term
+    let filtered: Record<string, Template[]> = {};
     
     Object.keys(templates).forEach(category => {
       if (selectedCategory !== "all" && category !== selectedCategory) {
@@ -80,10 +118,29 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({ onS
       }
     });
     
+    // Then sort each category
+    Object.keys(filtered).forEach(category => {
+      filtered[category] = filtered[category].sort((a, b) => {
+        const aIsStarred = starred.includes(a.id);
+        const bIsStarred = starred.includes(b.id);
+        
+        // Starred items always come first
+        if (aIsStarred && !bIsStarred) return -1;
+        if (!aIsStarred && bIsStarred) return 1;
+        
+        // Then sort by name
+        if (sortOrder === "asc") {
+          return a.title.localeCompare(b.title);
+        } else {
+          return b.title.localeCompare(a.title);
+        }
+      });
+    });
+    
     setFilteredTemplates(filtered);
-  }, [selectedCategory, searchTerm, templates]);
+  }, [selectedCategory, searchTerm, templates, sortOrder, starred]);
 
-  const handleSelectTemplate = (templateId: string) => {
+  const handleSelectTemplate = useCallback((templateId: string) => {
     // Find the selected template from all categories
     let selectedTemplate: Template | null = null;
     
@@ -113,12 +170,26 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({ onS
     }
     
     onSelect(templateId);
+  }, [onSelect, recentlyUsed, templates]);
+
+  // Calculate the total number of templates that match the current filters
+  const totalResults = useMemo(() => {
+    return Object.values(filteredTemplates).reduce((sum, templates) => sum + templates.length, 0);
+  }, [filteredTemplates]);
+
+  const toggleSortOrder = () => {
+    setSortOrder(current => current === "asc" ? "desc" : "asc");
   };
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Select a Template</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg">Select a Template</CardTitle>
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+            {totalResults} Templates
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -128,42 +199,87 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({ onS
               placeholder="Search templates"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
+              className="pl-9 transition-all duration-200 border-gray-200 focus:border-blue-300 dark:border-gray-700 dark:focus:border-blue-600"
             />
           </div>
           
-          <div className="space-y-2">
-            <label htmlFor="template-category" className="text-sm font-medium">Category</label>
-            <Select 
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="space-y-2 flex-grow">
+              <label htmlFor="template-category" className="text-sm font-medium">Category</label>
+              <Select 
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger id="template-category" className="border-gray-200 dark:border-gray-700">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="contracts">Contracts</SelectItem>
+                  <SelectItem value="legal">Legal Documents</SelectItem>
+                  <SelectItem value="business">Business Documents</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="mt-6 flex items-center gap-1"
+              onClick={toggleSortOrder}
             >
-              <SelectTrigger id="template-category">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="contracts">Contracts</SelectItem>
-                <SelectItem value="legal">Legal Documents</SelectItem>
-                <SelectItem value="business">Business Documents</SelectItem>
-              </SelectContent>
-            </Select>
+              <Filter className="h-3.5 w-3.5 mr-1" />
+              Sort
+              {sortOrder === "asc" ? (
+                <ArrowUp className="h-3.5 w-3.5" />
+              ) : (
+                <ArrowDown className="h-3.5 w-3.5" />
+              )}
+            </Button>
           </div>
 
           {recentlyUsed.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-medium">Recently Used</h3>
+              <h3 className="text-sm font-medium flex items-center">
+                <Clock className="h-4 w-4 mr-1 text-gray-500" /> 
+                Recently Used
+              </h3>
               <div className="grid gap-2">
-                {recentlyUsed.map((template) => (
-                  <div
-                    key={`recent-${template.id}`}
-                    className="p-3 border rounded-md hover:bg-muted cursor-pointer"
-                    onClick={() => handleSelectTemplate(template.id)}
-                  >
-                    <div className="font-medium text-sm">{template.title}</div>
-                    <div className="text-xs text-muted-foreground">{template.description}</div>
-                  </div>
-                ))}
+                <AnimatePresence>
+                  {recentlyUsed.map((template) => (
+                    <motion.div
+                      key={`recent-${template.id}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="p-3 border rounded-md hover:bg-muted cursor-pointer group relative"
+                      onClick={() => handleSelectTemplate(template.id)}
+                    >
+                      <div className="font-medium text-sm flex items-center justify-between">
+                        <span>{template.title}</span>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0 h-7 w-7"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleStar(template.id);
+                          }}
+                        >
+                          <Star 
+                            className={`h-4 w-4 ${starred.includes(template.id) 
+                              ? 'text-yellow-500 fill-yellow-500' 
+                              : 'text-gray-400'}`} 
+                          />
+                          <span className="sr-only">
+                            {starred.includes(template.id) ? 'Unstar' : 'Star'} template
+                          </span>
+                        </Button>
+                      </div>
+                      <div className="text-xs text-muted-foreground">{template.description}</div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             </div>
           )}
@@ -173,24 +289,66 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({ onS
             <ScrollArea className="h-[300px] border rounded-md">
               <div className="p-4 space-y-4">
                 {Object.keys(filteredTemplates).length === 0 ? (
-                  <p className="text-sm text-center text-gray-500 py-8">
-                    No templates found matching your criteria
-                  </p>
+                  <div className="text-sm text-center text-gray-500 py-8">
+                    <div className="flex flex-col items-center justify-center space-y-2">
+                      <Search className="h-8 w-8 text-gray-400" />
+                      <p>No templates found matching your criteria</p>
+                      <Button 
+                        variant="link" 
+                        onClick={() => {
+                          setSearchTerm('');
+                          setSelectedCategory('all');
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   Object.keys(filteredTemplates).map((category) => (
                     <div key={category} className="space-y-2">
                       <h3 className="text-sm font-medium first-letter:uppercase">{category}</h3>
                       <div className="grid gap-2">
-                        {filteredTemplates[category].map((template) => (
-                          <div
-                            key={template.id}
-                            className="p-3 border rounded-md hover:bg-muted cursor-pointer"
-                            onClick={() => handleSelectTemplate(template.id)}
-                          >
-                            <div className="font-medium text-sm">{template.title}</div>
-                            <div className="text-xs text-muted-foreground">{template.description}</div>
-                          </div>
-                        ))}
+                        <AnimatePresence>
+                          {filteredTemplates[category].map((template) => (
+                            <motion.div
+                              key={template.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0 }}
+                              className="p-3 border rounded-md hover:bg-muted cursor-pointer group relative"
+                              onClick={() => handleSelectTemplate(template.id)}
+                            >
+                              <div className="font-medium text-sm flex items-center justify-between">
+                                <span>
+                                  {template.title}
+                                  {starred.includes(template.id) && (
+                                    <Star className="inline-block ml-1.5 h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                                  )}
+                                </span>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-0 h-7 w-7"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleStar(template.id);
+                                  }}
+                                >
+                                  <Star 
+                                    className={`h-4 w-4 ${starred.includes(template.id) 
+                                      ? 'text-yellow-500 fill-yellow-500' 
+                                      : 'text-gray-400'}`} 
+                                  />
+                                  <span className="sr-only">
+                                    {starred.includes(template.id) ? 'Unstar' : 'Star'} template
+                                  </span>
+                                </Button>
+                              </div>
+                              <div className="text-xs text-muted-foreground">{template.description}</div>
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
                       </div>
                     </div>
                   ))

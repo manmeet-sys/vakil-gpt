@@ -27,6 +27,7 @@ const LegalRiskAssessmentPage = lazy(() => import("./pages/legal-risk-assessment
 const LegalDueDiligencePage = lazy(() => import("./pages/legal-due-diligence"));
 const LegalEducationPage = lazy(() => import("./pages/legal-education"));
 const ToolsPage = lazy(() => import("./pages/tools"));
+const SettingsPage = lazy(() => import("./pages/settings"));
 const PlaceholderToolPage = lazy(() => import("./pages/placeholder-tool"));
 const PrivacyPolicyPage = lazy(() => import("./pages/privacy-policy"));
 const TermsOfServicePage = lazy(() => import("./pages/terms-of-service"));
@@ -140,6 +141,13 @@ const App = () => (
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    
+                    {/* Settings Page */}
+                    <Route path="/settings" element={
+                      <ProtectedRoute>
+                        <SettingsPage />
+                      </ProtectedRoute>
+                    } />
                     
                     {/* Analytics Dashboard */}
                     <Route path="/analytics-dashboard" element={
