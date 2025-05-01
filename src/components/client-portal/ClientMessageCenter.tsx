@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -99,10 +98,11 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         if (error) throw error;
         
         if (data) {
-          setMessages(data);
+          // Explicitly cast the data to ensure type safety
+          setMessages(data as ClientMessage[]);
           
           // Mark received messages as read
-          const unreadMessages = data.filter(m => 
+          const unreadMessages = (data as ClientMessage[]).filter(m => 
             m.receiver_id === clientId && !m.is_read
           ).map(m => m.id);
           
@@ -178,7 +178,7 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       
       // Add the new message to the list
       if (data) {
-        setMessages(prev => [...prev, data]);
+        setMessages(prev => [...prev, data as ClientMessage]);
       }
       
       // Clear input after sending

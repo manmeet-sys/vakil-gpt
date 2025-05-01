@@ -141,6 +141,10 @@ const ClientPortalPage = () => {
       
       if (updatesResponse.error) throw updatesResponse.error;
       
+      // Cast the data to the correct types for state updates
+      setDocuments(documentsResponse.data as ClientDocument[] || []);
+      setStatusUpdates(updatesResponse.data as StatusUpdate[] || []);
+      
       // Count unread updates
       const updatesData = updatesResponse.data as StatusUpdate[] || [];
       const unread = updatesData.filter(update => !update.is_read).length;
@@ -160,8 +164,6 @@ const ClientPortalPage = () => {
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      setDocuments(documentsResponse.data || []);
-      setStatusUpdates(updatesResponse.data || []);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
