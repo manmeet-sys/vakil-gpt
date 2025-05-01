@@ -103,75 +103,74 @@ export interface DocumentInfo {
   parties?: string;
 }
 
-// Client Portal RPC function types - Fixed to use proper TypeScript generics
-export type ClientPortalRPCTypes = {
-  add_client_document: {
-    Args: {
-      p_name: string;
-      p_size: number;
-      p_type: string;
-      p_path: string;
-      p_client_id: string;
-      p_notes?: string | null;
-      p_case_id?: string | null;
-      p_status: string;
-      p_uploaded_by: string;
-    };
-    Returns: { id: string; created_at: string };
-  };
-  add_client_message: {
-    Args: {
-      p_content: string;
-      p_sender_id: string;
-      p_sender_name: string;
-      p_receiver_id: string;
-      p_is_read: boolean;
-    };
-    Returns: ClientMessage;
-  };
-  add_case_status_update: {
-    Args: {
-      p_client_id: string;
-      p_case_id: string;
-      p_case_title: string;
-      p_status: string;
-      p_message: string;
-      p_is_read: boolean;
-    };
-    Returns: { id: string; created_at: string };
-  };
-  get_client_documents: {
-    Args: {
-      p_client_id: string;
-    };
-    Returns: ClientDocument[];
-  };
-  get_client_status_updates: {
-    Args: {
-      p_client_id: string;
-    };
-    Returns: StatusUpdate[];
-  };
-  get_client_advocate_messages: {
-    Args: {
-      p_client_id: string;
-      p_advocate_id: string;
-    };
-    Returns: ClientMessage[];
-  };
-  mark_status_update_read: {
-    Args: {
-      p_update_id: string;
-    };
-    Returns: null;
-  };
-  mark_messages_read: {
-    Args: {
-      p_message_ids: string[];
-    };
-    Returns: null;
-  };
-}
+// Client Portal RPC function types 
+export type ClientPortalRPCFunctions = 
+  | 'add_client_document'
+  | 'add_client_message'
+  | 'add_case_status_update'
+  | 'get_client_documents'
+  | 'get_client_status_updates'
+  | 'get_client_advocate_messages'
+  | 'mark_status_update_read'
+  | 'mark_messages_read';
+
+// Type for the parameter objects for each RPC function
+export type ClientPortalRPCArgs<T extends ClientPortalRPCFunctions> = 
+  T extends 'add_client_document' ? {
+    p_name: string;
+    p_size: number;
+    p_type: string;
+    p_path: string;
+    p_client_id: string;
+    p_notes?: string | null;
+    p_case_id?: string | null;
+    p_status: string;
+    p_uploaded_by: string;
+  } :
+  T extends 'add_client_message' ? {
+    p_content: string;
+    p_sender_id: string;
+    p_sender_name: string;
+    p_receiver_id: string;
+    p_is_read: boolean;
+  } :
+  T extends 'add_case_status_update' ? {
+    p_client_id: string;
+    p_case_id: string;
+    p_case_title: string;
+    p_status: string;
+    p_message: string;
+    p_is_read: boolean;
+  } :
+  T extends 'get_client_documents' ? {
+    p_client_id: string;
+  } :
+  T extends 'get_client_status_updates' ? {
+    p_client_id: string;
+  } :
+  T extends 'get_client_advocate_messages' ? {
+    p_client_id: string;
+    p_advocate_id: string;
+  } :
+  T extends 'mark_status_update_read' ? {
+    p_update_id: string;
+  } :
+  T extends 'mark_messages_read' ? {
+    p_message_ids: string[];
+  } :
+  never;
+
+// Type for the return values of each RPC function
+export type ClientPortalRPCReturns<T extends ClientPortalRPCFunctions> = 
+  T extends 'add_client_document' ? { id: string; created_at: string } :
+  T extends 'add_client_message' ? ClientMessage :
+  T extends 'add_case_status_update' ? { id: string; created_at: string } :
+  T extends 'get_client_documents' ? ClientDocument[] :
+  T extends 'get_client_status_updates' ? StatusUpdate[] :
+  T extends 'get_client_advocate_messages' ? ClientMessage[] :
+  T extends 'mark_status_update_read' ? null :
+  T extends 'mark_messages_read' ? null :
+  never;
 
 // Utils function for document extraction
 export function extractDocumentInfo(file: File): { name: string; type: string; size: number } {

@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ClientDocument, ClientPortalRPCTypes } from '@/types/ClientPortalTypes';
+import { ClientDocument, ClientPortalRPCFunctions, ClientPortalRPCArgs, ClientPortalRPCReturns } from '@/types/ClientPortalTypes';
 
 interface ClientDocumentUploaderProps {
   clientId: string;
@@ -144,10 +144,10 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
         
         // Create database entry using RPC function
         const { data, error } = await supabase.rpc<
-          keyof ClientPortalRPCTypes,
-          ClientPortalRPCTypes['add_client_document']['Args']
+          ClientPortalRPCReturns<'add_client_document'>,
+          ClientPortalRPCArgs<'add_client_document'>
         >(
-          'add_client_document',
+          'add_client_document' as any,
           {
             p_name: file.name,
             p_size: file.size,

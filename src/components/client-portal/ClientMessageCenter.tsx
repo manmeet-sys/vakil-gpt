@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ClientMessage, ClientPortalRPCTypes } from '@/types/ClientPortalTypes';
+import { ClientMessage, ClientPortalRPCFunctions, ClientPortalRPCArgs, ClientPortalRPCReturns } from '@/types/ClientPortalTypes';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -85,10 +86,10 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
         setError(null);
         
         const { data, error } = await supabase.rpc<
-          keyof ClientPortalRPCTypes,
-          ClientPortalRPCTypes['get_client_advocate_messages']['Args']
+          ClientPortalRPCReturns<'get_client_advocate_messages'>,
+          ClientPortalRPCArgs<'get_client_advocate_messages'>
         >(
-          'get_client_advocate_messages',
+          'get_client_advocate_messages' as any,
           {
             p_client_id: clientId,
             p_advocate_id: selectedAdvocate
@@ -108,10 +109,10 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
           if (unreadMessages && unreadMessages.length > 0) {
             // Mark messages as read using RPC
             await supabase.rpc<
-              keyof ClientPortalRPCTypes,
-              ClientPortalRPCTypes['mark_messages_read']['Args']
+              ClientPortalRPCReturns<'mark_messages_read'>,
+              ClientPortalRPCArgs<'mark_messages_read'>
             >(
-              'mark_messages_read',
+              'mark_messages_read' as any,
               {
                 p_message_ids: unreadMessages
               }
@@ -160,10 +161,10 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       
       // Send message using RPC
       const { data, error } = await supabase.rpc<
-        keyof ClientPortalRPCTypes,
-        ClientPortalRPCTypes['add_client_message']['Args']
+        ClientPortalRPCReturns<'add_client_message'>,
+        ClientPortalRPCArgs<'add_client_message'>
       >(
-        'add_client_message',
+        'add_client_message' as any,
         {
           p_content: newMessage.trim(),
           p_sender_id: clientId,
