@@ -1,5 +1,7 @@
 
+
 import { Database } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
 
 // Define the Case type that matches what's used in case-management
 export interface Case {
@@ -171,6 +173,22 @@ export type ClientPortalRPCReturns<T extends ClientPortalRPCFunctions> =
   T extends 'mark_status_update_read' ? null :
   T extends 'mark_messages_read' ? null :
   never;
+
+// Type-safe wrapper for Supabase RPC calls
+export async function clientPortalRPC<T extends ClientPortalRPCFunctions>(
+  functionName: T,
+  params: ClientPortalRPCArgs<T>
+): Promise<{ data: ClientPortalRPCReturns<T> | null; error: any }> {
+  const { data, error } = await supabase.rpc(
+    functionName,
+    params as any
+  );
+  
+  return { 
+    data: data as ClientPortalRPCReturns<T> | null,
+    error 
+  };
+}
 
 // Utils function for document extraction
 export function extractDocumentInfo(file: File): { name: string; type: string; size: number } {

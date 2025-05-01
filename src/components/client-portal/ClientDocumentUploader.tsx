@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +19,13 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ClientDocument, ClientPortalRPCFunctions, ClientPortalRPCArgs, ClientPortalRPCReturns } from '@/types/ClientPortalTypes';
+import { 
+  ClientDocument, 
+  ClientPortalRPCFunctions, 
+  ClientPortalRPCArgs, 
+  ClientPortalRPCReturns, 
+  clientPortalRPC 
+} from '@/types/ClientPortalTypes';
 
 interface ClientDocumentUploaderProps {
   clientId: string;
@@ -142,9 +149,9 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
           
         if (storageError) throw storageError;
         
-        // Create database entry using RPC function
-        const { data, error } = await supabase.rpc(
-          'add_client_document' as ClientPortalRPCFunctions,
+        // Create database entry using our typed RPC wrapper
+        const { data, error } = await clientPortalRPC(
+          'add_client_document',
           {
             p_name: file.name,
             p_size: file.size,
@@ -155,7 +162,7 @@ const ClientDocumentUploader = ({ clientId, onUploadSuccess }: ClientDocumentUpl
             p_case_id: selectedCase || null,
             p_status: 'pending_review',
             p_uploaded_by: user?.id || ''
-          } as ClientPortalRPCArgs<'add_client_document'>
+          }
         );
         
         if (error) throw error;

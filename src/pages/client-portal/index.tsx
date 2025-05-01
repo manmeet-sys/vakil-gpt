@@ -115,32 +115,32 @@ const ClientPortalPage = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch client documents using RPC function
-      const documentsResponse = await supabase.rpc(
-        'get_client_documents' as ClientPortalRPCFunctions,
+      // Fetch client documents using RPC wrapper
+      const documentsResponse = await clientPortalRPC(
+        'get_client_documents',
         {
           p_client_id: user.id
-        } as ClientPortalRPCArgs<'get_client_documents'>
+        }
       );
       
       if (documentsResponse.error) throw documentsResponse.error;
       
-      // Fetch status updates using RPC function
-      const updatesResponse = await supabase.rpc(
-        'get_client_status_updates' as ClientPortalRPCFunctions,
+      // Fetch status updates using RPC wrapper
+      const updatesResponse = await clientPortalRPC(
+        'get_client_status_updates',
         {
           p_client_id: user.id
-        } as ClientPortalRPCArgs<'get_client_status_updates'>
+        }
       );
       
       if (updatesResponse.error) throw updatesResponse.error;
       
-      // Cast the data to the correct types for state updates
-      setDocuments(documentsResponse.data as ClientDocument[] || []);
-      setStatusUpdates(updatesResponse.data as StatusUpdate[] || []);
+      // Set the data in state 
+      setDocuments(documentsResponse.data || []);
+      setStatusUpdates(updatesResponse.data || []);
       
       // Count unread updates
-      const updatesData = updatesResponse.data as StatusUpdate[] || [];
+      const updatesData = updatesResponse.data || [];
       const unread = updatesData.filter(update => !update.is_read).length;
       
       // Fetch cases
@@ -183,12 +183,12 @@ const ClientPortalPage = () => {
   
   const markUpdateAsRead = async (updateId: string) => {
     try {
-      // Use RPC function to mark status update as read
-      const { error } = await supabase.rpc(
-        'mark_status_update_read' as ClientPortalRPCFunctions,
+      // Use RPC wrapper to mark status update as read
+      const { error } = await clientPortalRPC(
+        'mark_status_update_read',
         {
           p_update_id: updateId
-        } as ClientPortalRPCArgs<'mark_status_update_read'>
+        }
       );
       
       if (error) throw error;

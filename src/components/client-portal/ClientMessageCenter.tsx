@@ -8,7 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ClientMessage, ClientPortalRPCFunctions, ClientPortalRPCArgs, ClientPortalRPCReturns } from '@/types/ClientPortalTypes';
+import { 
+  ClientMessage, 
+  ClientPortalRPCFunctions, 
+  ClientPortalRPCArgs, 
+  ClientPortalRPCReturns, 
+  clientPortalRPC 
+} from '@/types/ClientPortalTypes';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -85,32 +91,31 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       try {
         setError(null);
         
-        const { data, error } = await supabase.rpc(
-          'get_client_advocate_messages' as ClientPortalRPCFunctions,
+        const { data, error } = await clientPortalRPC(
+          'get_client_advocate_messages',
           {
             p_client_id: clientId,
             p_advocate_id: selectedAdvocate
-          } as ClientPortalRPCArgs<'get_client_advocate_messages'>
+          }
         );
           
         if (error) throw error;
         
         if (data) {
-          // Explicitly cast the data to ensure type safety
-          setMessages(data as ClientMessage[]);
+          setMessages(data);
           
           // Mark received messages as read
-          const unreadMessages = (data as ClientMessage[]).filter(m => 
+          const unreadMessages = data.filter(m => 
             m.receiver_id === clientId && !m.is_read
           ).map(m => m.id);
           
           if (unreadMessages && unreadMessages.length > 0) {
             // Mark messages as read using RPC
-            await supabase.rpc(
-              'mark_messages_read' as ClientPortalRPCFunctions,
+            await clientPortalRPC(
+              'mark_messages_read',
               {
                 p_message_ids: unreadMessages
-              } as ClientPortalRPCArgs<'mark_messages_read'>
+              }
             );
           }
         }
@@ -154,23 +159,23 @@ const ClientMessageCenter = ({ clientId }: ClientMessageCenterProps) => {
       setSending(true);
       setError(null);
       
-      // Send message using RPC
-      const { data, error } = await supabase.rpc(
-        'add_client_message' as ClientPortalRPCFunctions,
+      // Send message using RPC wrapper
+      const { data, error } = await clientPortalRPC(
+        'add_client_message',
         {
           p_content: newMessage.trim(),
           p_sender_id: clientId,
           p_sender_name: user?.user_metadata?.full_name || 'Client',
           p_receiver_id: selectedAdvocate,
           p_is_read: false
-        } as ClientPortalRPCArgs<'add_client_message'>
+        }
       );
       
       if (error) throw error;
       
       // Add the new message to the list
       if (data) {
-        setMessages(prev => [...prev, data as ClientMessage]);
+        setMessages(prev => [...prev, data]);
       }
       
       // Clear input after sending
