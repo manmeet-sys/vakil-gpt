@@ -94,7 +94,9 @@ export interface ArgumentBuilder {
 }
 
 // Define proper types for RPC functions to fix the "does not satisfy the constraint 'never'" errors
-export interface ClientPortalRPCs {
+export type DatabaseFunctions = Database['public']['Functions'];
+
+export interface ClientPortalRPCTypes {
   add_client_document: {
     Args: {
       p_name: string;

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -50,7 +51,7 @@ import {
 import ClientDocumentUploader from '@/components/client-portal/ClientDocumentUploader';
 import CaseStatusUpdates from '@/components/client-portal/CaseStatusUpdates';
 import ClientMessageCenter from '@/components/client-portal/ClientMessageCenter';
-import { ClientDocument, StatusUpdate, ClientPortalRPCs } from '@/types/ClientPortalTypes';
+import { ClientDocument, StatusUpdate, ClientPortalRPCTypes } from '@/types/ClientPortalTypes';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -115,28 +116,28 @@ const ClientPortalPage = () => {
       setError(null);
       
       // Fetch client documents using RPC function
-      const documentsResponse = await supabase.rpc(
+      const documentsResponse = await supabase.rpc<ClientDocument[]>(
         'get_client_documents',
         {
           p_client_id: user.id
-        } as ClientPortalRPCs['get_client_documents']['Args']
+        } as ClientPortalRPCTypes['get_client_documents']['Args']
       );
       
       if (documentsResponse.error) throw documentsResponse.error;
       
       // Fetch status updates using RPC function
-      const updatesResponse = await supabase.rpc(
+      const updatesResponse = await supabase.rpc<StatusUpdate[]>(
         'get_client_status_updates',
         {
           p_client_id: user.id
-        } as ClientPortalRPCs['get_client_status_updates']['Args']
+        } as ClientPortalRPCTypes['get_client_status_updates']['Args']
       );
       
       if (updatesResponse.error) throw updatesResponse.error;
       
       // Count unread updates
       const unread = updatesResponse.data ? 
-        (updatesResponse.data as StatusUpdate[]).filter(update => !update.is_read).length : 0;
+        updatesResponse.data.filter(update => !update.is_read).length : 0;
       
       // Fetch cases
       const casesResponse = await supabase
@@ -153,8 +154,8 @@ const ClientPortalPage = () => {
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      if (documentsResponse.data) setDocuments(documentsResponse.data as ClientDocument[]);
-      if (updatesResponse.data) setStatusUpdates(updatesResponse.data as StatusUpdate[]);
+      if (documentsResponse.data) setDocuments(documentsResponse.data);
+      if (updatesResponse.data) setStatusUpdates(updatesResponse.data);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
@@ -185,7 +186,7 @@ const ClientPortalPage = () => {
         'mark_status_update_read',
         {
           p_update_id: updateId
-        } as ClientPortalRPCs['mark_status_update_read']['Args']
+        } as ClientPortalRPCTypes['mark_status_update_read']['Args']
       );
       
       if (error) throw error;
@@ -503,10 +504,7 @@ const ClientPortalPage = () => {
                                   variant="ghost" 
                                   size="sm"
                                   className="flex items-center gap-1"
-                                  onClick={() => {
-                                    // Fixed document download function to use the browser's document API
-                                    handleDocumentDownload(document);
-                                  }}
+                                  onClick={() => handleDocumentDownload(document)}
                                 >
                                   <Download className="h-3 w-3" />
                                   View
