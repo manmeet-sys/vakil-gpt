@@ -160,8 +160,8 @@ const ClientPortalPage = () => {
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      setDocuments(documentsResponse.data as ClientDocument[] || []);
-      setStatusUpdates(updatesData);
+      setDocuments(documentsResponse.data || []);
+      setStatusUpdates(updatesResponse.data || []);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
