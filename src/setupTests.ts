@@ -19,12 +19,6 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock IntersectionObserver
 class MockIntersectionObserver {
-  constructor(callback: IntersectionObserverCallback) {
-    this.observe = jest.fn();
-    this.unobserve = jest.fn();
-    this.disconnect = jest.fn();
-  }
-  
   observe = jest.fn();
   unobserve = jest.fn();
   disconnect = jest.fn();
@@ -32,6 +26,10 @@ class MockIntersectionObserver {
   rootMargin = '';
   thresholds = [];
   takeRecords = jest.fn();
+  
+  constructor(callback: IntersectionObserverCallback) {
+    // Store the callback if needed (not used in this mock)
+  }
 }
 
 Object.defineProperty(window, 'IntersectionObserver', {
@@ -41,7 +39,7 @@ Object.defineProperty(window, 'IntersectionObserver', {
 
 // Silence the console error for ReactDOM.render deprecation
 const originalError = console.error;
-console.error = (...args) => {
+console.error = (...args: any[]) => {
   if (/Warning.*not wrapped in act/.test(args[0])) {
     return;
   }
