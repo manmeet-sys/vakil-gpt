@@ -12,6 +12,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/context/AuthContext';
 
 interface ClientNavProps {
   unreadCount?: number;
@@ -19,101 +20,53 @@ interface ClientNavProps {
 
 const ClientPortalNav = ({ unreadCount = 0 }: ClientNavProps) => {
   const location = useLocation();
+  const { user } = useAuth();
   const isActive = (path: string) => location.pathname === path;
+  
+  // Define navigation items with path and icon
+  const navItems = [
+    { path: '/client-portal', label: 'Dashboard', icon: FileText },
+    { path: '/client-portal/documents', label: 'Documents', icon: Shield },
+    { path: '/client-portal/messages', label: 'Messages', icon: MessageSquare },
+    { 
+      path: '/client-portal/updates', 
+      label: 'Updates', 
+      icon: Bell, 
+      badge: unreadCount > 0 ? unreadCount : undefined 
+    },
+    { path: '/client-portal/upload', label: 'Upload', icon: Upload },
+    { path: '/client-portal/calendar', label: 'Calendar', icon: Calendar },
+  ];
+
+  if (!user) {
+    return null; // Don't render navigation if user is not logged in
+  }
 
   return (
     <div className="flex flex-col space-y-1 w-full">
-      <Link to="/client-portal">
-        <Button
-          variant={isActive('/client-portal') ? 'secondary' : 'ghost'}
-          className={cn(
-            'w-full justify-start',
-            isActive('/client-portal') ? 'bg-accent' : ''
-          )}
-          size="sm"
-        >
-          <FileText className="mr-2 h-4 w-4" />
-          Dashboard
-        </Button>
-      </Link>
-      
-      <Link to="/client-portal/documents">
-        <Button
-          variant={isActive('/client-portal/documents') ? 'secondary' : 'ghost'}
-          className={cn(
-            'w-full justify-start',
-            isActive('/client-portal/documents') ? 'bg-accent' : ''
-          )}
-          size="sm"
-        >
-          <Shield className="mr-2 h-4 w-4" />
-          Documents
-        </Button>
-      </Link>
-      
-      <Link to="/client-portal/messages">
-        <Button
-          variant={isActive('/client-portal/messages') ? 'secondary' : 'ghost'}
-          className={cn(
-            'w-full justify-start',
-            isActive('/client-portal/messages') ? 'bg-accent' : ''
-          )}
-          size="sm"
-        >
-          <MessageSquare className="mr-2 h-4 w-4" />
-          Messages
-        </Button>
-      </Link>
-      
-      <Link to="/client-portal/updates">
-        <Button
-          variant={isActive('/client-portal/updates') ? 'secondary' : 'ghost'}
-          className={cn(
-            'w-full justify-start',
-            isActive('/client-portal/updates') ? 'bg-accent' : ''
-          )}
-          size="sm"
-        >
-          <Bell className="mr-2 h-4 w-4" />
-          Updates
-          {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="ml-auto h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]"
-            >
-              {unreadCount}
-            </Badge>
-          )}
-        </Button>
-      </Link>
-      
-      <Link to="/client-portal/upload">
-        <Button
-          variant={isActive('/client-portal/upload') ? 'secondary' : 'ghost'}
-          className={cn(
-            'w-full justify-start',
-            isActive('/client-portal/upload') ? 'bg-accent' : ''
-          )}
-          size="sm"
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          Upload
-        </Button>
-      </Link>
-      
-      <Link to="/client-portal/calendar">
-        <Button
-          variant={isActive('/client-portal/calendar') ? 'secondary' : 'ghost'}
-          className={cn(
-            'w-full justify-start',
-            isActive('/client-portal/calendar') ? 'bg-accent' : ''
-          )}
-          size="sm"
-        >
-          <Calendar className="mr-2 h-4 w-4" />
-          Calendar
-        </Button>
-      </Link>
+      {navItems.map(item => (
+        <Link key={item.path} to={item.path}>
+          <Button
+            variant={isActive(item.path) ? 'secondary' : 'ghost'}
+            className={cn(
+              'w-full justify-start',
+              isActive(item.path) ? 'bg-accent' : ''
+            )}
+            size="sm"
+          >
+            <item.icon className="mr-2 h-4 w-4" />
+            {item.label}
+            {item.badge && (
+              <Badge
+                variant="destructive"
+                className="ml-auto h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]"
+              >
+                {item.badge}
+              </Badge>
+            )}
+          </Button>
+        </Link>
+      ))}
     </div>
   );
 };

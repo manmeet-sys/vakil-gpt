@@ -94,6 +94,11 @@ export interface ArgumentBuilder {
 }
 
 // Properly define RPC function interfaces with their argument and return types
+export type SupabaseRPCReturnType<Args, Returns> = {
+  data: Returns | null;
+  error: Error | null;
+};
+
 export interface ClientPortalRPCs {
   add_client_document: {
     Args: {

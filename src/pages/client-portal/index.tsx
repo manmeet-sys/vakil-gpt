@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -116,22 +115,22 @@ const ClientPortalPage = () => {
       setError(null);
       
       // Fetch client documents using RPC function
-      const documentsResponse = await supabase.rpc(
-        'get_client_documents',
-        {
-          p_client_id: user.id
-        }
-      );
+      const documentsResponse = await supabase.rpc<
+        ClientPortalRPCs['get_client_documents']['Args'],
+        ClientPortalRPCs['get_client_documents']['Returns']
+      >('get_client_documents', {
+        p_client_id: user.id
+      });
       
       if (documentsResponse.error) throw documentsResponse.error;
       
       // Fetch status updates using RPC function
-      const updatesResponse = await supabase.rpc(
-        'get_client_status_updates',
-        {
-          p_client_id: user.id
-        }
-      );
+      const updatesResponse = await supabase.rpc<
+        ClientPortalRPCs['get_client_status_updates']['Args'],
+        ClientPortalRPCs['get_client_status_updates']['Returns']
+      >('get_client_status_updates', {
+        p_client_id: user.id
+      });
       
       if (updatesResponse.error) throw updatesResponse.error;
       
@@ -153,8 +152,8 @@ const ClientPortalPage = () => {
         progress: calculateCaseProgress(caseItem.status || 'draft')
       })) as ClientCase[];
       
-      if (documentsResponse.data) setDocuments(documentsResponse.data as ClientDocument[]);
-      if (updatesResponse.data) setStatusUpdates(updatesResponse.data as StatusUpdate[]);
+      if (documentsResponse.data) setDocuments(documentsResponse.data);
+      if (updatesResponse.data) setStatusUpdates(updatesResponse.data);
       setClientCases(transformedCases || []);
       setUnreadUpdates(unread);
     } catch (error: any) {
@@ -181,12 +180,12 @@ const ClientPortalPage = () => {
   const markUpdateAsRead = async (updateId: string) => {
     try {
       // Use RPC function to mark status update as read
-      const { error } = await supabase.rpc(
-        'mark_status_update_read',
-        {
-          p_update_id: updateId
-        }
-      );
+      const { error } = await supabase.rpc<
+        ClientPortalRPCs['mark_status_update_read']['Args'],
+        ClientPortalRPCs['mark_status_update_read']['Returns']
+      >('mark_status_update_read', {
+        p_update_id: updateId
+      });
       
       if (error) throw error;
       
