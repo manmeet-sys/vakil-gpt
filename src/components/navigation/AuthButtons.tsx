@@ -5,6 +5,7 @@ import { LogIn, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import UserMenuButton from './UserMenuButton';
+import { useNavigation } from '@/context/NavigationContext';
 
 interface AuthButtonsProps {
   isMobile?: boolean;
@@ -12,6 +13,7 @@ interface AuthButtonsProps {
 
 const AuthButtons: React.FC<AuthButtonsProps> = ({ isMobile = false }) => {
   const { user, isAuthenticated } = useAuth();
+  const { currentPath } = useNavigation();
   
   if (isAuthenticated) {
     return <UserMenuButton />;

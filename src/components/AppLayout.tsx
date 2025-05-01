@@ -6,10 +6,10 @@ import { LogIn } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
-import { mainNavigationItems } from './navigation/NavigationItems';
 import DesktopNavigation from './navigation/DesktopNavigation';
-import MobileMenu from './navigation/MobileMenu';
+import MobileNavigation from './navigation/MobileNavigation';
 import AuthButtons from './navigation/AuthButtons';
+import { useNavigation } from '@/context/NavigationContext';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -18,7 +18,7 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/reset-password';
-  const navigationItems = mainNavigationItems(location.pathname);
+  const { mainItems } = useNavigation();
   
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
@@ -39,7 +39,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </motion.h1>
           </Link>
           
-          <DesktopNavigation items={navigationItems} />
+          <DesktopNavigation />
         </div>
         
         <div className="flex items-center gap-3">
@@ -57,7 +57,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           <ThemeToggle />
           
           {/* Mobile Navigation Menu */}
-          <MobileMenu currentPath={location.pathname} />
+          <MobileNavigation />
         </div>
       </header>
       

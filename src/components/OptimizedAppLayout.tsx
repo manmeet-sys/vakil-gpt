@@ -8,12 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { mainNavigationItems } from './navigation/NavigationItems';
 import DesktopNavigation from './navigation/DesktopNavigation';
 import AuthButtons from './navigation/AuthButtons';
+import { useNavigation } from '@/context/NavigationContext';
 
 // Lazy loaded mobile menu component
-const MobileMenu = lazy(() => import('./navigation/MobileMenu'));
+const MobileNavigation = lazy(() => import('./navigation/MobileNavigation'));
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -29,7 +29,6 @@ const MobileMenuFallback = () => (
 const OptimizedAppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/reset-password';
-  const navigationItems = mainNavigationItems(location.pathname);
   
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
@@ -50,7 +49,7 @@ const OptimizedAppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </motion.h1>
           </Link>
           
-          <DesktopNavigation items={navigationItems} />
+          <DesktopNavigation />
         </div>
         
         <div className="flex items-center gap-3">
@@ -70,7 +69,7 @@ const OptimizedAppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {/* Mobile Navigation Menu - Lazy loaded */}
           <div className="md:hidden">
             <Suspense fallback={<MobileMenuFallback />}>
-              <MobileMenu currentPath={location.pathname} />
+              <MobileNavigation />
             </Suspense>
           </div>
         </div>

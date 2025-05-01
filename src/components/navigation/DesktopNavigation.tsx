@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { NavigationItem, resourceNavigationItems } from './NavigationItems';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -12,15 +11,14 @@ import {
   DropdownMenuGroup, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { useNavigation } from '@/context/NavigationContext';
 
-interface DesktopNavigationProps {
-  items: NavigationItem[];
-}
-
-const DesktopNavigation: React.FC<DesktopNavigationProps> = ({ items }) => {
+const DesktopNavigation: React.FC = () => {
+  const { mainItems, resourceItems, currentPath } = useNavigation();
+  
   return (
     <nav className="hidden md:flex items-center space-x-6 ml-8">
-      {items.map((item) => {
+      {mainItems.map((item) => {
         const IconComponent = item.icon;
         return (
           <Link 
@@ -48,7 +46,7 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({ items }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
           <DropdownMenuGroup>
-            {resourceNavigationItems.map((item) => {
+            {resourceItems.map((item) => {
               const IconComponent = item.icon;
               return (
                 <DropdownMenuItem key={item.name} asChild className="flex items-center">
