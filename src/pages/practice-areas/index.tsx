@@ -1,11 +1,54 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gavel, Scale, Briefcase, Heart, Home, ArrowRight, BookOpen } from 'lucide-react';
+import { Gavel, Scale, Briefcase, Heart, Home, ArrowRight, BookOpen, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { motion } from 'framer-motion';
+
+const PracticeArea = ({ title, description, icon, path, features, delay }) => {
+  const navigate = useNavigate();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: delay }}
+    >
+      <Card className="overflow-hidden border border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-zinc-800/70 hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+        <CardHeader>
+          <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mb-2">
+            {icon}
+          </div>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-grow">
+          <ul className="text-sm space-y-1.5 text-gray-600 dark:text-gray-300">
+            {features.map((feature, i) => (
+              <li key={i} className="flex items-start">
+                <span className="mr-2">•</span>
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button 
+            onClick={() => navigate(path)} 
+            className="w-full group"
+            variant="outline"
+          >
+            Explore {title} Tools
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </CardFooter>
+      </Card>
+    </motion.div>
+  );
+};
 
 const PracticeAreasPage = () => {
   const { theme } = useTheme();
@@ -16,31 +59,73 @@ const PracticeAreasPage = () => {
       title: "Criminal Law",
       description: "Specialized tools for criminal defense and prosecution under BNS, BNSS, and BSA codes",
       icon: <Gavel className="h-5 w-5 text-blue-600" />,
-      path: "/criminal-law"
+      path: "/criminal-law",
+      features: [
+        "BNS Code navigation and comparison with IPC",
+        "Sentencing prediction and analysis",
+        "Plea bargaining strategy assistance",
+        "Criminal case law research and analysis"
+      ]
     },
     {
       title: "Civil Law",
       description: "Tools for civil litigation including cause of action analysis and relief generation",
       icon: <Scale className="h-5 w-5 text-blue-600" />,
-      path: "/civil-law"
+      path: "/civil-law",
+      features: [
+        "Cause of action analysis and element verification",
+        "Limitation period calculation with exceptions",
+        "Civil relief and prayer clause generation",
+        "Precedent search and analysis for civil cases"
+      ]
     },
     {
       title: "Corporate Law",
       description: "Company formation, due diligence, and compliance management tools",
       icon: <Briefcase className="h-5 w-5 text-blue-600" />,
-      path: "/corporate-law"
+      path: "/corporate-law",
+      features: [
+        "Entity formation and document generation",
+        "M&A due diligence with customizable checklists",
+        "Corporate compliance calendar and reminders",
+        "Contract analysis and risk identification"
+      ]
     },
     {
       title: "Family Law",
       description: "Maintenance calculation, custody analysis, and family law document generation",
       icon: <Heart className="h-5 w-5 text-blue-600" />,
-      path: "/family-law"
+      path: "/family-law",
+      features: [
+        "Maintenance and alimony calculation tools",
+        "Custody rights analysis with welfare considerations",
+        "Family settlement document drafting",
+        "Matrimonial property division assistance"
+      ]
     },
     {
       title: "Real Estate Law",
       description: "Title search, RERA compliance, and property document generation tools",
       icon: <Home className="h-5 w-5 text-blue-600" />,
-      path: "/real-estate-law"
+      path: "/real-estate-law",
+      features: [
+        "Title search and ownership verification",
+        "RERA compliance for projects and agreements",
+        "Property document generation and review",
+        "Real estate due diligence checklists"
+      ]
+    },
+    {
+      title: "Advanced Legal Research",
+      description: "Case law research, statute tracking, and legal analysis tools",
+      icon: <Search className="h-5 w-5 text-blue-600" />,
+      path: "/case-law-research",
+      features: [
+        "Multi-jurisdictional case law search",
+        "Statute and amendment tracking",
+        "Legal principle and ratio extraction",
+        "AI-powered case outcome prediction"
+      ]
     }
   ];
   
@@ -63,7 +148,12 @@ const PracticeAreasPage = () => {
       
       <main className="flex-1 flex flex-col py-6 px-4">
         <div className="w-full max-w-6xl mx-auto">
-          <div className="text-center mb-8">
+          <motion.div 
+            className="text-center mb-8"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <BookOpen className="h-10 w-10 text-blue-600 mx-auto" />
             <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-2">
               Practice-Specific Legal Tools
@@ -71,48 +161,15 @@ const PracticeAreasPage = () => {
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-2xl mx-auto">
               VakilGPT provides specialized tools for different practice areas of Indian law to enhance your legal practice
             </p>
-          </div>
+          </motion.div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {practiceAreas.map((area, index) => (
-              <Card 
-                key={index} 
-                className="overflow-hidden border border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-zinc-800/70 hover:shadow-lg transition-shadow duration-300"
-              >
-                <CardHeader>
-                  <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mb-2">
-                    {area.icon}
-                  </div>
-                  <CardTitle>{area.title}</CardTitle>
-                  <CardDescription>{area.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-300">
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>AI-powered document analysis</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Practice-specific document templates</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Latest law updates and key principles</span>
-                    </li>
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    onClick={() => navigate(area.path)} 
-                    className="w-full"
-                    variant="outline"
-                  >
-                    Explore {area.title} Tools
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </Card>
+              <PracticeArea 
+                key={index}
+                {...area}
+                delay={index * 0.1}
+              />
             ))}
           </div>
         </div>

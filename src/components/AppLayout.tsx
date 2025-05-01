@@ -1,57 +1,24 @@
 
 import React from 'react';
 import { ThemeToggle } from './ThemeToggle';
-import BackButton from './BackButton';
 import { Link, useLocation } from 'react-router-dom';
-import { LogIn, LogOut, User, Menu, X, Shield, BookOpen, Settings, BellRing, Bell, Book } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetTrigger,
-  SheetClose 
-} from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import { mainNavigationItems } from './navigation/NavigationItems';
+import DesktopNavigation from './navigation/DesktopNavigation';
+import MobileMenu from './navigation/MobileMenu';
+import AuthButtons from './navigation/AuthButtons';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-interface NavigationItem {
-  name: string;
-  path: string;
-  icon: React.FC<{ className?: string }>;
-  current?: boolean;
-}
-
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/reset-password';
-  const { user, signOut, userProfile } = useAuth();
-
-  const mainNavigationItems: NavigationItem[] = [
-    { name: 'Tools', path: '/tools', icon: Settings },
-    { name: 'Legal Chat', path: '/chat', icon: BellRing },
-    { name: 'Knowledge', path: '/knowledge', icon: BookOpen },
-    {
-      name: "Practice Areas",
-      path: "/practice-areas",
-      icon: Book,
-      current: location.pathname === "/practice-areas",
-    },
-  ];
+  const navigationItems = mainNavigationItems(location.pathname);
   
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
@@ -72,26 +39,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </motion.h1>
           </Link>
           
-          <div className="hidden md:flex items-center space-x-6 ml-8">
-            {mainNavigationItems.map((item) => {
-              const IconComponent = item.icon;
-              return (
-                <Link 
-                  key={item.name}
-                  to={item.path} 
-                  className={cn(
-                    "text-sm font-medium flex items-center gap-1.5 transition-colors", 
-                    location.pathname === item.path || location.pathname.startsWith(`${item.path}/`) 
-                      ? "text-legal-accent dark:text-legal-accent" 
-                      : "text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-                  )}
-                >
-                  <IconComponent className="h-4 w-4" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </div>
+          <DesktopNavigation items={navigationItems} />
         </div>
         
         <div className="flex items-center gap-3">
@@ -104,175 +52,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <span>{location.pathname === '/login' ? 'Sign Up' : 'Log In'}</span>
             </Link>
           ) : (
-            <>
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-9 w-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={userProfile?.avatar_url || ''} alt={userProfile?.full_name || 'User'} />
-                        <AvatarFallback className="text-xs bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-                          {userProfile?.full_name 
-                            ? userProfile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
-                            : user.email?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{userProfile?.full_name || 'User'}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/user-profile" className="cursor-pointer flex items-center">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
-                        <Badge className="ml-auto bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Private
-                        </Badge>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="cursor-pointer text-red-500 dark:text-red-400 focus:text-red-500 dark:focus:text-red-400"
-                      onClick={() => signOut()}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <>
-                  <Link 
-                    to="/login" 
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    <span>Log In</span>
-                  </Link>
-                  <Link 
-                    to="/signup" 
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
-                  >
-                    <User className="h-4 w-4" />
-                    <span>Sign Up</span>
-                  </Link>
-                </>
-              )}
-            </>
+            <AuthButtons />
           )}
           <ThemeToggle />
           
           {/* Mobile Navigation Menu */}
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[350px] border-l border-gray-200 dark:border-gray-800">
-                <div className="flex flex-col h-full">
-                  <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
-                    <h2 className="text-lg font-semibold">
-                      Menu
-                      <Badge variant="outline" className="ml-2 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full">
-                        BETA
-                      </Badge>
-                    </h2>
-                    <SheetClose asChild>
-                      <Button variant="ghost" size="icon" className="rounded-full">
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Close</span>
-                      </Button>
-                    </SheetClose>
-                  </div>
-                  
-                  <nav className="flex-1 pt-4">
-                    <ul className="space-y-2">
-                      {mainNavigationItems.map((item) => {
-                        const IconComponent = item.icon;
-                        return (
-                          <li key={item.name}>
-                            <SheetClose asChild>
-                              <Link
-                                to={item.path}
-                                className={cn(
-                                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                                  location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
-                                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
-                                    : "hover:bg-gray-50 dark:hover:bg-gray-800"
-                                )}
-                              >
-                                <IconComponent className="h-5 w-5" />
-                                {item.name}
-                              </Link>
-                            </SheetClose>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </nav>
-                  
-                  <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-                    {user ? (
-                      <div className="flex flex-col space-y-3">
-                        <div className="px-4 py-2">
-                          <p className="text-sm font-medium">{userProfile?.full_name || 'User'}</p>
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
-                        </div>
-                        <SheetClose asChild>
-                          <Link
-                            to="/user-profile"
-                            className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-                          >
-                            <User className="h-5 w-5" />
-                            My Profile
-                          </Link>
-                        </SheetClose>
-                        <Button
-                          variant="outline"
-                          className="mx-4 justify-start"
-                          onClick={() => signOut()}
-                        >
-                          <LogOut className="h-5 w-5 mr-2" />
-                          Log out
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col space-y-3 px-4">
-                        <SheetClose asChild>
-                          <Link
-                            to="/login"
-                            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
-                          >
-                            <LogIn className="h-4 w-4" />
-                            <span>Log In</span>
-                          </Link>
-                        </SheetClose>
-                        <SheetClose asChild>
-                          <Link
-                            to="/signup"
-                            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
-                          >
-                            <User className="h-4 w-4" />
-                            <span>Sign Up</span>
-                          </Link>
-                        </SheetClose>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+          <MobileMenu currentPath={location.pathname} />
         </div>
       </header>
       
