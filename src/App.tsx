@@ -73,6 +73,7 @@ const CriminalLawPage = lazy(() => import("./pages/criminal-law"));
 const CivilLawPage = lazy(() => import("./pages/civil-law"));
 const CorporateLawPage = lazy(() => import("./pages/corporate-law"));
 const FamilyLawPage = lazy(() => import("./pages/family-law"));
+const MatrimonialLawPage = lazy(() => import("./pages/matrimonial-law"));
 const RealEstateLawPage = lazy(() => import("./pages/real-estate-law"));
 const LegalCalculatorPage = lazy(() => import("./pages/legal-calculator"));
 const AILegalSummarizerPage = lazy(() => import("./pages/ai-legal-summarizer"));
@@ -372,6 +373,7 @@ const App = () => (
                       <Route path="/civil-law" element={<CivilLawPage />} />
                       <Route path="/corporate-law" element={<CorporateLawPage />} />
                       <Route path="/family-law" element={<FamilyLawPage />} />
+                      <Route path="/matrimonial-law" element={<MatrimonialLawPage />} />
                       <Route path="/real-estate-law" element={<RealEstateLawPage />} />
                       
                       {/* Add advanced AI analysis route */}

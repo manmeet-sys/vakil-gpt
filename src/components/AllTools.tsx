@@ -85,6 +85,14 @@ const AllTools = () => {
       path: "/family-law"
     },
     {
+      id: "matrimonial-law",
+      title: "Matrimonial Law",
+      description: "Divorce assistance, alimony calculation, and matrimonial evidence management",
+      icon: <Heart className="h-5 w-5 text-purple-600" />,
+      path: "/matrimonial-law",
+      badge: "New"
+    },
+    {
       id: "real-estate-law",
       title: "Real Estate Law",
       description: "Title search, RERA compliance, and property document generation tools",

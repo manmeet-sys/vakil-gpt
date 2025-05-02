@@ -14,7 +14,7 @@ const BackButton: React.FC<BackButtonProps> = ({
   className = '' 
 }) => {
   // For consistency, use the BackToToolsButton component which already handles scroll preservation
-  return <BackToToolsButton className={className} />;
+  return <BackToToolsButton to={to} label={label} className={className} />;
 };
 
 export default BackButton;
