@@ -1,9 +1,11 @@
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 export interface AnalysisResult {
   status?: string;
@@ -25,6 +27,8 @@ interface BaseAnalyzerProps {
   children: ReactNode;
   buttonText?: string;
   className?: string;
+  useAI?: boolean; // Flag for AI-enhanced analysis
+  aiDescription?: string; // Description of AI features
 }
 
 export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
@@ -38,7 +42,11 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
   children,
   buttonText = "Analyze",
   className = "",
+  useAI = false,
+  aiDescription = "Enhanced analysis with AI capabilities",
 }) => {
+  const [aiEnabled, setAiEnabled] = useState(useAI);
+  
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'high':
@@ -79,6 +87,27 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
       <CardContent className="space-y-6 pt-4">
         <div className="bg-muted/30 p-4 rounded-md border border-muted/30">
           {children}
+          
+          {useAI && (
+            <div className="mt-4 pt-4 border-t border-border/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-blue-600" />
+                  <Label htmlFor="ai-toggle" className="text-sm font-medium">AI-Enhanced Analysis</Label>
+                </div>
+                <Switch 
+                  id="ai-toggle" 
+                  checked={aiEnabled}
+                  onCheckedChange={setAiEnabled}
+                />
+              </div>
+              {aiEnabled && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {aiDescription}
+                </p>
+              )}
+            </div>
+          )}
         </div>
         
         <div className="flex justify-end">
@@ -88,6 +117,7 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
             disabled={isAnalyzing}
           >
             {isAnalyzing ? "Analyzing..." : buttonText}
+            {aiEnabled && useAI && <Sparkles className="ml-2 h-4 w-4" />}
           </Button>
         </div>
         
@@ -112,6 +142,13 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
                     <div>
                       <h4 className="font-medium font-playfair text-sm">{result.title}</h4>
                       <p className="text-sm text-muted-foreground mt-1">{result.description}</p>
+                      {result.data && (
+                        <div className="mt-2 text-sm border-t pt-2 border-dashed border-gray-200">
+                          <pre className="text-xs whitespace-pre-wrap font-mono bg-slate-50 dark:bg-slate-900 p-2 rounded">
+                            {typeof result.data === 'string' ? result.data : JSON.stringify(result.data, null, 2)}
+                          </pre>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -140,6 +177,13 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
                     <p className="text-sm text-muted-foreground mt-1">{analysisResult.description}</p>
                     {analysisResult.summary && (
                       <p className="mt-2 text-sm border-t pt-2 border-dashed border-gray-200">{analysisResult.summary}</p>
+                    )}
+                    {analysisResult.data && (
+                      <div className="mt-2 text-sm border-t pt-2 border-dashed border-gray-200">
+                        <pre className="text-xs whitespace-pre-wrap font-mono bg-slate-50 dark:bg-slate-900 p-2 rounded">
+                          {typeof analysisResult.data === 'string' ? analysisResult.data : JSON.stringify(analysisResult.data, null, 2)}
+                        </pre>
+                      </div>
                     )}
                   </div>
                 </div>

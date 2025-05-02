@@ -18,6 +18,8 @@ export interface BaseDocumentGeneratorProps {
   isGenerating?: boolean;
   onEditDocument?: () => void;
   children: ReactNode;
+  useAI?: boolean; // Add flag for AI-powered generation
+  aiPrompt?: string; // Optional AI prompt for generation
 }
 
 export const BaseDocumentGenerator: React.FC<BaseDocumentGeneratorProps> = ({
@@ -31,9 +33,12 @@ export const BaseDocumentGenerator: React.FC<BaseDocumentGeneratorProps> = ({
   isGenerating = false,
   onEditDocument,
   children,
+  useAI = false,
+  aiPrompt,
 }) => {
   const { toast } = useToast();
   const documentContent = generatedContent || generatedDocument?.content || '';
+  const [aiEnhanced, setAiEnhanced] = useState(useAI);
   
   const handleCopyToClipboard = () => {
     if (documentContent) {
@@ -62,8 +67,8 @@ export const BaseDocumentGenerator: React.FC<BaseDocumentGeneratorProps> = ({
     }
   };
 
-  // Use the appropriate generate function
-  const generateFunction = handleGenerate || onGenerate;
+  // Use the appropriate generate function, with preference for onGenerate for backward compatibility
+  const generateFunction = onGenerate || handleGenerate;
 
   return (
     <Card className="w-full">
@@ -79,6 +84,33 @@ export const BaseDocumentGenerator: React.FC<BaseDocumentGeneratorProps> = ({
       <CardContent className="space-y-6 pt-4">
         <div className="bg-muted/30 p-4 rounded-md">
           {children}
+          
+          {useAI && (
+            <div className="mt-4 pt-4 border-t border-border/30">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">AI-Enhanced Generation</span>
+                  <div className="h-4 w-4 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <span className="text-xs text-blue-600">AI</span>
+                  </div>
+                </div>
+                <label className="inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={aiEnhanced} 
+                    onChange={(e) => setAiEnhanced(e.target.checked)}
+                    className="sr-only peer" 
+                  />
+                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+              {aiEnhanced && aiPrompt && (
+                <div className="text-sm text-muted-foreground italic mb-2">
+                  AI will enhance your document using intelligent analysis.
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         <div className="flex justify-end">

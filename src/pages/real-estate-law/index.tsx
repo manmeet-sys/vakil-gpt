@@ -10,12 +10,15 @@ import BackButton from '@/components/BackButton';
 import { TitleSearchAssistant, RERAComplianceChecker, PropertyDocumentGenerator, PropertyDueDiligence } from '@/components/practice-area-tools/real-estate-law';
 import { TitleSearchSkeleton, RERAComplianceSkeleton, PropertyDocumentSkeleton, PropertyDueDiligenceSkeleton } from '@/components/SkeletonLoaders';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/components/ui/use-toast';
+import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
 
 const RealEstateLawPage = () => {
   const [activeTab, setActiveTab] = useState<string>("tools");
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Parse URL parameters to determine which tool to show
   useEffect(() => {
@@ -160,13 +163,13 @@ const RealEstateLawPage = () => {
     
     switch (selectedTool) {
       case 'titlesearch':
-        return <TitleSearchAssistant />;
+        return <TitleSearchAssistant useAI={true} aiDescription="AI will analyze your property documents and highlight potential issues with the title chain" />;
       case 'reracompliance':
-        return <RERAComplianceChecker />;
+        return <RERAComplianceChecker useAI={true} aiDescription="AI will check your project details against RERA regulations and identify compliance requirements" />;
       case 'propertydocuments':
-        return <PropertyDocumentGenerator />;
+        return <PropertyDocumentGenerator useAI={true} aiPrompt="Generate legally compliant property documents enhanced with relevant legal clauses" />;
       case 'duediligence':
-        return <PropertyDueDiligence />;
+        return <PropertyDueDiligence useAI={true} aiDescription="AI will identify potential risks and compliance issues based on property details" />;
       default:
         return null;
     }
