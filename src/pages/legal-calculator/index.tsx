@@ -7,6 +7,7 @@ import LegalCalculator from '@/components/LegalCalculator';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { motion } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
+import BackToToolsButton from '@/components/practice-areas/BackToToolsButton';
 
 const LegalCalculatorPage: React.FC = () => {
   return (
@@ -22,6 +23,8 @@ const LegalCalculatorPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          <BackToToolsButton />
+          
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-2">
               <div className="bg-blue-100 dark:bg-blue-900/30 p-2.5 rounded-full shadow-sm">

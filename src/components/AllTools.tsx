@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ToolCategory from './ToolsCategories';
 import { 
@@ -266,7 +267,7 @@ const AllTools = () => {
     {
       id: "legal-calculator",
       title: "Legal Calculator",
-      description: "Calculate legal fees, damages, and other amounts",
+      description: "Calculate court fees, damages, interest and limitation periods for Indian legal proceedings",
       icon: <Calculator className="h-5 w-5 text-blue-600" />,
       path: "/legal-calculator",
       badge: "Featured"
@@ -281,7 +282,7 @@ const AllTools = () => {
     {
       id: "startup-toolkit",
       title: "Startup Toolkit",
-      description: "Access resources for starting and running a business",
+      description: "Access resources for starting and running a business under Indian law",
       icon: <Briefcase className="h-5 w-5 text-blue-600" />,
       path: "/startup-toolkit"
     },
