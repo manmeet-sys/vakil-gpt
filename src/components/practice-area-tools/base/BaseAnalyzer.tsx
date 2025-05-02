@@ -1,157 +1,113 @@
 
-import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import React, { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, FileSearch } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export interface AnalysisResult {
   title: string;
   description: string;
-  severity?: 'low' | 'medium' | 'high' | 'info';
+  severity: 'high' | 'medium' | 'low' | 'info';
 }
 
-export interface BaseAnalyzerProps {
+interface BaseAnalyzerProps {
   title: string;
   description: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-  onAnalyze?: () => void;
-  analysisResults?: AnalysisResult[] | React.ReactNode;
-  footerContent?: React.ReactNode;
+  icon: ReactNode;
+  onAnalyze: () => void;
+  analysisResults: AnalysisResult[];
+  children: ReactNode;
 }
 
-const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
+export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
   title,
   description,
-  icon = <FileSearch className="h-5 w-5" />,
-  children,
+  icon,
   onAnalyze,
   analysisResults,
-  footerContent
+  children,
 }) => {
-  const [showResults, setShowResults] = useState(false);
-  const [loading, setLoading] = useState(false);
-  
-  const handleAnalyze = async () => {
-    setLoading(true);
-    
-    try {
-      if (onAnalyze) {
-        await onAnalyze();
-      }
-      
-      // Simulating analysis time
-      setTimeout(() => {
-        setShowResults(true);
-        setLoading(false);
-        toast.success("Analysis completed successfully!");
-      }, 1000);
-    } catch (error) {
-      setLoading(false);
-      toast.error("Analysis failed. Please try again.");
-    }
-  };
-  
-  const getSeverityColor = (severity?: 'low' | 'medium' | 'high' | 'info') => {
+  const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'low': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-      case 'medium': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
-      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-      case 'info':
-      default: return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'high':
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
+      case 'medium':
+        return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+      case 'low':
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      default:
+        return <Info className="h-5 w-5 text-blue-500" />;
     }
   };
-  
-  const renderResults = () => {
-    if (!analysisResults) return null;
-    
-    if (Array.isArray(analysisResults)) {
-      return (
-        <div className="space-y-3">
-          {analysisResults.map((result, index) => (
-            <div key={index} className="border rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs px-2 py-1 rounded ${getSeverityColor(result.severity)}`}>
-                  {result.severity || 'info'}
-                </span>
-                <h4 className="font-medium">{result.title}</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">{result.description}</p>
-            </div>
-          ))}
-        </div>
-      );
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'high':
+        return 'border-l-red-500 bg-red-50/50 dark:bg-red-900/10';
+      case 'medium':
+        return 'border-l-amber-500 bg-amber-50/50 dark:bg-amber-900/10';
+      case 'low':
+        return 'border-l-green-500 bg-green-50/50 dark:bg-green-900/10';
+      default:
+        return 'border-l-blue-500 bg-blue-50/50 dark:bg-blue-900/10';
     }
-    
-    return analysisResults;
   };
-  
+
   return (
-    <Card className="w-full shadow-md">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+    <Card className="w-full">
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
             {icon}
           </div>
-          <div>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
+          <CardTitle className="text-lg font-playfair">{title}</CardTitle>
         </div>
+        <CardDescription className="text-sm">{description}</CardDescription>
       </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="space-y-4">
+      <CardContent className="space-y-6 pt-4">
+        <div className="bg-muted/30 p-4 rounded-md">
           {children}
         </div>
         
-        {showResults && analysisResults && (
-          <>
-            <Separator className="my-4" />
-            <div className="rounded-lg bg-muted/50 p-4">
-              <h3 className="font-medium mb-3">Analysis Results</h3>
-              {renderResults()}
+        <div className="flex justify-end">
+          <Button 
+            onClick={onAnalyze}
+            className="w-full sm:w-auto"
+          >
+            Analyze
+          </Button>
+        </div>
+        
+        {analysisResults.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            <h3 className="text-base font-medium font-playfair">Analysis Results</h3>
+            <div className="space-y-3">
+              {analysisResults.map((result, index) => (
+                <motion.div 
+                  key={index}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`p-3 border-l-4 rounded-r-md ${getSeverityColor(result.severity)}`}
+                >
+                  <div className="flex gap-2 items-start">
+                    {getSeverityIcon(result.severity)}
+                    <div>
+                      <h4 className="font-medium font-playfair text-sm">{result.title}</h4>
+                      <p className="text-sm text-muted-foreground mt-1">{result.description}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </>
+          </motion.div>
         )}
       </CardContent>
-      
-      <CardFooter className="flex justify-between">
-        <Button 
-          variant="default"
-          onClick={handleAnalyze}
-          disabled={loading}
-          className="w-full sm:w-auto"
-        >
-          {loading ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <Search className="mr-2 h-4 w-4" /> 
-              Analyze
-            </>
-          )}
-        </Button>
-        
-        {footerContent}
-      </CardFooter>
     </Card>
   );
 };
-
-export default BaseAnalyzer;

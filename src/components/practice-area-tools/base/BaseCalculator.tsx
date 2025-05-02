@@ -1,88 +1,61 @@
 
-import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import React, { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Calculator } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion } from 'framer-motion';
 
-export interface BaseCalculatorProps {
+interface BaseCalculatorProps {
   title: string;
   description: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-  onCalculate?: () => void;
-  results?: React.ReactNode;
-  footerContent?: React.ReactNode;
+  icon: ReactNode;
+  onCalculate: () => void;
+  results: ReactNode;
+  children: ReactNode;
 }
 
-const BaseCalculator: React.FC<BaseCalculatorProps> = ({
+export const BaseCalculator: React.FC<BaseCalculatorProps> = ({
   title,
   description,
-  icon = <Calculator className="h-5 w-5" />,
-  children,
+  icon,
   onCalculate,
   results,
-  footerContent
+  children,
 }) => {
-  const [showResults, setShowResults] = useState(false);
-  
-  const handleCalculate = () => {
-    if (onCalculate) {
-      onCalculate();
-    }
-    setShowResults(true);
-  };
-  
   return (
-    <Card className="w-full shadow-md">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+    <Card className="w-full">
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
             {icon}
           </div>
-          <div>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
+          <CardTitle className="text-lg font-playfair">{title}</CardTitle>
         </div>
+        <CardDescription className="text-sm">{description}</CardDescription>
       </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="space-y-4">
+      <CardContent className="space-y-6 pt-4">
+        <div className="bg-muted/30 p-4 rounded-md">
           {children}
         </div>
         
-        {showResults && results && (
-          <>
-            <Separator className="my-4" />
-            <div className="rounded-lg bg-muted/50 p-4">
-              <h3 className="font-medium text-sm mb-2">Results</h3>
-              {results}
-            </div>
-          </>
+        <div className="flex justify-end">
+          <Button 
+            onClick={onCalculate}
+            className="w-full sm:w-auto"
+          >
+            Calculate
+          </Button>
+        </div>
+        
+        {results && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }} 
+            animate={{ opacity: 1, y: 0 }}
+            className="border rounded-md p-4 bg-card"
+          >
+            {results}
+          </motion.div>
         )}
       </CardContent>
-      
-      <CardFooter className="flex justify-between">
-        <Button 
-          variant="default"
-          onClick={handleCalculate}
-          className="w-full sm:w-auto"
-        >
-          Calculate
-        </Button>
-        
-        {footerContent}
-      </CardFooter>
     </Card>
   );
 };
-
-export default BaseCalculator;

@@ -1,5 +1,4 @@
 
-export { default as BaseCalculator } from './BaseCalculator';
-export { default as BaseDocumentGenerator } from './BaseDocumentGenerator';
-export { default as BaseAnalyzer } from './BaseAnalyzer';
-export type { AnalysisResult } from './BaseAnalyzer';
+export { BaseCalculator } from './BaseCalculator';
+export { BaseAnalyzer, type AnalysisResult } from './BaseAnalyzer';
+export { BaseDocumentGenerator } from './BaseDocumentGenerator';
