@@ -5,7 +5,8 @@ import {
   IndianRupee, 
   Clock, 
   Percent,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ import { cn } from '@/lib/utils';
 import ErrorMessage from '@/components/ui/error-message';
 import designSystem from '@/lib/design-system-standards';
 import useErrorHandler from '@/hooks/use-error-handler';
+import { motion } from 'framer-motion';
 
 const LegalCalculator: React.FC = () => {
   const [calculationType, setCalculationType] = useState<string>('courtFees');
@@ -106,31 +108,31 @@ const LegalCalculator: React.FC = () => {
   return (
     <div className="w-full max-w-3xl mx-auto">
       <Tabs defaultValue="courtFees" onValueChange={setCalculationType} className="w-full">
-        <TabsList className="grid grid-cols-2 mb-8">
-          <TabsTrigger value="courtFees" className="flex items-center gap-2">
+        <TabsList className="grid grid-cols-2 mb-8 p-1">
+          <TabsTrigger value="courtFees" className="flex items-center gap-2.5 py-2.5">
             <IndianRupee className="h-4 w-4" />
             <span>Court Fees</span>
           </TabsTrigger>
-          <TabsTrigger value="interest" className="flex items-center gap-2">
+          <TabsTrigger value="interest" className="flex items-center gap-2.5 py-2.5">
             <Percent className="h-4 w-4" />
             <span>Interest Calculation</span>
           </TabsTrigger>
         </TabsList>
         
         <TabsContent value="courtFees">
-          <Card>
+          <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
             <CardHeader>
               <CardTitle className={designSystem.typography.headings.h3}>Court Fee Calculator</CardTitle>
-              <CardDescription>
+              <CardDescription className="text-muted-foreground leading-relaxed">
                 Calculate court fees based on the suit value as per Indian court fee regulations
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Suit Value/Claim Amount</Label>
+              <div className="space-y-5">
+                <div className="space-y-2.5">
+                  <Label htmlFor="amount" className="text-sm font-medium">Suit Value/Claim Amount</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
                     <Input
                       id="amount"
                       type="number"
@@ -143,22 +145,29 @@ const LegalCalculator: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="pt-4">
-                  <p className="text-sm text-gray-500 mb-2">Court Fee Structure:</p>
-                  <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400 pl-5 list-disc">
+                <motion.div 
+                  initial={{ opacity: 0.8 }}
+                  animate={{ opacity: 1 }}
+                  className="pt-2 mt-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800/30"
+                >
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-1.5">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Court Fee Structure:</span>
+                  </p>
+                  <ul className="text-sm space-y-2 text-blue-600 dark:text-blue-200 pl-5 list-disc marker:text-blue-500">
                     <li>5% for amounts up to ₹1,00,000</li>
                     <li>₹5,000 + 3% for amounts between ₹1,00,000 and ₹5,00,000</li>
                     <li>₹17,000 + 2% for amounts between ₹5,00,000 and ₹20,00,000</li>
                     <li>₹47,000 + 1% for amounts above ₹20,00,000 (capped at ₹3,00,000)</li>
                   </ul>
-                  <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                  <p className="mt-3 text-xs text-amber-600 dark:text-amber-400 italic">
                     Note: Actual court fees may vary by state and case type. This is only an estimate.
                   </p>
-                </div>
+                </motion.div>
               </div>
             </CardContent>
             <Separator />
-            <CardFooter className="pt-4 flex flex-col items-stretch gap-4">
+            <CardFooter className="pt-5 flex flex-col items-stretch gap-4">
               {error && (
                 <ErrorMessage 
                   message={error} 
@@ -167,17 +176,21 @@ const LegalCalculator: React.FC = () => {
                 />
               )}
               
-              <div className="flex gap-4 items-center">
-                <Button onClick={handleCalculate} className="flex-1 gap-2">
+              <div className="flex flex-col sm:flex-row gap-4 items-center w-full">
+                <Button onClick={handleCalculate} className="w-full sm:w-auto gap-2 py-2.5 px-5" size="lg">
                   <Calculator className="h-4 w-4" />
                   Calculate Court Fees
                 </Button>
                 
                 {result && (
-                  <div className="flex-1 flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800/50">
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex-1 w-full flex items-center gap-2 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800/50"
+                  >
                     <span className="text-gray-600 dark:text-gray-300">Result:</span>
-                    <span className="text-lg font-semibold text-blue-700 dark:text-blue-300">{result}</span>
-                  </div>
+                    <span className="text-lg font-semibold text-green-700 dark:text-green-300">{result}</span>
+                  </motion.div>
                 )}
               </div>
             </CardFooter>
@@ -185,19 +198,19 @@ const LegalCalculator: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="interest">
-          <Card>
+          <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
             <CardHeader>
               <CardTitle className={designSystem.typography.headings.h3}>Legal Interest Calculator</CardTitle>
-              <CardDescription>
+              <CardDescription className="text-muted-foreground leading-relaxed">
                 Calculate interest on delayed payments, damages, or legal judgments
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="principal">Principal Amount</Label>
+              <div className="space-y-5">
+                <div className="space-y-2.5">
+                  <Label htmlFor="principal" className="text-sm font-medium">Principal Amount</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
                     <Input
                       id="principal"
                       type="number"
@@ -210,10 +223,10 @@ const LegalCalculator: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="days">Number of Days</Label>
+                <div className="space-y-2.5">
+                  <Label htmlFor="days" className="text-sm font-medium">Number of Days</Label>
                   <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="days"
                       type="number"
@@ -226,10 +239,10 @@ const LegalCalculator: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="rate">Interest Rate (% per annum)</Label>
+                <div className="space-y-2.5">
+                  <Label htmlFor="rate" className="text-sm font-medium">Interest Rate (% per annum)</Label>
                   <div className="relative">
-                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="rate"
                       type="number"
@@ -243,15 +256,23 @@ const LegalCalculator: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="pt-2">
-                  <p className="text-xs text-amber-600 dark:text-amber-400">
-                    Note: The standard interest rate for legal judgments in India is typically 6-18% per annum, but may vary based on court directions.
+                <motion.div 
+                  initial={{ opacity: 0.8 }}
+                  animate={{ opacity: 1 }}
+                  className="pt-2 mt-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800/30"
+                >
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-1.5">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Interest Rate Information:</span>
                   </p>
-                </div>
+                  <p className="text-sm text-blue-600 dark:text-blue-200">
+                    The standard interest rate for legal judgments in India is typically 6-18% per annum, but may vary based on court directions.
+                  </p>
+                </motion.div>
               </div>
             </CardContent>
             <Separator />
-            <CardFooter className="pt-4 flex flex-col items-stretch gap-4">
+            <CardFooter className="pt-5 flex flex-col items-stretch gap-4">
               {error && (
                 <ErrorMessage 
                   message={error} 
@@ -260,17 +281,21 @@ const LegalCalculator: React.FC = () => {
                 />
               )}
               
-              <div className="flex gap-4 items-center">
-                <Button onClick={handleCalculate} className="flex-1 gap-2">
+              <div className="flex flex-col sm:flex-row gap-4 items-center w-full">
+                <Button onClick={handleCalculate} className="w-full sm:w-auto gap-2 py-2.5 px-5" size="lg">
                   <Calculator className="h-4 w-4" />
                   Calculate Interest
                 </Button>
                 
                 {result && (
-                  <div className="flex-1 flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800/50">
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex-1 w-full flex items-center gap-2 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800/50"
+                  >
                     <span className="text-gray-600 dark:text-gray-300">Result:</span>
-                    <span className="text-lg font-semibold text-blue-700 dark:text-blue-300">{result}</span>
-                  </div>
+                    <span className="text-lg font-semibold text-green-700 dark:text-green-300">{result}</span>
+                  </motion.div>
                 )}
               </div>
             </CardFooter>
