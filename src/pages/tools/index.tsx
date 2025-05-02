@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Search, Settings, History, Star, Calculator } from 'lucide-react';
+import { Search, Settings, History, Star, Calculator, IndianRupee } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -48,7 +48,7 @@ const ToolsPage = () => {
       <div className="container px-4 sm:px-6">
         <div className="max-w-3xl mx-auto mb-10">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">Legal Tools</h1>
+            <h1 className="text-3xl font-bold font-playfair">Legal Tools</h1>
             <Button 
               variant="outline" 
               size="sm" 
@@ -125,7 +125,7 @@ const ToolsPage = () => {
                     </Badge>
                   </div>
                 </div>
-                <p className="text-amber-50 mb-6">Calculate court fees, limitation periods, interest rates, and more with precision.</p>
+                <p className="text-amber-50 mb-6">Calculate court fees, limitation periods, interest rates for Indian cases with state-specific calculations.</p>
                 <motion.div 
                   className="flex items-center text-white font-medium"
                   whileHover={{ x: 5 }}
@@ -139,32 +139,32 @@ const ToolsPage = () => {
               </div>
             </div>
 
-            {/* Advanced AI Search Card */}
+            {/* Financial Tools Card */}
             <div 
-              onClick={() => navigateToTool('/advanced-ai-search')}
-              className="relative overflow-hidden rounded-xl shadow-lg cursor-pointer group border border-emerald-200 dark:border-emerald-900/30"
+              onClick={() => navigateToTool('/financial-obligations')}
+              className="relative overflow-hidden rounded-xl shadow-lg cursor-pointer group border border-blue-200 dark:border-blue-900/30"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/90 to-green-700/90 z-0"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 to-indigo-700/90 z-0"></div>
               <div className="absolute -right-12 -bottom-12 w-40 h-40 rounded-full bg-white/10 z-0"></div>
               <div className="relative z-10 p-6">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="p-3 bg-white/20 rounded-full">
-                    <Search className="h-8 w-8 text-white" />
+                    <IndianRupee className="h-8 w-8 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white font-playfair">Advanced AI Search</h3>
-                    <Badge variant="outline" className="bg-emerald-700/30 text-emerald-50 border-emerald-600/30 mt-1">
-                      AI-Powered
+                    <h3 className="text-2xl font-bold text-white font-playfair">Financial Tools</h3>
+                    <Badge variant="outline" className="bg-blue-700/30 text-blue-50 border-blue-600/30 mt-1">
+                      Enhanced
                     </Badge>
                   </div>
                 </div>
-                <p className="text-emerald-50 mb-6">Search across legal documents with AI-powered semantic understanding for meaningful results.</p>
+                <p className="text-blue-50 mb-6">Track financial obligations, detect fraud patterns, and ensure tax compliance with our specialized Indian legal financial tools.</p>
                 <motion.div 
                   className="flex items-center text-white font-medium"
                   whileHover={{ x: 5 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  Start Searching
+                  Explore Financial Tools
                   <svg className="ml-2 h-5 w-5 transform transition-transform group-hover:translate-x-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>

@@ -44,7 +44,7 @@ const LegalCalculatorPage: React.FC = () => {
           <LegalCalculator />
           
           <div className="mt-10 pt-5 border-t border-gray-100 dark:border-gray-800">
-            <h2 className="text-xl font-semibold mb-3">How To Use</h2>
+            <h2 className="text-xl font-semibold mb-3 font-playfair">How To Use</h2>
             <div className="bg-muted/30 rounded-lg p-5 text-muted-foreground space-y-4 border border-muted/50">
               <p>1. Select the calculator type (Court Fees or Interest Calculation)</p>
               <p>2. For court fees, select your state, court type, and claim type</p>

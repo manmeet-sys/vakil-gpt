@@ -16,7 +16,9 @@ import {
   Accessibility,
   Clock,
   Calculator,
-  Search
+  Search,
+  Shield,
+  AlertTriangle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,7 +30,7 @@ const AllTools = () => {
     {
       id: "legal-calculator",
       title: "Legal Calculator",
-      description: "Calculate court fees, limitation periods, interest rates for legal cases",
+      description: "Calculate court fees, limitation periods, interest rates for legal cases in India",
       icon: <Calculator className="h-5 w-5 text-amber-600" />,
       path: "/legal-calculator",
       badge: "Featured",
@@ -285,6 +287,27 @@ const AllTools = () => {
       description: "Access resources for starting and running a business under Indian law",
       icon: <Briefcase className="h-5 w-5 text-blue-600" />,
       path: "/startup-toolkit"
+    },
+    {
+      id: "financial-obligations",
+      title: "Financial Obligations Monitor",
+      description: "Track financial clauses in agreements including loans, royalties, GST payments, and TDS",
+      icon: <IndianRupee className="h-5 w-5 text-blue-600" />,
+      path: "/financial-obligations"
+    },
+    {
+      id: "fraud-detector",
+      title: "Financial Fraud Detector",
+      description: "AI-powered analysis to identify potentially fraudulent financial activities",
+      icon: <AlertTriangle className="h-5 w-5 text-blue-600" />,
+      path: "/fraud-detector"
+    },
+    {
+      id: "tax-compliance",
+      title: "Tax Law Advisor",
+      description: "Comprehensive tax guidance and compliance analysis for Indian tax laws",
+      icon: <IndianRupee className="h-5 w-5 text-blue-600" />,
+      path: "/tax-compliance"
     },
   ];
 

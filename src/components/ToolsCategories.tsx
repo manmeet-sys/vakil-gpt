@@ -75,7 +75,7 @@ const ToolCategory = ({
   return (
     <div className={cn("space-y-6", className)}>
       <div className="space-y-2">
-        <h3 className="text-2xl font-bold text-legal-slate dark:text-white">{title}</h3>
+        <h3 className="text-2xl font-bold text-legal-slate dark:text-white font-playfair">{title}</h3>
         <p className="text-legal-muted dark:text-gray-400">{description}</p>
       </div>
       
@@ -96,22 +96,24 @@ const ToolCategory = ({
                   {tool.icon}
                 </div>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-legal-slate dark:text-white">
+                  <CardTitle className="text-lg font-semibold text-legal-slate dark:text-white font-playfair">
                     {tool.title}
                   </CardTitle>
-                  {tool.isNew && (
-                    <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">New</Badge>
-                  )}
-                  {tool.isPopular && (
-                    <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Popular</Badge>
-                  )}
-                  {tool.badge && (
-                    <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">{tool.badge}</Badge>
-                  )}
+                  <div className="flex flex-wrap gap-1 ml-2">
+                    {tool.isNew && (
+                      <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">New</Badge>
+                    )}
+                    {tool.isPopular && (
+                      <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Popular</Badge>
+                    )}
+                    {tool.badge && (
+                      <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">{tool.badge}</Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-sm text-legal-muted dark:text-gray-400 min-h-[40px]">
+                <CardDescription className="text-sm text-legal-muted dark:text-gray-400 min-h-[40px] line-clamp-3">
                   {tool.description}
                 </CardDescription>
               </CardContent>

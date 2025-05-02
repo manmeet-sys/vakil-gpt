@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -215,6 +216,12 @@ const ToolsPage = () => {
       icon: <Calculator className="h-6 w-6 text-teal-600" />,
       tools: [
         { 
+          name: 'Legal Calculator', 
+          icon: Calculator, 
+          path: '/legal-calculator',
+          badge: 'New'
+        },
+        { 
           name: 'Financial Obligations', 
           icon: FileText, 
           path: '/financial-obligations' 
@@ -227,7 +234,7 @@ const ToolsPage = () => {
         },
         { 
           name: 'Tax Compliance', 
-          icon: Calculator, 
+          icon: IndianRupee, 
           path: '/tax-compliance' 
         }
       ]
@@ -304,7 +311,7 @@ const ToolsPage = () => {
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-6 md:p-8 rounded-2xl shadow-elegant">
             <div className="text-center md:text-left max-w-2xl">
-              <h1 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-3 tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-3 tracking-tight font-playfair">
                 Indian Legal Tools Suite
               </h1>
               <p className="text-legal-muted dark:text-gray-300 text-lg">
@@ -351,7 +358,7 @@ const ToolsPage = () => {
                         {category.icon}
                       </div>
                       <div>
-                        <CardTitle className="text-xl font-semibold text-legal-slate dark:text-white truncate">
+                        <CardTitle className="text-xl font-semibold text-legal-slate dark:text-white truncate font-playfair">
                           {category.title}
                         </CardTitle>
                       </div>
