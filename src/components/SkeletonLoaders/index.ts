@@ -3,7 +3,6 @@
 export { default as MADueDiligenceSkeleton } from './MADueDiligenceSkeleton';
 export { 
   CompanyFormationSkeleton,
-  MADueDiligenceSkeleton,
   ComplianceCalendarSkeleton,
   ContractRiskAnalyzerSkeleton
 } from './CorporateToolsSkeleton';

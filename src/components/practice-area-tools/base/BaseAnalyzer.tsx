@@ -11,6 +11,7 @@ export interface AnalysisResult {
   title?: string;
   description?: string;
   severity?: 'high' | 'medium' | 'low' | 'info';
+  summary?: string;
 }
 
 interface BaseAnalyzerProps {
@@ -115,6 +116,34 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
                   </div>
                 </motion.div>
               ))}
+            </div>
+          </motion.div>
+        )}
+        
+        {analysisResult && !analysisResults?.length && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            <h3 className="text-base font-medium font-playfair">Analysis Result</h3>
+            <div className="space-y-3">
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className={`p-3 border-l-4 rounded-r-md ${getSeverityColor(analysisResult.severity || 'info')}`}
+              >
+                <div className="flex gap-2 items-start">
+                  {getSeverityIcon(analysisResult.severity || 'info')}
+                  <div>
+                    <h4 className="font-medium font-playfair text-sm">{analysisResult.title}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{analysisResult.description}</p>
+                    {analysisResult.summary && (
+                      <p className="mt-2 text-sm border-t pt-2 border-dashed border-gray-200">{analysisResult.summary}</p>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
         )}
