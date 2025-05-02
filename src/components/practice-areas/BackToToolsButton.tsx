@@ -6,19 +6,27 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 interface BackToToolsButtonProps {
+  to?: string;
+  label?: string;
   className?: string;
+  children?: React.ReactNode;
 }
 
-const BackToToolsButton: React.FC<BackToToolsButtonProps> = ({ className = '' }) => {
+const BackToToolsButton: React.FC<BackToToolsButtonProps> = ({ 
+  to = '/tools', 
+  label, 
+  className = '',
+  children 
+}) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
     // Store current scroll position for the destination page
     const scrollPosition = window.scrollY.toString();
-    sessionStorage.setItem('scroll_/tools', scrollPosition);
+    sessionStorage.setItem(`scroll_${to}`, scrollPosition);
     
-    // Navigate back to the tools page
-    navigate('/tools', { 
+    // Navigate back to the specified route
+    navigate(to, { 
       state: { 
         fromTool: true,
         scrollPosition
@@ -40,7 +48,7 @@ const BackToToolsButton: React.FC<BackToToolsButtonProps> = ({ className = '' })
         onClick={handleBack}
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Tools
+        {children || label || 'Back to Tools'}
       </Button>
     </motion.div>
   );
