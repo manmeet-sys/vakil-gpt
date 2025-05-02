@@ -55,7 +55,7 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full shadow-sm border border-gray-200/80 dark:border-gray-800/80">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2 mb-2">
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -66,7 +66,7 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
         <CardDescription className="text-sm">{description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 pt-4">
-        <div className="bg-muted/30 p-4 rounded-md">
+        <div className="bg-muted/30 p-4 rounded-md border border-muted/30">
           {children}
         </div>
         

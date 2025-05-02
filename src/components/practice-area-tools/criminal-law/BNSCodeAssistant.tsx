@@ -14,6 +14,7 @@ import { BookOpen, Search } from 'lucide-react';
 import { BaseAnalyzer } from '../base';
 import { Label } from '@/components/ui/label';
 import { AnalysisResult } from '../base/BaseAnalyzer';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // BNS vs IPC comparison data
 const bnsIpcComparisons = [
@@ -83,82 +84,95 @@ const BNSCodeAssistant = () => {
   };
   
   return (
-    <BaseAnalyzer
-      title="BNS Code Assistant"
-      description="Navigate and compare sections between Bharatiya Nyaya Sanhita (BNS) and Indian Penal Code (IPC)"
-      icon={<BookOpen className="h-5 w-5 text-blue-600" />}
-      onAnalyze={handleSearch}
-      analysisResults={analysisResults}
-    >
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="search-type">Search By</Label>
-          <Select 
-            value={searchType} 
-            onValueChange={setSearchType}
-          >
-            <SelectTrigger className="w-full" id="search-type">
-              <SelectValue placeholder="Search by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="section">Section Number</SelectItem>
-              <SelectItem value="keyword">Keyword</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="search-term">{searchType === 'section' ? 'Enter Section Number' : 'Enter Keyword'}</Label>
-          <div className="flex space-x-2">
-            <Input
-              id="search-term"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={searchType === 'section' ? 'e.g., 45' : 'e.g., sedition'}
-              className="flex-1"
-            />
+    <TooltipProvider>
+      <BaseAnalyzer
+        title="BNS Code Assistant"
+        description="Navigate and compare sections between Bharatiya Nyaya Sanhita (BNS) and Indian Penal Code (IPC)"
+        icon={<BookOpen className="h-5 w-5 text-blue-600" />}
+        onAnalyze={handleSearch}
+        analysisResults={analysisResults}
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="search-type">Search By</Label>
+            <Select 
+              value={searchType} 
+              onValueChange={setSearchType}
+            >
+              <SelectTrigger className="w-full" id="search-type">
+                <SelectValue placeholder="Search by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="section">Section Number</SelectItem>
+                <SelectItem value="keyword">Keyword</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-        
-        {searchResults.length > 0 && (
-          <div className="mt-6 border rounded-lg p-4">
-            <Tabs defaultValue={searchResults[0].section}>
-              <TabsList className="w-full mb-4 overflow-x-auto flex-nowrap">
+          
+          <div className="space-y-2">
+            <Label htmlFor="search-term">{searchType === 'section' ? 'Enter Section Number' : 'Enter Keyword'}</Label>
+            <div className="flex space-x-2">
+              <Input
+                id="search-term"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={searchType === 'section' ? 'e.g., 45' : 'e.g., sedition'}
+                className="flex-1"
+              />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={handleSearch} size="icon" variant="outline" className="flex-shrink-0">
+                    <Search className="h-4 w-4" />
+                    <span className="sr-only">Search</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Search BNS Code</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+          
+          {searchResults.length > 0 && (
+            <div className="mt-6 border rounded-lg p-4">
+              <Tabs defaultValue={searchResults[0].section}>
+                <div className="overflow-x-auto">
+                  <TabsList className="mb-4 flex">
+                    {searchResults.map((result) => (
+                      <TabsTrigger key={result.section} value={result.section} className="px-4">
+                        Section {result.section}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+                
                 {searchResults.map((result) => (
-                  <TabsTrigger key={result.section} value={result.section}>
-                    Section {result.section}
-                  </TabsTrigger>
+                  <TabsContent key={result.section} value={result.section} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <h3 className="font-medium text-blue-700 dark:text-blue-400 mb-2">
+                          BNS {result.bns.split(':')[0]}:
+                        </h3>
+                        <p className="text-sm">{result.bns.split(':').slice(1).join(':').trim()}</p>
+                      </div>
+                      <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                        <h3 className="font-medium text-amber-700 dark:text-amber-400 mb-2">
+                          IPC {result.ipc.split(':')[0]}:
+                        </h3>
+                        <p className="text-sm">{result.ipc.split(':').slice(1).join(':').trim()}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <h3 className="font-medium text-green-700 dark:text-green-400 mb-2">Key Changes:</h3>
+                      <p className="text-sm">{result.key_changes}</p>
+                    </div>
+                  </TabsContent>
                 ))}
-              </TabsList>
-              
-              {searchResults.map((result) => (
-                <TabsContent key={result.section} value={result.section} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <h3 className="font-medium text-blue-700 dark:text-blue-400 mb-2">
-                        BNS {result.bns.split(':')[0]}:
-                      </h3>
-                      <p className="text-sm">{result.bns.split(':').slice(1).join(':').trim()}</p>
-                    </div>
-                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                      <h3 className="font-medium text-amber-700 dark:text-amber-400 mb-2">
-                        IPC {result.ipc.split(':')[0]}:
-                      </h3>
-                      <p className="text-sm">{result.ipc.split(':').slice(1).join(':').trim()}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <h3 className="font-medium text-green-700 dark:text-green-400 mb-2">Key Changes:</h3>
-                    <p className="text-sm">{result.key_changes}</p>
-                  </div>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </div>
-        )}
-      </div>
-    </BaseAnalyzer>
+              </Tabs>
+            </div>
+          )}
+        </div>
+      </BaseAnalyzer>
+    </TooltipProvider>
   );
 };
 
