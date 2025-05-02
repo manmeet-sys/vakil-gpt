@@ -11,7 +11,7 @@ export interface BaseDocumentGeneratorProps {
   title: string;
   description: string;
   icon: ReactNode;
-  onGenerate: () => void;
+  onGenerate?: () => void;
   handleGenerate?: () => void; // Added for compatibility
   generatedContent?: string;
   generatedDocument?: { title: string; content: string; };
