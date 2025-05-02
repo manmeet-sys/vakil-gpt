@@ -2,7 +2,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import OptimizedAppLayout from '@/components/OptimizedAppLayout';
-import { Calculator } from 'lucide-react';
+import { Calculator, Scale } from 'lucide-react';
 import LegalCalculator from '@/components/LegalCalculator';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { motion } from 'framer-motion';
@@ -31,7 +31,8 @@ const LegalCalculatorPage: React.FC = () => {
             </div>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl">
               Calculate court fees, legal interest, and other financial aspects of your legal cases with precision.
-              Our calculators help you estimate costs accurately based on Indian legal fee structures.
+              Our enhanced calculators help you estimate costs accurately based on Indian legal fee structures with 
+              state-specific calculations.
             </p>
           </div>
           
@@ -43,9 +44,11 @@ const LegalCalculatorPage: React.FC = () => {
             <h2 className="text-xl font-semibold mb-3">How To Use</h2>
             <div className="bg-muted/30 rounded-lg p-5 text-muted-foreground space-y-4 border border-muted/50">
               <p>1. Select the calculator type (Court Fees or Interest Calculation)</p>
-              <p>2. Enter the required values in the input fields</p>
-              <p>3. Click "Calculate" to see your result</p>
-              <p>4. Results are shown below the calculate button, and can be copied for your reference</p>
+              <p>2. For court fees, select your state, court type, and claim type</p>
+              <p>3. Enter the required values in the input fields</p>
+              <p>4. Click "Calculate" to see your result</p>
+              <p>5. View the detailed breakdown of your calculation</p>
+              <p>6. Copy the results for your reference</p>
             </div>
             <p className="text-xs text-muted-foreground mt-4">
               Disclaimer: The calculations provided by these tools are estimates based on standard rates and formulas.
