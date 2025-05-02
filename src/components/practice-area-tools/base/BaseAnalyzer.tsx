@@ -16,7 +16,7 @@ interface BaseAnalyzerProps {
   description: string;
   icon: ReactNode;
   onAnalyze: () => void;
-  analysisResults: AnalysisResult[];
+  analysisResults?: AnalysisResult[];
   children: ReactNode;
 }
 
@@ -25,7 +25,7 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
   description,
   icon,
   onAnalyze,
-  analysisResults,
+  analysisResults = [], // Provide a default empty array
   children,
 }) => {
   const getSeverityIcon = (severity: string) => {
@@ -79,7 +79,7 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
           </Button>
         </div>
         
-        {analysisResults.length > 0 && (
+        {analysisResults && analysisResults.length > 0 && (
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }}

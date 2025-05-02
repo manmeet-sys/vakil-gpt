@@ -88,7 +88,7 @@ const BNSCodeAssistant = () => {
       description="Navigate and compare sections between Bharatiya Nyaya Sanhita (BNS) and Indian Penal Code (IPC)"
       icon={<BookOpen className="h-5 w-5 text-blue-600" />}
       onAnalyze={handleSearch}
-      analysisResults={analysisResults.length > 0 ? analysisResults : undefined}
+      analysisResults={analysisResults}
     >
       <div className="space-y-4">
         <div className="space-y-2">
