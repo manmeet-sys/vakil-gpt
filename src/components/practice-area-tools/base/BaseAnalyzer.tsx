@@ -6,9 +6,11 @@ import { AlertCircle, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export interface AnalysisResult {
-  title: string;
-  description: string;
-  severity: 'high' | 'medium' | 'low' | 'info';
+  status?: string;
+  data?: any;
+  title?: string;
+  description?: string;
+  severity?: 'high' | 'medium' | 'low' | 'info';
 }
 
 interface BaseAnalyzerProps {
@@ -16,6 +18,8 @@ interface BaseAnalyzerProps {
   description: string;
   icon: ReactNode;
   onAnalyze: () => void;
+  isAnalyzing?: boolean;
+  analysisResult?: AnalysisResult | null;
   analysisResults?: AnalysisResult[];
   children: ReactNode;
   buttonText?: string;
@@ -27,6 +31,8 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
   description,
   icon,
   onAnalyze,
+  isAnalyzing = false,
+  analysisResult = null,
   analysisResults = [], // Default to empty array
   children,
   buttonText = "Analyze",
@@ -78,8 +84,9 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
           <Button 
             onClick={onAnalyze}
             className="w-full sm:w-auto"
+            disabled={isAnalyzing}
           >
-            {buttonText}
+            {isAnalyzing ? "Analyzing..." : buttonText}
           </Button>
         </div>
         
@@ -97,10 +104,10 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`p-3 border-l-4 rounded-r-md ${getSeverityColor(result.severity)}`}
+                  className={`p-3 border-l-4 rounded-r-md ${getSeverityColor(result.severity || 'info')}`}
                 >
                   <div className="flex gap-2 items-start">
-                    {getSeverityIcon(result.severity)}
+                    {getSeverityIcon(result.severity || 'info')}
                     <div>
                       <h4 className="font-medium font-playfair text-sm">{result.title}</h4>
                       <p className="text-sm text-muted-foreground mt-1">{result.description}</p>
