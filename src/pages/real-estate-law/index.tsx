@@ -1,35 +1,80 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Home, FileText, Search, Building2, FileCheck, ArrowRight } from 'lucide-react';
 import PracticeAreaHeader from '@/components/practice-areas/PracticeAreaHeader';
 import PracticeAreaFeature from '@/components/practice-areas/PracticeAreaFeature';
 import LegalUpdatesSection from '@/components/practice-areas/LegalUpdatesSection';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BackButton from '@/components/BackButton';
+import { TitleSearchAssistant, RERAComplianceChecker, PropertyDocumentGenerator, PropertyDueDiligence } from '@/components/practice-area-tools/real-estate-law';
+import { TitleSearchSkeleton, RERAComplianceSkeleton, PropertyDocumentSkeleton, PropertyDueDiligenceSkeleton } from '@/components/SkeletonLoaders';
+import { useNavigate } from 'react-router-dom';
 
 const RealEstateLawPage = () => {
+  const [activeTab, setActiveTab] = useState<string>("tools");
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // Parse URL parameters to determine which tool to show
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tool = urlParams.get('tool');
+    if (tool) {
+      setSelectedTool(tool);
+      setActiveTab("generator");
+    }
+  }, []);
+
+  const handleToolSelect = (toolId: string) => {
+    setIsLoading(true);
+    setSelectedTool(toolId);
+    
+    // Update URL with the selected tool
+    const url = new URL(window.location.href);
+    url.searchParams.set('tool', toolId);
+    window.history.pushState({}, '', url);
+    
+    setTimeout(() => {
+      setActiveTab("generator");
+      setIsLoading(false);
+    }, 800);
+  };
+  
+  const handleBackToTools = () => {
+    setSelectedTool(null);
+    setActiveTab("tools");
+    
+    // Remove tool parameter from URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('tool');
+    window.history.pushState({}, '', url);
+  };
+
   const realEstateLawTools = [
     {
-      id: 'titleanalyzer',
-      title: 'Title Search & Analysis',
+      id: 'titlesearch',
+      title: 'Title Search Assistant',
       description: 'Comprehensive tool to analyze property documents, verify ownership chain, and identify potential title defects or encumbrances',
       icon: <Search className="h-4 w-4 text-blue-600" />,
-      linkPath: '/legal-document-analyzer',
-      linkText: 'Analyze Title Documents'
+      linkPath: '#',
+      linkText: 'Verify Property Title'
     },
     {
-      id: 'reradocuments',
+      id: 'reracompliance',
       title: 'RERA Compliance Assistant',
-      description: 'Interactive system to generate RERA-compliant documents and verify project compliance with state-specific requirements',
+      description: 'Interactive system to verify Real Estate Regulatory Authority compliance for projects and generate required documentation',
       icon: <Building2 className="h-4 w-4 text-blue-600" />,
-      linkPath: '/compliance-assistance',
-      linkText: 'RERA Compliance Tools'
+      linkPath: '#',
+      linkText: 'Check RERA Compliance'
     },
     {
       id: 'propertydocuments',
       title: 'Property Document Generator',
       description: 'Advanced tool to generate legally sound property documents including sale deeds, lease agreements, and conveyance deeds',
       icon: <FileText className="h-4 w-4 text-blue-600" />,
-      linkPath: '/legal-document-drafting',
+      linkPath: '#',
       linkText: 'Generate Property Documents'
     },
     {
@@ -37,7 +82,7 @@ const RealEstateLawPage = () => {
       title: 'Property Due Diligence',
       description: 'Structured workflow for conducting comprehensive due diligence on property transactions with customizable checklists',
       icon: <FileCheck className="h-4 w-4 text-blue-600" />,
-      linkPath: '/legal-due-diligence',
+      linkPath: '#',
       linkText: 'Start Due Diligence'
     },
   ];
@@ -97,42 +142,96 @@ const RealEstateLawPage = () => {
     }
   ];
   
+  const renderSelectedTool = () => {
+    if (isLoading) {
+      switch (selectedTool) {
+        case 'titlesearch':
+          return <TitleSearchSkeleton />;
+        case 'reracompliance':
+          return <RERAComplianceSkeleton />;
+        case 'propertydocuments':
+          return <PropertyDocumentSkeleton />;
+        case 'duediligence':
+          return <PropertyDueDiligenceSkeleton />;
+        default:
+          return null;
+      }
+    }
+    
+    switch (selectedTool) {
+      case 'titlesearch':
+        return <TitleSearchAssistant />;
+      case 'reracompliance':
+        return <RERAComplianceChecker />;
+      case 'propertydocuments':
+        return <PropertyDocumentGenerator />;
+      case 'duediligence':
+        return <PropertyDueDiligence />;
+      default:
+        return null;
+    }
+  };
+  
   return (
     <LegalToolLayout
       title="Real Estate Law Practice Tools"
       description="Specialized tools for real estate law practice including title analysis, RERA compliance, and property document generation"
       icon={<Home className="w-6 h-6 text-blue-600" />}
     >
-      <PracticeAreaHeader
-        title="Real Estate Law Practice"
-        description="Tools and resources for Indian property law and real estate transactions"
-        icon={<Home className="h-6 w-6 text-blue-600" />}
-      />
-      
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Building2 className="h-5 w-5 text-blue-600" />
-          <span>Real Estate Legal Tools</span>
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {realEstateLawTools.map((tool) => (
-            <PracticeAreaFeature
-              key={tool.id}
-              title={tool.title}
-              description={tool.description}
-              icon={tool.icon}
-              linkPath={tool.linkPath}
-              linkText={tool.linkText}
-            />
-          ))}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex items-center justify-between mb-4">
+          <TabsList>
+            <TabsTrigger value="tools" onClick={() => handleBackToTools()}>Tools</TabsTrigger>
+            <TabsTrigger value="generator" disabled={!selectedTool}>
+              {selectedTool === 'titlesearch' && 'Title Search Assistant'}
+              {selectedTool === 'reracompliance' && 'RERA Compliance Assistant'}
+              {selectedTool === 'propertydocuments' && 'Property Document Generator'}
+              {selectedTool === 'duediligence' && 'Property Due Diligence'}
+              {!selectedTool && 'Tool'}
+            </TabsTrigger>
+          </TabsList>
+          
+          <BackButton to="/practice-areas" label="Back to Practice Areas" />
         </div>
-      </section>
       
-      <LegalUpdatesSection
-        lawUpdates={realEstateLawUpdates}
-        keyLegalPrinciples={realEstateLegalPrinciples}
-      />
+        <TabsContent value="tools" className="mt-0">
+          <PracticeAreaHeader
+            title="Real Estate Law Practice"
+            description="Tools and resources for Indian property law and real estate transactions"
+            icon={<Home className="h-6 w-6 text-blue-600" />}
+          />
+          
+          <section className="mb-8">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-blue-600" />
+              <span>Real Estate Legal Tools</span>
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {realEstateLawTools.map((tool) => (
+                <PracticeAreaFeature
+                  key={tool.id}
+                  title={tool.title}
+                  description={tool.description}
+                  icon={tool.icon}
+                  onClick={() => handleToolSelect(tool.id)}
+                  linkPath={tool.linkPath}
+                  linkText={tool.linkText}
+                />
+              ))}
+            </div>
+          </section>
+          
+          <LegalUpdatesSection
+            lawUpdates={realEstateLawUpdates}
+            keyLegalPrinciples={realEstateLegalPrinciples}
+          />
+        </TabsContent>
+        
+        <TabsContent value="generator" className="mt-0 space-y-6">
+          {renderSelectedTool()}
+        </TabsContent>
+      </Tabs>
     </LegalToolLayout>
   );
 };
