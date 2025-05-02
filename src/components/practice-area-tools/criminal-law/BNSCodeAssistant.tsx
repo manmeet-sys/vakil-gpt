@@ -32,7 +32,7 @@ const bnsIpcComparisons = [
   {
     section: "121",
     bns: "Section 121: Voluntarily causing hurt - Whoever voluntarily causes pain, disease or infirmity to any person, including acts such as poisoning a person, shall have said to have committed the offence of voluntarily causing hurt.",
-    ipc: "Section 321: Voluntarily causing hurt - Whoever does any act with the intention of thereby causing hurt to any person, or with the knowledge that he is likely thereby to cause hurt to any person, and does thereby cause hurt to any person, is said "voluntarily to cause hurt".",
+    ipc: 'Section 321: Voluntarily causing hurt - Whoever does any act with the intention of thereby causing hurt to any person, or with the knowledge that he is likely thereby to cause hurt to any person, and does thereby cause hurt to any person, is said "voluntarily to cause hurt".',
     key_changes: "Section number changed from 321 to 121. Definition expanded to explicitly include acts such as poisoning."
   },
   {
