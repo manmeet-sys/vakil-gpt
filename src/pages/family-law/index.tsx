@@ -1,9 +1,15 @@
 
 import React from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { Heart, Calculator, FileText, Landmark, ArrowRight } from 'lucide-react';
+import { Heart, Calculator, FileText, Landmark, ArrowRight, Scale } from 'lucide-react';
 import PracticeAreaTools from '@/components/PracticeAreaTools';
 import BackButton from '@/components/BackButton';
+import { 
+  MaintenanceCalculator,
+  ChildCustodyAnalyzer, 
+  FamilySettlementGenerator, 
+  PropertyDivisionAssistant 
+} from '@/components/practice-area-tools/family-law';
 
 const FamilyLawPage = () => {
   const familyLawTools = [
@@ -12,51 +18,28 @@ const FamilyLawPage = () => {
       title: 'Maintenance Calculator',
       description: 'Calculate maintenance amounts based on income, needs, and applicable family law',
       icon: <Calculator className="h-4 w-4 text-blue-600" />,
-      content: (
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <p className="text-sm">Estimate maintenance amounts under various personal laws and Section 125 CrPC</p>
-          <div className="mt-3">
-            <a href="/legal-calculator" className="text-xs text-blue-600 dark:text-blue-400 flex items-center">
-              Calculate Maintenance
-              <ArrowRight className="ml-1 h-3 w-3" />
-            </a>
-          </div>
-        </div>
-      )
+      content: <MaintenanceCalculator />
     },
     {
       id: 'custodyanalyzer',
-      title: 'Custody Case Analyzer',
-      description: 'Analyze custody cases based on welfare principle and relevant precedents',
+      title: 'Child Custody Analyzer',
+      description: 'Analyze custody cases based on welfare principle and relevant factors',
       icon: <Landmark className="h-4 w-4 text-blue-600" />,
-      content: (
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <p className="text-sm">Evaluate custody factors based on the paramount consideration of child welfare</p>
-          <div className="mt-3">
-            <a href="/advanced-ai-analysis" className="text-xs text-blue-600 dark:text-blue-400 flex items-center">
-              Analyze Custody Case
-              <ArrowRight className="ml-1 h-3 w-3" />
-            </a>
-          </div>
-        </div>
-      )
+      content: <ChildCustodyAnalyzer />
     },
     {
-      id: 'marriagedocuments',
-      title: 'Marriage & Divorce Documents',
+      id: 'familysettlement',
+      title: 'Family Settlement Generator',
       description: 'Generate family law documents for different personal laws in India',
       icon: <FileText className="h-4 w-4 text-blue-600" />,
-      content: (
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <p className="text-sm">Create customized documents for marriage, divorce, maintenance, and custody matters</p>
-          <div className="mt-3">
-            <a href="/legal-document-drafting" className="text-xs text-blue-600 dark:text-blue-400 flex items-center">
-              Draft Family Law Documents
-              <ArrowRight className="ml-1 h-3 w-3" />
-            </a>
-          </div>
-        </div>
-      )
+      content: <FamilySettlementGenerator />
+    },
+    {
+      id: 'propertydivision',
+      title: 'Property Division Assistant',
+      description: 'Calculate equitable division of matrimonial assets and liabilities',
+      icon: <Scale className="h-4 w-4 text-blue-600" />,
+      content: <PropertyDivisionAssistant />
     },
   ];
   
@@ -102,7 +85,7 @@ const FamilyLawPage = () => {
       description="Specialized tools for family law practice including maintenance calculation, custody analysis, and document generation"
       icon={<Heart className="w-6 h-6 text-blue-600" />}
     >
-      <BackButton to="/tools" label="Back to Tools" />
+      <BackButton to="/practice-areas" label="Back to Practice Areas" />
       
       <PracticeAreaTools
         practiceArea="Family Law Practice"
