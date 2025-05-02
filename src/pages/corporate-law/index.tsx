@@ -3,42 +3,44 @@ import React from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Briefcase, FileText, Building, FileCheck, Search, ArrowRight } from 'lucide-react';
 import PracticeAreaHeader from '@/components/practice-areas/PracticeAreaHeader';
-import PracticeAreaFeature from '@/components/practice-areas/PracticeAreaFeature';
+import PracticeAreaTools from '@/components/PracticeAreaTools';
 import LegalUpdatesSection from '@/components/practice-areas/LegalUpdatesSection';
+import { 
+  CompanyFormationGenerator, 
+  MADueDiligenceGenerator, 
+  ComplianceCalendarGenerator, 
+  ContractRiskAnalyzer
+} from '@/components/practice-area-tools/corporate-law';
 
 const CorporateLawPage = () => {
   const corporateLawTools = [
     {
       id: 'companyformation',
-      title: 'Company Formation Assistant',
-      description: 'Interactive tool to compare different business structures and generate all required formation documents for your chosen entity type',
+      title: 'Company Formation Document Generator',
+      description: 'Generate formation documents for different business entity types in India including Private Limited, LLP, OPC, and more',
       icon: <Building className="h-4 w-4 text-blue-600" />,
-      linkPath: '/startup-toolkit',
-      linkText: 'Open Formation Assistant'
+      content: <CompanyFormationGenerator />
     },
     {
       id: 'duediligence',
-      title: 'Due Diligence Tool',
-      description: 'Comprehensive due diligence analysis system for mergers, acquisitions, and investments with customizable checklists',
+      title: 'M&A Due Diligence Checklist Generator',
+      description: 'Create comprehensive due diligence checklists for mergers, acquisitions, and investments with customizable parameters',
       icon: <FileCheck className="h-4 w-4 text-blue-600" />,
-      linkPath: '/m&a-due-diligence',
-      linkText: 'Run Due Diligence'
+      content: <MADueDiligenceGenerator />
     },
     {
       id: 'compliancecalendar',
-      title: 'Corporate Compliance Calendar',
-      description: 'Automated tracking system for all corporate compliance deadlines with customizable reminders and document generation',
+      title: 'Corporate Compliance Calendar Generator',
+      description: 'Generate customized compliance calendars with regulatory deadlines for different types of business entities',
       icon: <FileText className="h-4 w-4 text-blue-600" />,
-      linkPath: '/deadline-management',
-      linkText: 'View Compliance Calendar'
+      content: <ComplianceCalendarGenerator />
     },
     {
       id: 'contractanalysis',
-      title: 'Corporate Contract Analyzer',
-      description: 'AI-powered tool to analyze corporate agreements and identify key terms, obligations, and potential risks',
+      title: 'Contract Risk Analysis Tool',
+      description: 'Analyze contracts for legal risks, liability exposure, unfavorable terms, and potential compliance issues',
       icon: <Search className="h-4 w-4 text-blue-600" />,
-      linkPath: '/legal-document-analyzer',
-      linkText: 'Analyze Contracts'
+      content: <ContractRiskAnalyzer />
     },
   ];
   
@@ -109,27 +111,11 @@ const CorporateLawPage = () => {
         icon={<Briefcase className="h-6 w-6 text-blue-600" />}
       />
       
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Building className="h-5 w-5 text-blue-600" />
-          <span>Corporate Legal Tools</span>
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {corporateLawTools.map((tool) => (
-            <PracticeAreaFeature
-              key={tool.id}
-              title={tool.title}
-              description={tool.description}
-              icon={tool.icon}
-              linkPath={tool.linkPath}
-              linkText={tool.linkText}
-            />
-          ))}
-        </div>
-      </section>
-      
-      <LegalUpdatesSection
+      <PracticeAreaTools
+        practiceArea="Corporate Law Practice"
+        description="Tools and resources for Indian corporate and commercial law"
+        icon={<Briefcase className="h-5 w-5 text-blue-600" />}
+        tools={corporateLawTools}
         lawUpdates={corporateLawUpdates}
         keyLegalPrinciples={corporateLegalPrinciples}
       />
