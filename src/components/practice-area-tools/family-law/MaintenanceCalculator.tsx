@@ -89,11 +89,11 @@ const MaintenanceCalculator = () => {
     return (
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <span className="font-medium">Estimated Monthly Maintenance:</span>
+          <span className="font-medium font-playfair">Estimated Monthly Maintenance:</span>
           <span className="text-lg font-bold text-blue-600">₹{calculatedAmount.toFixed(2)}</span>
         </div>
         <div className="text-sm bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
-          <p className="font-medium mb-1">Calculation Basis:</p>
+          <p className="font-medium font-playfair mb-1">Calculation Basis:</p>
           <p className="whitespace-pre-line">{explanation}</p>
           <p className="mt-2 text-xs text-muted-foreground italic">
             Note: This is an estimate based on general principles. Actual court orders may vary based on specific circumstances.
@@ -113,12 +113,12 @@ const MaintenanceCalculator = () => {
     >
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="applicable-act">Applicable Law</Label>
+          <Label htmlFor="applicable-act" className="font-medium">Applicable Law</Label>
           <Select 
             value={applicableAct} 
             onValueChange={setApplicableAct}
           >
-            <SelectTrigger className="w-full" id="applicable-act">
+            <SelectTrigger className="w-full font-playfair" id="applicable-act">
               <SelectValue placeholder="Select Applicable Law" />
             </SelectTrigger>
             <SelectContent>
@@ -131,18 +131,19 @@ const MaintenanceCalculator = () => {
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="monthly-income">Monthly Income of Paying Spouse (₹)</Label>
+          <Label htmlFor="monthly-income" className="font-medium">Monthly Income of Paying Spouse (₹)</Label>
           <Input 
             id="monthly-income"
             type="number" 
             value={monthlyIncome.toString()} 
             onChange={(e) => setMonthlyIncome(Number(e.target.value))}
             min="0"
+            className="font-playfair"
           />
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="dependents">Number of Dependents</Label>
+          <Label htmlFor="dependents" className="font-medium">Number of Dependents</Label>
           <Input 
             id="dependents"
             type="number" 
@@ -150,22 +151,24 @@ const MaintenanceCalculator = () => {
             onChange={(e) => setDependents(Number(e.target.value))}
             min="1"
             max="10"
+            className="font-playfair"
           />
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="expenses">Essential Monthly Expenses of Paying Spouse (₹)</Label>
+          <Label htmlFor="expenses" className="font-medium">Essential Monthly Expenses of Paying Spouse (₹)</Label>
           <Input 
             id="expenses"
             type="number" 
             value={expenses.toString()} 
             onChange={(e) => setExpenses(Number(e.target.value))}
             min="0"
+            className="font-playfair"
           />
         </div>
         
         <div className="space-y-2">
-          <Label>Employment Status of Recipient</Label>
+          <Label className="font-medium">Employment Status of Recipient</Label>
           <RadioGroup 
             value={employmentStatus} 
             onValueChange={setEmploymentStatus}
@@ -173,11 +176,11 @@ const MaintenanceCalculator = () => {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="unemployed" id="unemployed" />
-              <Label htmlFor="unemployed">Unemployed/Homemaker</Label>
+              <Label htmlFor="unemployed" className="font-playfair">Unemployed/Homemaker</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="employed" id="employed" />
-              <Label htmlFor="employed">Employed</Label>
+              <Label htmlFor="employed" className="font-playfair">Employed</Label>
             </div>
           </RadioGroup>
         </div>

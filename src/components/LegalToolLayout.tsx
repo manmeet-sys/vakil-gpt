@@ -1,8 +1,10 @@
 
 import React, { ReactNode, useEffect } from 'react';
 import Footer from '@/components/Footer';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import designSystem from '@/lib/design-system-standards';
 
 interface LegalToolLayoutProps {
@@ -40,8 +42,14 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
     };
   }, [title]);
 
+  const handleToggleProvider = () => {
+    const newProvider = apiProvider === 'gemini' ? 'deepseek' : 'gemini';
+    setApiProvider(newProvider);
+    localStorage.setItem('preferredApiProvider', newProvider);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background font-sans">
       {/* Skip to content link for keyboard accessibility */}
       <a href="#main-content" className="skip-to-content">
         Skip to content
@@ -56,7 +64,7 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
               </div>
               <motion.h1 
                 id="page-title"
-                className={designSystem.apply.heading(1)}
+                className="text-2xl font-playfair font-medium tracking-tight"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -67,7 +75,7 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
             
             {description && (
               <motion.p 
-                className={designSystem.typography.body.large}
+                className="text-base text-muted-foreground max-w-3xl"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
@@ -83,27 +91,20 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <Tabs 
-              defaultValue={apiProvider} 
-              onValueChange={(value) => {
-                setApiProvider(value as 'deepseek' | 'gemini');
-                localStorage.setItem('preferredApiProvider', value);
-              }}
-              className="w-full"
-            >
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6" aria-label="AI Model Selection">
-                <TabsTrigger value="gemini" className="px-4 py-2 text-sm font-medium">Gemini AI</TabsTrigger>
-                <TabsTrigger value="deepseek" className="px-4 py-2 text-sm font-medium">DeepSeek AI</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="gemini" className="mt-2">
-                {apiProvider === 'gemini' && children}
-              </TabsContent>
-              
-              <TabsContent value="deepseek" className="mt-2">
-                {apiProvider === 'deepseek' && children}
-              </TabsContent>
-            </Tabs>
+            <div className="w-full max-w-md mx-auto flex items-center justify-end mb-6">
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="api-toggle" className="text-sm font-medium">
+                  {apiProvider === 'gemini' ? 'Using Gemini AI' : 'Using DeepSeek AI'}
+                </Label>
+                <Switch 
+                  id="api-toggle" 
+                  checked={apiProvider === 'deepseek'}
+                  onCheckedChange={handleToggleProvider}
+                />
+              </div>
+            </div>
+            
+            {children}
           </motion.div>
         </div>
       </main>
