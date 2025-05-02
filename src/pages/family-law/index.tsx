@@ -64,7 +64,7 @@ const FamilyLawPage = () => {
   const familyLegalPrinciples = [
     {
       title: 'Welfare Principle',
-      description: 'The paramount consideration in matters relating to custody and guardianship is the welfare of the minor child. Courts prioritize the child's best interests over parental rights.',
+      description: 'The paramount consideration in matters relating to custody and guardianship is the welfare of the minor child. Courts prioritize the child\'s best interests over parental rights.',
       source: 'Gaurav Nagpal v. Sumedha Nagpal (2009) 1 SCC 42'
     },
     {
