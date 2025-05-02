@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { BaseAnalyzer } from '../base';
+import { BaseAnalyzer, type AnalysisResult } from '../base';
 import { Search, Book } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -73,6 +73,15 @@ const CriminalCaseLawResearch = () => {
   const [court, setCourt] = useState('all');
   const [searchResults, setSearchResults] = useState<CasePrecedent[]>([]);
   
+  // Convert search results to analysis results format
+  const mapToAnalysisResults = (): AnalysisResult[] => {
+    return searchResults.map(precedent => ({
+      title: `${precedent.title} (${precedent.year})`,
+      description: precedent.description,
+      severity: 'info'
+    }));
+  };
+  
   const handleSearch = () => {
     let results = [...precedents];
     
@@ -97,92 +106,99 @@ const CriminalCaseLawResearch = () => {
     setSearchResults(results);
   };
   
+  // Custom results render component
+  const ResultsComponent = () => {
+    if (searchResults.length === 0) {
+      return null;
+    }
+    
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Found {searchResults.length} relevant precedents
+        </p>
+        
+        <Tabs defaultValue="list">
+          <TabsList>
+            <TabsTrigger value="list">List View</TabsTrigger>
+            <TabsTrigger value="detail">Detail View</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="list" className="mt-4">
+            <div className="space-y-3">
+              {searchResults.map((precedent) => (
+                <div key={precedent.id} className="border rounded-lg p-3 bg-background">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-medium">{precedent.title}</h4>
+                    <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded">
+                      {precedent.year}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">{precedent.citation}</p>
+                  <p className="text-xs text-muted-foreground mb-2">{precedent.court}</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {precedent.keywords.map((keyword, idx) => (
+                      <span 
+                        key={idx}
+                        className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded"
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="detail" className="mt-4">
+            <Accordion type="single" collapsible className="w-full">
+              {searchResults.map((precedent) => (
+                <AccordionItem key={precedent.id} value={precedent.id}>
+                  <AccordionTrigger>
+                    <div className="flex flex-col items-start text-left">
+                      <span>{precedent.title}</span>
+                      <span className="text-xs text-muted-foreground">{precedent.citation} • {precedent.year}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-3 pt-2">
+                      <div>
+                        <h4 className="text-sm font-medium">Case Summary</h4>
+                        <p className="text-sm mt-1">{precedent.description}</p>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-sm font-medium">Relevant Section</h4>
+                        <p className="text-sm mt-1">{precedent.relevantSection}</p>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-sm font-medium">Key Legal Principles</h4>
+                        <ul className="text-sm list-disc list-inside mt-1">
+                          {precedent.principles.map((principle, idx) => (
+                            <li key={idx}>{principle}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  };
+  
   return (
     <BaseAnalyzer
       title="Criminal Case Law Research"
       description="Search and analyze criminal case precedents from Supreme Court and High Courts"
       icon={<Search className="h-5 w-5 text-blue-600" />}
       onAnalyze={handleSearch}
-      analysisResults={
-        searchResults.length > 0 ? (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Found {searchResults.length} relevant precedents
-            </p>
-            
-            <Tabs defaultValue="list">
-              <TabsList>
-                <TabsTrigger value="list">List View</TabsTrigger>
-                <TabsTrigger value="detail">Detail View</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="list" className="mt-4">
-                <div className="space-y-3">
-                  {searchResults.map((precedent) => (
-                    <div key={precedent.id} className="border rounded-lg p-3 bg-background">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-medium">{precedent.title}</h4>
-                        <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded">
-                          {precedent.year}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-1">{precedent.citation}</p>
-                      <p className="text-xs text-muted-foreground mb-2">{precedent.court}</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {precedent.keywords.map((keyword, idx) => (
-                          <span 
-                            key={idx}
-                            className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded"
-                          >
-                            {keyword}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="detail" className="mt-4">
-                <Accordion type="single" collapsible className="w-full">
-                  {searchResults.map((precedent) => (
-                    <AccordionItem key={precedent.id} value={precedent.id}>
-                      <AccordionTrigger>
-                        <div className="flex flex-col items-start text-left">
-                          <span>{precedent.title}</span>
-                          <span className="text-xs text-muted-foreground">{precedent.citation} • {precedent.year}</span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-3 pt-2">
-                          <div>
-                            <h4 className="text-sm font-medium">Case Summary</h4>
-                            <p className="text-sm mt-1">{precedent.description}</p>
-                          </div>
-                          
-                          <div>
-                            <h4 className="text-sm font-medium">Relevant Section</h4>
-                            <p className="text-sm mt-1">{precedent.relevantSection}</p>
-                          </div>
-                          
-                          <div>
-                            <h4 className="text-sm font-medium">Key Legal Principles</h4>
-                            <ul className="text-sm list-disc list-inside mt-1">
-                              {precedent.principles.map((principle, idx) => (
-                                <li key={idx}>{principle}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </TabsContent>
-            </Tabs>
-          </div>
-        ) : undefined
-      }
+      analysisResults={mapToAnalysisResults()}
     >
       <div className="space-y-4">
         <div className="space-y-2">
@@ -212,6 +228,8 @@ const CriminalCaseLawResearch = () => {
             </SelectContent>
           </Select>
         </div>
+        
+        {searchResults.length > 0 && <ResultsComponent />}
       </div>
     </BaseAnalyzer>
   );

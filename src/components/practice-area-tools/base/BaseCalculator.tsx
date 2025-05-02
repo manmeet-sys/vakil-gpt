@@ -11,6 +11,7 @@ interface BaseCalculatorProps {
   onCalculate: () => void;
   results: ReactNode;
   children: ReactNode;
+  footerContent?: ReactNode; // Add optional footerContent prop
 }
 
 export const BaseCalculator: React.FC<BaseCalculatorProps> = ({
@@ -20,6 +21,7 @@ export const BaseCalculator: React.FC<BaseCalculatorProps> = ({
   onCalculate,
   results,
   children,
+  footerContent, // Add footerContent to the destructuring
 }) => {
   return (
     <Card className="w-full">
@@ -56,6 +58,13 @@ export const BaseCalculator: React.FC<BaseCalculatorProps> = ({
           </motion.div>
         )}
       </CardContent>
+      
+      {/* Render footer content if provided */}
+      {footerContent && (
+        <CardFooter className="pt-0">
+          {footerContent}
+        </CardFooter>
+      )}
     </Card>
   );
 };
