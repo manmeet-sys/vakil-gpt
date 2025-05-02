@@ -134,7 +134,7 @@ const CorporateLawPage = () => {
     },
     {
       title: 'Limited Liability',
-      description: 'Shareholders' liability is generally limited to their investment in the company, protecting personal assets.',
+      description: "Shareholders' liability is generally limited to their investment in the company, protecting personal assets.",
       source: 'Companies Act, 2013, Section 3(2)'
     },
     {
