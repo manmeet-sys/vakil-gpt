@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { IndianRupee, ArrowUpRight, Activity, FileText, AlertTriangle } from 'lucide-react';
+import { IndianRupee, ArrowUpRight, Activity, FileText, AlertTriangle, Clock } from 'lucide-react';
 import FinancialObligationsTool from '@/components/FinancialObligationsTool';
 import BackToToolsButton from '@/components/practice-areas/BackToToolsButton';
 import { motion } from 'framer-motion';
