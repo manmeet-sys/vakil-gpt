@@ -85,7 +85,7 @@ const TaxCompliancePage = () => {
                       <li>E-invoicing threshold: ₹5 crore</li>
                       <li>HSN code requirement: 6 digits for B2B</li>
                       <li>Late fee waivers/reductions</li>
-                      <li>QR code on B2C invoices for businesses with turnover > ₹500 crore</li>
+                      <li>QR code on B2C invoices for businesses with turnover {'>'}  ₹500 crore</li>
                     </ul>
                   </div>
                   <div className="space-y-2">
