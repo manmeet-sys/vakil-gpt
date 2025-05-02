@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, AlertTriangle, FileText, Check, X, AlertCircle, Info } from 'lucide-react';
 import { BaseAnalyzer, AnalysisResult } from '@/components/practice-area-tools/base';
@@ -432,9 +431,90 @@ const ContractRiskAnalyzer: React.FC = () => {
     
     const results: AnalysisResult = {
       title: 'Contract Risk Analysis',
-      summary: `The contract "${contractTitle}" has been analyzed for risk factors across ${riskCategories.length} categories. Overall risk level: ${overallRisk.level} (${overallRisk.score}%).`,
-      content: (
-        <div className="space-y-6">
+      description: `The contract "${contractTitle}" has been analyzed for risk factors across ${riskCategories.length} categories. Overall risk level: ${overallRisk.level} (${overallRisk.score}%).`,
+      severity: overallRisk.score > 75 ? 'high' : overallRisk.score > 50 ? 'medium' : overallRisk.score > 25 ? 'low' : 'info'
+    };
+    
+    return results;
+  };
+
+  return (
+    <BaseAnalyzer
+      title="Contract Risk Analysis"
+      description="Analyze contracts for legal risks, liability exposure, and unfavorable terms"
+      icon={<Search className="h-4 w-4 text-blue-600" />}
+      onAnalyze={simulateAnalysis}
+      analysisResults={analysisComplete ? [renderResults()] : []}
+      buttonText={isAnalyzing ? "Analyzing..." : "Analyze"}
+    >
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="contract-title">Contract Title</Label>
+            <Input
+              id="contract-title"
+              className="mt-1"
+              value={contractTitle}
+              onChange={(e) => setContractTitle(e.target.value)}
+              placeholder="Enter contract title"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="contract-type">Contract Type</Label>
+            <Select value={contractType} onValueChange={setContractType}>
+              <SelectTrigger id="contract-type" className="mt-1">
+                <SelectValue placeholder="Select contract type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="service">Service Agreement</SelectItem>
+                <SelectItem value="employment">Employment Contract</SelectItem>
+                <SelectItem value="nda">Non-Disclosure Agreement</SelectItem>
+                <SelectItem value="license">License Agreement</SelectItem>
+                <SelectItem value="supply">Supply Agreement</SelectItem>
+                <SelectItem value="distribution">Distribution Agreement</SelectItem>
+                <SelectItem value="lease">Lease Agreement</SelectItem>
+                <SelectItem value="consulting">Consulting Agreement</SelectItem>
+                <SelectItem value="loan">Loan Agreement</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="other-party">Other Party Name (Optional)</Label>
+          <Input
+            id="other-party"
+            className="mt-1"
+            value={otherParty}
+            onChange={(e) => setOtherParty(e.target.value)}
+            placeholder="Enter name of the other party"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="contract-text">Contract Text</Label>
+          <Textarea
+            id="contract-text"
+            className="mt-1 h-60 font-mono text-sm"
+            value={contractText}
+            onChange={(e) => setContractText(e.target.value)}
+            placeholder="Paste contract text here for analysis..."
+          />
+        </div>
+        
+        <Card>
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <AlertCircle className="h-3 w-3" />
+              <span>For demonstration, you can enter keywords like "unlimited liability", "indemnify", "terminate at any time", etc. to trigger specific risk detections.</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {analysisComplete && (
+        <div className="space-y-6 mt-8">
           {/* Overall Risk Score */}
           <Card>
             <CardHeader className="pb-2">
@@ -610,86 +690,7 @@ const ContractRiskAnalyzer: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      )
-    };
-    
-    return results;
-  };
-
-  return (
-    <BaseAnalyzer
-      title="Contract Risk Analysis"
-      description="Analyze contracts for legal risks, liability exposure, and unfavorable terms"
-      icon={<Search className="h-4 w-4 text-blue-600" />}
-      onAnalyze={simulateAnalysis}
-      isAnalyzing={isAnalyzing}
-      analysisResult={renderResults()}
-    >
-      <div className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="contract-title">Contract Title</Label>
-            <Input
-              id="contract-title"
-              className="mt-1"
-              value={contractTitle}
-              onChange={(e) => setContractTitle(e.target.value)}
-              placeholder="Enter contract title"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="contract-type">Contract Type</Label>
-            <Select value={contractType} onValueChange={setContractType}>
-              <SelectTrigger id="contract-type" className="mt-1">
-                <SelectValue placeholder="Select contract type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="service">Service Agreement</SelectItem>
-                <SelectItem value="employment">Employment Contract</SelectItem>
-                <SelectItem value="nda">Non-Disclosure Agreement</SelectItem>
-                <SelectItem value="license">License Agreement</SelectItem>
-                <SelectItem value="supply">Supply Agreement</SelectItem>
-                <SelectItem value="distribution">Distribution Agreement</SelectItem>
-                <SelectItem value="lease">Lease Agreement</SelectItem>
-                <SelectItem value="consulting">Consulting Agreement</SelectItem>
-                <SelectItem value="loan">Loan Agreement</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        <div>
-          <Label htmlFor="other-party">Other Party Name (Optional)</Label>
-          <Input
-            id="other-party"
-            className="mt-1"
-            value={otherParty}
-            onChange={(e) => setOtherParty(e.target.value)}
-            placeholder="Enter name of the other party"
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="contract-text">Contract Text</Label>
-          <Textarea
-            id="contract-text"
-            className="mt-1 h-60 font-mono text-sm"
-            value={contractText}
-            onChange={(e) => setContractText(e.target.value)}
-            placeholder="Paste contract text here for analysis..."
-          />
-        </div>
-        
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <AlertCircle className="h-3 w-3" />
-              <span>For demonstration, you can enter keywords like "unlimited liability", "indemnify", "terminate at any time", etc. to trigger specific risk detections.</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      )}
     </BaseAnalyzer>
   );
 };
