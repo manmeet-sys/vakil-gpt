@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Compass, Sparkles, CheckCircle, Shield, Calculator, Search } from 'lucide-react';
+import { ArrowRight, Compass, Sparkles, CheckCircle, Shield, Calculator, Search, Scale, Gavel, Briefcase, Home, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ const ExploreToolsSection = () => {
     }
   };
 
-  // Categories to showcase - Legal Calculator and Advanced Search promoted to top
+  // Expanded categories to include all practice areas
   const featuredCategories = [
     {
       title: "Legal Calculator",
@@ -65,6 +65,58 @@ const ExploreToolsSection = () => {
       color: "from-purple-600 to-indigo-700",
       textColor: "text-purple-50",
       path: "/tools#ai-assistance"
+    }
+  ];
+  
+  // Practice Area categories
+  const practiceAreaCategories = [
+    {
+      title: "Civil Law",
+      description: "Limitation, relief clauses & case analysis",
+      icon: <Scale className="h-5 w-5 text-white" />,
+      color: "from-blue-500 to-blue-700",
+      textColor: "text-blue-50",
+      path: "/civil-law"
+    },
+    {
+      title: "Criminal Law",
+      description: "BNS code, sentencing & defense tools",
+      icon: <Gavel className="h-5 w-5 text-white" />,
+      color: "from-red-600 to-red-800",
+      textColor: "text-red-50",
+      path: "/criminal-law"
+    },
+    {
+      title: "Corporate Law",
+      description: "Company formation & compliance tools",
+      icon: <Briefcase className="h-5 w-5 text-white" />,
+      color: "from-gray-600 to-gray-800",
+      textColor: "text-gray-50",
+      path: "/corporate-law"
+    },
+    {
+      title: "Family Law",
+      description: "Maintenance, custody & succession tools",
+      icon: <Heart className="h-5 w-5 text-white" />,
+      color: "from-pink-500 to-pink-700",
+      textColor: "text-pink-50",
+      path: "/family-law"
+    },
+    {
+      title: "Matrimonial Law",
+      description: "Divorce, maintenance & property division",
+      icon: <Heart className="h-5 w-5 text-white" />,
+      color: "from-purple-500 to-purple-700",
+      textColor: "text-purple-50",
+      path: "/matrimonial-law"
+    },
+    {
+      title: "Real Estate Law",
+      description: "Title search, RERA & property documents",
+      icon: <Home className="h-5 w-5 text-white" />,
+      color: "from-green-600 to-green-800",
+      textColor: "text-green-50",
+      path: "/real-estate-law"
     }
   ];
 
@@ -107,8 +159,18 @@ const ExploreToolsSection = () => {
           </motion.p>
         </div>
         
+        {/* Featured Tools */}
+        <motion.h3
+          className="text-2xl font-semibold mb-6 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          Featured Tools
+        </motion.h3>
+        
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-12"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -134,6 +196,53 @@ const ExploreToolsSection = () => {
                     <div className="mt-auto">
                       <span className={cn("inline-flex items-center text-sm font-medium", category.textColor)}>
                         Explore Tools
+                        <ArrowRight className="ml-1 h-3.5 w-3.5 transform transition-transform group-hover:translate-x-1 duration-200" />
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
+        
+        {/* Practice Area Tools */}
+        <motion.h3
+          className="text-2xl font-semibold mb-6 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
+          Practice Area Tools
+        </motion.h3>
+        
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {practiceAreaCategories.map((category, index) => (
+            <motion.div key={category.title} variants={itemVariants}>
+              <Link to={category.path} className="block h-full">
+                <Card className={cn(
+                  "h-full overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 group",
+                  "bg-gradient-to-br", category.color
+                )}>
+                  <CardContent className="p-6 flex flex-col h-full">
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mb-4">
+                      {category.icon}
+                    </div>
+                    <div className={cn("font-bold text-xl mb-2", category.textColor)}>
+                      {category.title}
+                    </div>
+                    <p className={cn("text-sm opacity-90 mb-4", category.textColor)}>
+                      {category.description}
+                    </p>
+                    <div className="mt-auto">
+                      <span className={cn("inline-flex items-center text-sm font-medium", category.textColor)}>
+                        Explore Specialized Tools
                         <ArrowRight className="ml-1 h-3.5 w-3.5 transform transition-transform group-hover:translate-x-1 duration-200" />
                       </span>
                     </div>
