@@ -57,7 +57,14 @@ const BNSCodeAssistant = () => {
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
   
   const handleSearch = () => {
-    if (!searchTerm) return;
+    if (!searchTerm) {
+      setAnalysisResults([{
+        title: "Search Required",
+        description: "Please enter a section number or keyword to search.",
+        severity: "info"
+      }]);
+      return;
+    }
     
     let results;
     if (searchType === 'section') {
@@ -74,13 +81,21 @@ const BNSCodeAssistant = () => {
     setSearchResults(results);
     
     // Create analysis results
-    const analysis: AnalysisResult[] = results.map(result => ({
-      title: `BNS Section ${result.section} (formerly IPC Section ${result.ipc.split(':')[0].replace('Section', '').trim()})`,
-      description: result.key_changes,
-      severity: 'info'
-    }));
-    
-    setAnalysisResults(analysis);
+    if (results.length > 0) {
+      const analysis: AnalysisResult[] = results.map(result => ({
+        title: `BNS Section ${result.section} (formerly IPC Section ${result.ipc.split(':')[0].replace('Section', '').trim()})`,
+        description: result.key_changes,
+        severity: 'info'
+      }));
+      
+      setAnalysisResults(analysis);
+    } else {
+      setAnalysisResults([{
+        title: "No Results Found",
+        description: `No matches found for ${searchType === 'section' ? 'section' : 'keyword'}: "${searchTerm}". Try a different search term.`,
+        severity: "medium"
+      }]);
+    }
   };
   
   return (
@@ -91,6 +106,7 @@ const BNSCodeAssistant = () => {
         icon={<BookOpen className="h-5 w-5 text-blue-600" />}
         onAnalyze={handleSearch}
         analysisResults={analysisResults}
+        buttonText="Search"
       >
         <div className="space-y-4">
           <div className="space-y-2">
@@ -103,8 +119,18 @@ const BNSCodeAssistant = () => {
                 <SelectValue placeholder="Search by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="section">Section Number</SelectItem>
-                <SelectItem value="keyword">Keyword</SelectItem>
+                <SelectItem value="section">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">#</span>
+                    <span>Section Number</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="keyword">
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4" />
+                    <span>Keyword</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -118,6 +144,11 @@ const BNSCodeAssistant = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={searchType === 'section' ? 'e.g., 45' : 'e.g., sedition'}
                 className="flex-1"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
               />
               <Tooltip>
                 <TooltipTrigger asChild>

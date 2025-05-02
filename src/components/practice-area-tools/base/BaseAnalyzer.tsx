@@ -18,6 +18,8 @@ interface BaseAnalyzerProps {
   onAnalyze: () => void;
   analysisResults?: AnalysisResult[];
   children: ReactNode;
+  buttonText?: string;
+  className?: string;
 }
 
 export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
@@ -25,8 +27,10 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
   description,
   icon,
   onAnalyze,
-  analysisResults = [], // Provide a default empty array
+  analysisResults = [], // Default to empty array
   children,
+  buttonText = "Analyze",
+  className = "",
 }) => {
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -55,7 +59,7 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
   };
 
   return (
-    <Card className="w-full shadow-sm border border-gray-200/80 dark:border-gray-800/80">
+    <Card className={`w-full shadow-sm border border-gray-200/80 dark:border-gray-800/80 ${className}`}>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2 mb-2">
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -75,7 +79,7 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
             onClick={onAnalyze}
             className="w-full sm:w-auto"
           >
-            Analyze
+            {buttonText}
           </Button>
         </div>
         

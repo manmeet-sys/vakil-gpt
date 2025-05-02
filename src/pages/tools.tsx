@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -142,13 +141,14 @@ const ToolsPage = () => {
         { 
           name: 'DPDP Compliance', 
           icon: Shield, 
-          path: '/gdpr-compliance',
+          path: '/dpdp-compliance',
           badge: 'Critical'
         },
         { 
           name: 'AML Compliance', 
           icon: AlertTriangle, 
-          path: '/aml-compliance' 
+          path: '/aml-compliance',
+          badge: 'Updated'
         }
       ]
     },
