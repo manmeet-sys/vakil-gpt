@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 /**
  * Performance monitoring utilities
  * Helps track, measure and report performance metrics
