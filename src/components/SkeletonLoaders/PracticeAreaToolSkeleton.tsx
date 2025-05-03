@@ -103,9 +103,9 @@ export const PracticeAreaToolSkeleton: React.FC<PracticeAreaToolSkeletonProps> =
   );
 };
 
-export {
-  PracticeAreaToolSkeleton as SentencingPredictorSkeleton,
-  PracticeAreaToolSkeleton as PleaBargainSkeleton,
-};
+// Named exports for specific tools that use the same skeleton
+export const SentencingPredictorSkeleton = PracticeAreaToolSkeleton;
+export const PleaBargainSkeleton = PracticeAreaToolSkeleton;
 
+// Default export for direct imports
 export default PracticeAreaToolSkeleton;
