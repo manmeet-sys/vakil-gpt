@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Book, BookOpen, Settings, Bell, FileText, GavelSquare, Scale } from 'lucide-react';
+import { Book, BookOpen, Settings, Bell, FileText, Gavel, Scale } from 'lucide-react';
 
 export interface NavigationItem {
   name: string;
@@ -58,7 +57,7 @@ export const advocateToolsNavItems = (currentPath: string): NavigationItem[] => 
   {
     name: "Court Filing Assistant",
     path: "/court-filing",
-    icon: GavelSquare,
+    icon: Gavel,
     current: currentPath === "/court-filing" || currentPath.startsWith('/court-filing/'),
   }
 ];
