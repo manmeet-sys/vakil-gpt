@@ -20,6 +20,8 @@ import {
   TooltipTrigger 
 } from '@/components/ui/tooltip';
 import { performanceMonitor } from '@/utils/performance-monitoring';
+import PracticeAreaToolLayout from '@/components/practice-area-tools/layout/PracticeAreaToolLayout';
+import ContractDraftingPage from '@/pages/contract-drafting';
 
 const LegalDocumentDraftingPage = () => {
   const [draftContent, setDraftContent] = useState('');
@@ -190,7 +192,29 @@ const LegalDocumentDraftingPage = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="contract">
+              {/* Form Tab Content */}
+              <TabsContent value="form" className="animate-in fade-in-50">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6">
+                      <DocumentDraftingForm onDraftGenerated={handleDraftGenerated} />
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div className="lg:col-span-7" variants={itemVariants}>
+                    <DocumentPreview 
+                      title={documentTitle}
+                      type={documentType}
+                      content={draftContent}
+                      onCopy={handleCopyContent}
+                      onDownload={handleDownloadDocument}
+                    />
+                  </motion.div>
+                </div>
+              </TabsContent>
+              
+              {/* Contract Review Tab Content */}
+              <TabsContent value="contract" className="animate-in fade-in-50">
                 <div className="bg-white dark:bg-slate-900/50 border border-legal-border dark:border-legal-slate/20 rounded-lg shadow-md p-6">
                   <h2 className="text-xl font-medium mb-4 flex items-center gap-2 font-playfair">
                     <FileSearch className="h-5 w-5 text-legal-accent" />
@@ -201,73 +225,70 @@ const LegalDocumentDraftingPage = () => {
                     and receive customized improvement suggestions.
                   </p>
                   
-                  <iframe 
-                    src="/contract-drafting" 
-                    className="w-full h-[800px] border-0 rounded"
-                    title="Contract Review Tool"
-                  />
+                  <div className="h-[800px] border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <ContractDraftingPage />
+                  </div>
+                </div>
+              </TabsContent>
+              
+              {/* AI Prompt Tab Content */}
+              <TabsContent value="prompt" className="animate-in fade-in-50">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6">
+                      <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div className="lg:col-span-7" variants={itemVariants}>
+                    <DocumentPreview 
+                      title={documentTitle}
+                      type={documentType}
+                      content={draftContent}
+                      onCopy={handleCopyContent}
+                      onDownload={handleDownloadDocument}
+                    />
+                  </motion.div>
+                </div>
+              </TabsContent>
+              
+              {/* Collaborative Tab Content */}
+              <TabsContent value="collaborative" className="animate-in fade-in-50">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6 space-y-4">
+                      <h3 className="text-lg font-medium flex items-center gap-2 font-playfair">
+                        <Users className="h-4 w-4 text-blue-500" />
+                        Collaborative Session
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Invite colleagues to work on this document in real-time. Changes will be visible to all participants.
+                      </p>
+                      <PdfUploader 
+                        onUpload={handleDocumentUpload} 
+                        onRemove={handleRemoveDocument} 
+                        documents={attachedDocuments}
+                        documentId="123456"
+                        showVersionHistory={true}
+                      />
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div className="lg:col-span-7" variants={itemVariants}>
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md overflow-hidden">
+                      <CollaborativeEditor 
+                        documentId="123456"
+                        initialContent={draftContent || "Start collaborating on your legal document here..."}
+                        onChange={setDraftContent}
+                        title={documentTitle || "Collaborative Document"}
+                        documentType={documentType || "Legal Draft"}
+                      />
+                    </div>
+                  </motion.div>
                 </div>
               </TabsContent>
             </Tabs>
           </div>
-          
-          {activeTab !== 'contract' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left column - Form/Prompt */}
-              <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
-                {/* Document Generation (Form, Prompt, or Collaborative based on activeTab) */}
-                {activeTab === 'form' ? (
-                  <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6">
-                    <DocumentDraftingForm onDraftGenerated={handleDraftGenerated} />
-                  </div>
-                ) : activeTab === 'prompt' ? (
-                  <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6">
-                    <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
-                  </div>
-                ) : (
-                  <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6 space-y-4">
-                    <h3 className="text-lg font-medium flex items-center gap-2 font-playfair">
-                      <Users className="h-4 w-4 text-blue-500" />
-                      Collaborative Session
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Invite colleagues to work on this document in real-time. Changes will be visible to all participants.
-                    </p>
-                    <PdfUploader 
-                      onUpload={handleDocumentUpload} 
-                      onRemove={handleRemoveDocument} 
-                      documents={attachedDocuments}
-                      documentId="123456"
-                      showVersionHistory={true}
-                    />
-                  </div>
-                )}
-              </motion.div>
-              
-              {/* Right column - Document Preview or Collaborative Editor */}
-              <motion.div className="lg:col-span-7" variants={itemVariants}>
-                {activeTab === 'collaborative' ? (
-                  <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md overflow-hidden">
-                    <CollaborativeEditor 
-                      documentId="123456"
-                      initialContent={draftContent || "Start collaborating on your legal document here..."}
-                      onChange={setDraftContent}
-                      title={documentTitle || "Collaborative Document"}
-                      documentType={documentType || "Legal Draft"}
-                    />
-                  </div>
-                ) : (
-                  <DocumentPreview 
-                    title={documentTitle}
-                    type={documentType}
-                    content={draftContent}
-                    onCopy={handleCopyContent}
-                    onDownload={handleDownloadDocument}
-                  />
-                )}
-              </motion.div>
-            </div>
-          )}
           
           <motion.div 
             className="mt-8 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/20 rounded-md p-4"
