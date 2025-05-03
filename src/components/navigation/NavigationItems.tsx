@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Book, BookOpen, Settings, Bell, FileText, Gavel, Scale } from 'lucide-react';
+import { Book, BookOpen, Settings, Bell } from 'lucide-react';
 
 export interface NavigationItem {
   name: string;
@@ -40,27 +41,6 @@ export interface ResourceNavigationItem {
   path: string;
   icon: React.FC<{ className?: string }>;
 }
-
-export const advocateToolsNavItems = (currentPath: string): NavigationItem[] => [
-  {
-    name: "Legal Document Drafting",
-    path: "/legal-document-drafting",
-    icon: FileText,
-    current: currentPath === "/legal-document-drafting" || currentPath.startsWith('/legal-document-drafting/'),
-  },
-  {
-    name: "Case Law Research",
-    path: "/case-law-research",
-    icon: Scale,
-    current: currentPath === "/case-law-research" || currentPath.startsWith('/case-law-research/'),
-  },
-  {
-    name: "Court Filing Assistant",
-    path: "/court-filing",
-    icon: Gavel,
-    current: currentPath === "/court-filing" || currentPath.startsWith('/court-filing/'),
-  }
-];
 
 export const resourceNavigationItems: ResourceNavigationItem[] = [
   { name: 'Blog', path: '/blog', icon: Book },
