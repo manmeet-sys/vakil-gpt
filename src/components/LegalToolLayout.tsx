@@ -48,6 +48,22 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
     setApiProvider(newProvider);
     localStorage.setItem('preferredApiProvider', newProvider);
   };
+  
+  // Animation variants optimized for performance
+  const pageVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.3 } },
+  };
+  
+  const titleVariants = {
+    initial: { opacity: 0, y: -10 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+  
+  const descriptionVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.3, delay: 0.1 } },
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-sans">
@@ -56,16 +72,17 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
         Skip to content
       </a>
       
-      <main id="main-content" className="flex-1 w-full mx-auto pt-8 pb-12">
+      <main id="main-content" className="flex-1 w-full mx-auto pt-6 pb-12">
         <div className="container px-4 sm:px-6">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-6">
             <motion.div 
               role="region" 
               aria-labelledby="page-title" 
               className="flex items-start gap-3"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
+              initial="initial"
+              animate="animate"
+              variants={pageVariants}
+              style={{ willChange: 'opacity, transform' }}
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
                 {icon}
@@ -74,9 +91,7 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
                 <motion.h1 
                   id="page-title"
                   className="text-2xl font-playfair font-medium tracking-tight"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
+                  variants={titleVariants}
                 >
                   {title}
                 </motion.h1>
@@ -84,9 +99,7 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
                 {description && (
                   <motion.p 
                     className="text-base text-muted-foreground max-w-3xl"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3, delay: 0.1 }}
+                    variants={descriptionVariants}
                   >
                     {description}
                   </motion.p>
@@ -121,8 +134,8 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
           
           <motion.div 
             className="mb-6 sm:mb-8"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >            
             {children}

@@ -1,10 +1,8 @@
 
 import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 
-export interface PracticeAreaToolSkeletonProps {
+interface PracticeAreaToolSkeletonProps {
   hasInputs?: boolean;
   hasTextArea?: boolean;
   hasMultipleInputs?: boolean;
@@ -12,7 +10,11 @@ export interface PracticeAreaToolSkeletonProps {
   hasResults?: boolean;
 }
 
-const PracticeAreaToolSkeleton: React.FC<PracticeAreaToolSkeletonProps> = ({
+/**
+ * Performance-optimized skeleton loader for practice area tools
+ * Uses will-change and translateZ for hardware acceleration
+ */
+export const PracticeAreaToolSkeleton: React.FC<PracticeAreaToolSkeletonProps> = ({
   hasInputs = true,
   hasTextArea = false,
   hasMultipleInputs = false,
@@ -20,128 +22,90 @@ const PracticeAreaToolSkeleton: React.FC<PracticeAreaToolSkeletonProps> = ({
   hasResults = false,
 }) => {
   return (
-    <ResponsiveContainer containerSize="lg">
-      {/* Header skeleton */}
-      <div className="flex flex-col space-y-4 mb-6">
-        <div className="flex items-center space-x-2">
-          <Skeleton className="h-8 w-20" />
-        </div>
-        
-        <div className="flex items-start space-x-3">
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-7 w-56" />
-            <Skeleton className="h-4 w-80" />
-          </div>
+    <div className="space-y-6 w-full px-4 sm:px-6 md:px-8 py-6" style={{ willChange: 'opacity', transform: 'translateZ(0)' }}>
+      {/* Header */}
+      <div className="flex items-start space-x-4">
+        <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
+        <div className="space-y-2 flex-grow">
+          <Skeleton className="h-7 w-3/4 rounded-md" />
+          <Skeleton className="h-4 w-4/5 rounded-md" />
         </div>
       </div>
-      
-      {/* Main tool skeleton */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 mb-2">
-            <Skeleton className="h-6 w-6 rounded-full" />
-            <Skeleton className="h-5 w-40" />
+
+      {/* Content area */}
+      <div className="space-y-4">
+        {hasInputs && (
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24 rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
           </div>
-          <Skeleton className="h-3 w-80" />
-        </CardHeader>
-        <CardContent className="space-y-6 pt-4">
-          <div className="bg-muted/30 p-4 rounded-md space-y-4">
-            {/* Input fields */}
-            {hasInputs && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-9 w-full" />
-                </div>
-                {hasMultipleInputs && (
-                  <>
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-9 w-full" />
-                    </div>
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-28" />
-                      <Skeleton className="h-9 w-full" />
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-            
-            {/* Text area */}
-            {hasTextArea && (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-24 w-full" />
-              </div>
-            )}
-            
-            {/* Document area */}
-            {hasDocument && (
-              <div className="border rounded-md p-4 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-8 w-8" />
-                  <Skeleton className="h-4 w-40" />
-                </div>
-                <Skeleton className="h-40 w-full" />
-                <div className="flex justify-between">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
-              </div>
-            )}
-            
-            {/* AI toggle */}
-            <div className="mt-4 pt-4 border-t border-border/30">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-4 rounded-full" />
-                </div>
-                <Skeleton className="h-6 w-11" />
-              </div>
-              <Skeleton className="h-3 w-64" />
+        )}
+
+        {hasMultipleInputs && (
+          <>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-36 rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
             </div>
-          </div>
-          
-          <div className="flex justify-end">
-            <Skeleton className="h-10 w-28" />
-          </div>
-          
-          {/* Results section */}
-          {hasResults && (
-            <div className="border rounded-md">
-              <div className="flex items-center bg-muted/50 p-3 border-b">
-                <Skeleton className="h-4 w-4 mr-2" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-              <div className="p-3 space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-11/12" />
-                <Skeleton className="h-4 w-10/12" />
-                <Skeleton className="h-4 w-full" />
-              </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28 rounded-md" />
+              <Skeleton className="h-10 w-full rounded-md" />
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </ResponsiveContainer>
+          </>
+        )}
+
+        {hasTextArea && (
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32 rounded-md" />
+            <Skeleton className="h-28 w-full rounded-md" />
+          </div>
+        )}
+
+        {/* Controls */}
+        <div className="flex justify-end space-x-2 pt-2">
+          <Skeleton className="h-9 w-24 rounded-md" />
+          <Skeleton className="h-9 w-24 rounded-md" />
+        </div>
+      </div>
+
+      {/* Results area */}
+      {hasResults && (
+        <div className="space-y-4 pt-4 border-t">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-5 w-32 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-full" />
+          </div>
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-full rounded-md" />
+            <Skeleton className="h-4 w-11/12 rounded-md" />
+            <Skeleton className="h-4 w-full rounded-md" />
+            <Skeleton className="h-4 w-3/4 rounded-md" />
+          </div>
+        </div>
+      )}
+
+      {/* Document preview */}
+      {hasDocument && (
+        <div className="space-y-3 pt-4 border-t">
+          <Skeleton className="h-5 w-40 rounded-md" />
+          <div className="h-64 w-full border border-gray-200 dark:border-gray-800 rounded-md p-4 space-y-2">
+            <Skeleton className="h-4 w-full rounded-md" />
+            <Skeleton className="h-4 w-full rounded-md" />
+            <Skeleton className="h-4 w-3/4 rounded-md" />
+            <Skeleton className="h-4 w-5/6 rounded-md" />
+            <div className="pt-2" />
+            <Skeleton className="h-4 w-full rounded-md" />
+            <Skeleton className="h-4 w-full rounded-md" />
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
-export { PracticeAreaToolSkeleton };
+export {
+  PracticeAreaToolSkeleton as SentencingPredictorSkeleton,
+  PracticeAreaToolSkeleton as PleaBargainSkeleton,
+};
 
-// Export variations with preset configurations
-export const CompanyFormationSkeleton = () => <PracticeAreaToolSkeleton hasInputs hasTextArea hasDocument />;
-export const ComplianceCalendarSkeleton = () => <PracticeAreaToolSkeleton hasInputs hasMultipleInputs hasResults />;
-export const ContractRiskAnalyzerSkeleton = () => <PracticeAreaToolSkeleton hasTextArea hasResults />;
-export const TitleSearchSkeleton = () => <PracticeAreaToolSkeleton hasInputs hasMultipleInputs hasResults />;
-export const RERAComplianceSkeleton = () => <PracticeAreaToolSkeleton hasInputs hasMultipleInputs hasResults />;
-export const PropertyDocumentSkeleton = () => <PracticeAreaToolSkeleton hasInputs hasDocument />;
-export const PropertyDueDiligenceSkeleton = () => <PracticeAreaToolSkeleton hasTextArea hasResults />;
-export const SentencingPredictorSkeleton = () => <PracticeAreaToolSkeleton hasInputs hasMultipleInputs hasResults />;
-export const PleaBargainSkeleton = () => <PracticeAreaToolSkeleton hasTextArea hasInputs hasResults />;
-export const FamilyLawToolsSkeleton = () => <PracticeAreaToolSkeleton hasInputs hasTextArea hasResults />;
-export const CivilLawToolsSkeleton = () => <PracticeAreaToolSkeleton hasTextArea hasResults />;
-export const MatrimonialLawToolsSkeleton = () => <PracticeAreaToolSkeleton hasInputs hasTextArea hasResults />;
+export default PracticeAreaToolSkeleton;

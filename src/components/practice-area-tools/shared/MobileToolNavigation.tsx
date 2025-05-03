@@ -1,15 +1,17 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { preloadComponents } from '@/utils/performance';
 
 interface ToolNavigationItem {
   name: string;
   path: string;
   icon: React.ReactNode;
+  importFunc?: () => Promise<any>; // Optional import function for preloading
 }
 
 interface MobileToolNavigationProps {
@@ -40,6 +42,24 @@ export const MobileToolNavigation: React.FC<MobileToolNavigationProps> = ({
   const prevTool = currentIndex > 0 ? tools[currentIndex - 1] : null;
   const nextTool = currentIndex < tools.length - 1 ? tools[currentIndex + 1] : null;
   
+  // Preload adjacent tools for better navigation performance
+  useEffect(() => {
+    if (prevTool?.importFunc || nextTool?.importFunc) {
+      const preloadFuncs: (() => Promise<any>)[] = [];
+      if (prevTool?.importFunc) preloadFuncs.push(prevTool.importFunc);
+      if (nextTool?.importFunc) preloadFuncs.push(nextTool.importFunc);
+      
+      preloadComponents(preloadFuncs);
+    }
+  }, [prevTool, nextTool]);
+  
+  // Handle navigation with preloading
+  const handleNavigate = (tool: ToolNavigationItem | null) => {
+    if (tool) {
+      navigate(tool.path);
+    }
+  };
+  
   return (
     <motion.div 
       className="flex items-center justify-between mt-4 pt-4 border-t border-border"
@@ -50,7 +70,7 @@ export const MobileToolNavigation: React.FC<MobileToolNavigationProps> = ({
       <Button
         variant="outline"
         size="sm"
-        onClick={() => prevTool && navigate(prevTool.path)}
+        onClick={() => prevTool && handleNavigate(prevTool)}
         disabled={!prevTool}
         className="flex items-center gap-1"
       >
@@ -68,7 +88,7 @@ export const MobileToolNavigation: React.FC<MobileToolNavigationProps> = ({
       <Button
         variant="outline"
         size="sm"
-        onClick={() => nextTool && navigate(nextTool.path)}
+        onClick={() => nextTool && handleNavigate(nextTool)}
         disabled={!nextTool}
         className="flex items-center gap-1"
       >

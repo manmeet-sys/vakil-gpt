@@ -1,5 +1,5 @@
 
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import { Link, useLocation } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
@@ -12,8 +12,12 @@ import DesktopNavigation from './navigation/DesktopNavigation';
 import AuthButtons from './navigation/AuthButtons';
 import { useNavigation } from '@/context/NavigationContext';
 
-// Lazy loaded mobile menu component
-const MobileNavigation = lazy(() => import('./navigation/MobileNavigation'));
+// Lazy loaded mobile menu component with preloading
+const MobileNavigation = lazy(() => {
+  // Preload the component after a short delay
+  setTimeout(() => import('./navigation/MobileNavigation'), 2000);
+  return import('./navigation/MobileNavigation');
+});
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -29,6 +33,28 @@ const MobileMenuFallback = () => (
 const OptimizedAppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/reset-password';
+  
+  // Performance optimization - preload components likely to be used on route change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      // Preload related components when the browser is idle
+      const idleCallback = window.requestIdleCallback(() => {
+        // Import components that are likely needed on next navigation
+        import('./navigation/MobileNavigation');
+        
+        // Import components based on current route
+        if (location.pathname.includes('/tools')) {
+          import('./AllTools');
+        }
+      }, { timeout: 5000 });
+
+      return () => {
+        if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+          window.cancelIdleCallback(idleCallback);
+        }
+      };
+    }
+  }, [location.pathname]);
   
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-zinc-900 transition-colors duration-300">
