@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -26,9 +25,13 @@ const formSchema = z.object({
 
 type DocumentDraftingFormProps = {
   onDraftGenerated: (title: string, type: string, content: string) => void;
+  selectedTemplate?: string | null;
 };
 
-const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ onDraftGenerated }) => {
+const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ 
+  onDraftGenerated,
+  selectedTemplate
+}) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [useAIAssistant, setUseAIAssistant] = useState(true);
   const [selectedVenue, setSelectedVenue] = useState<string>('');
@@ -44,6 +47,33 @@ const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ onDraftGene
       content: '',
     },
   });
+
+  // Apply the selected template
+  useEffect(() => {
+    if (selectedTemplate) {
+      // In a real app, you would fetch template data from an API
+      // For this demo, we'll use hard-coded examples
+      switch(selectedTemplate) {
+        case 'legal-notice':
+          form.setValue('title', 'Legal Notice');
+          form.setValue('type', 'legal_notice');
+          break;
+        case 'affidavit':
+          form.setValue('title', 'General Affidavit');
+          form.setValue('type', 'affidavit');
+          break;
+        case 'rental':
+          form.setValue('title', 'Residential Rental Agreement');
+          form.setValue('type', 'rental_agreement');
+          break;
+        case 'poa':
+          form.setValue('title', 'Power of Attorney');
+          form.setValue('type', 'general_power_of_attorney');
+          break;
+      }
+      toast.success('Template applied. Complete the form and generate your document.');
+    }
+  }, [selectedTemplate, form]);
 
   // India-specific document types
   const documentTypes = [
@@ -63,7 +93,7 @@ const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ onDraftGene
     { value: 'regular_bail', label: 'Regular Bail Application' },
     { value: 'divorce_petition', label: 'Divorce Petition' },
     { value: 'cheque_bounce_notice', label: 'Cheque Bounce Notice (Sec 138 NI Act)' },
-    { value: 'rtiadwd_application', label: 'RTI Application' },
+    { value: 'rti_application', label: 'RTI Application' },
     { value: 'vakalatnama', label: 'Vakalatnama' },
     { value: 'itr_objection', label: 'Income Tax Return Objection' },
     { value: 'esi_pf_notice', label: 'ESI/PF Compliance Notice' },
@@ -239,7 +269,7 @@ Please generate a complete and professional legal document following Indian lega
                   <FormLabel>Document Type</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger className="h-12">
@@ -267,7 +297,7 @@ Please generate a complete and professional legal document following Indian lega
                   <FormLabel>Jurisdiction</FormLabel>
                   <Select
                     onValueChange={(value) => handleJurisdictionChange(value)}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger className="h-12">

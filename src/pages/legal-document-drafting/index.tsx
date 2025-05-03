@@ -1,6 +1,10 @@
 
 import React, { useState } from 'react';
-import { FileText, Pen, Copy, Download, Sparkles, MessageCircle, HelpCircle, Users, FileSearch, ArrowLeft } from 'lucide-react';
+import { 
+  FileText, Pen, Copy, Download, Sparkles, MessageCircle, 
+  HelpCircle, Users, FileSearch, ArrowLeft, BookOpen, 
+  CheckCircle, PenTool, ClipboardCheck 
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import LegalToolLayout from '@/components/LegalToolLayout';
@@ -20,8 +24,9 @@ import {
   TooltipTrigger 
 } from '@/components/ui/tooltip';
 import { performanceMonitor } from '@/utils/performance-monitoring';
-import PracticeAreaToolLayout from '@/components/practice-area-tools/layout/PracticeAreaToolLayout';
-import ContractDraftingPage from '@/pages/contract-drafting';
+import ContractReviewTool from '@/components/document-drafting/ContractReviewTool';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 const LegalDocumentDraftingPage = () => {
   const [draftContent, setDraftContent] = useState('');
@@ -29,6 +34,7 @@ const LegalDocumentDraftingPage = () => {
   const [documentType, setDocumentType] = useState('');
   const [activeTab, setActiveTab] = useState<'form' | 'prompt' | 'collaborative' | 'contract'>('form');
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   
   const handleDraftGenerated = (title: string, type: string, content: string) => {
     console.log("Document draft generated:", { title, type, contentLength: content?.length });
@@ -80,6 +86,12 @@ const LegalDocumentDraftingPage = () => {
     setAttachedDocuments(updatedDocs);
   };
 
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    // In a real implementation, this would load the template content
+    toast.success('Template selected. Click "Generate Document" to apply template.');
+  };
+
   // Animation variants
   const pageVariants = {
     initial: { opacity: 0 },
@@ -100,6 +112,14 @@ const LegalDocumentDraftingPage = () => {
       transition: { duration: 0.4 }
     }
   };
+
+  // Popular document templates
+  const popularTemplates = [
+    { id: 'legal-notice', name: 'Legal Notice', category: 'notices' },
+    { id: 'affidavit', name: 'General Affidavit', category: 'court' },
+    { id: 'rental', name: 'Rental Agreement', category: 'contracts' },
+    { id: 'poa', name: 'Power of Attorney', category: 'personal' },
+  ];
 
   return (
     <LegalToolLayout
@@ -154,6 +174,46 @@ const LegalDocumentDraftingPage = () => {
             </div>
           </div>
           
+          {/* Quick Access Templates */}
+          <div className="mb-6">
+            <h2 className="text-lg font-medium mb-3 font-playfair flex items-center gap-2 text-indigo-800 dark:text-indigo-300">
+              <BookOpen className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              Quick Access Templates
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {popularTemplates.map((template) => (
+                <motion.div
+                  key={template.id}
+                  whileHover={{ scale: 1.03, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+                  className={`p-3 bg-white dark:bg-slate-800 border ${
+                    selectedTemplate === template.id 
+                      ? 'border-indigo-300 dark:border-indigo-500' 
+                      : 'border-gray-200 dark:border-gray-700'
+                  } rounded-lg cursor-pointer transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-500`}
+                  onClick={() => handleTemplateSelect(template.id)}
+                >
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      selectedTemplate === template.id
+                        ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {template.category === 'notices' && <MessageCircle className="h-5 w-5" />}
+                      {template.category === 'court' && <FileText className="h-5 w-5" />}
+                      {template.category === 'contracts' && <ClipboardCheck className="h-5 w-5" />}
+                      {template.category === 'personal' && <PenTool className="h-5 w-5" />}
+                    </div>
+                    <p className="text-sm font-medium">{template.name}</p>
+                    <Badge variant="outline" className="text-xs">{template.category}</Badge>
+                    {selectedTemplate === template.id && (
+                      <CheckCircle className="h-4 w-4 text-green-500 absolute top-2 right-2" />
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+          
           <div className="mb-6">
             <Tabs 
               defaultValue="form" 
@@ -197,7 +257,10 @@ const LegalDocumentDraftingPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
                     <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6">
-                      <DocumentDraftingForm onDraftGenerated={handleDraftGenerated} />
+                      <DocumentDraftingForm 
+                        onDraftGenerated={handleDraftGenerated} 
+                        selectedTemplate={selectedTemplate}
+                      />
                     </div>
                   </motion.div>
                   
@@ -226,7 +289,7 @@ const LegalDocumentDraftingPage = () => {
                   </p>
                   
                   <div className="h-[800px] border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                    <ContractDraftingPage />
+                    <ContractReviewTool />
                   </div>
                 </div>
               </TabsContent>
@@ -291,38 +354,50 @@ const LegalDocumentDraftingPage = () => {
           </div>
           
           <motion.div 
-            className="mt-8 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/20 rounded-md p-4"
+            className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-900/20 rounded-lg p-4"
             variants={itemVariants}
           >
-            <h3 className="flex items-center gap-2 text-lg font-medium mb-2 font-playfair text-blue-800 dark:text-blue-300">
+            <h3 className="flex items-center gap-2 text-lg font-medium mb-4 font-playfair text-blue-800 dark:text-blue-300">
               <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               <span>India-Specific Legal Drafting Tips</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-              <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm border border-blue-100 dark:border-blue-900/20">
-                <h4 className="font-semibold mb-1 text-blue-700 dark:text-blue-400">Affidavits in Indian Courts</h4>
-                <p className="text-legal-muted dark:text-gray-400">Always include proper verification clause as per Indian Evidence Act and ensure compliance with local stamp duty requirements.</p>
-              </div>
-              <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm border border-blue-100 dark:border-blue-900/20">
-                <h4 className="font-semibold mb-1 text-blue-700 dark:text-blue-400">High Court vs. Supreme Court</h4>
-                <p className="text-legal-muted dark:text-gray-400">Use Article 226 for High Court writs and Article 32 for Supreme Court writs. Citation format also differs between courts.</p>
-              </div>
-              <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm border border-blue-100 dark:border-blue-900/20">
-                <h4 className="font-semibold mb-1 text-blue-700 dark:text-blue-400">Proper Court Addressing</h4>
-                <p className="text-legal-muted dark:text-gray-400">Address Supreme Court as "Hon'ble Supreme Court of India" and High Courts as "Hon'ble High Court of [State]".</p>
-              </div>
-              <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm border border-blue-100 dark:border-blue-900/20">
-                <h4 className="font-semibold mb-1 text-blue-700 dark:text-blue-400">BNS Act Compliance</h4>
-                <p className="text-legal-muted dark:text-gray-400">Update your legal documents to reflect the new Bharatiya Nyaya Sanhita (BNS) codes that replaced the Indian Penal Code.</p>
-              </div>
-              <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm border border-blue-100 dark:border-blue-900/20">
-                <h4 className="font-semibold mb-1 text-blue-700 dark:text-blue-400">Local Jurisdiction Rules</h4>
-                <p className="text-legal-muted dark:text-gray-400">Different High Courts have different rules for formatting and filing. Check the latest court rules before finalizing documents.</p>
-              </div>
-              <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm border border-blue-100 dark:border-blue-900/20">
-                <h4 className="font-semibold mb-1 text-blue-700 dark:text-blue-400">Contract Stamp Duty</h4>
-                <p className="text-legal-muted dark:text-gray-400">Remember that stamp duty varies by state in India. Contracts must be properly stamped according to the applicable state's stamp duty laws.</p>
-              </div>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">Affidavits in Indian Courts</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Always include proper verification clause as per Indian Evidence Act and ensure compliance with local stamp duty requirements.</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">High Court vs. Supreme Court</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Use Article 226 for High Court writs and Article 32 for Supreme Court writs. Citation format also differs between courts.</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">Proper Court Addressing</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Address Supreme Court as "Hon'ble Supreme Court of India" and High Courts as "Hon'ble High Court of [State]".</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">BNS Act Compliance</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Update your legal documents to reflect the new Bharatiya Nyaya Sanhita (BNS) codes that replaced the Indian Penal Code.</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">Local Jurisdiction Rules</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Different High Courts have different rules for formatting and filing. Check the latest court rules before finalizing documents.</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">Contract Stamp Duty</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Remember that stamp duty varies by state in India. Contracts must be properly stamped according to the applicable state's stamp duty laws.</p>
+                </CardContent>
+              </Card>
             </div>
           </motion.div>
         </motion.div>
