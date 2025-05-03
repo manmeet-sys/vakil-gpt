@@ -6,7 +6,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from './context/AuthContext';
 import { BillingProvider } from './context/BillingContext';
 import { PracticeAreaToolProvider } from './components/practice-area-tools/PracticeAreaToolContext';
-import { Toaster } from 'sonner';
 import { NavigationProvider } from './context/NavigationContext';
 import { UserDataProvider } from './context/UserDataContext';
 import { initPerformanceMonitoring, trackNetworkPerformance } from './utils/performance-monitoring';
@@ -25,7 +24,6 @@ function App() {
             <NavigationProvider>
               <PracticeAreaToolProvider>
                 <RouterProvider router={router} />
-                <Toaster position="top-center" richColors closeButton />
               </PracticeAreaToolProvider>
             </NavigationProvider>
           </ThemeProvider>
