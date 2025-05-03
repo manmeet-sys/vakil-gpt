@@ -1,5 +1,5 @@
 
-import React, { Suspense, lazy, ComponentType } from 'react';
+import React, { Suspense, lazy, ComponentType, PropsWithoutRef, RefAttributes } from 'react';
 import { PracticeAreaToolSkeleton } from '@/components/SkeletonLoaders/PracticeAreaToolSkeleton';
 
 interface LazyToolOptions {
@@ -19,7 +19,7 @@ interface LazyToolOptions {
  * @param options Configuration options
  * @returns Lazy loaded component with proper suspense fallback
  */
-export function useLazyTool<T>(
+export function useLazyTool<T extends object>(
   importFactory: () => Promise<{ default: ComponentType<T> }>, 
   options?: LazyToolOptions
 ) {
