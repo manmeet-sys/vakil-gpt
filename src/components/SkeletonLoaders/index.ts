@@ -12,5 +12,13 @@ export {
   PropertyDocumentSkeleton,
   PropertyDueDiligenceSkeleton
 } from './RealEstateToolsSkeleton';
-export { default as SentencingPredictorSkeleton } from './SentencingPredictorSkeleton';
-export { default as PleaBargainSkeleton } from './PleaBargainSkeleton';
+export { 
+  SentencingPredictorSkeleton, 
+  PleaBargainSkeleton 
+} from './PracticeAreaToolSkeleton';
+export { 
+  PracticeAreaToolSkeleton,
+  FamilyLawToolsSkeleton,
+  CivilLawToolsSkeleton,
+  MatrimonialLawToolsSkeleton
+} from './PracticeAreaToolSkeleton';
