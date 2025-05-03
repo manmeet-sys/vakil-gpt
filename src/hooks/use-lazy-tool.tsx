@@ -1,5 +1,13 @@
 
-import React, { Suspense, lazy, ComponentType, PropsWithoutRef, RefAttributes, ForwardRefExoticComponent } from 'react';
+import React, { 
+  Suspense, 
+  lazy, 
+  ComponentType, 
+  ForwardRefExoticComponent, 
+  PropsWithoutRef,
+  RefAttributes,
+  ForwardedRef
+} from 'react';
 import { PracticeAreaToolSkeleton } from '@/components/SkeletonLoaders/PracticeAreaToolSkeleton';
 
 interface LazyToolOptions {
@@ -22,7 +30,7 @@ interface LazyToolOptions {
 export function useLazyTool<T extends object>(
   importFactory: () => Promise<{ default: ComponentType<T> }>, 
   options?: LazyToolOptions
-) {
+): ForwardRefExoticComponent<PropsWithoutRef<T> & RefAttributes<unknown>> {
   const LazyComponent = lazy(importFactory);
   
   // Default skeleton based on options
@@ -33,9 +41,8 @@ export function useLazyTool<T extends object>(
   // Use provided fallback or default skeleton
   const fallback = options?.fallback || defaultSkeleton;
   
-  // Return a wrapped component that handles suspense
-  // The function explicitly types the props parameter as T to match the expected props
-  const WrappedComponent = React.forwardRef((props: T, ref) => (
+  // Return a wrapped component that handles suspense with properly typed forwardRef
+  const WrappedComponent = React.forwardRef<unknown, T>((props, ref) => (
     <Suspense fallback={fallback}>
       <LazyComponent {...props} ref={ref} />
     </Suspense>
