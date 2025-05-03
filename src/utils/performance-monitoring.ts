@@ -3,6 +3,7 @@
  * Performance monitoring utilities
  * Helps track, measure and report performance metrics
  */
+import React from 'react';
 
 interface PerformanceEntry {
   component: string;
@@ -19,7 +20,7 @@ class PerformanceMonitor {
   /**
    * Start timing a performance measurement
    */
-  start(component: string, action: string): void {
+  start(component: string, action: string): string {
     const id = `${component}-${action}-${Date.now()}`;
     this.measurements.set(id, {
       component,
@@ -33,7 +34,7 @@ class PerformanceMonitor {
   /**
    * End timing a performance measurement
    */
-  end(id: string): void {
+  end(id: string): PerformanceEntry | undefined {
     const measurement = this.measurements.get(id);
     if (!measurement) {
       console.warn(`Performance measurement ${id} not found`);
