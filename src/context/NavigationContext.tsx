@@ -12,31 +12,21 @@ interface NavigationContextType {
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
   isMobile: boolean;
-  setCurrentPath: (path: string) => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 export function NavigationProvider({ children }: { children: React.ReactNode }) {
-  // Initialize with a default path instead of using useLocation immediately
-  const [currentPath, setCurrentPath] = useState('/');
+  const location = useLocation();
+  const [currentPath, setCurrentPath] = useState(location.pathname);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   
-  // Try to use useLocation only if we're inside a Router context
-  try {
-    const location = useLocation();
-    
-    // Update currentPath when location changes
-    useEffect(() => {
-      setCurrentPath(location.pathname);
-      setIsMobileMenuOpen(false);
-    }, [location.pathname]);
-  } catch (error) {
-    // If useLocation fails, we're outside the Router context
-    // This is expected during the initial render
-    console.log("NavigationProvider: Router context not available yet");
-  }
+  // Close mobile menu when navigating to a new page
+  useEffect(() => {
+    setCurrentPath(location.pathname);
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
   
   // Close mobile menu when switching from mobile to desktop
   useEffect(() => {
@@ -56,8 +46,7 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
         currentPath,
         isMobileMenuOpen,
         setIsMobileMenuOpen,
-        isMobile,
-        setCurrentPath
+        isMobile
       }}
     >
       {children}

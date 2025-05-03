@@ -1,14 +1,12 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Search, AlertCircle, Info, CheckCircle, Download, Save } from 'lucide-react';
+import { Search, AlertCircle, Info, CheckCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { type AnalysisResult } from '@/components/practice-area-tools/base';
-import { toast } from 'sonner';
-import { useUserData } from '@/context/UserDataContext';
 
 interface ResultsDisplayProps {
   title?: string;
@@ -20,7 +18,6 @@ interface ResultsDisplayProps {
   onClear?: () => void;
   exportLabel?: string;
   className?: string;
-  toolType?: string;
 }
 
 export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
@@ -33,52 +30,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onClear,
   exportLabel = 'Export',
   className = '',
-  toolType = 'analysis',
 }) => {
-  // Get user data context
-  const { saveToolResult, exportData } = useUserData();
-
-  // Save the current results
-  const handleSaveResults = () => {
-    try {
-      const dataToSave = {
-        title,
-        timestamp: new Date().toISOString(),
-        textResult,
-        structuredResults
-      };
-      
-      saveToolResult(title, toolType, dataToSave)
-        .then(() => toast.success('Results saved successfully'))
-        .catch(() => toast.error('Failed to save results'));
-    } catch (error) {
-      console.error('Error saving results:', error);
-      toast.error('Failed to save results');
-    }
-  };
-  
-  // Handle export results
-  const handleExportResults = () => {
-    if (onExport) {
-      onExport();
-      return;
-    }
-    
-    try {
-      const dataToExport = {
-        title,
-        timestamp: new Date().toISOString(),
-        textResult,
-        structuredResults
-      };
-      
-      exportData(dataToExport, `${toolType}-results-${Date.now()}`, 'json');
-    } catch (error) {
-      console.error('Error exporting results:', error);
-      toast.error('Failed to export results');
-    }
-  };
-
   if (isLoading) {
     return (
       <Card className={`border shadow-sm ${className}`}>
@@ -113,7 +65,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     <motion.div 
       initial={{ opacity: 0, y: 10 }} 
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
       className={`border rounded-md shadow-sm ${className}`}
     >
       <div className="flex items-center justify-between bg-muted/50 p-3 border-b">
@@ -123,25 +74,16 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleSaveResults}
-            className="h-7 text-xs"
-          >
-            <Save className="h-3 w-3 mr-1" />
-            Save
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleExportResults}
-            className="h-7 text-xs"
-          >
-            <Download className="h-3 w-3 mr-1" />
-            {exportLabel}
-          </Button>
+          {onExport && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onExport}
+              className="h-7 text-xs"
+            >
+              {exportLabel}
+            </Button>
+          )}
           
           {onPrint && (
             <Button 
@@ -213,12 +155,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           </div>
         )}
       </ScrollArea>
-      
-      <CardFooter className="py-2 px-3 border-t bg-muted/20 flex justify-end">
-        <p className="text-xs text-muted-foreground">
-          {new Date().toLocaleString()}
-        </p>
-      </CardFooter>
     </motion.div>
   );
 };

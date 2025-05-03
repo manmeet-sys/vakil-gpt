@@ -1,96 +1,137 @@
 
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-
 /**
- * Performance monitoring utility to track and report application performance metrics
+ * Performance monitoring utilities
+ * Helps track, measure and report performance metrics
  */
 
-// Performance thresholds in milliseconds
-const THRESHOLDS = {
-  RENDER: 500,
-  NETWORK: 1000,
-  INTERACTION: 200,
-};
-
-// Initialize performance monitoring
-export function initPerformanceMonitoring() {
-  if (typeof window === 'undefined' || typeof PerformanceObserver === 'undefined') {
-    return;
-  }
-  
-  // Create performance observer for interactions
-  try {
-    const interactionObserver = new PerformanceObserver((list) => {
-      list.getEntries().forEach((entry) => {
-        if (entry.duration > THRESHOLDS.INTERACTION) {
-          console.warn(`Slow interaction detected: ${entry.name} took ${entry.duration.toFixed(1)}ms`);
-          reportPerformanceIssue('interaction', entry.name, entry.duration);
-        }
-      });
-    });
-    
-    interactionObserver.observe({ type: 'event', buffered: true });
-    return 'Monitoring initialized';
-  } catch (err) {
-    console.error('Performance monitoring initialization failed:', err);
-    return;
-  }
+interface PerformanceEntry {
+  component: string;
+  action: string;
+  startTime: number;
+  endTime?: number;
+  duration?: number;
 }
 
-// Track component render performance
-export function trackRenderPerformance(componentName: string) {
-  const startTime = performance.now();
+class PerformanceMonitor {
+  private measurements: Map<string, PerformanceEntry> = new Map();
+  private completedMeasurements: PerformanceEntry[] = [];
   
-  return () => {
-    const duration = performance.now() - startTime;
-    if (duration > THRESHOLDS.RENDER) {
-      console.warn(`Slow render detected: ${componentName} took ${duration.toFixed(1)}ms`);
-      reportPerformanceIssue('render', componentName, duration);
+  /**
+   * Start timing a performance measurement
+   */
+  start(component: string, action: string): void {
+    const id = `${component}-${action}-${Date.now()}`;
+    this.measurements.set(id, {
+      component,
+      action,
+      startTime: performance.now()
+    });
+    
+    return id;
+  }
+  
+  /**
+   * End timing a performance measurement
+   */
+  end(id: string): void {
+    const measurement = this.measurements.get(id);
+    if (!measurement) {
+      console.warn(`Performance measurement ${id} not found`);
+      return;
     }
-  };
-}
-
-// Track network request performance
-export function trackNetworkPerformance() {
-  if (typeof window === 'undefined' || typeof PerformanceObserver === 'undefined') {
-    return;
-  }
-  
-  try {
-    const networkObserver = new PerformanceObserver((list) => {
-      list.getEntries().forEach((entry) => {
-        if (entry.duration > THRESHOLDS.NETWORK) {
-          console.warn(`Slow network request detected: ${entry.name} took ${entry.duration.toFixed(1)}ms`);
-          reportPerformanceIssue('network', entry.name, entry.duration);
-        }
-      });
-    });
     
-    networkObserver.observe({ type: 'resource', buffered: true });
-  } catch (err) {
-    console.error('Network performance monitoring initialization failed:', err);
+    const endTime = performance.now();
+    const duration = endTime - measurement.startTime;
+    
+    const completedMeasurement: PerformanceEntry = {
+      ...measurement,
+      endTime,
+      duration
+    };
+    
+    this.completedMeasurements.push(completedMeasurement);
+    this.measurements.delete(id);
+    
+    // Log performance metrics for critical paths
+    if (duration > 500) {
+      console.warn(`Slow ${completedMeasurement.component} ${completedMeasurement.action}: ${duration.toFixed(2)}ms`);
+    }
+    
+    return completedMeasurement;
   }
-}
-
-// Report performance issues
-function reportPerformanceIssue(type: 'render' | 'network' | 'interaction', name: string, duration: number) {
-  // Log to console
-  console.warn(`Performance issue detected: ${type} - ${name} - ${duration.toFixed(1)}ms`);
   
-  // In a real app, we might send this to an analytics service
-  if (duration > THRESHOLDS.NETWORK * 2) {
-    toast.warning(`Slow ${type} detected. Please report if this persists.`, {
-      position: 'bottom-left',
-      duration: 3000,
-    });
+  /**
+   * Measure a function execution time
+   */
+  measure<T>(component: string, action: string, fn: () => T): T {
+    const id = this.start(component, action);
+    try {
+      return fn();
+    } finally {
+      this.end(id);
+    }
+  }
+  
+  /**
+   * Measure an async function execution time
+   */
+  async measureAsync<T>(component: string, action: string, fn: () => Promise<T>): Promise<T> {
+    const id = this.start(component, action);
+    try {
+      return await fn();
+    } finally {
+      this.end(id);
+    }
+  }
+  
+  /**
+   * Get performance report
+   */
+  getReport(): PerformanceEntry[] {
+    return [...this.completedMeasurements];
+  }
+  
+  /**
+   * Clear all measurements
+   */
+  clear(): void {
+    this.measurements.clear();
+    this.completedMeasurements = [];
   }
 }
 
-// Hook for tracking performance in function components
-export function usePerformanceTracking(componentName: string) {
-  useEffect(() => {
-    const endTracking = trackRenderPerformance(componentName);
-    return endTracking;
+// Create and export a singleton instance
+export const performanceMonitor = new PerformanceMonitor();
+
+/**
+ * Hook to measure component render performance
+ */
+export function useComponentPerformance(componentName: string) {
+  React.useEffect(() => {
+    // Use the Web Performance API for component render timing
+    const id = `${componentName}-render-${Date.now()}`;
+    performance.mark(`${id}-start`);
+    
+    return () => {
+      performance.mark(`${id}-end`);
+      performance.measure(
+        `${componentName} render time`,
+        `${id}-start`,
+        `${id}-end`
+      );
+      
+      // Get the measurement
+      const measurements = performance.getEntriesByName(`${componentName} render time`);
+      const duration = measurements[0]?.duration;
+      
+      if (duration && duration > 200) {
+        console.warn(`Slow render for ${componentName}: ${duration.toFixed(2)}ms`);
+      }
+      
+      // Clean up marks
+      performance.clearMarks(`${id}-start`);
+      performance.clearMarks(`${id}-end`);
+      performance.clearMeasures(`${componentName} render time`);
+    };
   }, [componentName]);
 }
