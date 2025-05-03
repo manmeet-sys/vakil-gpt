@@ -6,6 +6,12 @@ import { FileText, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+export interface AnalysisResult {
+  title: string;
+  description: string;
+  severity: 'high' | 'medium' | 'low' | 'info';
+}
+
 export interface BaseAnalyzerProps {
   title: string;
   description: string;
@@ -13,6 +19,7 @@ export interface BaseAnalyzerProps {
   onAnalyze?: () => void;
   isAnalyzing?: boolean;
   analysisResult?: string;
+  analysisResults?: AnalysisResult[];
   children: ReactNode;
   useAI?: boolean;
   aiDescription?: string;
@@ -25,6 +32,7 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
   onAnalyze,
   isAnalyzing = false,
   analysisResult = '',
+  analysisResults = [],
   children,
   useAI = false,
   aiDescription,
@@ -84,6 +92,7 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
           </Button>
         </div>
         
+        {/* Display single string analysis result */}
         {analysisResult && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }} 
@@ -96,6 +105,45 @@ export const BaseAnalyzer: React.FC<BaseAnalyzerProps> = ({
             </div>
             <ScrollArea className="h-[300px] w-full p-3">
               <div className="text-sm whitespace-pre-wrap">{analysisResult}</div>
+            </ScrollArea>
+          </motion.div>
+        )}
+
+        {/* Display multiple structured analysis results */}
+        {analysisResults.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }} 
+            animate={{ opacity: 1, y: 0 }}
+            className="border rounded-md"
+          >
+            <div className="flex items-center bg-muted/50 p-3 border-b">
+              <Search className="h-4 w-4 text-blue-600 mr-2" />
+              <h3 className="text-sm font-medium">Analysis Results</h3>
+            </div>
+            <ScrollArea className="h-[300px] w-full p-3">
+              <div className="space-y-4">
+                {analysisResults.map((result, index) => {
+                  let severityColor = "bg-blue-50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-800/20";
+                  
+                  if (result.severity === "high") {
+                    severityColor = "bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-800/20";
+                  } else if (result.severity === "medium") {
+                    severityColor = "bg-amber-50 border-amber-100 dark:bg-amber-900/10 dark:border-amber-800/20";
+                  } else if (result.severity === "low") {
+                    severityColor = "bg-green-50 border-green-100 dark:bg-green-900/10 dark:border-green-800/20";
+                  }
+                  
+                  return (
+                    <div 
+                      key={index} 
+                      className={`p-3 border rounded-md ${severityColor}`}
+                    >
+                      <h4 className="font-medium text-sm mb-1">{result.title}</h4>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{result.description}</p>
+                    </div>
+                  );
+                })}
+              </div>
             </ScrollArea>
           </motion.div>
         )}

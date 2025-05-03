@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AnalysisResult } from '@/components/practice-area-tools/base/BaseAnalyzer';
+import { AnalysisResult } from '@/components/practice-area-tools/base';
 import { BaseAnalyzer } from '@/components/practice-area-tools/base';
 import BackToToolsButton from '@/components/practice-areas/BackToToolsButton';
 import { Badge } from '@/components/ui/badge';
