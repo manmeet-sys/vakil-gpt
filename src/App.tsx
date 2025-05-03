@@ -48,7 +48,6 @@ const ResetPasswordPage = lazy(() => import("./pages/reset-password"));
 // Implemented tool pages
 const LegalBriefGenerationPage = lazy(() => import("./pages/legal-brief-generation"));
 const StatuteTrackerPage = lazy(() => import("./pages/statute-tracker"));
-const ContractDraftingPage = lazy(() => import("./pages/contract-drafting"));
 const StartupToolkitPage = lazy(() => import("./pages/startup-toolkit"));
 const PleaBargainPage = lazy(() => import("./pages/plea-bargain"));
 const ESignaturePage = lazy(() => import("./pages/e-signature"));
@@ -218,9 +217,10 @@ const App = () => (
                         </ProtectedRoute>
                       } />
                       
+                      {/* Redirect contract-drafting to legal-document-drafting */}
                       <Route path="/contract-drafting" element={
                         <ProtectedRoute>
-                          <ContractDraftingPage />
+                          <Navigate to="/legal-document-drafting" replace />
                         </ProtectedRoute>
                       } />
                       

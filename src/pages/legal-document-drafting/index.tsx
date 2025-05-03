@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FileText, Pen, Copy, Download, Sparkles, MessageCircle, HelpCircle, Users } from 'lucide-react';
+import { FileText, Pen, Copy, Download, Sparkles, MessageCircle, HelpCircle, Users, FileSearch } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import LegalToolLayout from '@/components/LegalToolLayout';
@@ -24,7 +24,7 @@ const LegalDocumentDraftingPage = () => {
   const [draftContent, setDraftContent] = useState('');
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentType, setDocumentType] = useState('');
-  const [activeTab, setActiveTab] = useState<'form' | 'prompt' | 'collaborative'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'prompt' | 'collaborative' | 'contract'>('form');
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
   
   const handleDraftGenerated = (title: string, type: string, content: string) => {
@@ -100,8 +100,8 @@ const LegalDocumentDraftingPage = () => {
 
   return (
     <LegalToolLayout
-      title="Indian Legal Document Drafting"
-      description="Create professional legal documents tailored for Indian jurisdiction"
+      title="Indian Legal Document & Contract Drafting"
+      description="Create professional legal documents and contracts tailored for Indian jurisdiction"
       icon={<FileText className="w-6 h-6 text-white" />}
     >
       <motion.div 
@@ -114,10 +114,10 @@ const LegalDocumentDraftingPage = () => {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
               <FileText className="h-6 w-6 text-legal-accent" />
-              <span>Indian Legal Document Drafting</span>
+              <span>Indian Legal Document & Contract Drafting</span>
             </h1>
             <p className="text-legal-muted dark:text-gray-400 text-sm md:text-base">
-              Draft professional legal documents compliant with Indian laws and judicial requirements
+              Draft professional legal documents and contracts compliant with Indian laws and judicial requirements
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -132,10 +132,11 @@ const LegalDocumentDraftingPage = () => {
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   <ul className="text-xs space-y-1">
-                    <li>• Use the "Collaborative" tab for multiple editors</li>
+                    <li>• Use the "Structured Form" for guided document creation</li>
+                    <li>• Use "Contract Review" to analyze existing contracts</li>
+                    <li>• The "Collaborative" tab enables multiple editors</li>
                     <li>• Upload existing PDFs to extract text</li>
                     <li>• The AI can generate documents from detailed prompts</li>
-                    <li>• Save versions to track document changes</li>
                   </ul>
                 </TooltipContent>
               </Tooltip>
@@ -147,13 +148,17 @@ const LegalDocumentDraftingPage = () => {
           <Tabs 
             defaultValue="form" 
             value={activeTab}
-            onValueChange={(value) => setActiveTab(value as 'form' | 'prompt' | 'collaborative')}
+            onValueChange={(value) => setActiveTab(value as 'form' | 'prompt' | 'collaborative' | 'contract')}
             className="w-full"
           >
-            <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
+            <TabsList className="grid w-full max-w-md grid-cols-4 mb-6">
               <TabsTrigger value="form" className="flex items-center gap-2">
                 <Pen className="h-4 w-4" />
                 <span className="hidden sm:inline">Structured</span> Form
+              </TabsTrigger>
+              <TabsTrigger value="contract" className="flex items-center gap-2">
+                <FileSearch className="h-4 w-4" />
+                <span className="hidden sm:inline">Contract</span> Review
               </TabsTrigger>
               <TabsTrigger value="prompt" className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" />
@@ -164,58 +169,79 @@ const LegalDocumentDraftingPage = () => {
                 <span className="hidden sm:inline">Collaborative</span> Edit
               </TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="contract">
+              <div className="bg-white dark:bg-slate-900/50 border border-legal-border dark:border-legal-slate/20 rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-medium mb-4 flex items-center gap-2">
+                  <FileSearch className="h-5 w-5 text-legal-accent" />
+                  Contract Review & Analysis
+                </h2>
+                <p className="mb-6 text-legal-muted dark:text-gray-400">
+                  Upload an existing contract to review terms, identify risks, ensure compliance with Indian laws, 
+                  and receive customized improvement suggestions.
+                </p>
+                
+                <iframe 
+                  src="/contract-drafting" 
+                  className="w-full h-[800px] border-0 rounded"
+                  title="Contract Review Tool"
+                />
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left column - Form/Prompt */}
-          <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
-            {/* Document Generation (Form, Prompt, or Collaborative based on activeTab) */}
-            {activeTab === 'form' ? (
-              <DocumentDraftingForm onDraftGenerated={handleDraftGenerated} />
-            ) : activeTab === 'prompt' ? (
-              <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
-            ) : (
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium flex items-center gap-2">
-                  <Users className="h-4 w-4 text-blue-500" />
-                  Collaborative Session
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Invite colleagues to work on this document in real-time. Changes will be visible to all participants.
-                </p>
-                <PdfUploader 
-                  onUpload={handleDocumentUpload} 
-                  onRemove={handleRemoveDocument} 
-                  documents={attachedDocuments}
+        {activeTab !== 'contract' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left column - Form/Prompt */}
+            <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
+              {/* Document Generation (Form, Prompt, or Collaborative based on activeTab) */}
+              {activeTab === 'form' ? (
+                <DocumentDraftingForm onDraftGenerated={handleDraftGenerated} />
+              ) : activeTab === 'prompt' ? (
+                <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
+              ) : (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium flex items-center gap-2">
+                    <Users className="h-4 w-4 text-blue-500" />
+                    Collaborative Session
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Invite colleagues to work on this document in real-time. Changes will be visible to all participants.
+                  </p>
+                  <PdfUploader 
+                    onUpload={handleDocumentUpload} 
+                    onRemove={handleRemoveDocument} 
+                    documents={attachedDocuments}
+                    documentId="123456"
+                    showVersionHistory={true}
+                  />
+                </div>
+              )}
+            </motion.div>
+            
+            {/* Right column - Document Preview or Collaborative Editor */}
+            <motion.div className="lg:col-span-7" variants={itemVariants}>
+              {activeTab === 'collaborative' ? (
+                <CollaborativeEditor 
                   documentId="123456"
-                  showVersionHistory={true}
+                  initialContent={draftContent || "Start collaborating on your legal document here..."}
+                  onChange={setDraftContent}
+                  title={documentTitle || "Collaborative Document"}
+                  documentType={documentType || "Legal Draft"}
                 />
-              </div>
-            )}
-          </motion.div>
-          
-          {/* Right column - Document Preview or Collaborative Editor */}
-          <motion.div className="lg:col-span-7" variants={itemVariants}>
-            {activeTab === 'collaborative' ? (
-              <CollaborativeEditor 
-                documentId="123456"
-                initialContent={draftContent || "Start collaborating on your legal document here..."}
-                onChange={setDraftContent}
-                title={documentTitle || "Collaborative Document"}
-                documentType={documentType || "Legal Draft"}
-              />
-            ) : (
-              <DocumentPreview 
-                title={documentTitle}
-                type={documentType}
-                content={draftContent}
-                onCopy={handleCopyContent}
-                onDownload={handleDownloadDocument}
-              />
-            )}
-          </motion.div>
-        </div>
+              ) : (
+                <DocumentPreview 
+                  title={documentTitle}
+                  type={documentType}
+                  content={draftContent}
+                  onCopy={handleCopyContent}
+                  onDownload={handleDownloadDocument}
+                />
+              )}
+            </motion.div>
+          </div>
+        )}
         
         <motion.div 
           className="mt-8 bg-legal-accent/5 border border-legal-accent/20 rounded-md p-4"
@@ -247,8 +273,8 @@ const LegalDocumentDraftingPage = () => {
               <p className="text-legal-muted dark:text-gray-400">Different High Courts have different rules for formatting and filing. Check the latest court rules before finalizing documents.</p>
             </div>
             <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm">
-              <h4 className="font-semibold mb-1">Vakalatnama Requirements</h4>
-              <p className="text-legal-muted dark:text-gray-400">Ensure valid Bar Council enrollment numbers and proper witness attestation as per the Advocates Act, 1961.</p>
+              <h4 className="font-semibold mb-1">Contract Stamp Duty</h4>
+              <p className="text-legal-muted dark:text-gray-400">Remember that stamp duty varies by state in India. Contracts must be properly stamped according to the applicable state's stamp duty laws.</p>
             </div>
           </div>
         </motion.div>
