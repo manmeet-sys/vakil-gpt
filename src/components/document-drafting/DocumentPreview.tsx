@@ -3,9 +3,11 @@ import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Download, FileText, Printer, Share2, Edit, Check } from 'lucide-react';
+import { Copy, Download, FileText, Printer, Share2, Edit, Check, FileType, FileCode, FileJson } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 interface DocumentPreviewProps {
   title: string;
@@ -24,8 +26,9 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   onDownload,
   onEdit
 }) => {
-  const [activeView, setActiveView] = useState<'preview' | 'print'>('preview');
+  const [activeView, setActiveView] = useState<'preview' | 'print' | 'code'>('preview');
   const [copied, setCopied] = useState(false);
+  const [documentFormat, setDocumentFormat] = useState<'text' | 'markdown' | 'json'>('text');
   const printRef = useRef<HTMLDivElement>(null);
   
   // Format the content for display with proper line breaks
@@ -35,6 +38,14 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       <br />
     </React.Fragment>
   ));
+
+  const jsonFormatted = () => {
+    try {
+      return JSON.stringify(JSON.parse(content), null, 2);
+    } catch (e) {
+      return content;
+    }
+  };
   
   // Print document functionality
   const handlePrint = () => {
@@ -77,6 +88,16 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     }
   };
   
+  // Export as PDF (simplified version)
+  const handleExportPDF = () => {
+    toast.info("Preparing PDF for download...");
+    // In a real implementation, we would use a PDF generation library
+    // For now, we'll just simulate the behavior
+    setTimeout(() => {
+      toast.success("PDF export feature would download the document as PDF");
+    }, 1000);
+  };
+  
   // Copy with feedback
   const handleCopy = () => {
     onCopy();
@@ -110,27 +131,36 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           <FileText className="h-16 w-16 text-gray-300 dark:text-gray-700 mb-4" />
           <h3 className="text-lg font-medium mb-2">No Document Preview</h3>
           <p className="text-muted-foreground text-sm max-w-xs">
-            Select a template or create a new document to see the preview here.
+            Create a new document using the form or start with a quick start template to see the preview here.
           </p>
         </CardContent>
       </Card>
     );
   }
 
+  // Calculate word and character counts
+  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const charCount = content.length;
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="bg-gray-50 dark:bg-gray-900/50 border-b">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <CardTitle className="truncate">
+            <CardTitle className="truncate flex items-center gap-2">
               {title || 'Untitled Document'}
+              {type && <Badge variant="outline" className="ml-2 text-xs">{type}</Badge>}
             </CardTitle>
-            {type && <p className="text-sm text-muted-foreground">{type}</p>}
+            <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3">
+              <span>{wordCount} words</span>
+              <span>{charCount} characters</span>
+            </div>
           </div>
-          <Tabs defaultValue="preview" value={activeView} onValueChange={(v) => setActiveView(v as 'preview' | 'print')}>
+          <Tabs defaultValue="preview" value={activeView} onValueChange={(v) => setActiveView(v as 'preview' | 'print' | 'code')}>
             <TabsList>
               <TabsTrigger value="preview">Preview</TabsTrigger>
               <TabsTrigger value="print">Print View</TabsTrigger>
+              <TabsTrigger value="code">Code View</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -155,9 +185,66 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
               </div>
             </div>
           </TabsContent>
+          <TabsContent value="code" className="p-0 h-full">
+            <div className="p-2 bg-gray-100 dark:bg-gray-900 border-b flex gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant={documentFormat === 'text' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setDocumentFormat('text')}
+                      className="flex items-center gap-1"
+                    >
+                      <FileText className="h-4 w-4" />
+                      <span className="sr-only md:not-sr-only md:inline">Text</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Plain Text View</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant={documentFormat === 'markdown' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setDocumentFormat('markdown')}
+                      className="flex items-center gap-1"
+                    >
+                      <FileCode className="h-4 w-4" />
+                      <span className="sr-only md:not-sr-only md:inline">Markdown</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Markdown View</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant={documentFormat === 'json' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setDocumentFormat('json')}
+                      className="flex items-center gap-1"
+                    >
+                      <FileJson className="h-4 w-4" />
+                      <span className="sr-only md:not-sr-only md:inline">JSON</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>JSON View (if applicable)</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <pre className="p-6 overflow-auto h-[calc(100%-44px)] text-sm font-mono bg-gray-50 dark:bg-gray-900/60">
+              {documentFormat === 'json' ? jsonFormatted() : content}
+            </pre>
+          </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="border-t bg-gray-50 dark:bg-gray-900/50 p-3 justify-end space-x-2">
+      <CardFooter className="border-t bg-gray-50 dark:bg-gray-900/50 p-3 justify-end gap-2 flex-wrap">
         <Button
           variant="outline"
           size="sm"
@@ -167,6 +254,15 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           {copied ? 'Copied' : 'Copy'}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportPDF}
+          className="flex items-center gap-1"
+        >
+          <FileType className="h-4 w-4" />
+          Export as PDF
         </Button>
         <Button
           variant="outline"
