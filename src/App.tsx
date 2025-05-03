@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
@@ -6,7 +7,7 @@ import { AuthProvider } from './context/AuthContext';
 import { BillingProvider } from './context/BillingContext';
 import { PracticeAreaToolProvider } from './components/practice-area-tools/PracticeAreaToolContext';
 import { Toaster } from 'sonner';
-
+import { NavigationProvider } from './context/NavigationContext';
 import { UserDataProvider } from './context/UserDataContext';
 import { initPerformanceMonitoring, trackNetworkPerformance } from './utils/performance-monitoring';
 
@@ -20,10 +21,12 @@ function App() {
       <AuthProvider>
         <BillingProvider>
           <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-            <PracticeAreaToolProvider>
-              <RouterProvider router={router} />
-              <Toaster position="top-center" richColors closeButton />
-            </PracticeAreaToolProvider>
+            <NavigationProvider>
+              <PracticeAreaToolProvider>
+                <RouterProvider router={router} />
+                <Toaster position="top-center" richColors closeButton />
+              </PracticeAreaToolProvider>
+            </NavigationProvider>
           </ThemeProvider>
         </BillingProvider>
       </AuthProvider>
