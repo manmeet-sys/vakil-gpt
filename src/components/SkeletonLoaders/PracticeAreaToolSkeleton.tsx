@@ -107,5 +107,15 @@ export const PracticeAreaToolSkeleton: React.FC<PracticeAreaToolSkeletonProps> =
 export const SentencingPredictorSkeleton = PracticeAreaToolSkeleton;
 export const PleaBargainSkeleton = PracticeAreaToolSkeleton;
 
+// Create specific variants for different practice areas
+export const FamilyLawToolsSkeleton = (props: PracticeAreaToolSkeletonProps) => 
+  <PracticeAreaToolSkeleton {...props} hasMultipleInputs={true} />;
+
+export const CivilLawToolsSkeleton = (props: PracticeAreaToolSkeletonProps) => 
+  <PracticeAreaToolSkeleton {...props} hasDocument={true} />;
+
+export const MatrimonialLawToolsSkeleton = (props: PracticeAreaToolSkeletonProps) => 
+  <PracticeAreaToolSkeleton {...props} hasTextArea={true} hasResults={true} />;
+
 // Default export for direct imports
 export default PracticeAreaToolSkeleton;
