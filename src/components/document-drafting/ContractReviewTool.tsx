@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from "@/components/ui/badge";
 
 const ContractReviewTool = () => {
   const [contractText, setContractText] = useState<string>('');
@@ -123,30 +124,24 @@ const ContractReviewTool = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
   
-  const riskColors = {
-    high: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-    medium: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-    low: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  };
-
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden">
       <Tabs 
         value={activeTab} 
         onValueChange={(value) => setActiveTab(value as 'upload' | 'review' | 'edit')}
         className="h-full flex flex-col"
       >
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <TabsList className="px-4">
-            <TabsTrigger value="upload" className="data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400">
+          <TabsList className="px-4 w-full justify-start">
+            <TabsTrigger value="upload" className="data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 px-4">
               <FileUp className="w-4 h-4 mr-2" />
               Upload
             </TabsTrigger>
-            <TabsTrigger value="review" className="data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400">
+            <TabsTrigger value="review" className="data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 px-4">
               <Search className="w-4 h-4 mr-2" />
               Review
             </TabsTrigger>
-            <TabsTrigger value="edit" className="data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400">
+            <TabsTrigger value="edit" className="data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 px-4">
               <Pencil className="w-4 h-4 mr-2" />
               Edit
             </TabsTrigger>
@@ -164,7 +159,7 @@ const ContractReviewTool = () => {
               <div className="mx-auto bg-blue-50 dark:bg-blue-900/20 w-16 h-16 rounded-full flex items-center justify-center">
                 <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-xl font-medium">Upload Contract</h3>
+              <h3 className="text-xl font-medium font-playfair">Upload Contract</h3>
               <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                 Upload your contract document to review or paste the content directly below
               </p>
@@ -188,7 +183,7 @@ const ContractReviewTool = () => {
             </motion.div>
             
             <div className="mt-8">
-              <h3 className="text-sm font-medium mb-2">Or paste contract text:</h3>
+              <h3 className="text-sm font-medium mb-2 font-playfair">Or paste contract text:</h3>
               <Textarea
                 placeholder="Paste your contract text here..."
                 className="min-h-[300px]"
@@ -200,6 +195,7 @@ const ContractReviewTool = () => {
                 <div className="mt-4 flex justify-end">
                   <Button 
                     onClick={() => setActiveTab('review')}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
                   >
                     Continue to Review
                   </Button>
@@ -212,12 +208,13 @@ const ContractReviewTool = () => {
             {contractText ? (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium">
+                  <h3 className="text-xl font-medium font-playfair">
                     {fileName || 'Contract Review'}
                   </h3>
                   <Button
                     onClick={analyzeContract}
                     disabled={isAnalyzing || !contractText}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
                   >
                     {isAnalyzing ? 'Analyzing...' : analysisResult ? 'Re-analyze' : 'Analyze Contract'}
                   </Button>
@@ -230,59 +227,65 @@ const ContractReviewTool = () => {
                     animate="visible"
                     variants={fadeIn}
                   >
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Contract Summary</CardTitle>
+                    <Card className="border-indigo-100 dark:border-indigo-900/30">
+                      <CardHeader className="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20">
+                        <CardTitle className="text-lg font-playfair text-indigo-800 dark:text-indigo-300">Contract Summary</CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="pt-4">
                         <p className="text-gray-700 dark:text-gray-300">
                           {analysisResult.summary}
                         </p>
                       </CardContent>
                     </Card>
                     
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Risk Assessment</CardTitle>
+                    <Card className="border-indigo-100 dark:border-indigo-900/30">
+                      <CardHeader className="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20">
+                        <CardTitle className="text-lg font-playfair text-indigo-800 dark:text-indigo-300">Risk Assessment</CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="pt-4">
                         <ul className="space-y-3">
                           {analysisResult.risks.map((risk, index) => (
-                            <li key={index} className={`p-3 rounded-md flex items-start gap-3 ${riskColors[risk.severity]}`}>
-                              <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                              <span>{risk.text}</span>
+                            <li key={index} className="flex items-start gap-3">
+                              <Badge variant={
+                                risk.severity === 'high' ? 'destructive' : 
+                                risk.severity === 'medium' ? 'warning' : 
+                                'success'
+                              } className="mt-0.5">
+                                {risk.severity.toUpperCase()}
+                              </Badge>
+                              <span className="text-gray-700 dark:text-gray-300">{risk.text}</span>
                             </li>
                           ))}
                         </ul>
                       </CardContent>
                     </Card>
                     
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Recommendations</CardTitle>
+                    <Card className="border-indigo-100 dark:border-indigo-900/30">
+                      <CardHeader className="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20">
+                        <CardTitle className="text-lg font-playfair text-indigo-800 dark:text-indigo-300">Recommendations</CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="pt-4">
                         <ul className="space-y-2">
                           {analysisResult.recommendations.map((rec, index) => (
                             <li key={index} className="flex items-start gap-2">
                               <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                              <span>{rec}</span>
+                              <span className="text-gray-700 dark:text-gray-300">{rec}</span>
                             </li>
                           ))}
                         </ul>
                       </CardContent>
                     </Card>
                     
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Compliance Issues</CardTitle>
+                    <Card className="border-indigo-100 dark:border-indigo-900/30">
+                      <CardHeader className="pb-2 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20">
+                        <CardTitle className="text-lg font-playfair text-indigo-800 dark:text-indigo-300">Compliance Issues</CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="pt-4">
                         <ul className="space-y-2">
                           {analysisResult.complianceIssues.map((issue, index) => (
                             <li key={index} className="flex items-start gap-2">
                               <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                              <span>{issue}</span>
+                              <span className="text-gray-700 dark:text-gray-300">{issue}</span>
                             </li>
                           ))}
                         </ul>
@@ -291,6 +294,7 @@ const ContractReviewTool = () => {
                         <Button 
                           variant="outline" 
                           onClick={() => setActiveTab('edit')}
+                          className="border-indigo-200 hover:border-indigo-300 dark:border-indigo-800 dark:hover:border-indigo-700"
                         >
                           <Pencil className="h-4 w-4 mr-2" />
                           Edit Contract
@@ -304,13 +308,13 @@ const ContractReviewTool = () => {
                       {isAnalyzing ? (
                         <>
                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700 mx-auto"></div>
-                          <h3 className="text-lg font-medium">Analyzing your contract...</h3>
+                          <h3 className="text-lg font-medium font-playfair">Analyzing your contract...</h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">This may take a minute. We're reviewing your contract for potential issues.</p>
                         </>
                       ) : (
                         <>
-                          <Search className="h-12 w-12 mx-auto text-gray-400" />
-                          <h3 className="text-lg font-medium">Ready to analyze contract</h3>
+                          <Search className="h-12 w-12 mx-auto text-indigo-400" />
+                          <h3 className="text-lg font-medium font-playfair">Ready to analyze contract</h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             Click the "Analyze Contract" button to identify risks, opportunities, and compliance issues.
                           </p>
@@ -323,9 +327,9 @@ const ContractReviewTool = () => {
             ) : (
               <div className="text-center py-12">
                 <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Contract to Review</h3>
+                <h3 className="text-lg font-medium mb-2 font-playfair">No Contract to Review</h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-6">Please upload or paste contract text in the Upload tab first</p>
-                <Button onClick={() => setActiveTab('upload')}>
+                <Button onClick={() => setActiveTab('upload')} className="bg-indigo-600 hover:bg-indigo-700 text-white">
                   Go to Upload
                 </Button>
               </div>
@@ -335,10 +339,10 @@ const ContractReviewTool = () => {
           <TabsContent value="edit" className="h-full p-6">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-xl font-medium">
+                <h3 className="text-xl font-medium font-playfair">
                   {fileName || 'Edit Contract'}
                 </h3>
-                <Button variant="outline" onClick={handleDownload}>
+                <Button variant="outline" onClick={handleDownload} className="border-indigo-200 hover:border-indigo-300 dark:border-indigo-800 dark:hover:border-indigo-700">
                   <Download className="h-4 w-4 mr-2" />
                   Download
                 </Button>
@@ -347,7 +351,7 @@ const ContractReviewTool = () => {
               <Textarea
                 value={contractText}
                 onChange={(e) => setContractText(e.target.value)}
-                className="min-h-[600px] font-mono"
+                className="min-h-[600px] font-mono border-indigo-200 dark:border-indigo-800 focus:border-indigo-400 dark:focus:border-indigo-600"
               />
             </div>
           </TabsContent>

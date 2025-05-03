@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { 
   FileText, Pen, Copy, Download, Sparkles, MessageCircle, 
-  HelpCircle, Users, FileSearch, ArrowLeft, BookOpen, 
+  HelpCircle, Users, FileSearch, BookOpen, 
   CheckCircle, PenTool, ClipboardCheck 
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -119,6 +119,8 @@ const LegalDocumentDraftingPage = () => {
     { id: 'affidavit', name: 'General Affidavit', category: 'court' },
     { id: 'rental', name: 'Rental Agreement', category: 'contracts' },
     { id: 'poa', name: 'Power of Attorney', category: 'personal' },
+    { id: 'will', name: 'Simple Will', category: 'personal' },
+    { id: 'nda', name: 'Non-Disclosure Agreement', category: 'contracts' }
   ];
 
   return (
@@ -142,12 +144,12 @@ const LegalDocumentDraftingPage = () => {
         >
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-playfair font-bold flex items-center gap-2 mb-1">
-                <FileText className="h-7 w-7 text-legal-accent" />
+              <h1 className="text-2xl md:text-3xl font-playfair font-bold flex items-center gap-2 mb-1 text-indigo-900 dark:text-indigo-200">
+                <FileText className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
                 <span>Indian Legal Document & Contract Drafting</span>
               </h1>
               <p className="text-legal-muted dark:text-gray-400 text-sm md:text-base">
-                Draft professional legal documents and contracts compliant with Indian laws and judicial requirements
+                Create professional legal documents and contracts compliant with Indian laws and judicial requirements
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -155,18 +157,29 @@ const LegalDocumentDraftingPage = () => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button className="flex items-center gap-1 text-xs bg-amber-100 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded">
-                      <HelpCircle className="h-3 w-3" />
+                    <button className="flex items-center gap-1 text-xs bg-amber-100 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-3 py-1.5 rounded-full">
+                      <HelpCircle className="h-3.5 w-3.5" />
                       Quick Tips
                     </button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-800/50">
-                    <ul className="text-xs space-y-1 text-amber-800 dark:text-amber-200">
-                      <li>• Use the "Structured Form" for guided document creation</li>
-                      <li>• Use "Contract Review" to analyze existing contracts</li>
-                      <li>• The "Collaborative" tab enables multiple editors</li>
-                      <li>• Upload existing PDFs to extract text</li>
-                      <li>• The AI can generate documents from detailed prompts</li>
+                    <ul className="text-xs space-y-1.5 text-amber-800 dark:text-amber-200">
+                      <li className="flex items-start gap-1.5">
+                        <span className="inline-block rounded-full bg-amber-200 dark:bg-amber-800 w-4 h-4 text-amber-800 dark:text-amber-200 flex items-center justify-center text-[10px] mt-0.5 font-bold">1</span>
+                        Use the "Structured Form" for guided document creation
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <span className="inline-block rounded-full bg-amber-200 dark:bg-amber-800 w-4 h-4 text-amber-800 dark:text-amber-200 flex items-center justify-center text-[10px] mt-0.5 font-bold">2</span>
+                        Use "Contract Review" to analyze existing contracts
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <span className="inline-block rounded-full bg-amber-200 dark:bg-amber-800 w-4 h-4 text-amber-800 dark:text-amber-200 flex items-center justify-center text-[10px] mt-0.5 font-bold">3</span>
+                        The "Collaborative" tab enables multiple editors
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <span className="inline-block rounded-full bg-amber-200 dark:bg-amber-800 w-4 h-4 text-amber-800 dark:text-amber-200 flex items-center justify-center text-[10px] mt-0.5 font-bold">4</span>
+                        Upload existing PDFs to extract text
+                      </li>
                     </ul>
                   </TooltipContent>
                 </Tooltip>
@@ -175,24 +188,24 @@ const LegalDocumentDraftingPage = () => {
           </div>
           
           {/* Quick Access Templates */}
-          <div className="mb-6">
-            <h2 className="text-lg font-medium mb-3 font-playfair flex items-center gap-2 text-indigo-800 dark:text-indigo-300">
+          <div className="mb-8">
+            <h2 className="text-lg font-medium mb-4 font-playfair flex items-center gap-2 text-indigo-800 dark:text-indigo-300">
               <BookOpen className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               Quick Access Templates
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
               {popularTemplates.map((template) => (
                 <motion.div
                   key={template.id}
                   whileHover={{ scale: 1.03, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
                   className={`p-3 bg-white dark:bg-slate-800 border ${
                     selectedTemplate === template.id 
-                      ? 'border-indigo-300 dark:border-indigo-500' 
+                      ? 'border-indigo-300 dark:border-indigo-500 ring-1 ring-indigo-300 dark:ring-indigo-500' 
                       : 'border-gray-200 dark:border-gray-700'
-                  } rounded-lg cursor-pointer transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-500`}
+                  } rounded-lg cursor-pointer transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-500 relative`}
                   onClick={() => handleTemplateSelect(template.id)}
                 >
-                  <div className="flex flex-col items-center text-center gap-2">
+                  <div className="flex flex-col items-center text-center gap-2 py-1">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       selectedTemplate === template.id
                         ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
@@ -203,8 +216,8 @@ const LegalDocumentDraftingPage = () => {
                       {template.category === 'contracts' && <ClipboardCheck className="h-5 w-5" />}
                       {template.category === 'personal' && <PenTool className="h-5 w-5" />}
                     </div>
-                    <p className="text-sm font-medium">{template.name}</p>
-                    <Badge variant="outline" className="text-xs">{template.category}</Badge>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{template.name}</p>
+                    <Badge variant="outline" className="text-xs px-2 py-0 h-5 font-normal">{template.category}</Badge>
                     {selectedTemplate === template.id && (
                       <CheckCircle className="h-4 w-4 text-green-500 absolute top-2 right-2" />
                     )}
@@ -221,7 +234,7 @@ const LegalDocumentDraftingPage = () => {
               onValueChange={(value) => setActiveTab(value as 'form' | 'prompt' | 'collaborative' | 'contract')}
               className="w-full"
             >
-              <TabsList className="grid w-full max-w-md grid-cols-4 mb-6 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl">
+              <TabsList className="grid w-full grid-cols-4 mb-6 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl">
                 <TabsTrigger 
                   value="form" 
                   className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg"
@@ -256,7 +269,7 @@ const LegalDocumentDraftingPage = () => {
               <TabsContent value="form" className="animate-in fade-in-50">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
-                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6">
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
                       <DocumentDraftingForm 
                         onDraftGenerated={handleDraftGenerated} 
                         selectedTemplate={selectedTemplate}
@@ -278,27 +291,31 @@ const LegalDocumentDraftingPage = () => {
               
               {/* Contract Review Tab Content */}
               <TabsContent value="contract" className="animate-in fade-in-50">
-                <div className="bg-white dark:bg-slate-900/50 border border-legal-border dark:border-legal-slate/20 rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-medium mb-4 flex items-center gap-2 font-playfair">
-                    <FileSearch className="h-5 w-5 text-legal-accent" />
-                    Contract Review & Analysis
-                  </h2>
-                  <p className="mb-6 text-legal-muted dark:text-gray-400">
-                    Upload an existing contract to review terms, identify risks, ensure compliance with Indian laws, 
-                    and receive customized improvement suggestions.
-                  </p>
-                  
-                  <div className="h-[800px] border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                    <ContractReviewTool />
+                <motion.div variants={itemVariants}>
+                  <div className="bg-white dark:bg-slate-900/50 border border-legal-border dark:border-legal-slate/20 rounded-lg shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+                      <h2 className="text-xl font-medium mb-2 flex items-center gap-2 font-playfair text-indigo-800 dark:text-indigo-300">
+                        <FileSearch className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                        Contract Review & Analysis
+                      </h2>
+                      <p className="text-legal-muted dark:text-gray-400">
+                        Upload an existing contract to review terms, identify risks, ensure compliance with Indian laws, 
+                        and receive customized improvement suggestions.
+                      </p>
+                    </div>
+                    
+                    <div className="h-[700px]">
+                      <ContractReviewTool />
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               </TabsContent>
               
               {/* AI Prompt Tab Content */}
               <TabsContent value="prompt" className="animate-in fade-in-50">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
-                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6">
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
                       <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
                     </div>
                   </motion.div>
@@ -319,9 +336,9 @@ const LegalDocumentDraftingPage = () => {
               <TabsContent value="collaborative" className="animate-in fade-in-50">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
-                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md p-6 space-y-4">
-                      <h3 className="text-lg font-medium flex items-center gap-2 font-playfair">
-                        <Users className="h-4 w-4 text-blue-500" />
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6 space-y-4">
+                      <h3 className="text-lg font-medium flex items-center gap-2 font-playfair text-indigo-800 dark:text-indigo-300">
+                        <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                         Collaborative Session
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -338,7 +355,7 @@ const LegalDocumentDraftingPage = () => {
                   </motion.div>
                   
                   <motion.div className="lg:col-span-7" variants={itemVariants}>
-                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-md overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm overflow-hidden">
                       <CollaborativeEditor 
                         documentId="123456"
                         initialContent={draftContent || "Start collaborating on your legal document here..."}
@@ -354,47 +371,47 @@ const LegalDocumentDraftingPage = () => {
           </div>
           
           <motion.div 
-            className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-900/20 rounded-lg p-4"
+            className="mt-8 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 border border-indigo-100 dark:border-indigo-900/20 rounded-lg p-6"
             variants={itemVariants}
           >
-            <h3 className="flex items-center gap-2 text-lg font-medium mb-4 font-playfair text-blue-800 dark:text-blue-300">
-              <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <h3 className="flex items-center gap-2 text-lg font-medium mb-4 font-playfair text-indigo-800 dark:text-indigo-300">
+              <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               <span>India-Specific Legal Drafting Tips</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">Affidavits in Indian Courts</h4>
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">Affidavits in Indian Courts</h4>
                   <p className="text-legal-muted dark:text-gray-400">Always include proper verification clause as per Indian Evidence Act and ensure compliance with local stamp duty requirements.</p>
                 </CardContent>
               </Card>
-              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">High Court vs. Supreme Court</h4>
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">High Court vs. Supreme Court</h4>
                   <p className="text-legal-muted dark:text-gray-400">Use Article 226 for High Court writs and Article 32 for Supreme Court writs. Citation format also differs between courts.</p>
                 </CardContent>
               </Card>
-              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">Proper Court Addressing</h4>
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">Proper Court Addressing</h4>
                   <p className="text-legal-muted dark:text-gray-400">Address Supreme Court as "Hon'ble Supreme Court of India" and High Courts as "Hon'ble High Court of [State]".</p>
                 </CardContent>
               </Card>
-              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">BNS Act Compliance</h4>
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">BNS Act Compliance</h4>
                   <p className="text-legal-muted dark:text-gray-400">Update your legal documents to reflect the new Bharatiya Nyaya Sanhita (BNS) codes that replaced the Indian Penal Code.</p>
                 </CardContent>
               </Card>
-              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">Local Jurisdiction Rules</h4>
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">Local Jurisdiction Rules</h4>
                   <p className="text-legal-muted dark:text-gray-400">Different High Courts have different rules for formatting and filing. Check the latest court rules before finalizing documents.</p>
                 </CardContent>
               </Card>
-              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-blue-100 dark:border-blue-900/30">
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">Contract Stamp Duty</h4>
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">Contract Stamp Duty</h4>
                   <p className="text-legal-muted dark:text-gray-400">Remember that stamp duty varies by state in India. Contracts must be properly stamped according to the applicable state's stamp duty laws.</p>
                 </CardContent>
               </Card>
