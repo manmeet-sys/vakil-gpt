@@ -21,6 +21,7 @@ function App() {
       <AuthProvider>
         <BillingProvider>
           <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+            {/* NavigationProvider is now around RouterProvider */}
             <NavigationProvider>
               <PracticeAreaToolProvider>
                 <RouterProvider router={router} />
