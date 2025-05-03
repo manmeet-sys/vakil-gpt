@@ -1,36 +1,43 @@
-
 import React, { useState } from 'react';
-import { FileText, Pen, Copy, Download, Sparkles, MessageCircle, HelpCircle, Users, Save, FileQuestion, FilePlus, BookOpen } from 'lucide-react';
+import { FileText, Pen, Copy, Download, Sparkles, MessageCircle, Book, History, HelpCircle, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import DocumentDraftingForm from '@/components/document-drafting/DocumentDraftingForm';
 import DocumentPreview from '@/components/document-drafting/DocumentPreview';
+import DocumentTemplateList from '@/components/document-drafting/DocumentTemplateList';
 import GeminiFlashAnalyzer from '@/components/GeminiFlashAnalyzer';
 import PromptBasedGenerator from '@/components/document-drafting/PromptBasedGenerator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
 import CollaborativeEditor from '@/components/document-drafting/CollaborativeEditor';
 import PdfUploader from '@/components/PdfUploader';
 import { Button } from '@/components/ui/button';
-import DocumentStorage from '@/components/document-drafting/DocumentStorage';
 import { 
   Tooltip, 
   TooltipContent, 
   TooltipProvider, 
   TooltipTrigger 
 } from '@/components/ui/tooltip';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface SavedDocument {
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from '@/components/ui/badge';
+
+// Extended template interface to include date and category
+interface ExtendedTemplate {
   id: string;
   title: string;
   type: string;
+  description: string;
   content: string;
   category: string;
-  dateCreated: string;
-  dateModified: string;
-  tags?: string[];
+  dateAdded: string;
+  popularity: number;
 }
 
 const LegalDocumentDraftingPage = () => {
@@ -39,6 +46,7 @@ const LegalDocumentDraftingPage = () => {
   const [documentType, setDocumentType] = useState('');
   const [activeTab, setActiveTab] = useState<'form' | 'prompt' | 'collaborative'>('form');
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
+  const [expandedTemplates, setExpandedTemplates] = useState(false);
   
   const handleDraftGenerated = (title: string, type: string, content: string) => {
     setDocumentTitle(title);
@@ -69,6 +77,7 @@ const LegalDocumentDraftingPage = () => {
 
   const handleAdvancedAnalysis = (analysis: string) => {
     // This would be used if we want to incorporate the analysis directly into the document
+    // For now, we'll just show a toast
     toast.success('Advanced analysis generated. You can use this to enhance your document.');
   };
 
@@ -86,12 +95,70 @@ const LegalDocumentDraftingPage = () => {
     updatedDocs.splice(index, 1);
     setAttachedDocuments(updatedDocs);
   };
-  
-  const handleLoadSavedDocument = (document: SavedDocument) => {
-    setDocumentTitle(document.title);
-    setDocumentType(document.type);
-    setDraftContent(document.content);
-  };
+
+  // Extended templates with categories
+  const extendedTemplates: ExtendedTemplate[] = [
+    {
+      id: "1",
+      title: "Civil Suit Plaint",
+      type: "Litigation",
+      description: "Standard format for filing a civil suit in Indian district courts",
+      content: "IN THE COURT OF CIVIL JUDGE (JUNIOR DIVISION) AT [PLACE]...",
+      category: "Litigation",
+      dateAdded: "2023-11-15",
+      popularity: 127
+    },
+    {
+      id: "2",
+      title: "Rental Agreement",
+      type: "Contract",
+      description: "Comprehensive rental agreement template compliant with Rent Control Acts",
+      content: "THIS RENTAL AGREEMENT is made on this [DATE]...",
+      category: "Property",
+      dateAdded: "2023-10-22",
+      popularity: 245
+    },
+    {
+      id: "3",
+      title: "Will Testament",
+      type: "Estate Planning",
+      description: "Simple will format compliant with Indian Succession Act",
+      content: "THIS IS THE LAST WILL AND TESTAMENT OF [NAME]...",
+      category: "Family Law",
+      dateAdded: "2023-09-05",
+      popularity: 89
+    },
+    {
+      id: "4",
+      title: "Power of Attorney",
+      type: "Authorization",
+      description: "General Power of Attorney document with customizable powers",
+      content: "KNOW ALL MEN BY THESE PRESENTS THAT I, [NAME]...",
+      category: "Personal",
+      dateAdded: "2023-12-12",
+      popularity: 178
+    },
+    {
+      id: "5",
+      title: "Affidavit Format",
+      type: "Court Document",
+      description: "General affidavit format with proper verification clause",
+      content: "I, [NAME], son/daughter/wife of [NAME], aged [AGE], resident of [ADDRESS], do hereby solemnly affirm and declare as under:...",
+      category: "Court Filing",
+      dateAdded: "2024-01-18",
+      popularity: 203
+    },
+    {
+      id: "6",
+      title: "Non-Disclosure Agreement",
+      type: "Contract",
+      description: "Comprehensive NDA for business purposes with Indian law compliance",
+      content: "THIS NON-DISCLOSURE AGREEMENT (\"Agreement\") is made and entered into on this [DATE]...",
+      category: "Business",
+      dateAdded: "2024-02-20",
+      popularity: 156
+    }
+  ];
 
   // Animation variants
   const pageVariants = {
@@ -114,42 +181,14 @@ const LegalDocumentDraftingPage = () => {
     }
   };
 
-  // Document type quick starts
-  const documentQuickStarts = [
-    { 
-      title: "Legal Notice", 
-      description: "Create a formal legal notice to initiate proceedings",
-      icon: <FileQuestion className="h-5 w-5 text-amber-500" />,
-      onClick: () => {
-        setDocumentTitle("Legal Notice");
-        setDocumentType("Legal Notice");
-        setDraftContent(`LEGAL NOTICE\n\nFrom:\n[YOUR NAME]\n[YOUR ADDRESS]\nThrough: [ADVOCATE NAME]\n[ADVOCATE ADDRESS]\n[ENROLLMENT NO.]\n\nTo:\n[RECIPIENT NAME]\n[RECIPIENT ADDRESS]\n\nDate: ${new Date().toLocaleDateString()}\n\nSubject: [SUBJECT MATTER OF NOTICE]\n\nSir/Madam,\n\nUnder instructions from and on behalf of my client [CLIENT NAME], I hereby serve upon you the following legal notice:\n\n1. That my client states that [STATE FACTS OF THE CASE].\n\n2. That [FURTHER FACTS].\n\n3. That [CAUSE OF ACTION].\n\n4. That despite [DETAILS OF PREVIOUS ATTEMPTS TO RESOLVE].\n\n5. That your acts have caused my client [DETAILS OF LOSS/INJURY].\n\n6. That through this legal notice, you are called upon to [DEMAND] within [TIME PERIOD] from the receipt of this notice, failing which my client shall be constrained to initiate appropriate legal proceedings against you, civil and/or criminal, as advised, at your risk, cost, and consequences.\n\nPlease take note accordingly.\n\nYours faithfully,\n\n[ADVOCATE SIGNATURE]\n[ADVOCATE NAME]\nAdvocate for the Sender`);
-        toast.success("Legal Notice template loaded. You can now customize it.");
-      }
-    },
-    { 
-      title: "Affidavit", 
-      description: "Draft a sworn statement for court or official use",
-      icon: <FilePlus className="h-5 w-5 text-blue-500" />,
-      onClick: () => {
-        setDocumentTitle("Affidavit");
-        setDocumentType("Affidavit");
-        setDraftContent(`AFFIDAVIT\n\nI, [DEPONENT NAME], son/daughter/wife of [FATHER/HUSBAND NAME], aged about [AGE] years, resident of [COMPLETE ADDRESS], do hereby solemnly affirm and declare as under:\n\n1. That I am the deponent of this affidavit and am fully conversant with the facts and circumstances of this case.\n\n2. That [FACT 1].\n\n3. That [FACT 2].\n\n4. That [FACT 3].\n\n5. That [FACT 4].\n\nVERIFICATION:\n\nI, the deponent above named, do hereby verify that the contents of paragraphs 1 to [LAST PARAGRAPH NUMBER] of this affidavit are true and correct to my knowledge, no part of it is false and nothing material has been concealed therefrom.\n\nVerified at [PLACE] on this ${new Date().toLocaleDateString()}.\n\n[DEPONENT SIGNATURE]\nDEPONENT\n\nIDENTIFIED BY ME:\n\n[ADVOCATE SIGNATURE]\nADVOCATE\nENROLLMENT NO. [NUMBER]`);
-        toast.success("Affidavit template loaded. You can now customize it.");
-      }
-    },
-    { 
-      title: "Rental Agreement", 
-      description: "Create a rental agreement with standard terms",
-      icon: <BookOpen className="h-5 w-5 text-green-500" />,
-      onClick: () => {
-        setDocumentTitle("Rental Agreement");
-        setDocumentType("Agreement");
-        setDraftContent(`RENTAL AGREEMENT\n\nTHIS AGREEMENT is made and executed on this ${new Date().toLocaleDateString()} at [PLACE] by and between:\n\n[LANDLORD NAME], S/o, D/o, W/o [FATHER/HUSBAND NAME], aged about [AGE] years, residing at [ADDRESS], hereinafter called the "LESSOR/LANDLORD" (which expression shall, unless repugnant to the context or meaning thereof, mean and include his/her heirs, legal representatives, executors, administrators and assigns) of the ONE PART;\n\nAND\n\n[TENANT NAME], S/o, D/o, W/o [FATHER/HUSBAND NAME], aged about [AGE] years, residing at [ADDRESS], hereinafter called the "LESSEE/TENANT" (which expression shall, unless repugnant to the context or meaning thereof, mean and include his/her heirs, legal representatives, executors, administrators and assigns) of the OTHER PART.\n\nWHEREAS the LESSOR is the absolute owner and in possession of the premises bearing No. [PROPERTY ADDRESS], hereinafter called the "SCHEDULED PREMISES";\n\nAND WHEREAS the LESSOR has agreed to let out and the LESSEE has agreed to take on rent the SCHEDULED PREMISES for a period of [LEASE DURATION] commencing from [START DATE] and ending on [END DATE];\n\nNOW THIS DEED OF LEASE WITNESSETH AS FOLLOWS:\n\n1. RENT:\n   The LESSEE shall pay to the LESSOR a monthly rent of Rs. [RENT AMOUNT]/- (Rupees [AMOUNT IN WORDS] Only) on or before the [DAY] day of each English calendar month.\n\n2. DEPOSIT:\n   The LESSEE has paid to the LESSOR a sum of Rs. [DEPOSIT AMOUNT]/- (Rupees [AMOUNT IN WORDS] Only) as interest-free refundable security deposit, which shall be refunded by the LESSOR to the LESSEE at the time of vacating the SCHEDULED PREMISES after deducting any dues or damages, if any.\n\n3. TERM:\n   This lease shall be for a period of [LEASE DURATION] commencing from [START DATE] and ending on [END DATE]. The lease may be renewed for a further period with mutual consent of both parties on such terms and conditions as may be agreed upon.\n\n4. MAINTENANCE:\n   (a) The LESSEE shall maintain the SCHEDULED PREMISES in good condition and shall not cause any damage to the SCHEDULED PREMISES.\n   (b) The LESSEE shall carry out minor repairs at his/her own cost and expense.\n   (c) Any major repairs shall be carried out by the LESSOR at his/her cost.\n\n5. PAYMENT OF CHARGES:\n   The LESSEE shall pay all electricity, water, and gas charges as per actual consumption shown in the respective meters and any other taxes or charges levied by any local authority in respect of the SCHEDULED PREMISES during the term of the lease.\n\n6. USE OF PREMISES:\n   The LESSEE shall use the SCHEDULED PREMISES only for residential purposes and not for any commercial, illegal, or immoral purposes.\n\n7. SUB-LETTING:\n   The LESSEE shall not sub-let, assign, or part with possession of the SCHEDULED PREMISES or any part thereof to any person without the prior written consent of the LESSOR.\n\n8. TERMINATION:\n   Either party may terminate this agreement by giving [NOTICE PERIOD] months' prior notice in writing to the other party.\n\n9. JURISDICTION:\n   Any dispute arising out of or in connection with this agreement shall be subject to the exclusive jurisdiction of the courts in [JURISDICTION].\n\nIN WITNESS WHEREOF, the parties hereto have set their hands on the day, month and year first above written.\n\nSigned by the LESSOR\n[LANDLORD NAME]\nin the presence of:\n1. [WITNESS 1 NAME AND ADDRESS]\n2. [WITNESS 2 NAME AND ADDRESS]\n\nSigned by the LESSEE\n[TENANT NAME]\nin the presence of:\n1. [WITNESS 1 NAME AND ADDRESS]\n2. [WITNESS 2 NAME AND ADDRESS]`);
-        toast.success("Rental Agreement template loaded. You can now customize it.");
-      }
-    },
-  ];
+  // Group templates by category
+  const templatesByCategory = extendedTemplates.reduce((acc, template) => {
+    if (!acc[template.category]) {
+      acc[template.category] = [];
+    }
+    acc[template.category].push(template);
+    return acc;
+  }, {} as Record<string, ExtendedTemplate[]>);
 
   return (
     <LegalToolLayout
@@ -175,10 +214,6 @@ const LegalDocumentDraftingPage = () => {
           </div>
           <div className="flex items-center gap-2">
             <GeminiFlashAnalyzer onAnalysisComplete={handleAdvancedAnalysis} />
-            <DocumentStorage 
-              currentDocument={{ title: documentTitle, type: documentType, content: draftContent }}
-              onLoadDocument={handleLoadSavedDocument}
-            />
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -191,8 +226,8 @@ const LegalDocumentDraftingPage = () => {
                   <ul className="text-xs space-y-1">
                     <li>• Use the "Collaborative" tab for multiple editors</li>
                     <li>• Upload existing PDFs to extract text</li>
-                    <li>• Save documents in My Documents for easy access</li>
-                    <li>• Use quick starts for common document types</li>
+                    <li>• Try the expanded template library for more formats</li>
+                    <li>• Save versions to track document changes</li>
                   </ul>
                 </TooltipContent>
               </Tooltip>
@@ -225,7 +260,7 @@ const LegalDocumentDraftingPage = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - Form/Prompt with Quick Starts */}
+          {/* Left column - Form/Prompt and Templates */}
           <motion.div className="lg:col-span-1 space-y-6" variants={itemVariants}>
             {/* Document Generation (Form, Prompt, or Collaborative based on activeTab) */}
             {activeTab === 'form' ? (
@@ -251,55 +286,78 @@ const LegalDocumentDraftingPage = () => {
               </div>
             )}
             
-            {/* Quick Start Cards */}
-            <Card className="border rounded-lg bg-white dark:bg-gray-950">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FilePlus className="h-4 w-4 text-blue-500" />
-                  Quick Start Documents
-                </CardTitle>
-                <CardDescription>
-                  Start with pre-structured document formats
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {documentQuickStarts.map((item, idx) => (
-                    <div 
-                      key={idx} 
-                      onClick={item.onClick}
-                      className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-900/50 cursor-pointer transition-colors"
-                    >
-                      {item.icon}
-                      <div>
-                        <h4 className="text-sm font-medium">{item.title}</h4>
-                        <p className="text-xs text-muted-foreground">{item.description}</p>
-                      </div>
-                    </div>
+            {/* Document Templates Section - Enhanced with categories */}
+            <div className="border rounded-lg p-4 bg-white dark:bg-gray-950">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium flex items-center gap-2">
+                  <Book className="h-4 w-4 text-blue-500" />
+                  Document Templates
+                </h3>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setExpandedTemplates(!expandedTemplates)}
+                  className="text-xs"
+                >
+                  {expandedTemplates ? 'Show Less' : 'Show All'}
+                </Button>
+              </div>
+              
+              {expandedTemplates ? (
+                <Accordion type="single" collapsible className="w-full">
+                  {Object.entries(templatesByCategory).map(([category, templates]) => (
+                    <AccordionItem key={category} value={category}>
+                      <AccordionTrigger className="text-sm">
+                        {category} <Badge className="ml-2">{templates.length}</Badge>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3 pt-2">
+                          {templates.map(template => (
+                            <div 
+                              key={template.id}
+                              className="p-3 border border-gray-200 dark:border-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900/50 cursor-pointer"
+                              onClick={() => {
+                                setDocumentTitle(template.title);
+                                setDocumentType(template.type);
+                                setDraftContent(template.content);
+                                toast.success(`${template.title} template loaded!`);
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-medium text-sm">{template.title}</h4>
+                                <Badge variant="outline" className="text-xs">
+                                  {template.type}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                {template.description}
+                              </p>
+                              <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+                                <span className="flex items-center">
+                                  <History className="h-3 w-3 mr-1" />
+                                  Added {new Date(template.dateAdded).toLocaleDateString()}
+                                </span>
+                                <span className="flex items-center">
+                                  <Users className="h-3 w-3 mr-1" />
+                                  {template.popularity} uses
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
                   ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* PDF Uploader Section */}
-            {activeTab !== 'collaborative' && (
-              <Card className="border rounded-lg bg-white dark:bg-gray-950">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Import Existing Document</CardTitle>
-                  <CardDescription>
-                    Upload a PDF to extract content
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <PdfUploader 
-                    onUpload={handleDocumentUpload} 
-                    onRemove={handleRemoveDocument} 
-                    documents={attachedDocuments}
-                    documentId="document-import"
-                  />
-                </CardContent>
-              </Card>
-            )}
+                </Accordion>
+              ) : (
+                <DocumentTemplateList onTemplateSelect={(template) => {
+                  setDocumentTitle(template.title);
+                  setDocumentType(template.type);
+                  setDraftContent(template.content);
+                  toast.success(`${template.title} template loaded!`);
+                }} />
+              )}
+            </div>
           </motion.div>
           
           {/* Right column - Document Preview or Collaborative Editor */}
@@ -319,9 +377,6 @@ const LegalDocumentDraftingPage = () => {
                 content={draftContent}
                 onCopy={handleCopyContent}
                 onDownload={handleDownloadDocument}
-                onEdit={() => {
-                  if (activeTab !== 'form') setActiveTab('form');
-                }}
               />
             )}
           </motion.div>

@@ -298,73 +298,96 @@ const AMLComplianceTool = () => {
                 <CardContent className="space-y-6">
                   {/* Risk Summary */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 p-4 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-red-700 dark:text-red-400">High Risk Factors</h4>
-                        <Badge className="bg-red-100 text-red-700">{highRisks}</Badge>
-                      </div>
-                      <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                        Immediate attention required
-                      </p>
-                    </div>
+                    <Card className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-red-600 font-medium">High Risk Factors</p>
+                          <p className="text-2xl font-bold text-red-700 dark:text-red-400">{highRisks}</p>
+                        </div>
+                        <AlertTriangle className="h-12 w-12 text-red-500 opacity-80" />
+                      </CardContent>
+                    </Card>
                     
-                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 p-4 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-amber-700 dark:text-amber-400">Medium Risk Factors</h4>
-                        <Badge className="bg-amber-100 text-amber-700">{mediumRisks}</Badge>
-                      </div>
-                      <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
-                        Action recommended soon
-                      </p>
-                    </div>
+                    <Card className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-amber-600 font-medium">Medium Risk Factors</p>
+                          <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{mediumRisks}</p>
+                        </div>
+                        <Clock className="h-12 w-12 text-amber-500 opacity-80" />
+                      </CardContent>
+                    </Card>
                     
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 p-4 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-green-700 dark:text-green-400">Low Risk Factors</h4>
-                        <Badge className="bg-green-100 text-green-700">{lowRisks}</Badge>
-                      </div>
-                      <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                        Monitor periodically
-                      </p>
-                    </div>
+                    <Card className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-green-600 font-medium">Low Risk Factors</p>
+                          <p className="text-2xl font-bold text-green-700 dark:text-green-400">{lowRisks}</p>
+                        </div>
+                        <CheckCircle className="h-12 w-12 text-green-500 opacity-80" />
+                      </CardContent>
+                    </Card>
                   </div>
                   
-                  {/* Risk Factors */}
-                  <div className="space-y-4 pt-2">
-                    <h3 className="text-lg font-medium">Detailed Risk Assessment</h3>
+                  {/* Detailed Risk Factors */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Detailed Risk Analysis</h3>
                     
-                    {riskFactors.length > 0 ? (
-                      <div className="space-y-4">
-                        {riskFactors.map((factor, index) => (
-                          <div 
-                            key={index} 
-                            className={`p-4 border rounded-lg ${getRiskColor(factor.riskLevel)}`}
-                          >
+                    {riskFactors.map((risk, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Card className="border">
+                          <CardHeader className={`pb-3 ${getRiskColor(risk.riskLevel)}`}>
                             <div className="flex items-start gap-3">
-                              <div className={`mt-1 flex-shrink-0`}>
-                                {getRiskLevelIcon(factor.riskLevel)}
+                              <div className="p-2 rounded-full bg-white/80 dark:bg-black/10">
+                                {getRiskLevelIcon(risk.riskLevel)}
                               </div>
-                              <div>
-                                <h4 className="font-medium">{factor.title}</h4>
-                                <p className="text-sm mt-1">{factor.description}</p>
-                                
-                                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                  <h5 className="text-sm font-medium mb-1">Recommendation:</h5>
-                                  <p className="text-sm">{factor.recommendation}</p>
-                                  
-                                  <h5 className="text-sm font-medium mt-2 mb-1">Action Item:</h5>
-                                  <p className="text-sm">{factor.action}</p>
+                              <div className="flex-grow">
+                                <CardTitle className="text-lg truncate max-w-full">
+                                  {risk.title}
+                                </CardTitle>
+                                <div className="flex items-center mt-1">
+                                  <Badge variant="outline" className={getRiskColor(risk.riskLevel)}>
+                                    {risk.riskLevel.toUpperCase()} RISK
+                                  </Badge>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center p-8 text-gray-500">No risk factors found.</div>
-                    )}
+                          </CardHeader>
+                          <CardContent className="pt-4 pb-3 space-y-3">
+                            <div>
+                              <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">Risk Description:</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{risk.description}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">Recommendation:</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{risk.recommendation}</p>
+                            </div>
+                          </CardContent>
+                          <CardFooter className="pt-0 pb-4">
+                            <div className="w-full">
+                              <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">Suggested Action:</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{risk.action}</p>
+                            </div>
+                          </CardFooter>
+                        </Card>
+                      </motion.div>
+                    ))}
                   </div>
                 </CardContent>
+                <CardFooter className="flex flex-col sm:flex-row gap-3 justify-end">
+                  <Button variant="outline" onClick={() => window.print()}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Download PDF Report
+                  </Button>
+                  <Button onClick={() => setActiveTab('resources')}>
+                    View Compliance Resources
+                  </Button>
+                </CardFooter>
               </Card>
             </motion.div>
           )}
@@ -373,64 +396,74 @@ const AMLComplianceTool = () => {
         <TabsContent value="resources">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <Info className="h-5 w-5 text-blue-600" />
-                AML Resources for Indian Businesses
+              <CardTitle className="text-xl font-semibold">
+                Indian AML Compliance Resources
               </CardTitle>
               <CardDescription>
-                Important resources to help ensure AML compliance under Indian regulations
+                Official guidelines and resources for AML compliance in India
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="border p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">Prevention of Money Laundering Act (PMLA)</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Framework legislation that forms the core of India's AML legal apparatus.
-                  </p>
-                  <Button variant="link" className="mt-2 p-0">
-                    View Official Document
-                  </Button>
-                </div>
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">Prevention of Money Laundering Act (PMLA)</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      The primary legislation governing AML compliance in India.
+                    </p>
+                    <Button variant="outline" className="w-full" onClick={() => window.open('https://fiuindia.gov.in/pdfs/pmla_act.pdf', '_blank')}>
+                      View Full Act
+                    </Button>
+                  </CardContent>
+                </Card>
                 
-                <div className="border p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">Financial Intelligence Unit-India (FIU-IND)</h4>
-                  <p className="text-sm text-muted-foreground">
-                    National agency responsible for receiving, processing and analyzing suspicious transaction reports.
-                  </p>
-                  <Button variant="link" className="mt-2 p-0">
-                    Visit FIU-IND Website
-                  </Button>
-                </div>
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">Financial Intelligence Unit - India (FIU-IND)</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Central agency for receiving and analyzing suspicious transaction reports.
+                    </p>
+                    <Button variant="outline" className="w-full" onClick={() => window.open('https://fiuindia.gov.in/', '_blank')}>
+                      Visit Website
+                    </Button>
+                  </CardContent>
+                </Card>
                 
-                <div className="border p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">RBI Guidelines on KYC/AML</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Comprehensive guidelines issued by the Reserve Bank of India on Know Your Customer norms.
-                  </p>
-                  <Button variant="link" className="mt-2 p-0">
-                    Access RBI Guidelines
-                  </Button>
-                </div>
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">RBI Guidelines on KYC/AML</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Reserve Bank of India's guidelines for financial institutions.
+                    </p>
+                    <Button variant="outline" className="w-full" onClick={() => window.open('https://www.rbi.org.in/Scripts/BS_FemaNotifications.aspx?Id=11566', '_blank')}>
+                      Access Guidelines
+                    </Button>
+                  </CardContent>
+                </Card>
                 
-                <div className="border p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">SEBI AML Guidelines</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Anti-money laundering standards for securities market issued by SEBI.
-                  </p>
-                  <Button variant="link" className="mt-2 p-0">
-                    View SEBI Guidelines
-                  </Button>
-                </div>
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">SEBI AML Guidelines</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Securities and Exchange Board of India's AML directives.
+                    </p>
+                    <Button variant="outline" className="w-full" onClick={() => window.open('https://www.sebi.gov.in/legal/circulars/oct-2019/master-circular-on-anti-money-laundering-and-combating-financing-of-terrorism-obligations-of-securities-market-intermediaries-under-the-prevention-of-money-laundering-act-2002-and-rules-framed-there-_44867.html', '_blank')}>
+                      View Master Circular
+                    </Button>
+                  </CardContent>
+                </Card>
               </div>
               
               <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md border border-blue-200 dark:border-blue-800/30 mt-4">
                 <div className="flex items-start gap-3">
                   <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="font-medium text-blue-800 dark:text-blue-400">Legal Disclaimer</h4>
+                    <h4 className="font-medium text-blue-800 dark:text-blue-400">Compliance Training</h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                      Regular staff training is a key requirement under Indian AML regulations.
+                    </p>
                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                      This tool provides general guidance only and does not constitute legal advice. Consult with a qualified legal professional for specific compliance requirements applicable to your business.
+                      Consider implementing a structured training program to ensure all relevant staff understand their AML obligations.
                     </p>
                   </div>
                 </div>

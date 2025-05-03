@@ -1,6 +1,4 @@
 
-import React from 'react';
-
 /**
  * Performance monitoring utilities
  * Helps track, measure and report performance metrics
@@ -21,7 +19,7 @@ class PerformanceMonitor {
   /**
    * Start timing a performance measurement
    */
-  start(component: string, action: string): string {
+  start(component: string, action: string): void {
     const id = `${component}-${action}-${Date.now()}`;
     this.measurements.set(id, {
       component,
@@ -35,11 +33,11 @@ class PerformanceMonitor {
   /**
    * End timing a performance measurement
    */
-  end(id: string): PerformanceEntry | undefined {
+  end(id: string): void {
     const measurement = this.measurements.get(id);
     if (!measurement) {
       console.warn(`Performance measurement ${id} not found`);
-      return undefined;
+      return;
     }
     
     const endTime = performance.now();
