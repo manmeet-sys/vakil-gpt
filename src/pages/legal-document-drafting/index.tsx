@@ -1,12 +1,12 @@
 
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState } from 'react';
 import { 
   FileText, Pen, Copy, Download, Sparkles, MessageCircle, 
   HelpCircle, Users, FileSearch, BookOpen, 
   CheckCircle, PenTool, ClipboardCheck 
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import DocumentDraftingForm from '@/components/document-drafting/DocumentDraftingForm';
 import DocumentPreview from '@/components/document-drafting/DocumentPreview';
@@ -23,36 +23,10 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from '@/components/ui/tooltip';
-import { runWhenIdle } from '@/utils/performance';
+import { performanceMonitor } from '@/utils/performance-monitoring';
+import ContractReviewTool from '@/components/document-drafting/ContractReviewTool';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-
-// Lazy load component for better performance
-const ContractReviewTool = lazy(() => 
-  import('@/components/document-drafting/ContractReviewTool')
-);
-
-// Animation variants
-const pageVariants = {
-  initial: { opacity: 0 },
-  animate: { 
-    opacity: 1,
-    transition: { 
-      duration: 0.5,
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const itemVariants = {
-  initial: { y: 20, opacity: 0 },
-  visible: { 
-    y: 0, 
-    opacity: 1,
-    transition: { duration: 0.4 }
-  }
-};
 
 const LegalDocumentDraftingPage = () => {
   const [draftContent, setDraftContent] = useState('');
@@ -61,13 +35,15 @@ const LegalDocumentDraftingPage = () => {
   const [activeTab, setActiveTab] = useState<'form' | 'prompt' | 'collaborative' | 'contract'>('form');
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [showTips, setShowTips] = useState(false);
   
   const handleDraftGenerated = (title: string, type: string, content: string) => {
-    setDocumentTitle(title);
-    setDocumentType(type);
-    setDraftContent(content);
-    toast.success('Document draft generated successfully!');
+    console.log("Document draft generated:", { title, type, contentLength: content?.length });
+    performanceMonitor.measure('DocumentDrafting', 'updateState', () => {
+      setDocumentTitle(title);
+      setDocumentType(type);
+      setDraftContent(content);
+      toast.success('Document draft generated successfully!');
+    });
   };
 
   const handleCopyContent = () => {
@@ -91,6 +67,7 @@ const LegalDocumentDraftingPage = () => {
   };
 
   const handleAdvancedAnalysis = (analysis: string) => {
+    // This would be used if we want to incorporate the analysis directly into the document
     toast.success('Advanced analysis generated. You can use this to enhance your document.');
   };
 
@@ -111,15 +88,30 @@ const LegalDocumentDraftingPage = () => {
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
+    // In a real implementation, this would load the template content
     toast.success('Template selected. Click "Generate Document" to apply template.');
   };
 
-  // Preload heavy components when idle
-  React.useEffect(() => {
-    runWhenIdle(() => {
-      import('@/components/document-drafting/ContractReviewTool');
-    });
-  }, []);
+  // Animation variants
+  const pageVariants = {
+    initial: { opacity: 0 },
+    animate: { 
+      opacity: 1,
+      transition: { 
+        duration: 0.5,
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const itemVariants = {
+    initial: { y: 20, opacity: 0 },
+    animate: { 
+      y: 0, 
+      opacity: 1,
+      transition: { duration: 0.4 }
+    }
+  };
 
   // Popular document templates
   const popularTemplates = [
@@ -163,21 +155,14 @@ const LegalDocumentDraftingPage = () => {
             <div className="flex items-center gap-2">
               <GeminiFlashAnalyzer onAnalysisComplete={handleAdvancedAnalysis} />
               <TooltipProvider>
-                <Tooltip open={showTips} onOpenChange={setShowTips}>
+                <Tooltip>
                   <TooltipTrigger asChild>
-                    <button 
-                      className="flex items-center gap-1 text-xs bg-amber-100 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-3 py-1.5 rounded-full hover:bg-amber-200 dark:hover:bg-amber-900/40 transition-colors"
-                      onClick={() => setShowTips(!showTips)}
-                    >
+                    <button className="flex items-center gap-1 text-xs bg-amber-100 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-3 py-1.5 rounded-full">
                       <HelpCircle className="h-3.5 w-3.5" />
                       Quick Tips
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent 
-                    side="bottom" 
-                    align="end" 
-                    className="max-w-xs bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-800/50 animate-in fade-in-0 zoom-in-95"
-                  >
+                  <TooltipContent className="max-w-xs bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-800/50">
                     <ul className="text-xs space-y-1.5 text-amber-800 dark:text-amber-200">
                       <li className="flex items-start gap-1.5">
                         <span className="inline-block rounded-full bg-amber-200 dark:bg-amber-800 w-4 h-4 text-amber-800 dark:text-amber-200 flex items-center justify-center text-[10px] mt-0.5 font-bold">1</span>
@@ -234,13 +219,7 @@ const LegalDocumentDraftingPage = () => {
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{template.name}</p>
                     <Badge variant="outline" className="text-xs px-2 py-0 h-5 font-normal">{template.category}</Badge>
                     {selectedTemplate === template.id && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute top-2 right-2"
-                      >
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      </motion.div>
+                      <CheckCircle className="h-4 w-4 text-green-500 absolute top-2 right-2" />
                     )}
                   </div>
                 </motion.div>
@@ -258,155 +237,136 @@ const LegalDocumentDraftingPage = () => {
               <TabsList className="grid w-full grid-cols-4 mb-6 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl">
                 <TabsTrigger 
                   value="form" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg data-[state=active]:shadow-sm transition-all"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg"
                 >
                   <Pen className="h-4 w-4" />
                   <span className="hidden sm:inline">Structured</span> Form
                 </TabsTrigger>
                 <TabsTrigger 
                   value="contract" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg data-[state=active]:shadow-sm transition-all"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg"
                 >
                   <FileSearch className="h-4 w-4" />
                   <span className="hidden sm:inline">Contract</span> Review
                 </TabsTrigger>
                 <TabsTrigger 
                   value="prompt" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg data-[state=active]:shadow-sm transition-all"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg"
                 >
                   <MessageCircle className="h-4 w-4" />
                   <span className="hidden sm:inline">AI</span> Prompt
                 </TabsTrigger>
                 <TabsTrigger 
                   value="collaborative" 
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg data-[state=active]:shadow-sm transition-all"
+                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 rounded-lg"
                 >
                   <Users className="h-4 w-4" />
                   <span className="hidden sm:inline">Collaborative</span> Edit
                 </TabsTrigger>
               </TabsList>
               
-              <AnimatePresence mode="wait">
-                {/* Form Tab Content */}
-                <TabsContent value="form" className="animate-in fade-in-50">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
-                      <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
-                        <DocumentDraftingForm 
-                          onDraftGenerated={handleDraftGenerated} 
-                          selectedTemplate={selectedTemplate}
-                        />
-                      </div>
-                    </motion.div>
-                    
-                    <motion.div className="lg:col-span-7" variants={itemVariants}>
-                      <DocumentPreview 
-                        title={documentTitle}
-                        type={documentType}
-                        content={draftContent}
-                        onCopy={handleCopyContent}
-                        onDownload={handleDownloadDocument}
+              {/* Form Tab Content */}
+              <TabsContent value="form" className="animate-in fade-in-50">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+                      <DocumentDraftingForm 
+                        onDraftGenerated={handleDraftGenerated} 
+                        selectedTemplate={selectedTemplate}
                       />
-                    </motion.div>
-                  </div>
-                </TabsContent>
-                
-                {/* Contract Review Tab Content */}
-                <TabsContent value="contract" className="animate-in fade-in-50">
-                  <motion.div variants={itemVariants}>
-                    <div className="bg-white dark:bg-slate-900/50 border border-legal-border dark:border-legal-slate/20 rounded-lg shadow-sm overflow-hidden">
-                      <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-                        <h2 className="text-xl font-medium mb-2 flex items-center gap-2 font-playfair text-indigo-800 dark:text-indigo-300">
-                          <FileSearch className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                          Contract Review & Analysis
-                        </h2>
-                        <p className="text-legal-muted dark:text-gray-400">
-                          Upload an existing contract to review terms, identify risks, ensure compliance with Indian laws, 
-                          and receive customized improvement suggestions.
-                        </p>
-                      </div>
-                      
-                      <div className="h-[700px]">
-                        <Suspense fallback={
-                          <div className="flex items-center justify-center h-full">
-                            <div className="space-y-4 w-full max-w-3xl px-8">
-                              <div className="text-center mb-8">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700 mx-auto"></div>
-                                <p className="mt-3 text-gray-500">Loading contract review tool...</p>
-                              </div>
-                              <Skeleton className="w-full h-10 rounded-md" />
-                              <Skeleton className="w-full h-48 rounded-md" />
-                              <div className="grid grid-cols-2 gap-4">
-                                <Skeleton className="w-full h-32 rounded-md" />
-                                <Skeleton className="w-full h-32 rounded-md" />
-                              </div>
-                            </div>
-                          </div>
-                        }>
-                          <ContractReviewTool />
-                        </Suspense>
-                      </div>
                     </div>
                   </motion.div>
-                </TabsContent>
-                
-                {/* AI Prompt Tab Content */}
-                <TabsContent value="prompt" className="animate-in fade-in-50">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
-                      <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
-                        <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
-                      </div>
-                    </motion.div>
+                  
+                  <motion.div className="lg:col-span-7" variants={itemVariants}>
+                    <DocumentPreview 
+                      title={documentTitle}
+                      type={documentType}
+                      content={draftContent}
+                      onCopy={handleCopyContent}
+                      onDownload={handleDownloadDocument}
+                    />
+                  </motion.div>
+                </div>
+              </TabsContent>
+              
+              {/* Contract Review Tab Content */}
+              <TabsContent value="contract" className="animate-in fade-in-50">
+                <motion.div variants={itemVariants}>
+                  <div className="bg-white dark:bg-slate-900/50 border border-legal-border dark:border-legal-slate/20 rounded-lg shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+                      <h2 className="text-xl font-medium mb-2 flex items-center gap-2 font-playfair text-indigo-800 dark:text-indigo-300">
+                        <FileSearch className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                        Contract Review & Analysis
+                      </h2>
+                      <p className="text-legal-muted dark:text-gray-400">
+                        Upload an existing contract to review terms, identify risks, ensure compliance with Indian laws, 
+                        and receive customized improvement suggestions.
+                      </p>
+                    </div>
                     
-                    <motion.div className="lg:col-span-7" variants={itemVariants}>
-                      <DocumentPreview 
-                        title={documentTitle}
-                        type={documentType}
-                        content={draftContent}
-                        onCopy={handleCopyContent}
-                        onDownload={handleDownloadDocument}
+                    <div className="h-[700px]">
+                      <ContractReviewTool />
+                    </div>
+                  </div>
+                </motion.div>
+              </TabsContent>
+              
+              {/* AI Prompt Tab Content */}
+              <TabsContent value="prompt" className="animate-in fade-in-50">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+                      <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div className="lg:col-span-7" variants={itemVariants}>
+                    <DocumentPreview 
+                      title={documentTitle}
+                      type={documentType}
+                      content={draftContent}
+                      onCopy={handleCopyContent}
+                      onDownload={handleDownloadDocument}
+                    />
+                  </motion.div>
+                </div>
+              </TabsContent>
+              
+              {/* Collaborative Tab Content */}
+              <TabsContent value="collaborative" className="animate-in fade-in-50">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6 space-y-4">
+                      <h3 className="text-lg font-medium flex items-center gap-2 font-playfair text-indigo-800 dark:text-indigo-300">
+                        <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        Collaborative Session
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Invite colleagues to work on this document in real-time. Changes will be visible to all participants.
+                      </p>
+                      <PdfUploader 
+                        onUpload={handleDocumentUpload} 
+                        onRemove={handleRemoveDocument} 
+                        documents={attachedDocuments}
+                        documentId="123456"
+                        showVersionHistory={true}
                       />
-                    </motion.div>
-                  </div>
-                </TabsContent>
-                
-                {/* Collaborative Tab Content */}
-                <TabsContent value="collaborative" className="animate-in fade-in-50">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <motion.div className="lg:col-span-5 space-y-6" variants={itemVariants}>
-                      <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6 space-y-4">
-                        <h3 className="text-lg font-medium flex items-center gap-2 font-playfair text-indigo-800 dark:text-indigo-300">
-                          <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                          Collaborative Session
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Invite colleagues to work on this document in real-time. Changes will be visible to all participants.
-                        </p>
-                        <PdfUploader 
-                          onUpload={handleDocumentUpload} 
-                          onRemove={handleRemoveDocument} 
-                          documents={attachedDocuments}
-                          documentId="123456"
-                          showVersionHistory={true}
-                        />
-                      </div>
-                    </motion.div>
-                    
-                    <motion.div className="lg:col-span-7" variants={itemVariants}>
-                      <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm overflow-hidden">
-                        <CollaborativeEditor 
-                          documentId="123456"
-                          initialContent={draftContent || "Start collaborating on your legal document here..."}
-                          onChange={setDraftContent}
-                          title={documentTitle || "Collaborative Document"}
-                          documentType={documentType || "Legal Draft"}
-                        />
-                      </div>
-                    </motion.div>
-                  </div>
-                </TabsContent>
-              </AnimatePresence>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div className="lg:col-span-7" variants={itemVariants}>
+                    <div className="bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm overflow-hidden">
+                      <CollaborativeEditor 
+                        documentId="123456"
+                        initialContent={draftContent || "Start collaborating on your legal document here..."}
+                        onChange={setDraftContent}
+                        title={documentTitle || "Collaborative Document"}
+                        documentType={documentType || "Legal Draft"}
+                      />
+                    </div>
+                  </motion.div>
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
           
@@ -418,61 +378,44 @@ const LegalDocumentDraftingPage = () => {
               <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               <span>India-Specific Legal Drafting Tips</span>
             </h3>
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                  opacity: 1,
-                  transition: { staggerChildren: 0.1 }
-                }
-              }}
-            >
-              {[
-                {
-                  title: "Affidavits in Indian Courts",
-                  content: "Always include proper verification clause as per Indian Evidence Act and ensure compliance with local stamp duty requirements."
-                },
-                {
-                  title: "High Court vs. Supreme Court",
-                  content: "Use Article 226 for High Court writs and Article 32 for Supreme Court writs. Citation format also differs between courts."
-                },
-                {
-                  title: "Proper Court Addressing",
-                  content: "Address Supreme Court as \"Hon'ble Supreme Court of India\" and High Courts as \"Hon'ble High Court of [State]\"."
-                },
-                {
-                  title: "BNS Act Compliance",
-                  content: "Update your legal documents to reflect the new Bharatiya Nyaya Sanhita (BNS) codes that replaced the Indian Penal Code."
-                },
-                {
-                  title: "Local Jurisdiction Rules",
-                  content: "Different High Courts have different rules for formatting and filing. Check the latest court rules before finalizing documents."
-                },
-                {
-                  title: "Contract Stamp Duty",
-                  content: "Remember that stamp duty varies by state in India. Contracts must be properly stamped according to the applicable state's stamp duty laws."
-                }
-              ].map((tip, index) => (
-                <motion.div 
-                  key={index}
-                  variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    visible: { opacity: 1, y: 0 }
-                  }}
-                >
-                  <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30 h-full hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">{tip.title}</h4>
-                      <p className="text-legal-muted dark:text-gray-400">{tip.content}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">Affidavits in Indian Courts</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Always include proper verification clause as per Indian Evidence Act and ensure compliance with local stamp duty requirements.</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">High Court vs. Supreme Court</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Use Article 226 for High Court writs and Article 32 for Supreme Court writs. Citation format also differs between courts.</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">Proper Court Addressing</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Address Supreme Court as "Hon'ble Supreme Court of India" and High Courts as "Hon'ble High Court of [State]".</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">BNS Act Compliance</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Update your legal documents to reflect the new Bharatiya Nyaya Sanhita (BNS) codes that replaced the Indian Penal Code.</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">Local Jurisdiction Rules</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Different High Courts have different rules for formatting and filing. Check the latest court rules before finalizing documents.</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm overflow-hidden border-indigo-100 dark:border-indigo-900/30">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-2 text-indigo-700 dark:text-indigo-400">Contract Stamp Duty</h4>
+                  <p className="text-legal-muted dark:text-gray-400">Remember that stamp duty varies by state in India. Contracts must be properly stamped according to the applicable state's stamp duty laws.</p>
+                </CardContent>
+              </Card>
+            </div>
           </motion.div>
         </motion.div>
       </div>
