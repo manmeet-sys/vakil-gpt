@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -186,82 +187,70 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             {formatDocumentType(type) || 'No Type'}
           </div>
         </div>
-        
-        {content && (
+      </CardHeader>
+      
+      <CardContent className="flex-grow overflow-auto p-0">
+        {content ? (
           <Tabs
             defaultValue="raw"
             value={previewMode}
             onValueChange={(value) => setPreviewMode(value as 'raw' | 'formatted')}
-            className="mt-2"
+            className="w-full"
           >
-            <TabsList className="grid w-full max-w-[400px] grid-cols-2">
+            <TabsList className="grid w-full max-w-[400px] grid-cols-2 mx-6 mt-4">
               <TabsTrigger value="raw" className="text-xs">Raw Text</TabsTrigger>
               <TabsTrigger value="formatted" className="text-xs">Formatted View</TabsTrigger>
             </TabsList>
           
-            <CardContent className="flex-grow overflow-auto p-0">
-              {content ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="min-h-[60vh] relative"
-                >
-                  <div className="absolute top-0 left-0 h-full w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px] opacity-50 pointer-events-none" />
-                  
-                  <TabsContent value="raw" className="m-0">
-                    {isEditing ? (
-                      <div className="p-4">
-                        <Textarea
-                          value={editableContent}
-                          onChange={(e) => setEditableContent(e.target.value)}
-                          className="font-mono text-sm min-h-[60vh] resize-none"
-                          placeholder="Enter document content..."
-                        />
-                        <div className="flex justify-end gap-2 mt-4">
-                          <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
-                            Cancel
-                          </Button>
-                          <Button size="sm" onClick={handleSaveEdit}>
-                            Save Changes
-                          </Button>
-                        </div>
+            <div className="mt-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="min-h-[60vh] relative"
+              >
+                <div className="absolute top-0 left-0 h-full w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px] opacity-50 pointer-events-none" />
+                
+                <TabsContent value="raw" className="m-0">
+                  {isEditing ? (
+                    <div className="p-4">
+                      <Textarea
+                        value={editableContent}
+                        onChange={(e) => setEditableContent(e.target.value)}
+                        className="font-mono text-sm min-h-[60vh] resize-none"
+                        placeholder="Enter document content..."
+                      />
+                      <div className="flex justify-end gap-2 mt-4">
+                        <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                          Cancel
+                        </Button>
+                        <Button size="sm" onClick={handleSaveEdit}>
+                          Save Changes
+                        </Button>
                       </div>
-                    ) : (
-                      <pre className="bg-white dark:bg-gray-900 p-6 rounded-md shadow-inner border border-gray-200 dark:border-gray-800 whitespace-pre-wrap text-sm text-legal-slate dark:text-white font-mono relative overflow-auto min-h-[60vh]">
-                        {content}
-                      </pre>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="formatted" className="m-0">
-                    <div 
-                      className="bg-white dark:bg-gray-900 p-6 rounded-md shadow-inner border border-gray-200 dark:border-gray-800 text-sm text-legal-slate dark:text-white relative overflow-auto min-h-[60vh] legal-document-view"
-                      dangerouslySetInnerHTML={{ __html: getFormattedContent() }}
-                      style={{
-                        fontFamily: 'Times New Roman, serif',
-                        lineHeight: '1.6',
-                        fontSize: '14px'
-                      }}
-                    />
-                  </TabsContent>
-                </motion.div>
-              ) : (
-                <Alert className="mx-6 my-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50">
-                  <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  <AlertTitle className="text-amber-600 dark:text-amber-400">No document content</AlertTitle>
-                  <AlertDescription className="text-amber-700 dark:text-amber-300 text-sm">
-                    Generate a document using the form or prompt to preview it here.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
+                    </div>
+                  ) : (
+                    <pre className="bg-white dark:bg-gray-900 p-6 rounded-md shadow-inner border border-gray-200 dark:border-gray-800 whitespace-pre-wrap text-sm text-legal-slate dark:text-white font-mono relative overflow-auto min-h-[60vh]">
+                      {content}
+                    </pre>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="formatted" className="m-0">
+                  <div 
+                    className="bg-white dark:bg-gray-900 p-6 rounded-md shadow-inner border border-gray-200 dark:border-gray-800 text-sm text-legal-slate dark:text-white relative overflow-auto min-h-[60vh] legal-document-view"
+                    dangerouslySetInnerHTML={{ __html: getFormattedContent() }}
+                    style={{
+                      fontFamily: 'Times New Roman, serif',
+                      lineHeight: '1.6',
+                      fontSize: '14px'
+                    }}
+                  />
+                </TabsContent>
+              </motion.div>
+            </div>
           </Tabs>
-        )}
-      </CardHeader>
-      
-      {!content && (
-        <CardContent className="flex-grow overflow-auto p-0">
+        ) : (
           <Alert className="mx-6 my-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50">
             <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             <AlertTitle className="text-amber-600 dark:text-amber-400">No document content</AlertTitle>
@@ -269,8 +258,8 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
               Generate a document using the form or prompt to preview it here.
             </AlertDescription>
           </Alert>
-        </CardContent>
-      )}
+        )}
+      </CardContent>
       
       {content && (
         <CardFooter className="flex flex-wrap justify-between gap-2 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800 p-4">

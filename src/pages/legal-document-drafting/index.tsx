@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FileText, Pen, Copy, Download, Sparkles, MessageCircle, HelpCircle, Users } from 'lucide-react';
+import { FileText, Pen, Copy, Download, Sparkles, MessageCircle, HelpCircle, Users, BookText } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import LegalToolLayout from '@/components/LegalToolLayout';
@@ -24,7 +24,7 @@ const LegalDocumentDraftingPage = () => {
   const [draftContent, setDraftContent] = useState('');
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentType, setDocumentType] = useState('');
-  const [activeTab, setActiveTab] = useState<'form' | 'prompt' | 'collaborative'>('form');
+  const [activeTab, setActiveTab] = useState<'prompt' | 'collaborative' | 'form'>('prompt');
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
   
   const handleDraftGenerated = (title: string, type: string, content: string) => {
@@ -100,8 +100,8 @@ const LegalDocumentDraftingPage = () => {
 
   return (
     <LegalToolLayout
-      title="Indian Legal Document Drafting"
-      description="Create professional legal documents tailored for Indian jurisdiction"
+      title="Legal Document Drafting"
+      description="Create professional legal documents and contracts tailored for Indian jurisdiction"
       icon={<FileText className="w-6 h-6 text-white" />}
     >
       <motion.div 
@@ -114,10 +114,10 @@ const LegalDocumentDraftingPage = () => {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
               <FileText className="h-6 w-6 text-legal-accent" />
-              <span>Indian Legal Document Drafting</span>
+              <span>Legal Document Drafting</span>
             </h1>
             <p className="text-legal-muted dark:text-gray-400 text-sm md:text-base">
-              Draft professional legal documents compliant with Indian laws and judicial requirements
+              Draft professional legal documents and contracts compliant with Indian laws and judicial requirements
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -132,10 +132,10 @@ const LegalDocumentDraftingPage = () => {
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   <ul className="text-xs space-y-1">
-                    <li>• Use the "Collaborative" tab for multiple editors</li>
+                    <li>• Use the "AI Prompt" tab for quick document generation</li>
+                    <li>• Select "Collaborative" for team editing capabilities</li>
                     <li>• Upload existing PDFs to extract text</li>
-                    <li>• The AI can generate documents from detailed prompts</li>
-                    <li>• Save versions to track document changes</li>
+                    <li>• Choose "Highly Detailed" option for comprehensive contracts</li>
                   </ul>
                 </TooltipContent>
               </Tooltip>
@@ -145,19 +145,19 @@ const LegalDocumentDraftingPage = () => {
         
         <div className="mb-6">
           <Tabs 
-            defaultValue="form" 
+            defaultValue="prompt" 
             value={activeTab}
-            onValueChange={(value) => setActiveTab(value as 'form' | 'prompt' | 'collaborative')}
+            onValueChange={(value) => setActiveTab(value as 'prompt' | 'collaborative' | 'form')}
             className="w-full"
           >
             <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
-              <TabsTrigger value="form" className="flex items-center gap-2">
-                <Pen className="h-4 w-4" />
-                <span className="hidden sm:inline">Structured</span> Form
-              </TabsTrigger>
               <TabsTrigger value="prompt" className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">AI</span> Prompt
+              </TabsTrigger>
+              <TabsTrigger value="form" className="flex items-center gap-2">
+                <Pen className="h-4 w-4" />
+                <span className="hidden sm:inline">Form</span> Based
               </TabsTrigger>
               <TabsTrigger value="collaborative" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -222,33 +222,33 @@ const LegalDocumentDraftingPage = () => {
           variants={itemVariants}
         >
           <h3 className="flex items-center gap-2 text-lg font-medium mb-2">
-            <Sparkles className="h-5 w-5 text-legal-accent" />
-            <span>India-Specific Legal Drafting Tips</span>
+            <BookText className="h-5 w-5 text-legal-accent" />
+            <span>Indian Legal Document Guide</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
             <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm">
-              <h4 className="font-semibold mb-1">Affidavits in Indian Courts</h4>
-              <p className="text-legal-muted dark:text-gray-400">Always include proper verification clause as per Indian Evidence Act and ensure compliance with local stamp duty requirements.</p>
+              <h4 className="font-semibold mb-1">Contracts & Agreements</h4>
+              <p className="text-legal-muted dark:text-gray-400">Include clear definitions, parties' information, payment terms, dispute resolution clauses and proper stamp duty provisions as required under Indian Contract Act.</p>
             </div>
             <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm">
-              <h4 className="font-semibold mb-1">High Court vs. Supreme Court</h4>
-              <p className="text-legal-muted dark:text-gray-400">Use Article 226 for High Court writs and Article 32 for Supreme Court writs. Citation format also differs between courts.</p>
+              <h4 className="font-semibold mb-1">Court Documents</h4>
+              <p className="text-legal-muted dark:text-gray-400">Follow proper format with correct citation styles, court name, case number format, and include appropriate verification clauses as per Civil/Criminal Procedure Codes.</p>
             </div>
             <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm">
-              <h4 className="font-semibold mb-1">Proper Court Addressing</h4>
-              <p className="text-legal-muted dark:text-gray-400">Address Supreme Court as "Hon'ble Supreme Court of India" and High Courts as "Hon'ble High Court of [State]".</p>
+              <h4 className="font-semibold mb-1">Criminal Law Updates</h4>
+              <p className="text-legal-muted dark:text-gray-400">Reference the new Bharatiya Nyaya Sanhita (BNS) codes that replaced the Indian Penal Code, with appropriate section numbers for relevant offences.</p>
             </div>
             <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm">
-              <h4 className="font-semibold mb-1">BNS Act Compliance</h4>
-              <p className="text-legal-muted dark:text-gray-400">Update your legal documents to reflect the new Bharatiya Nyaya Sanhita (BNS) codes that replaced the Indian Penal Code.</p>
+              <h4 className="font-semibold mb-1">New Evidence Rules</h4>
+              <p className="text-legal-muted dark:text-gray-400">All affidavits and evidence should comply with Bharatiya Sakshya Adhiniyam (BSA) requirements that replaced the Indian Evidence Act.</p>
             </div>
             <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm">
-              <h4 className="font-semibold mb-1">Local Jurisdiction Rules</h4>
-              <p className="text-legal-muted dark:text-gray-400">Different High Courts have different rules for formatting and filing. Check the latest court rules before finalizing documents.</p>
+              <h4 className="font-semibold mb-1">E-Filing Requirements</h4>
+              <p className="text-legal-muted dark:text-gray-400">Format documents according to the e-filing standards of respective courts with proper pagination, bookmarks and OCR compliance.</p>
             </div>
             <div className="bg-white dark:bg-slate-900 p-3 rounded shadow-sm">
-              <h4 className="font-semibold mb-1">Vakalatnama Requirements</h4>
-              <p className="text-legal-muted dark:text-gray-400">Ensure valid Bar Council enrollment numbers and proper witness attestation as per the Advocates Act, 1961.</p>
+              <h4 className="font-semibold mb-1">Legal Notices</h4>
+              <p className="text-legal-muted dark:text-gray-400">Include proper notice period as per relevant law, clear demands/reliefs sought, and reference to applicable statutory provisions with proper party addresses.</p>
             </div>
           </div>
         </motion.div>

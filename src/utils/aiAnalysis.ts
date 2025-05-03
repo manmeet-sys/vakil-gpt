@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for AI analysis with focus on Indian law
  */
@@ -36,39 +37,90 @@ Format your response with clear sections and be thorough yet concise in your leg
   // Check if filename indicates this is for document generation rather than analysis
   const isGeneratingDocument = filename.includes('Document Draft') || text.includes('Create a professional');
 
-  // Adjust prompt for document generation
-  const generationPrompt = isGeneratingDocument ? 
-    `You are VakilGPT, an expert legal document drafter specialized in Indian law. 
+  // Check if generating a contract specifically
+  const isGeneratingContract = isGeneratingDocument && 
+    (text.toLowerCase().includes('contract') || text.toLowerCase().includes('agreement') || 
+     filename.toLowerCase().includes('contract') || filename.toLowerCase().includes('agreement'));
+
+  // Enhanced prompt for contract generation to ensure detailed outputs
+  const contractGenerationPrompt = isGeneratingContract ? 
+    `You are VakilGPT, an expert legal contract drafter specialized in Indian law.
     
-    Create a professional Indian legal document based on the following request:
+    Create a comprehensive, professional Indian legal contract based on the following request:
     
     "${text}"
     
-    Please draft a comprehensive document that:
+    Please draft a detailed contract that:
     1. Follows all Indian legal drafting standards and conventions
-    2. Includes all necessary sections and clauses for this type of document
+    2. Includes ALL necessary sections including but not limited to:
+       - Full title and preamble with party details
+       - Complete recitals/whereas clauses explaining background and purpose
+       - Detailed definitions section for all key terms
+       - Comprehensive scope of work/services
+       - Clear payment terms including amounts, schedules, and methods
+       - Explicit term and termination clauses
+       - Detailed representations and warranties from all parties
+       - Comprehensive indemnification provisions
+       - Force majeure provisions
+       - Complete confidentiality clauses
+       - Jurisdiction and governing law clauses
+       - Thorough dispute resolution mechanism
+       - Comprehensive notice provisions
+       - Amendment and assignment clauses
+       - Severability and waiver provisions
+       - Counterparts clause if applicable
+       - Entire agreement clause
+       - Proper signature blocks with witness provisions
     3. Uses formal legal language appropriate for Indian courts
     4. Follows proper formatting with paragraphs, numbering, etc.
     5. References relevant Indian laws, acts and precedents
     6. Is ready for use in the appropriate Indian jurisdiction
+    7. Has a minimum length of 2500 words to ensure comprehensiveness
     
-    Format your response as the complete text of the document only, without any explanations or commentary outside the document itself.` : systemPrompt;
+    Format your response as the complete text of the contract only, without any explanations or commentary outside the document itself. Be thorough and detailed in every section of the contract.` 
+    
+    : isGeneratingDocument ? 
+      `You are VakilGPT, an expert legal document drafter specialized in Indian law. 
+      
+      Create a professional Indian legal document based on the following request:
+      
+      "${text}"
+      
+      Please draft a comprehensive document that:
+      1. Follows all Indian legal drafting standards and conventions
+      2. Includes all necessary sections and clauses for this type of document
+      3. Uses formal legal language appropriate for Indian courts
+      4. Follows proper formatting with paragraphs, numbering, etc.
+      5. References relevant Indian laws, acts and precedents
+      6. Is ready for use in the appropriate Indian jurisdiction
+      
+      Format your response as the complete text of the document only, without any explanations or commentary outside the document itself.` 
+      
+      : systemPrompt;
 
   try {
+    console.log(`Generating ${isGeneratingContract ? 'contract' : isGeneratingDocument ? 'document' : 'analysis'} with Gemini API...`);
+    
+    // Use different temperature and max tokens for contracts vs regular documents vs analysis
+    const temperature = isGeneratingContract ? 0.1 : isGeneratingDocument ? 0.2 : 0.4;
+    const maxOutputTokens = isGeneratingContract ? 8192 : isGeneratingDocument ? 4000 : 4000;
+
     const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${getApiKey('gemini')}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [
-          { role: 'user', parts: [{ text: isGeneratingDocument ? generationPrompt : systemPrompt }] },
-          { role: 'model', parts: [{ text: isGeneratingDocument ? 
-            'I will draft a professional Indian legal document following all proper formatting and standards.' : 
-            'I will analyze the legal document as VakilGPT, with specific focus on Indian law, constitutional considerations, and the new criminal laws.' }] },
+          { role: 'user', parts: [{ text: isGeneratingContract ? contractGenerationPrompt : isGeneratingDocument ? contractGenerationPrompt : systemPrompt }] },
+          { role: 'model', parts: [{ text: isGeneratingContract ? 
+              'I will draft a comprehensive, detailed Indian legal contract following all proper formatting and standards, ensuring it includes all necessary clauses and sections.' : 
+              isGeneratingDocument ? 
+              'I will draft a professional Indian legal document following all proper formatting and standards.' : 
+              'I will analyze the legal document as VakilGPT, with specific focus on Indian law, constitutional considerations, and the new criminal laws.' }] },
           { role: 'user', parts: [{ text }] }
         ],
         generationConfig: {
-          temperature: isGeneratingDocument ? 0.2 : 0.4,
-          maxOutputTokens: 4000,
+          temperature: temperature,
+          maxOutputTokens: maxOutputTokens,
           topK: 40,
           topP: 0.95
         }
@@ -82,6 +134,7 @@ Format your response with clear sections and be thorough yet concise in your leg
 
     const data = await response.json();
     if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+      console.log(`Successfully generated content with length: ${data.candidates[0].content.parts[0].text.length}`);
       return data.candidates[0].content.parts[0].text;
     } else {
       throw new Error('Invalid response format from Gemini API');
