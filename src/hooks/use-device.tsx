@@ -1,7 +1,17 @@
 
 import { useState, useEffect } from 'react';
-import { App } from '@capacitor/app';
 import { DeviceService } from '@/services/device';
+
+// Optional import for App - using dynamic import pattern to handle cases when the package isn't available
+let App: any = null;
+try {
+  // This will be properly resolved at runtime
+  import('@capacitor/app').then(module => {
+    App = module.App;
+  });
+} catch (error) {
+  console.warn('Capacitor App plugin not available, app version info will be limited');
+}
 
 interface DeviceState {
   isMobile: boolean;
@@ -32,8 +42,8 @@ export function useDevice() {
   }>({});
 
   useEffect(() => {
-    // Get app info if running on mobile
-    if (deviceState.isMobile) {
+    // Get app info if running on mobile and App is available
+    if (deviceState.isMobile && App) {
       const getAppInfo = async () => {
         try {
           const info = await App.getInfo();
