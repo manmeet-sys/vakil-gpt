@@ -46,17 +46,8 @@ serve(async (req) => {
       )
     }
     
-    // Get OpenAI API key from environment variables
-    const openAiApiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openAiApiKey) {
-      return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured on server' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
+    // Get OpenAI API key from environment variables or use the service account key if not set
+    const openAiApiKey = Deno.env.get('OPENAI_API_KEY') || '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'
     
     // Set up the request to OpenAI API
     const openAiUrl = `https://api.openai.com/v1/chat/completions`
@@ -106,3 +97,4 @@ serve(async (req) => {
     )
   }
 })
+

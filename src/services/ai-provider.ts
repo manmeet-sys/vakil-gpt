@@ -67,12 +67,13 @@ export const getAIResponse = async (
  * @returns True if successful, false if not
  */
 export const configureOpenAIProvider = (apiKey?: string): boolean => {
-  const key = apiKey || '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';
+  const key = apiKey || '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';
   
-  if (key && key.startsWith('sk-')) {
+  if (key && (key.startsWith('sk-') || key.startsWith('sk-svcacct'))) {
     localStorage.setItem('openaiApiKey', key);
     localStorage.setItem('preferredApiProvider', 'openai');
     return true;
   }
   return false;
 };
+
