@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -13,29 +12,29 @@ import ErrorMessage from '@/components/ui/error-message';
 import { supabase } from '@/integrations/supabase/client';
 
 const AISettings: React.FC = () => {
-  const [provider, setProvider] = useState<'gemini' | 'deepseek' | 'openai'>('gemini');
+  const [provider, setProvider] = useState<'openai' | 'gemini' | 'deepseek'>('openai');
   const [apiKey, setApiKey] = useState({
+    openai: localStorage.getItem('openaiApiKey') || '',
     gemini: localStorage.getItem('geminiApiKey') || '',
     deepseek: localStorage.getItem('deepseekApiKey') || '',
-    openai: localStorage.getItem('openaiApiKey') || '',
   });
   const [temperature, setTemperature] = useState(0.7);
   const [historyEnabled, setHistoryEnabled] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
   const [validationStatus, setValidationStatus] = useState<{
+    openai: 'idle' | 'validating' | 'valid' | 'invalid';
     gemini: 'idle' | 'validating' | 'valid' | 'invalid';
     deepseek: 'idle' | 'validating' | 'valid' | 'invalid';
-    openai: 'idle' | 'validating' | 'valid' | 'invalid';
   }>({
+    openai: 'idle',
     gemini: 'idle',
     deepseek: 'idle',
-    openai: 'idle',
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   useEffect(() => {
     // Load the preferred provider from localStorage
-    const savedProvider = localStorage.getItem('preferredApiProvider') as 'gemini' | 'deepseek' | 'openai' || 'gemini';
+    const savedProvider = localStorage.getItem('preferredApiProvider') as 'openai' | 'gemini' | 'deepseek' || 'openai';
     setProvider(savedProvider);
     
     // Load other settings
@@ -136,31 +135,31 @@ const AISettings: React.FC = () => {
     
     try {
       // Validate keys before saving
+      let isOpenAIValid = true;
       let isGeminiValid = true;
       let isDeepseekValid = true;
-      let isOpenAIValid = true;
       
-      if (apiKey.gemini) {
-        isGeminiValid = await validateGeminiKey(apiKey.gemini);
-      }
-      
-      if (apiKey.deepseek) {
-        isDeepseekValid = await validateDeepseekKey(apiKey.deepseek);
-      }
-
       if (apiKey.openai) {
         isOpenAIValid = await validateOpenAIKey(apiKey.openai);
       }
       
-      if (!isGeminiValid || !isDeepseekValid || !isOpenAIValid) {
+      if (apiKey.gemini) {
+        isGeminiValid = await validateGeminiKey(apiKey.gemini);
+      }
+
+      if (apiKey.deepseek) {
+        isDeepseekValid = await validateDeepseekKey(apiKey.deepseek);
+      }
+      
+      if (!isOpenAIValid || !isGeminiValid || !isDeepseekValid) {
         return;
       }
       
       // Save all settings to localStorage
       localStorage.setItem('preferredApiProvider', provider);
+      localStorage.setItem('openaiApiKey', apiKey.openai || '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');
       localStorage.setItem('geminiApiKey', apiKey.gemini);
       localStorage.setItem('deepseekApiKey', apiKey.deepseek);
-      localStorage.setItem('openaiApiKey', apiKey.openai);
       localStorage.setItem('ai-temperature', temperature.toString());
       localStorage.setItem('ai-history-enabled', String(historyEnabled));
       
@@ -187,7 +186,7 @@ const AISettings: React.FC = () => {
     setTemperature(value[0]);
   };
   
-  const handleApiKeyChange = (provider: 'gemini' | 'deepseek' | 'openai', value: string) => {
+  const handleApiKeyChange = (provider: 'openai' | 'gemini' | 'deepseek', value: string) => {
     setApiKey(prev => ({
       ...prev,
       [provider]: value,
@@ -200,7 +199,7 @@ const AISettings: React.FC = () => {
     }));
   };
   
-  const getKeyStatus = (provider: 'gemini' | 'deepseek' | 'openai') => {
+  const getKeyStatus = (provider: 'openai' | 'gemini' | 'deepseek') => {
     const status = validationStatus[provider];
     
     if (status === 'validating') {
@@ -237,14 +236,14 @@ const AISettings: React.FC = () => {
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="ai-provider">Primary AI Provider</Label>
-            <Select value={provider} onValueChange={(value) => setProvider(value as 'gemini' | 'deepseek' | 'openai')}>
+            <Select value={provider} onValueChange={(value) => setProvider(value as 'openai' | 'gemini' | 'deepseek')}>
               <SelectTrigger id="ai-provider" className="w-full">
                 <SelectValue placeholder="Select AI provider" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="openai">OpenAI</SelectItem>
                 <SelectItem value="gemini">Google Gemini</SelectItem>
                 <SelectItem value="deepseek">DeepSeek AI</SelectItem>
-                <SelectItem value="openai">OpenAI</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -253,6 +252,26 @@ const AISettings: React.FC = () => {
             <h3 className="text-sm font-medium flex items-center">
               <Key className="h-4 w-4 mr-2" /> API Keys
             </h3>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="openai-api-key">OpenAI API Key</Label>
+                <div>{getKeyStatus('openai')}</div>
+              </div>
+              <div className="relative">
+                <Input
+                  id="openai-api-key"
+                  type="password"
+                  value={apiKey.openai}
+                  onChange={(e) => handleApiKeyChange('openai', e.target.value)}
+                  placeholder="Enter your OpenAI API key"
+                  className={validationStatus.openai === 'invalid' ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Get your OpenAI API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">OpenAI Platform</a>
+              </p>
+            </div>
             
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -289,24 +308,6 @@ const AISettings: React.FC = () => {
               />
               <p className="text-xs text-muted-foreground">
                 Get your DeepSeek API key from <a href="https://platform.deepseek.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">DeepSeek Platform</a>
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="openai-api-key">OpenAI API Key</Label>
-                <div>{getKeyStatus('openai')}</div>
-              </div>
-              <Input
-                id="openai-api-key"
-                type="password"
-                value={apiKey.openai}
-                onChange={(e) => handleApiKeyChange('openai', e.target.value)}
-                placeholder="Enter your OpenAI API key"
-                className={validationStatus.openai === 'invalid' ? 'border-red-500 focus-visible:ring-red-500' : ''}
-              />
-              <p className="text-xs text-muted-foreground">
-                Get your OpenAI API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">OpenAI Platform</a>
               </p>
             </div>
           </div>

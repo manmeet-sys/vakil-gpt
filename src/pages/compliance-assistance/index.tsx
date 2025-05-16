@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { ClipboardCheck, Loader2 } from 'lucide-react';
@@ -8,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 const ComplianceAssistancePage = () => {
   const [industry, setIndustry] = useState<string>('');
@@ -17,11 +17,11 @@ const ComplianceAssistancePage = () => {
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState<string>('');
-  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
+  const [apiProvider, setApiProvider] = useState<'openai' | 'gemini' | 'deepseek'>('openai');
 
   // Load API key on component mount
   React.useEffect(() => {
-    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'openai' | 'gemini' | 'deepseek' || 'openai';
     setApiProvider(storedApiProvider);
     const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
     setApiKey(storedApiKey);
@@ -49,15 +49,9 @@ const ComplianceAssistancePage = () => {
     setIsGenerating(true);
 
     try {
-      let complianceResults = '';
-      
-      if (apiProvider === 'gemini') {
-        complianceResults = await generateGeminiComplianceResults();
-      } else if (apiProvider === 'deepseek') {
-        complianceResults = await generateDeepSeekComplianceResults();
-      }
-
+      const complianceResults = await generateComplianceResults();
       setResults(complianceResults);
+      
       toast({
         title: "Compliance Guidance Generated",
         description: "Your compliance recommendations are ready",
@@ -74,7 +68,7 @@ const ComplianceAssistancePage = () => {
     }
   };
 
-  const generateGeminiComplianceResults = async (): Promise<string> => {
+  const generateComplianceResults = async (): Promise<string> => {
     const systemPrompt = `You are PrecedentAI's compliance specialist focused on Indian regulatory frameworks. 
     
     Generate a comprehensive compliance guide based on the following information:
@@ -91,75 +85,7 @@ const ComplianceAssistancePage = () => {
     
     Format your response with clear sections and practical guidance.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: systemPrompt }] }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 4000,
-          topK: 40,
-          topP: 0.95
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response format from Gemini API');
-    }
-  };
-
-  const generateDeepSeekComplianceResults = async (): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's compliance specialist focused on Indian regulatory frameworks. 
-    
-    Generate a comprehensive compliance guide based on the following information:
-    - Industry: ${industry}
-    - Company Size: ${companySize}
-    - Compliance Context: ${complianceDescription}
-    
-    Include:
-    1. Key Indian regulations and laws applicable to this scenario
-    2. Compliance requirements and obligations
-    3. Recommended implementation steps
-    4. Common compliance challenges and solutions
-    5. Resources for staying updated on regulatory changes
-    
-    Format your response with clear sections and practical guidance.`;
-    
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemPrompt }
-        ],
-        temperature: 0.2,
-        max_tokens: 4000
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
+    return await getOpenAIResponse(systemPrompt, apiKey);
   };
 
   return (
@@ -267,4 +193,3 @@ const ComplianceAssistancePage = () => {
 };
 
 export default ComplianceAssistancePage;
-

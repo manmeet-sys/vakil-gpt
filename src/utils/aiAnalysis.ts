@@ -1,18 +1,20 @@
 /**
  * Utility functions for AI analysis with focus on Indian law
  */
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
+import { getGeminiResponse } from '@/components/GeminiProIntegration';
 
 /**
  * Gets the appropriate API key based on the provider
  * @returns API key for the selected provider
  */
-const getApiKey = (provider: 'gemini' | 'deepseek' = 'gemini'): string => {
+const getApiKey = (provider: 'openai' | 'gemini' | 'deepseek' = 'openai'): string => {
   return localStorage.getItem(`${provider}ApiKey`) || 
-    (provider === 'gemini' ? 'AIzaSyCpX8FmPojP3E4dDqsmi0EtRjDKXGh9SBc' : 'YOUR_DEEPSEEK_API_KEY_HERE');
+    (provider === 'openai' ? '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' : '');
 };
 
 /**
- * Generates analysis using Gemini API
+ * Generates analysis using OpenAI API (formerly called Gemini)
  * @param text The text to analyze
  * @param filename The name of the file being analyzed
  * @returns A promise that resolves to the analysis
@@ -55,39 +57,28 @@ Format your response with clear sections and be thorough yet concise in your leg
     Format your response as the complete text of the document only, without any explanations or commentary outside the document itself.` : systemPrompt;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${getApiKey('gemini')}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: isGeneratingDocument ? generationPrompt : systemPrompt }] },
-          { role: 'model', parts: [{ text: isGeneratingDocument ? 
-            'I will draft a professional Indian legal document following all proper formatting and standards.' : 
-            'I will analyze the legal document as VakilGPT, with specific focus on Indian law, constitutional considerations, and the new criminal laws.' }] },
-          { role: 'user', parts: [{ text }] }
-        ],
-        generationConfig: {
-          temperature: isGeneratingDocument ? 0.2 : 0.4,
-          maxOutputTokens: 4000,
-          topK: 40,
-          topP: 0.95
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response format from Gemini API');
-    }
+    // Default to OpenAI
+    return await getOpenAIResponse(
+      isGeneratingDocument ? generationPrompt : systemPrompt + "\n\n" + text,
+      getApiKey('openai')
+    );
   } catch (error) {
-    console.error("Error in generateGeminiAnalysis:", error);
+    console.error("Error in generateAnalysis with OpenAI:", error);
+    
+    // Fall back to Gemini if OpenAI fails
+    try {
+      const geminiKey = getApiKey('gemini');
+      if (geminiKey) {
+        console.log('OpenAI API error, falling back to Gemini');
+        return await getGeminiResponse(
+          isGeneratingDocument ? generationPrompt : systemPrompt + "\n\n" + text,
+          geminiKey
+        );
+      }
+    } catch (fallbackError) {
+      console.error('Fallback to Gemini failed:', fallbackError);
+    }
+    
     throw new Error(`Failed to generate analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
@@ -99,66 +90,8 @@ Format your response with clear sections and be thorough yet concise in your leg
  * @returns A promise that resolves to the analysis
  */
 export const generateDeepSeekAnalysis = async (text: string, filename: string): Promise<string> => {
-  const systemPrompt = `You are VakilGPT, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution and the new criminal law codes including Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS), and Bharatiya Sakshya Adhiniyam (BSA).
-  
-I'm providing you with text extracted from a PDF document named "${filename}".
-
-Please analyze this legal document and provide:
-1. A summary of the document type and purpose
-2. Key legal provisions and terms identified under Indian law
-3. Potential legal implications in the Indian legal context
-4. Constitutional considerations with reference to specific articles
-5. If relevant, analysis of how the new criminal laws (BNS/BNSS/BSA) apply compared to the older laws they replaced (IPC/CrPC/Indian Evidence Act)
-6. Relevant Supreme Court and High Court judgments
-7. Recommendations or areas of concern for Indian practice
-
-Format your response with clear sections and be thorough yet concise in your legal analysis.`;
-
-  // Check if this is for document generation
-  const isGeneratingDocument = filename.includes('Document Draft') || text.includes('Create a professional');
-
-  // Adjust prompt for document generation
-  const generationPrompt = isGeneratingDocument ? 
-    `You are VakilGPT, an expert legal document drafter specialized in Indian law. 
-    
-    Create a professional Indian legal document based on the following request:
-    
-    "${text}"
-    
-    Please draft a comprehensive document that:
-    1. Follows all Indian legal drafting standards and conventions
-    2. Includes all necessary sections and clauses for this type of document
-    3. Uses formal legal language appropriate for Indian courts
-    4. Follows proper formatting with paragraphs, numbering, etc.
-    5. References relevant Indian laws, acts and precedents
-    6. Is ready for use in the appropriate Indian jurisdiction
-    
-    Format your response as the complete text of the document only, without any explanations or commentary outside the document itself.` : systemPrompt;
-  
-  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getApiKey('deepseek')}`
-    },
-    body: JSON.stringify({
-      model: 'deepseek-chat',
-      messages: [
-        { role: 'system', content: isGeneratingDocument ? generationPrompt : systemPrompt },
-        { role: 'user', content: text }
-      ],
-      temperature: isGeneratingDocument ? 0.2 : 0.4,
-      max_tokens: 4000
-    })
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || `API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data.choices[0].message.content;
+  // Instead of using DeepSeek, we'll use OpenAI
+  return generateGeminiAnalysis(text, filename);
 };
 
 /**

@@ -1,6 +1,7 @@
 
 // This file exports the API functions from GeminiProIntegration component
 // to be used directly by other components
+import { getOpenAIResponse } from './OpenAIIntegration';
 
 /**
  * Makes a request to the Gemini Pro API and returns the response text
@@ -11,6 +12,12 @@
 export const getGeminiResponse = async (prompt: string, apiKey?: string): Promise<string> => {
   try {
     if (!apiKey) {
+      // Fallback to OpenAI if Gemini key isn't provided
+      const openAIKey = localStorage.getItem('openaiApiKey') || '';
+      if (openAIKey) {
+        console.log('No Gemini API key provided, falling back to OpenAI');
+        return await getOpenAIResponse(prompt, openAIKey);
+      }
       throw new Error("API key is required. Please set your API key in Settings > AI Settings.");
     }
     
@@ -37,6 +44,13 @@ export const getGeminiResponse = async (prompt: string, apiKey?: string): Promis
           errorMessage = errorData.error || `API error: ${response.status}`;
         } catch (e) {
           errorMessage = `API error: ${response.status}`;
+        }
+        
+        // Try OpenAI as fallback
+        const openAIKey = localStorage.getItem('openaiApiKey') || '';
+        if (openAIKey) {
+          console.log('Gemini API error, falling back to OpenAI');
+          return await getOpenAIResponse(prompt, openAIKey);
         }
         
         throw new Error(errorMessage);
@@ -78,6 +92,18 @@ export const getGeminiResponse = async (prompt: string, apiKey?: string): Promis
     }
   } catch (error) {
     console.error('Error in Gemini API request:', error);
+    
+    // Try OpenAI as fallback
+    try {
+      const openAIKey = localStorage.getItem('openaiApiKey') || '';
+      if (openAIKey) {
+        console.log('Gemini API error, falling back to OpenAI');
+        return await getOpenAIResponse(prompt, openAIKey);
+      }
+    } catch (fallbackError) {
+      console.error('Fallback to OpenAI failed:', fallbackError);
+    }
+    
     throw error;
   }
 };
@@ -105,7 +131,7 @@ export const generateEnhancedIndianContract = async (
   }
 ): Promise<string> => {
   // Get the API key from localStorage
-  const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+  const apiProvider = localStorage.getItem('preferredApiProvider') as 'openai' | 'deepseek' | 'gemini' || 'openai';
   const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
   
   if (!apiKey) {
@@ -127,6 +153,10 @@ export const generateEnhancedIndianContract = async (
   
   Please create a comprehensive Indian legal contract following all proper legal terminology, formatting, and requirements specific to Indian law. Include all standard and necessary clauses for this type of contract.`;
 
-  // Use the main Gemini function to generate the contract
-  return await getGeminiResponse(prompt, apiKey);
+  // Use the appropriate API based on provider
+  if (apiProvider === 'openai') {
+    return await getOpenAIResponse(prompt, apiKey);
+  } else {
+    return await getGeminiResponse(prompt, apiKey);
+  }
 };

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getOpenAIResponse } from './OpenAIIntegration';
 import { getGeminiResponse } from './GeminiProIntegration';
 import ErrorMessage from './ui/error-message';
 import { Skeleton } from './ui/skeleton';
@@ -88,7 +89,7 @@ const GeminiAnalyzer: React.FC<GeminiAnalyzerProps> = ({
     
     try {
       // Check for API key
-      const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+      const apiProvider = localStorage.getItem('preferredApiProvider') as 'openai' | 'deepseek' | 'gemini' || 'openai';
       const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
       
       if (!apiKey) {
@@ -109,15 +110,20 @@ const GeminiAnalyzer: React.FC<GeminiAnalyzerProps> = ({
       // Prepare the prompt
       let prompt = promptTemplates[analysisType].replace('{{document}}', documentText);
       
-      // Get the analysis from Gemini
-      const analysis = await getGeminiResponse(prompt, apiKey);
+      // Get the analysis from the selected API provider
+      let analysis;
+      if (apiProvider === 'openai') {
+        analysis = await getOpenAIResponse(prompt, apiKey);
+      } else {
+        analysis = await getGeminiResponse(prompt, apiKey);
+      }
       
       // Try to parse the response as JSON
       let parsedAnalysis;
       try {
         parsedAnalysis = JSON.parse(analysis);
       } catch (e) {
-        console.warn("Gemini did not return valid JSON. Using raw response.");
+        console.warn("AI did not return valid JSON. Using raw response.");
         parsedAnalysis = { raw: analysis };
       }
       
@@ -131,7 +137,7 @@ const GeminiAnalyzer: React.FC<GeminiAnalyzerProps> = ({
       });
       
     } catch (error) {
-      console.error("Error in GeminiAnalyzer:", error);
+      console.error("Error in AI Analyzer:", error);
       setError(error instanceof Error 
         ? error.message 
         : "An error occurred during analysis. Please check your API key.");

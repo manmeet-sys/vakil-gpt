@@ -3,14 +3,14 @@
 import { getGeminiResponse } from '@/components/GeminiProIntegration';
 import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
-export type AIProvider = 'gemini' | 'deepseek' | 'openai';
+export type AIProvider = 'openai' | 'gemini' | 'deepseek';
 
 /**
  * Get the configured API provider and API key
  * @returns Object containing provider name and API key
  */
 export const getAIConfig = () => {
-  const provider = localStorage.getItem('preferredApiProvider') as AIProvider || 'gemini';
+  const provider = localStorage.getItem('preferredApiProvider') as AIProvider || 'openai';
   const apiKey = localStorage.getItem(`${provider}ApiKey`) || '';
   
   return { provider, apiKey };
@@ -40,18 +40,14 @@ export const getAIResponse = async (
 
   try {
     switch (provider) {
-      case 'gemini':
-        return await getGeminiResponse(prompt, apiKey);
       case 'openai':
         return await getOpenAIResponse(prompt, apiKey);
+      case 'gemini':
+        return await getGeminiResponse(prompt, apiKey);
       case 'deepseek':
         // DeepSeek implementation would go here
-        // For now, fall back to OpenAI if configured, otherwise Gemini
-        if (localStorage.getItem('openaiApiKey')) {
-          return await getOpenAIResponse(prompt, localStorage.getItem('openaiApiKey') || '');
-        } else {
-          return await getGeminiResponse(prompt, localStorage.getItem('geminiApiKey') || '');
-        }
+        // For now, fall back to OpenAI as the default
+        return await getOpenAIResponse(prompt, localStorage.getItem('openaiApiKey') || '');
       default:
         throw new Error(`Unknown AI provider: ${provider}`);
     }
@@ -76,4 +72,3 @@ export const configureOpenAIProvider = (apiKey?: string): boolean => {
   }
   return false;
 };
-

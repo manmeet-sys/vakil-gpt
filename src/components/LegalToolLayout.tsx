@@ -16,24 +16,24 @@ interface LegalToolLayoutProps {
 }
 
 const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayoutProps) => {
-  const [apiProvider, setApiProvider] = React.useState<'deepseek' | 'gemini' | 'openai'>('gemini');
+  const [apiProvider, setApiProvider] = React.useState<'openai' | 'gemini' | 'deepseek'>('openai');
 
   useEffect(() => {
     // Load preferred API provider on component mount
-    const provider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' | 'openai' || 'gemini';
+    const provider = localStorage.getItem('preferredApiProvider') as 'openai' | 'gemini' | 'deepseek' || 'openai';
     setApiProvider(provider);
     
     // Set default API keys if not already set
+    if (!localStorage.getItem('openaiApiKey')) {
+      localStorage.setItem('openaiApiKey', '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');
+    }
+    
     if (!localStorage.getItem('geminiApiKey')) {
       localStorage.setItem('geminiApiKey', '');
     }
     
     if (!localStorage.getItem('deepseekApiKey')) {
       localStorage.setItem('deepseekApiKey', '');
-    }
-
-    if (!localStorage.getItem('openaiApiKey')) {
-      localStorage.setItem('openaiApiKey', '');
     }
   }, []);
 
@@ -48,15 +48,15 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
   }, [title]);
 
   const handleToggleProvider = () => {
-    // Cycle through providers: gemini -> deepseek -> openai -> gemini
-    let newProvider: 'deepseek' | 'gemini' | 'openai';
+    // Cycle through providers: openai -> gemini -> deepseek -> openai
+    let newProvider: 'openai' | 'gemini' | 'deepseek';
     
-    if (apiProvider === 'gemini') {
-      newProvider = 'deepseek';
-    } else if (apiProvider === 'deepseek') {
-      newProvider = 'openai';
-    } else {
+    if (apiProvider === 'openai') {
       newProvider = 'gemini';
+    } else if (apiProvider === 'gemini') {
+      newProvider = 'deepseek';
+    } else {
+      newProvider = 'openai';
     }
     
     setApiProvider(newProvider);
@@ -82,10 +82,10 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
   // Get display name for current provider
   const getProviderDisplayName = () => {
     switch(apiProvider) {
+      case 'openai': return 'OpenAI';
       case 'gemini': return 'Gemini AI';
       case 'deepseek': return 'DeepSeek AI';
-      case 'openai': return 'OpenAI';
-      default: return 'Gemini AI';
+      default: return 'OpenAI';
     }
   };
 
