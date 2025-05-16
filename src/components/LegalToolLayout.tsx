@@ -16,11 +16,11 @@ interface LegalToolLayoutProps {
 }
 
 const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayoutProps) => {
-  const [apiProvider, setApiProvider] = React.useState<'deepseek' | 'gemini'>('gemini');
+  const [apiProvider, setApiProvider] = React.useState<'deepseek' | 'gemini' | 'openai'>('gemini');
 
   useEffect(() => {
     // Load preferred API provider on component mount
-    const provider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    const provider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' | 'openai' || 'gemini';
     setApiProvider(provider);
     
     // Set default API keys if not already set
@@ -30,6 +30,10 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
     
     if (!localStorage.getItem('deepseekApiKey')) {
       localStorage.setItem('deepseekApiKey', '');
+    }
+
+    if (!localStorage.getItem('openaiApiKey')) {
+      localStorage.setItem('openaiApiKey', '');
     }
   }, []);
 
@@ -44,7 +48,17 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
   }, [title]);
 
   const handleToggleProvider = () => {
-    const newProvider = apiProvider === 'gemini' ? 'deepseek' : 'gemini';
+    // Cycle through providers: gemini -> deepseek -> openai -> gemini
+    let newProvider: 'deepseek' | 'gemini' | 'openai';
+    
+    if (apiProvider === 'gemini') {
+      newProvider = 'deepseek';
+    } else if (apiProvider === 'deepseek') {
+      newProvider = 'openai';
+    } else {
+      newProvider = 'gemini';
+    }
+    
     setApiProvider(newProvider);
     localStorage.setItem('preferredApiProvider', newProvider);
   };
@@ -63,6 +77,16 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
   const descriptionVariants = {
     initial: { opacity: 0 },
     animate: { opacity: 1, transition: { duration: 0.3, delay: 0.1 } },
+  };
+
+  // Get display name for current provider
+  const getProviderDisplayName = () => {
+    switch(apiProvider) {
+      case 'gemini': return 'Gemini AI';
+      case 'deepseek': return 'DeepSeek AI';
+      case 'openai': return 'OpenAI';
+      default: return 'Gemini AI';
+    }
   };
 
   return (
@@ -119,13 +143,15 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
                   <h4 className="font-medium text-sm">AI Provider Settings</h4>
                   <div className="flex items-center justify-between">
                     <Label htmlFor="api-toggle" className="text-sm font-medium cursor-pointer">
-                      {apiProvider === 'gemini' ? 'Gemini AI' : 'DeepSeek AI'}
+                      {getProviderDisplayName()}
                     </Label>
-                    <Switch 
-                      id="api-toggle" 
-                      checked={apiProvider === 'deepseek'}
-                      onCheckedChange={handleToggleProvider}
-                    />
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={handleToggleProvider}
+                    >
+                      Change
+                    </Button>
                   </div>
                 </div>
               </PopoverContent>

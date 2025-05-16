@@ -10,6 +10,7 @@ interface DeviceState {
   isWeb: boolean;
   platform: string;
   isOnline: boolean;
+  connectionType: 'wifi' | 'cellular' | 'none';
   appVersion?: string;
   appBuild?: string;
 }
@@ -21,7 +22,8 @@ export function useDevice() {
     isAndroid: DeviceService.isAndroid(),
     isWeb: DeviceService.isWeb(),
     platform: DeviceService.getPlatform(),
-    isOnline: navigator.onLine
+    isOnline: navigator.onLine,
+    connectionType: DeviceService.getNetworkConnectionType()
   });
   
   const [appInfo, setAppInfo] = useState<{
@@ -50,19 +52,38 @@ export function useDevice() {
     
     // Monitor online/offline status
     const handleOnline = () => {
-      setDeviceState(prev => ({ ...prev, isOnline: true }));
+      setDeviceState(prev => ({ 
+        ...prev, 
+        isOnline: true,
+        connectionType: DeviceService.getNetworkConnectionType()
+      }));
     };
     
     const handleOffline = () => {
-      setDeviceState(prev => ({ ...prev, isOnline: false }));
+      setDeviceState(prev => ({ 
+        ...prev, 
+        isOnline: false,
+        connectionType: 'none' 
+      }));
     };
     
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     
+    // Check connection type periodically (simplified for this example)
+    const connectionChecker = setInterval(() => {
+      if (navigator.onLine) {
+        setDeviceState(prev => ({
+          ...prev,
+          connectionType: DeviceService.getNetworkConnectionType()
+        }));
+      }
+    }, 30000); // Check every 30 seconds
+    
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      clearInterval(connectionChecker);
     };
   }, [deviceState.isMobile]);
   
