@@ -34,20 +34,25 @@ export function useDevice() {
   useEffect(() => {
     // Get app info if running on mobile
     if (deviceState.isMobile) {
-      App.getInfo().then(info => {
-        setAppInfo({
-          version: info.version,
-          build: info.build
-        });
-        
-        setDeviceState(prev => ({
-          ...prev,
-          appVersion: info.version,
-          appBuild: info.build
-        }));
-      }).catch(error => {
-        console.error('Error getting app info:', error);
-      });
+      const getAppInfo = async () => {
+        try {
+          const info = await App.getInfo();
+          setAppInfo({
+            version: info.version,
+            build: info.build
+          });
+          
+          setDeviceState(prev => ({
+            ...prev,
+            appVersion: info.version,
+            appBuild: info.build
+          }));
+        } catch (error) {
+          console.error('Error getting app info:', error);
+        }
+      };
+      
+      getAppInfo();
     }
     
     // Monitor online/offline status

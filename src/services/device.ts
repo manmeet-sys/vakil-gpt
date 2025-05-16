@@ -1,42 +1,40 @@
-
-import { isPlatform } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
+import { Network } from '@capacitor/network';
 
 export const DeviceService = {
   /**
    * Check if the app is running on a mobile device
    */
   isMobile(): boolean {
-    return isPlatform('ios') || isPlatform('android');
+    return Capacitor.getPlatform() !== 'web';
   },
   
   /**
    * Check if the app is running on iOS
    */
   isIOS(): boolean {
-    return isPlatform('ios');
+    return Capacitor.getPlatform() === 'ios';
   },
   
   /**
    * Check if the app is running on Android
    */
   isAndroid(): boolean {
-    return isPlatform('android');
+    return Capacitor.getPlatform() === 'android';
   },
   
   /**
    * Check if the app is running in a web browser
    */
   isWeb(): boolean {
-    return isPlatform('web');
+    return Capacitor.getPlatform() === 'web';
   },
   
   /**
    * Get the platform name
    */
   getPlatform(): string {
-    if (this.isIOS()) return 'ios';
-    if (this.isAndroid()) return 'android';
-    return 'web';
+    return Capacitor.getPlatform();
   },
 
   /**
@@ -48,7 +46,7 @@ export const DeviceService = {
   
   /**
    * Get the network connection type (wifi, cellular, none)
-   * This is a placeholder - for real implementation, you would use
+   * This is a simplified implementation - for real implementation, you would use
    * Capacitor's Network API which requires additional plugin
    */
   getNetworkConnectionType(): 'wifi' | 'cellular' | 'none' {
