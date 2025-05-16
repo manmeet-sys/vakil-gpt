@@ -8,6 +8,8 @@ try {
   // This will be properly resolved at runtime
   import('@capacitor/app').then(module => {
     App = module.App;
+  }).catch(error => {
+    console.warn('Capacitor App plugin not available:', error.message);
   });
 } catch (error) {
   console.warn('Capacitor App plugin not available, app version info will be limited');
