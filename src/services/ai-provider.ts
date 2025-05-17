@@ -1,6 +1,7 @@
 
 // Unified service that handles OpenAI API integration
 import { toast } from 'sonner';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 /**
  * Get the configured API key
@@ -8,9 +9,10 @@ import { toast } from 'sonner';
  */
 export const getAIConfig = () => {
   // Use the hardcoded API key
-  const apiKey = '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';
+  const primaryApiKey = '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';
+  const backupApiKey = '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';
   
-  return { apiKey };
+  return { primaryApiKey, backupApiKey };
 };
 
 /**
@@ -22,84 +24,25 @@ export const getAIConfig = () => {
 export const getAIResponse = async (
   prompt: string, 
   options?: { 
-    apiKey?: string;
     temperature?: number;
   }
 ): Promise<string> => {
-  const { apiKey: configuredKey } = getAIConfig();
-  const apiKey = options?.apiKey || configuredKey;
+  const { primaryApiKey } = getAIConfig();
   const temperature = options?.temperature || 0.4;
   
-  if (!apiKey) {
-    throw new Error('API key is not configured.');
-  }
-
   try {
-    return await getOpenAIResponse(prompt, apiKey, temperature);
+    return await getOpenAIResponse(prompt, primaryApiKey);
   } catch (error) {
     console.error(`Error in OpenAI API request:`, error);
     
-    // Provide a user-friendly error message
-    const errorMessage = error instanceof Error 
-      ? error.message 
-      : 'An unexpected error occurred while connecting to OpenAI';
-    
-    throw new Error(`OpenAI API error: ${errorMessage}`);
-  }
-};
-
-/**
- * Makes a request to the OpenAI API and returns the response text
- * @param prompt The text prompt to send to the API
- * @param apiKey The OpenAI API key
- * @param temperature The temperature setting for response generation
- * @returns A Promise that resolves to the response text
- */
-const getOpenAIResponse = async (
-  prompt: string, 
-  apiKey: string,
-  temperature: number = 0.4
-): Promise<string> => {
-  try {
-    // Use direct API call to OpenAI
-    const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: 'user', content: prompt }],
-        temperature: temperature,
-        max_tokens: 8192,
-        top_p: 0.95
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-      return data.choices[0].message.content;
-    } else {
-      throw new Error('Invalid response format from OpenAI API');
-    }
-  } catch (error) {
-    console.error('Error in OpenAI API request:', error);
-    
-    // Try Supabase Edge Function as fallback if direct API fails
+    // Try with Supabase edge function
     try {
       const response = await fetch(`https://clyqfnqkicwvpymbqijn.supabase.co/functions/v1/openai-proxy`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt, model: 'gpt-4o-mini' })
       });
       
       if (!response.ok) {
@@ -110,11 +53,14 @@ const getOpenAIResponse = async (
       if (data.choices && data.choices.length > 0 && data.choices[0].message) {
         return data.choices[0].message.content;
       }
-    } catch (fallbackError) {
-      console.error('Fallback OpenAI proxy also failed:', fallbackError);
+      
+      throw new Error('Invalid response format from edge function');
+    } catch (edgeFunctionError) {
+      console.error('Edge function also failed:', edgeFunctionError);
+      
+      // Provide a user-friendly error message
+      throw new Error('Failed to connect to AI service. Please try again later.');
     }
-    
-    throw error;
   }
 };
 
@@ -140,11 +86,7 @@ export const generateEnhancedIndianContract = async (
     keyTerms: string;
   }
 ): Promise<string> => {
-  const { apiKey } = getAIConfig();
-  
-  if (!apiKey) {
-    throw new Error("API key is not configured.");
-  }
+  const { primaryApiKey } = getAIConfig();
 
   const { partyA, partyAType, partyB, partyBType } = parties;
   const { jurisdiction, effectiveDate, purpose, keyTerms } = details;
@@ -162,5 +104,5 @@ export const generateEnhancedIndianContract = async (
   Please create a comprehensive Indian legal contract following all proper legal terminology, formatting, and requirements specific to Indian law. Include all standard and necessary clauses for this type of contract.`;
 
   // Use the OpenAI API to generate the contract
-  return await getAIResponse(prompt);
+  return await getOpenAIResponse(prompt);
 };

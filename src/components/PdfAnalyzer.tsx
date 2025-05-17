@@ -13,19 +13,17 @@ import {
 import { Label } from '@/components/ui/label';
 import { Loader2, FileUp } from 'lucide-react';
 import { toast } from 'sonner';
-import { generateGeminiAnalysis, generateDeepSeekAnalysis } from '@/utils/aiAnalysis';
+import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 import PdfFileUpload from './PdfFileUpload';
 
 interface PdfAnalyzerProps {
   onAnalysisComplete: (analysis: string) => void;
-  apiProvider?: 'gemini' | 'deepseek' | 'openai';
   buttonLabel?: string;
   iconOnly?: boolean;
 }
 
 const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ 
   onAnalysisComplete,
-  apiProvider = 'openai',
   buttonLabel = "PDF Analyzer",
   iconOnly = false
 }) => {
@@ -48,15 +46,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({
     setIsAnalyzing(true);
     
     try {
-      let analysis;
-      
-      // Use the appropriate AI based on provider
-      if (apiProvider === 'deepseek') {
-        analysis = await generateDeepSeekAnalysis(pdfText, pdfName);
-      } else {
-        // Default to Gemini or OpenAI
-        analysis = await generateGeminiAnalysis(pdfText, pdfName);
-      }
+      const analysis = await generateOpenAIAnalysis(pdfText, pdfName);
       
       onAnalysisComplete(analysis);
       setIsOpen(false);

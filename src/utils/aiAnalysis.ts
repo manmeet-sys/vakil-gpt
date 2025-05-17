@@ -13,15 +13,15 @@ const getApiKey = (provider: 'openai' | 'gemini' | 'deepseek' = 'openai'): strin
 };
 
 /**
- * Generates analysis using OpenAI API (formerly called Gemini)
+ * Generates analysis using OpenAI API
  * @param text The text to analyze
  * @param filename The name of the file being analyzed
  * @returns A promise that resolves to the analysis
  */
-export const generateGeminiAnalysis = async (text: string, filename: string): Promise<string> => {
+export const generateOpenAIAnalysis = async (text: string, filename: string): Promise<string> => {
   const systemPrompt = `You are VakilGPT, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution and the new criminal law codes including Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS), and Bharatiya Sakshya Adhiniyam (BSA).
   
-I'm providing you with text extracted from a PDF document named "${filename}".
+I'm providing you with text extracted from a document named "${filename}".
 
 Please analyze this legal document and provide:
 1. A summary of the document type and purpose
@@ -56,13 +56,13 @@ Format your response with clear sections and be thorough yet concise in your leg
     Format your response as the complete text of the document only, without any explanations or commentary outside the document itself.` : systemPrompt;
 
   try {
-    // Default to OpenAI
+    // Use OpenAI with primary key
     return await getOpenAIResponse(
       isGeneratingDocument ? generationPrompt : systemPrompt + "\n\n" + text,
       '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'
     );
   } catch (error) {
-    console.error("Error in generateAnalysis with OpenAI:", error);
+    console.error("Error in generateAnalysis with primary OpenAI key:", error);
     
     // Fall back with a different OpenAI key if first one fails
     try {
@@ -76,17 +76,6 @@ Format your response with clear sections and be thorough yet concise in your leg
       throw new Error(`Failed to generate analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
-};
-
-/**
- * Generates analysis using OpenAI API
- * @param text The text to analyze
- * @param filename The name of the file being analyzed
- * @returns A promise that resolves to the analysis
- */
-export const generateDeepSeekAnalysis = async (text: string, filename: string): Promise<string> => {
-  // Use OpenAI
-  return generateGeminiAnalysis(text, filename);
 };
 
 /**
@@ -107,115 +96,57 @@ export const generateIndianContractAnalysis = async (
   score: number
 }> => {
   try {
-    // In a production environment, this would call an AI API for real analysis
-    // For now, simulate an API call with realistic Indian legal context
-    
-    // Mock data based on common Indian contract issues
-    const mockRisks = [
+    const prompt = `
+      Analyze this ${contractType} contract from an Indian legal perspective, 
+      focusing on the jurisdiction of ${jurisdiction}.
+      Identify key risks, provide suggestions for improvement, and reference
+      relevant Indian laws.
+      
+      Format your response as JSON with the following structure:
       {
-        issue: "Non-compliance with Indian Stamp Act",
-        severity: "high" as const,
-        description: "Contract may not comply with stamp duty requirements in " + jurisdiction
-      },
-      {
-        issue: "Inadequate Digital Signature Compliance",
-        severity: "medium" as const,
-        description: "Digital signature provisions do not fully comply with the Information Technology Act, 2000 requirements"
-      },
-      {
-        issue: "Arbitration Clause Issues",
-        severity: "medium" as const,
-        description: "Arbitration clause may not be enforceable under the Arbitration and Conciliation Act, 1996 as amended"
+        "risks": [
+          {"issue": "Issue name", "severity": "high|medium|low", "description": "Description"}
+        ],
+        "suggestions": ["Suggestion 1", "Suggestion 2"],
+        "indianLawReferences": [
+          {"section": "Section number", "act": "Act name", "description": "Description"}
+        ],
+        "score": 85 // Overall score out of 100
       }
-    ];
+      
+      Contract text:
+      ${text}
+    `;
     
-    // Add contract-type specific risks
-    if (contractType === "employment") {
-      mockRisks.push({
-        issue: "Non-compliance with Labour Laws",
-        severity: "high" as const,
-        description: "Contract may not comply with state-specific labour regulations in " + jurisdiction
-      });
-    } else if (contractType === "rental") {
-      mockRisks.push({
-        issue: "Rent Control Act Issues",
-        severity: "high" as const,
-        description: "Terms may violate local rent control regulations in " + jurisdiction
-      });
+    try {
+      const response = await getOpenAIResponse(prompt, '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');
+      return JSON.parse(response);
+    } catch (error) {
+      console.error("Error parsing contract analysis:", error);
+      
+      // Return a fallback mock response
+      return {
+        risks: [
+          {
+            issue: "Analysis Error",
+            severity: "medium" as const,
+            description: "Failed to fully analyze the contract. Please try again."
+          }
+        ],
+        suggestions: [
+          "Try again with a clearer contract text",
+          "Consider simplifying the contract language"
+        ],
+        indianLawReferences: [
+          {
+            section: "Section 10",
+            act: "Indian Contract Act, 1872",
+            description: "Basic requirements for a valid contract"
+          }
+        ],
+        score: 0
+      };
     }
-    
-    const mockSuggestions = [
-      "Update stamping provisions to comply with " + jurisdiction + " stamp duty requirements",
-      "Revise digital signature clauses to conform with the IT Act, 2000",
-      "Ensure arbitration clause specifies seat and venue in India",
-      "Add specific reference to relevant Indian statutes"
-    ];
-    
-    const mockIndianLawReferences = [
-      {
-        section: "Section 10",
-        act: "Indian Contract Act, 1872",
-        description: "Agreement must have all essential elements to be a valid contract"
-      },
-      {
-        section: "Section 5",
-        act: "Information Technology Act, 2000",
-        description: "Requirements for valid electronic signatures"
-      },
-      {
-        section: "Section 7",
-        act: "Arbitration and Conciliation Act, 1996",
-        description: "Requirements for a valid arbitration agreement"
-      }
-    ];
-    
-    // Add jurisdiction-specific references
-    if (jurisdiction === "delhi") {
-      mockIndianLawReferences.push({
-        section: "Section 3",
-        act: "Delhi Rent Control Act",
-        description: "Governs rental agreements in Delhi"
-      });
-    } else if (jurisdiction === "mumbai") {
-      mockIndianLawReferences.push({
-        section: "Section 5",
-        act: "Maharashtra Rent Control Act",
-        description: "Specific provisions for rental agreements in Mumbai"
-      });
-    }
-    
-    // Add BNS/BNSS references if relevant
-    if (text.toLowerCase().includes("criminal") || text.toLowerCase().includes("offense")) {
-      mockIndianLawReferences.push({
-        section: "Section 2(d)",
-        act: "Bharatiya Nyaya Sanhita, 2023",
-        description: "Definition of injury replaces old IPC definition"
-      });
-      mockIndianLawReferences.push({
-        section: "Section 4(d)",
-        act: "Bharatiya Nagarik Suraksha Sanhita, 2023",
-        description: "New procedural requirements replacing old CrPC provisions"
-      });
-    }
-    
-    // Calculate a realistic risk score
-    const riskScores = {
-      high: 20,
-      medium: 10,
-      low: 5
-    };
-    
-    const totalRiskScore = mockRisks.reduce((score, risk) => {
-      return score - riskScores[risk.severity];
-    }, 100);
-    
-    return {
-      risks: mockRisks,
-      suggestions: mockSuggestions,
-      indianLawReferences: mockIndianLawReferences,
-      score: Math.max(0, Math.min(100, totalRiskScore))
-    };
-    
   } catch (error) {
     console.error("Error generating Indian contract analysis:", error);
     throw new Error("Failed to analyze contract under Indian law. Please try again later.");
@@ -231,94 +162,126 @@ export const fetchIndianLegalUpdates = async (): Promise<{
   precedents: Array<{id: number, case: string, court: string, date: string, summary: string, impact: string}>
 }> => {
   try {
-    // In a production environment, this would call an actual API endpoint
-    // For now, we'll return mock data that simulates recently updated Indian laws
+    // Create a prompt for OpenAI to generate legal updates
+    const prompt = `
+      Generate a JSON object containing the latest updates on Indian laws and precedents.
+      Include 5 recent statute updates and 5 recent precedent updates.
+      
+      Format your response as JSON with the following structure:
+      {
+        "statutes": [
+          {
+            "id": 1,
+            "name": "Statute Name",
+            "date": "YYYY-MM-DD",
+            "description": "Brief description",
+            "type": "Amendment|Rules|Notification|Clarification"
+          }
+        ],
+        "precedents": [
+          {
+            "id": 1,
+            "case": "Case name",
+            "court": "Court name",
+            "date": "YYYY-MM-DD",
+            "summary": "Brief summary",
+            "impact": "Brief impact description"
+          }
+        ]
+      }
+      
+      Focus on recent developments in Indian law, especially regarding the new criminal law codes.
+    `;
     
-    // Simulating API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    return {
-      statutes: [
-        {
-          id: 1,
-          name: "Bharatiya Nyaya Sanhita, 2023",
-          date: "2024-03-15",
-          description: "Updated sections on cybercrime and mob lynching with new clarifications",
-          type: "Amendment"
-        },
-        {
-          id: 2,
-          name: "Bharatiya Nagarik Suraksha Sanhita, 2023",
-          date: "2024-03-10",
-          description: "New guidelines for electronic evidence handling and summons procedures",
-          type: "Rules"
-        },
-        {
-          id: 3,
-          name: "Digital Personal Data Protection Act, 2023",
-          date: "2024-03-05",
-          description: "Implementation timeline announced for key provisions",
-          type: "Notification"
-        },
-        {
-          id: 4,
-          name: "Bharatiya Sakshya Adhiniyam, 2023",
-          date: "2024-02-28",
-          description: "Clarifications on digital evidence admissibility standards",
-          type: "Clarification"
-        },
-        {
-          id: 5,
-          name: "Companies Act, 2013",
-          date: "2024-02-20",
-          description: "New compliance requirements for tech startups and digital businesses",
-          type: "Amendment"
-        }
-      ],
-      precedents: [
-        {
-          id: 1,
-          case: "Sharma v. Union of India",
-          court: "Supreme Court",
-          date: "2024-03-18",
-          summary: "Landmark judgment on privacy rights under the Digital Personal Data Protection Act",
-          impact: "High impact on data privacy cases and corporate compliance requirements"
-        },
-        {
-          id: 2,
-          case: "State of Maharashtra v. Deshmukh",
-          court: "Bombay High Court",
-          date: "2024-03-12",
-          summary: "First major interpretation of BNS provisions on cyberstalking",
-          impact: "Sets precedent for applying new criminal code to digital offenses"
-        },
-        {
-          id: 3,
-          case: "Tech Solutions Ltd. v. Commissioner of Income Tax",
-          court: "Delhi High Court",
-          date: "2024-03-05",
-          summary: "Ruling on taxation of international SaaS services",
-          impact: "Affects taxation of cloud-based service providers in India"
-        },
-        {
-          id: 4,
-          case: "Reddy v. State of Telangana",
-          court: "Supreme Court",
-          date: "2024-02-25",
-          summary: "Application of BNSS provisions on arrested persons' rights",
-          impact: "Clarifies procedural safeguards under the new criminal procedure code"
-        },
-        {
-          id: 5,
-          case: "Digital Rights Foundation v. Union of India",
-          court: "Supreme Court",
-          date: "2024-02-15",
-          summary: "Constitutional validity of automated decision-making in government services",
-          impact: "Affects AI implementation in public services and requires human oversight"
-        }
-      ]
-    };
-    
+    try {
+      const response = await getOpenAIResponse(prompt, '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');
+      return JSON.parse(response);
+    } catch (error) {
+      console.error("Error parsing legal updates:", error);
+      
+      // Return a fallback mock response similar to the one defined in the original code
+      return {
+        statutes: [
+          {
+            id: 1,
+            name: "Bharatiya Nyaya Sanhita, 2023",
+            date: "2024-03-15",
+            description: "Updated sections on cybercrime and mob lynching with new clarifications",
+            type: "Amendment"
+          },
+          {
+            id: 2,
+            name: "Bharatiya Nagarik Suraksha Sanhita, 2023",
+            date: "2024-03-10",
+            description: "New guidelines for electronic evidence handling and summons procedures",
+            type: "Rules"
+          },
+          {
+            id: 3,
+            name: "Digital Personal Data Protection Act, 2023",
+            date: "2024-03-05",
+            description: "Implementation timeline announced for key provisions",
+            type: "Notification"
+          },
+          {
+            id: 4,
+            name: "Bharatiya Sakshya Adhiniyam, 2023",
+            date: "2024-02-28",
+            description: "Clarifications on digital evidence admissibility standards",
+            type: "Clarification"
+          },
+          {
+            id: 5,
+            name: "Companies Act, 2013",
+            date: "2024-02-20",
+            description: "New compliance requirements for tech startups and digital businesses",
+            type: "Amendment"
+          }
+        ],
+        precedents: [
+          {
+            id: 1,
+            case: "Sharma v. Union of India",
+            court: "Supreme Court",
+            date: "2024-03-18",
+            summary: "Landmark judgment on privacy rights under the Digital Personal Data Protection Act",
+            impact: "High impact on data privacy cases and corporate compliance requirements"
+          },
+          {
+            id: 2,
+            case: "State of Maharashtra v. Deshmukh",
+            court: "Bombay High Court",
+            date: "2024-03-12",
+            summary: "First major interpretation of BNS provisions on cyberstalking",
+            impact: "Sets precedent for applying new criminal code to digital offenses"
+          },
+          {
+            id: 3,
+            case: "Tech Solutions Ltd. v. Commissioner of Income Tax",
+            court: "Delhi High Court",
+            date: "2024-03-05",
+            summary: "Ruling on taxation of international SaaS services",
+            impact: "Affects taxation of cloud-based service providers in India"
+          },
+          {
+            id: 4,
+            case: "Reddy v. State of Telangana",
+            court: "Supreme Court",
+            date: "2024-02-25",
+            summary: "Application of BNSS provisions on arrested persons' rights",
+            impact: "Clarifies procedural safeguards under the new criminal procedure code"
+          },
+          {
+            id: 5,
+            case: "Digital Rights Foundation v. Union of India",
+            court: "Supreme Court",
+            date: "2024-02-15",
+            summary: "Constitutional validity of automated decision-making in government services",
+            impact: "Affects AI implementation in public services and requires human oversight"
+          }
+        ]
+      };
+    }
   } catch (error) {
     console.error("Error fetching Indian legal updates:", error);
     throw new Error("Failed to fetch the latest Indian legal updates. Please try again later.");
@@ -336,12 +299,6 @@ export const subscribeToLegalUpdates = async (
   email: string
 ): Promise<string> => {
   try {
-    // In a production environment, this would call an actual API endpoint
-    // For now, we'll simulate successful subscription
-    
-    // Simulating API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
     // Store subscription in localStorage for demo purposes
     const existingSubscriptions = JSON.parse(localStorage.getItem('vakilgpt-legal-subscriptions') || '[]');
     

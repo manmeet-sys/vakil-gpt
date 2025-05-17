@@ -8,7 +8,7 @@ import LegalChatMessage from './LegalChatMessage';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
-import { getAIResponse } from '@/services/ai-provider';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
@@ -70,7 +70,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     setIsLoading(true);
 
     try {
-      const response = await getAIResponse(
+      const response = await getOpenAIResponse(
         `You are VakilGPT, a legal assistant specializing in Indian law. 
         Respond to the following query with accurate legal information relevant to Indian law, Indian legal procedures, Supreme Court and High Court decisions, and the Indian Constitution:
         
@@ -148,7 +148,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
     try {
       const prompt = getPromptTemplate(analysisType, text);
-      const analysis = await getAIResponse(prompt);
+      const analysis = await getOpenAIResponse(prompt);
       
       handleAnalysisComplete(analysis);
       setIsOpen(false);
@@ -187,7 +187,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
         </div>
         <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
           <LegalAnalysisGenerator
-            apiProvider="openai"
             onAnalysisComplete={handleAnalysisComplete}
             buttonLabel={isMobile ? "Analysis" : "Legal Analysis"}
             iconOnly={isMobile}
@@ -199,7 +198,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           />
           
           <PdfAnalyzer 
-            apiProvider="openai"
             onAnalysisComplete={handleAnalysisComplete}
             buttonLabel={isMobile ? "PDF" : "PDF Analysis"}
             iconOnly={isMobile}

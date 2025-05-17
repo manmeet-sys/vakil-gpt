@@ -15,18 +15,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import { generateGeminiAnalysis, generateDeepSeekAnalysis } from '@/utils/aiAnalysis';
+import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 
 interface LegalAnalysisGeneratorProps {
   onAnalysisComplete: (analysis: string) => void;
-  apiProvider?: 'gemini' | 'deepseek' | 'openai';
   buttonLabel?: string;
   iconOnly?: boolean;
 }
 
 const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({ 
   onAnalysisComplete,
-  apiProvider = 'openai',
   buttonLabel = "Legal Analysis Generator",
   iconOnly = false
 }) => {
@@ -67,13 +65,7 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
 
     try {
       const prompt = getPromptTemplate(analysisType, text);
-      let analysis;
-      
-      if (apiProvider === 'gemini' || apiProvider === 'openai') {
-        analysis = await generateGeminiAnalysis(text, `${analysisType}-document.txt`);
-      } else {
-        analysis = await generateDeepSeekAnalysis(text, `${analysisType}-document.txt`);
-      }
+      const analysis = await generateOpenAIAnalysis(text, `${analysisType}-document.txt`);
       
       onAnalysisComplete(analysis);
       setIsOpen(false);

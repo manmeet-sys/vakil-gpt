@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { ClipboardCheck, Loader2 } from 'lucide-react';
@@ -16,16 +17,6 @@ const ComplianceAssistancePage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>('');
-  const [apiProvider, setApiProvider] = useState<'openai' | 'gemini' | 'deepseek'>('openai');
-
-  // Load API key on component mount
-  React.useEffect(() => {
-    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'openai' | 'gemini' | 'deepseek' || 'openai';
-    setApiProvider(storedApiProvider);
-    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
-    setApiKey(storedApiKey);
-  }, []);
 
   const handleGenerateCompliance = async () => {
     if (!industry || !companySize || !complianceDescription.trim()) {
@@ -33,15 +24,6 @@ const ComplianceAssistancePage = () => {
         variant: "destructive",
         title: "Missing Information",
         description: "Please fill in all fields to generate compliance recommendations",
-      });
-      return;
-    }
-
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key first`,
       });
       return;
     }
@@ -69,7 +51,7 @@ const ComplianceAssistancePage = () => {
   };
 
   const generateComplianceResults = async (): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's compliance specialist focused on Indian regulatory frameworks. 
+    const systemPrompt = `You are VakilGPT's compliance specialist focused on Indian regulatory frameworks. 
     
     Generate a comprehensive compliance guide based on the following information:
     - Industry: ${industry}
@@ -85,7 +67,8 @@ const ComplianceAssistancePage = () => {
     
     Format your response with clear sections and practical guidance.`;
 
-    return await getOpenAIResponse(systemPrompt, apiKey);
+    // Use primary API key
+    return await getOpenAIResponse(systemPrompt);
   };
 
   return (
