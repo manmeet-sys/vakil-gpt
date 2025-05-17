@@ -2,6 +2,7 @@
 // Unified service that handles multiple AI providers (OpenAI, Gemini, DeepSeek)
 import { getGeminiResponse } from '@/components/GeminiProIntegration';
 import { getOpenAIResponse } from '@/components/OpenAIIntegration';
+import { toast } from 'sonner';
 
 export type AIProvider = 'openai' | 'gemini' | 'deepseek';
 
@@ -10,8 +11,17 @@ export type AIProvider = 'openai' | 'gemini' | 'deepseek';
  * @returns Object containing provider name and API key
  */
 export const getAIConfig = () => {
+  // Always default to OpenAI if no provider is set
   const provider = localStorage.getItem('preferredApiProvider') as AIProvider || 'openai';
-  const apiKey = localStorage.getItem(`${provider}ApiKey`) || '';
+  
+  // First try to get the specified provider's API key
+  let apiKey = localStorage.getItem(`${provider}ApiKey`) || '';
+  
+  // If the requested provider has no key, fall back to OpenAI
+  if (!apiKey && provider !== 'openai') {
+    apiKey = localStorage.getItem('openaiApiKey') || '';
+    return { provider: 'openai', apiKey };
+  }
   
   return { provider, apiKey };
 };
@@ -33,9 +43,23 @@ export const getAIResponse = async (
   const { provider: configuredProvider, apiKey: configuredKey } = getAIConfig();
   const provider = options?.provider || configuredProvider;
   const apiKey = options?.apiKey || configuredKey;
-
+  
+  // Default to OpenAI key if present and no key is provided for specified provider
+  const openAIKey = localStorage.getItem('openaiApiKey') || '';
+  
   if (!apiKey) {
-    throw new Error(`API key for ${provider} is not configured. Please set it in Settings > AI Settings.`);
+    // Always use OpenAI if it's available and no other key is set
+    if (openAIKey) {
+      console.log(`No API key for ${provider}, falling back to OpenAI`);
+      try {
+        return await getOpenAIResponse(prompt, openAIKey);
+      } catch (error) {
+        console.error('Error in OpenAI fallback:', error);
+        throw new Error(`API key for ${provider} is not configured. Please set it in Settings > AI Settings.`);
+      }
+    } else {
+      throw new Error(`API key for ${provider} is not configured. Please set it in Settings > AI Settings.`);
+    }
   }
 
   try {
@@ -43,16 +67,38 @@ export const getAIResponse = async (
       case 'openai':
         return await getOpenAIResponse(prompt, apiKey);
       case 'gemini':
-        return await getGeminiResponse(prompt, apiKey);
+        try {
+          return await getGeminiResponse(prompt, apiKey);
+        } catch (error) {
+          console.warn('Gemini API error, falling back to OpenAI');
+          if (openAIKey) {
+            toast.info('Falling back to OpenAI');
+            return await getOpenAIResponse(prompt, openAIKey);
+          }
+          throw error;
+        }
       case 'deepseek':
         // DeepSeek implementation would go here
         // For now, fall back to OpenAI as the default
-        return await getOpenAIResponse(prompt, localStorage.getItem('openaiApiKey') || '');
+        console.warn('DeepSeek not implemented, using OpenAI');
+        return await getOpenAIResponse(prompt, openAIKey || apiKey);
       default:
         throw new Error(`Unknown AI provider: ${provider}`);
     }
   } catch (error) {
     console.error(`Error in ${provider} API request:`, error);
+    
+    // Try to gracefully recover with OpenAI if another provider fails
+    if (provider !== 'openai' && openAIKey) {
+      try {
+        console.log(`${provider} failed, trying OpenAI as fallback`);
+        toast.info(`${provider} API failed, using OpenAI as fallback`);
+        return await getOpenAIResponse(prompt, openAIKey);
+      } catch (fallbackError) {
+        console.error('OpenAI fallback also failed:', fallbackError);
+      }
+    }
+    
     throw error;
   }
 };

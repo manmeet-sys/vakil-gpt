@@ -7,6 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Settings2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { toast } from 'sonner';
+import { configureOpenAIProvider } from '@/services/ai-provider';
 
 interface LegalToolLayoutProps {
   children: ReactNode;
@@ -19,48 +21,75 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
   const [apiProvider, setApiProvider] = React.useState<'openai' | 'gemini' | 'deepseek'>('openai');
 
   useEffect(() => {
-    // Load preferred API provider on component mount
-    const provider = localStorage.getItem('preferredApiProvider') as 'openai' | 'gemini' | 'deepseek' || 'openai';
-    setApiProvider(provider);
-    
-    // Set default API keys if not already set
-    if (!localStorage.getItem('openaiApiKey')) {
-      localStorage.setItem('openaiApiKey', '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');
-    }
-    
-    if (!localStorage.getItem('geminiApiKey')) {
-      localStorage.setItem('geminiApiKey', '');
-    }
-    
-    if (!localStorage.getItem('deepseekApiKey')) {
-      localStorage.setItem('deepseekApiKey', '');
+    try {
+      // Load preferred API provider on component mount, defaulting to OpenAI
+      const provider = localStorage.getItem('preferredApiProvider') as 'openai' | 'gemini' | 'deepseek' || 'openai';
+      setApiProvider(provider);
+      
+      // Set default OpenAI API key if not already set
+      if (!localStorage.getItem('openaiApiKey')) {
+        const success = configureOpenAIProvider();
+        if (success) {
+          console.log('Default OpenAI API key set');
+        }
+      }
+    } catch (error) {
+      console.error('Error initializing API provider settings:', error);
+      // Ensure we default to OpenAI if there's an error
+      setApiProvider('openai');
     }
   }, []);
 
   // Update title for accessibility
   useEffect(() => {
-    if (title) {
-      document.title = `${title} | VakilGPT`;
+    try {
+      if (title) {
+        document.title = `${title} | VakilGPT`;
+      }
+      return () => {
+        document.title = 'VakilGPT';
+      };
+    } catch (error) {
+      console.error('Error updating document title:', error);
     }
-    return () => {
-      document.title = 'VakilGPT';
-    };
   }, [title]);
 
   const handleToggleProvider = () => {
-    // Cycle through providers: openai -> gemini -> deepseek -> openai
-    let newProvider: 'openai' | 'gemini' | 'deepseek';
-    
-    if (apiProvider === 'openai') {
-      newProvider = 'gemini';
-    } else if (apiProvider === 'gemini') {
-      newProvider = 'deepseek';
-    } else {
-      newProvider = 'openai';
+    try {
+      // Default to OpenAI, cycle through providers only if API keys are configured
+      let newProvider: 'openai' | 'gemini' | 'deepseek' = 'openai';
+      
+      if (apiProvider === 'openai') {
+        // Check if Gemini key exists before switching
+        const geminiKey = localStorage.getItem('geminiApiKey');
+        if (geminiKey) {
+          newProvider = 'gemini';
+        } else {
+          toast.info('Gemini API key not configured. Using OpenAI.');
+        }
+      } else if (apiProvider === 'gemini') {
+        // Check if DeepSeek key exists before switching
+        const deepseekKey = localStorage.getItem('deepseekApiKey');
+        if (deepseekKey) {
+          newProvider = 'deepseek';
+        } else {
+          // Skip to OpenAI if DeepSeek is not configured
+          newProvider = 'openai';
+          toast.info('DeepSeek API key not configured. Using OpenAI.');
+        }
+      } else {
+        newProvider = 'openai';
+      }
+      
+      setApiProvider(newProvider);
+      localStorage.setItem('preferredApiProvider', newProvider);
+    } catch (error) {
+      console.error('Error toggling API provider:', error);
+      // Fall back to OpenAI if there's an error
+      setApiProvider('openai');
+      localStorage.setItem('preferredApiProvider', 'openai');
+      toast.error('Error changing AI provider. Defaulting to OpenAI.');
     }
-    
-    setApiProvider(newProvider);
-    localStorage.setItem('preferredApiProvider', newProvider);
   };
   
   // Animation variants optimized for performance

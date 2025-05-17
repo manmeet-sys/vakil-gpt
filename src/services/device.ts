@@ -1,60 +1,114 @@
 
 import { Capacitor } from '@capacitor/core';
-import { Network } from '@capacitor/network';
+
+// Safe Network import that won't break if the module isn't available
+let Network: any = null;
+try {
+  import('@capacitor/network').then(module => {
+    Network = module.Network;
+  }).catch(error => {
+    console.warn('Capacitor Network plugin not available:', error.message);
+  });
+} catch (error) {
+  console.warn('Error importing Capacitor Network plugin:', error);
+}
 
 export const DeviceService = {
   /**
    * Check if the app is running on a mobile device
    */
   isMobile(): boolean {
-    return Capacitor.getPlatform() !== 'web';
+    try {
+      return Capacitor.getPlatform() !== 'web';
+    } catch (error) {
+      console.warn('Error checking platform:', error);
+      return false;
+    }
   },
   
   /**
    * Check if the app is running on iOS
    */
   isIOS(): boolean {
-    return Capacitor.getPlatform() === 'ios';
+    try {
+      return Capacitor.getPlatform() === 'ios';
+    } catch (error) {
+      console.warn('Error checking if platform is iOS:', error);
+      return false;
+    }
   },
   
   /**
    * Check if the app is running on Android
    */
   isAndroid(): boolean {
-    return Capacitor.getPlatform() === 'android';
+    try {
+      return Capacitor.getPlatform() === 'android';
+    } catch (error) {
+      console.warn('Error checking if platform is Android:', error);
+      return false;
+    }
   },
   
   /**
    * Check if the app is running in a web browser
    */
   isWeb(): boolean {
-    return Capacitor.getPlatform() === 'web';
+    try {
+      return Capacitor.getPlatform() === 'web';
+    } catch (error) {
+      console.warn('Error checking if platform is web:', error);
+      return true; // Default to web if there's an error
+    }
   },
   
   /**
    * Get the platform name
    */
   getPlatform(): string {
-    return Capacitor.getPlatform();
+    try {
+      return Capacitor.getPlatform();
+    } catch (error) {
+      console.warn('Error getting platform:', error);
+      return 'web'; // Default to web if there's an error
+    }
   },
 
   /**
    * Check if the device has network connectivity
+   * Falls back to navigator.onLine if Capacitor Network plugin isn't available
    */
   async hasNetworkConnectivity(): Promise<boolean> {
+    try {
+      if (Network) {
+        const status = await Network.getStatus();
+        return status.connected;
+      }
+    } catch (error) {
+      console.warn('Error checking network connectivity:', error);
+    }
+    
+    // Fallback to browser API
     return navigator.onLine;
   },
   
   /**
    * Get the network connection type (wifi, cellular, none)
-   * This is a simplified implementation - for real implementation, you would use
-   * Capacitor's Network API which requires additional plugin
+   * Falls back to simple online/offline detection if Capacitor Network plugin isn't available
    */
   getNetworkConnectionType(): 'wifi' | 'cellular' | 'none' {
-    if (!navigator.onLine) return 'none';
-    // This is simplified - in a real app we would use Capacitor Network plugin
-    // to distinguish between wifi and cellular
-    return 'wifi';
+    try {
+      if (!navigator.onLine) {
+        return 'none';
+      }
+
+      // If we can't access Network plugin details, just report 'wifi' for online state
+      // In a real app, we would use Network.getStatus().connectionType
+      return 'wifi';
+    } catch (error) {
+      console.warn('Error getting network connection type:', error);
+      return navigator.onLine ? 'wifi' : 'none';
+    }
   }
 };
 

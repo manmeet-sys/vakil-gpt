@@ -2,18 +2,46 @@
 import { useState, useEffect } from 'react';
 import { DeviceService } from '@/services/device';
 
-// Optional import for App - using dynamic import pattern to handle cases when the package isn't available
-let App: any = null;
-try {
-  // This will be properly resolved at runtime
-  import('@capacitor/app').then(module => {
-    App = module.App;
-  }).catch(error => {
-    console.warn('Capacitor App plugin not available:', error.message);
-  });
-} catch (error) {
-  console.warn('Capacitor App plugin not available, app version info will be limited');
-}
+// Remove problematic dynamic import and use a more reliable approach
+// that won't cause the app to break if @capacitor/app isn't available
+const useAppInfo = () => {
+  const [appInfo, setAppInfo] = useState<{
+    version?: string;
+    build?: string;
+  }>({});
+
+  useEffect(() => {
+    // Only attempt to load app info if running in a native environment
+    if (DeviceService.isMobile()) {
+      const getAppInfo = async () => {
+        try {
+          // Use a safer import approach
+          const { App } = await import('@capacitor/app').catch(() => ({ App: null }));
+          
+          if (App) {
+            const info = await App.getInfo();
+            setAppInfo({
+              version: info.version,
+              build: info.build
+            });
+          } else {
+            console.info('Capacitor App plugin not available on this platform');
+          }
+        } catch (error) {
+          console.warn('Error getting app info:', error);
+          setAppInfo({
+            version: 'unknown',
+            build: 'unknown'
+          });
+        }
+      };
+      
+      getAppInfo();
+    }
+  }, []);
+
+  return appInfo;
+};
 
 interface DeviceState {
   isMobile: boolean;
@@ -38,35 +66,20 @@ export function useDevice() {
     connectionType: DeviceService.getNetworkConnectionType()
   });
   
-  const [appInfo, setAppInfo] = useState<{
-    version?: string;
-    build?: string;
-  }>({});
-
+  const appInfo = useAppInfo();
+  
   useEffect(() => {
-    // Get app info if running on mobile and App is available
-    if (deviceState.isMobile && App) {
-      const getAppInfo = async () => {
-        try {
-          const info = await App.getInfo();
-          setAppInfo({
-            version: info.version,
-            build: info.build
-          });
-          
-          setDeviceState(prev => ({
-            ...prev,
-            appVersion: info.version,
-            appBuild: info.build
-          }));
-        } catch (error) {
-          console.error('Error getting app info:', error);
-        }
-      };
-      
-      getAppInfo();
+    // Update app info when it changes
+    if (appInfo.version || appInfo.build) {
+      setDeviceState(prev => ({
+        ...prev,
+        appVersion: appInfo.version,
+        appBuild: appInfo.build
+      }));
     }
-    
+  }, [appInfo]);
+  
+  useEffect(() => {
     // Monitor online/offline status
     const handleOnline = () => {
       setDeviceState(prev => ({ 
@@ -102,7 +115,7 @@ export function useDevice() {
       window.removeEventListener('offline', handleOffline);
       clearInterval(connectionChecker);
     };
-  }, [deviceState.isMobile]);
+  }, []);
   
   return deviceState;
 }
