@@ -1,14 +1,14 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import LegalChatMessage from './LegalChatMessage';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
-import { getGeminiResponse } from './GeminiProIntegration';
+import { getAIResponse } from '@/services/ai-provider';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
@@ -32,9 +32,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'deepseek'>(() => 
-    localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini'
-  );
   const [isOpen, setIsOpen] = useState(false);
   const [analysisType, setAnalysisType] = useState('legal-brief');
   const [text, setText] = useState('');
@@ -53,11 +50,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  useEffect(() => {
-    const storedProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setSelectedProvider(storedProvider);
-  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -78,19 +70,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     setIsLoading(true);
 
     try {
-      let response = '';
-      
-      if (selectedProvider === 'gemini') {
-        response = await getGeminiResponse(
-          `You are VakilGPT, a legal assistant specializing in Indian law. 
-          Respond to the following query with accurate legal information relevant to Indian law, Indian legal procedures, Supreme Court and High Court decisions, and the Indian Constitution:
-          
-          ${input}`
-        );
-      } else {
-        // For DeepSeek (currently using a placeholder response)
-        response = "DeepSeek response will be implemented here";
-      }
+      const response = await getAIResponse(
+        `You are VakilGPT, a legal assistant specializing in Indian law. 
+        Respond to the following query with accurate legal information relevant to Indian law, Indian legal procedures, Supreme Court and High Court decisions, and the Indian Constitution:
+        
+        ${input}`
+      );
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -163,7 +148,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
 
     try {
       const prompt = getPromptTemplate(analysisType, text);
-      const analysis = await getGeminiResponse(prompt);
+      const analysis = await getAIResponse(prompt);
       
       handleAnalysisComplete(analysis);
       setIsOpen(false);
@@ -202,7 +187,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
         </div>
         <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
           <LegalAnalysisGenerator
-            apiProvider="gemini"
+            apiProvider="openai"
             onAnalysisComplete={handleAnalysisComplete}
             buttonLabel={isMobile ? "Analysis" : "Legal Analysis"}
             iconOnly={isMobile}
@@ -214,7 +199,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           />
           
           <PdfAnalyzer 
-            apiProvider="gemini"
+            apiProvider="openai"
             onAnalysisComplete={handleAnalysisComplete}
             buttonLabel={isMobile ? "PDF" : "PDF Analysis"}
             iconOnly={isMobile}

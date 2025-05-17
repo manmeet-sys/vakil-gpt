@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.43.0'
 
 // Define CORS headers
 const corsHeaders = {
@@ -19,18 +18,6 @@ serve(async (req) => {
     })
   }
 
-  // Get the API key from request authorization header
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return new Response(
-      JSON.stringify({ error: 'Unauthorized - Missing or invalid authorization header' }),
-      {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
-  }
-
   try {
     // Parse request body
     const requestData = await req.json()
@@ -46,11 +33,11 @@ serve(async (req) => {
       )
     }
     
-    // Get OpenAI API key from environment variables or use the service account key if not set
-    const openAiApiKey = Deno.env.get('OPENAI_API_KEY') || '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'
+    // Use the hardcoded OpenAI API key
+    const openAiApiKey = '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';
     
     // Set up the request to OpenAI API
-    const openAiUrl = `https://api.openai.com/v1/chat/completions`
+    const openAiUrl = 'https://api.openai.com/v1/chat/completions';
     
     // Make the request to OpenAI
     const openAiResponse = await fetch(openAiUrl, {
@@ -66,35 +53,38 @@ serve(async (req) => {
         max_tokens: 8192,
         top_p: 0.95
       }),
-    })
+    });
     
     // Return error if the OpenAI API request failed
     if (!openAiResponse.ok) {
-      const errorData = await openAiResponse.json()
+      const errorData = await openAiResponse.json();
       return new Response(
         JSON.stringify({ error: errorData.error?.message || `OpenAI API error: ${openAiResponse.status}` }),
         { 
           status: openAiResponse.status, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
-      )
+      );
     }
     
     // Return the OpenAI API response
-    const data = await openAiResponse.json()
+    const data = await openAiResponse.json();
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    });
     
   } catch (error) {
-    // Return error response
+    console.error("OpenAI proxy error:", error);
+    // Return error response with detailed information
     return new Response(
-      JSON.stringify({ error: error.message || 'An unexpected error occurred' }),
+      JSON.stringify({ 
+        error: error.message || 'An unexpected error occurred',
+        details: typeof error === 'object' ? JSON.stringify(error) : 'No additional details'
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    )
+    );
   }
-})
-
+});

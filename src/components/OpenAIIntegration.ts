@@ -7,76 +7,66 @@
  */
 export const getOpenAIResponse = async (prompt: string, apiKey?: string): Promise<string> => {
   try {
-    if (!apiKey) {
-      throw new Error("API key is required. Please set your API key in Settings > AI Settings.");
+    // Use the provided API key or the hardcoded one
+    const key = apiKey || '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';
+    
+    // Direct API call to OpenAI
+    const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.4,
+        max_tokens: 8192,
+        top_p: 0.95
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || `API error: ${response.status}`);
     }
+
+    const data = await response.json();
+    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+      return data.choices[0].message.content;
+    } else {
+      throw new Error('Invalid response format from OpenAI API');
+    }
+  } catch (error) {
+    console.error('Error in OpenAI API request:', error);
     
-    // Check if we should use the Supabase edge function or direct API call
-    const useEdgeFunction = localStorage.getItem('useEdgeFunction') !== 'false';
-    
-    if (useEdgeFunction) {
-      // Use Supabase Edge Function for secure API calls
+    // In case of error, try the Supabase edge function as fallback
+    try {
+      const key = apiKey || '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';
+      
       const response = await fetch(`https://clyqfnqkicwvpymbqijn.supabase.co/functions/v1/openai-proxy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Authorization': `Bearer ${key}`
         },
         body: JSON.stringify({ prompt })
       });
       
       if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage;
-        
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || `API error: ${response.status}`;
-        } catch (e) {
-          errorMessage = `API error: ${response.status}`;
-        }
-        
-        throw new Error(errorMessage);
+        throw new Error(`Edge function error: ${response.status}`);
       }
       
       const data = await response.json();
       if (data.choices && data.choices.length > 0 && data.choices[0].message) {
         return data.choices[0].message.content;
-      } else {
-        throw new Error('Invalid response format from OpenAI API');
       }
-    } else {
-      // Direct API call to OpenAI
-      const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.4,
-          max_tokens: 8192,
-          top_p: 0.95
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || `API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-        return data.choices[0].message.content;
-      } else {
-        throw new Error('Invalid response format from OpenAI API');
-      }
+      
+      throw new Error('Invalid response format from edge function');
+    } catch (fallbackError) {
+      console.error('Fallback to edge function also failed:', fallbackError);
+      throw error; // Rethrow the original error
     }
-  } catch (error) {
-    console.error('Error in OpenAI API request:', error);
-    throw error;
   }
 };
 
@@ -102,13 +92,9 @@ export const generateEnhancedIndianContractWithOpenAI = async (
     keyTerms: string;
   }
 ): Promise<string> => {
-  // Get the API key from localStorage
-  const apiKey = localStorage.getItem('openaiApiKey') || '';
+  // Use hardcoded API key
+  const apiKey = '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';
   
-  if (!apiKey) {
-    throw new Error("API key is required. Please set your API key in Settings > AI Settings.");
-  }
-
   const { partyA, partyAType, partyB, partyBType } = parties;
   const { jurisdiction, effectiveDate, purpose, keyTerms } = details;
   

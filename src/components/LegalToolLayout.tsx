@@ -3,12 +3,9 @@ import React, { ReactNode, useEffect } from 'react';
 import Footer from '@/components/Footer';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Settings2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
-import { configureOpenAIProvider } from '@/services/ai-provider';
 
 interface LegalToolLayoutProps {
   children: ReactNode;
@@ -18,28 +15,6 @@ interface LegalToolLayoutProps {
 }
 
 const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayoutProps) => {
-  const [apiProvider, setApiProvider] = React.useState<'openai' | 'gemini' | 'deepseek'>('openai');
-
-  useEffect(() => {
-    try {
-      // Load preferred API provider on component mount, defaulting to OpenAI
-      const provider = localStorage.getItem('preferredApiProvider') as 'openai' | 'gemini' | 'deepseek' || 'openai';
-      setApiProvider(provider);
-      
-      // Set default OpenAI API key if not already set
-      if (!localStorage.getItem('openaiApiKey')) {
-        const success = configureOpenAIProvider();
-        if (success) {
-          console.log('Default OpenAI API key set');
-        }
-      }
-    } catch (error) {
-      console.error('Error initializing API provider settings:', error);
-      // Ensure we default to OpenAI if there's an error
-      setApiProvider('openai');
-    }
-  }, []);
-
   // Update title for accessibility
   useEffect(() => {
     try {
@@ -53,44 +28,6 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
       console.error('Error updating document title:', error);
     }
   }, [title]);
-
-  const handleToggleProvider = () => {
-    try {
-      // Default to OpenAI, cycle through providers only if API keys are configured
-      let newProvider: 'openai' | 'gemini' | 'deepseek' = 'openai';
-      
-      if (apiProvider === 'openai') {
-        // Check if Gemini key exists before switching
-        const geminiKey = localStorage.getItem('geminiApiKey');
-        if (geminiKey) {
-          newProvider = 'gemini';
-        } else {
-          toast.info('Gemini API key not configured. Using OpenAI.');
-        }
-      } else if (apiProvider === 'gemini') {
-        // Check if DeepSeek key exists before switching
-        const deepseekKey = localStorage.getItem('deepseekApiKey');
-        if (deepseekKey) {
-          newProvider = 'deepseek';
-        } else {
-          // Skip to OpenAI if DeepSeek is not configured
-          newProvider = 'openai';
-          toast.info('DeepSeek API key not configured. Using OpenAI.');
-        }
-      } else {
-        newProvider = 'openai';
-      }
-      
-      setApiProvider(newProvider);
-      localStorage.setItem('preferredApiProvider', newProvider);
-    } catch (error) {
-      console.error('Error toggling API provider:', error);
-      // Fall back to OpenAI if there's an error
-      setApiProvider('openai');
-      localStorage.setItem('preferredApiProvider', 'openai');
-      toast.error('Error changing AI provider. Defaulting to OpenAI.');
-    }
-  };
   
   // Animation variants optimized for performance
   const pageVariants = {
@@ -106,16 +43,6 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
   const descriptionVariants = {
     initial: { opacity: 0 },
     animate: { opacity: 1, transition: { duration: 0.3, delay: 0.1 } },
-  };
-
-  // Get display name for current provider
-  const getProviderDisplayName = () => {
-    switch(apiProvider) {
-      case 'openai': return 'OpenAI';
-      case 'gemini': return 'Gemini AI';
-      case 'deepseek': return 'DeepSeek AI';
-      default: return 'OpenAI';
-    }
   };
 
   return (
@@ -169,18 +96,11 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
               </PopoverTrigger>
               <PopoverContent className="w-56" align="end">
                 <div className="space-y-3">
-                  <h4 className="font-medium text-sm">AI Provider Settings</h4>
+                  <h4 className="font-medium text-sm">API Settings</h4>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="api-toggle" className="text-sm font-medium cursor-pointer">
-                      {getProviderDisplayName()}
-                    </Label>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={handleToggleProvider}
-                    >
-                      Change
-                    </Button>
+                    <p className="text-sm font-medium">
+                      Using OpenAI GPT-4
+                    </p>
                   </div>
                 </div>
               </PopoverContent>
