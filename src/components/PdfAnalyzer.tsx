@@ -1,197 +1,128 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileUp, Upload, Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { toast } from '@/hooks/use-toast';
-import { getGeminiResponse } from './GeminiProIntegration';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle,
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Loader2, FileUp } from 'lucide-react';
+import { toast } from 'sonner';
+import { generateGeminiAnalysis, generateDeepSeekAnalysis } from '@/utils/aiAnalysis';
+import PdfFileUpload from './PdfFileUpload';
 
 interface PdfAnalyzerProps {
-  apiProvider: 'gemini' | 'deepseek';
   onAnalysisComplete: (analysis: string) => void;
+  apiProvider?: 'gemini' | 'deepseek' | 'openai';
   buttonLabel?: string;
   iconOnly?: boolean;
 }
 
 const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ 
-  apiProvider, 
   onAnalysisComplete,
-  buttonLabel = "PDF Analysis",
+  apiProvider = 'openai',
+  buttonLabel = "PDF Analyzer",
   iconOnly = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileText, setFileText] = useState('');
+  const [pdfText, setPdfText] = useState('');
+  const [pdfName, setPdfName] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== 'application/pdf') {
-        toast({
-          variant: "destructive",
-          title: "Invalid file format",
-          description: "Please upload a PDF file",
-        });
-        return;
-      }
-      
-      if (file.size > 10 * 1024 * 1024) { // 10MB
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: "Please upload a file smaller than 10MB",
-        });
-        return;
-      }
-      
-      setSelectedFile(file);
-      simulateUpload();
-    }
+  
+  const handlePdfExtracted = (text: string, fileName: string) => {
+    setPdfText(text);
+    setPdfName(fileName);
   };
-
-  const simulateUpload = () => {
-    setUploadProgress(0);
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setFileText("Sample extracted text from PDF document. In real implementation, this would be the actual content extracted from the PDF file.");
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
-  };
-
-  const handleAnalyze = async () => {
-    if (!fileText) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No text to analyze",
-      });
+  
+  const analyzePdf = async () => {
+    if (!pdfText.trim()) {
+      toast.error("Please upload a PDF file first");
       return;
     }
-
+    
     setIsAnalyzing(true);
-
+    
     try {
-      const prompt = `Analyze this Indian legal document and provide a comprehensive analysis focusing on key legal points, relevant statutes, case laws, and implications:\n\n${fileText}`;
-      const analysis = await getGeminiResponse(prompt);
+      let analysis;
+      
+      // Use the appropriate AI based on provider
+      if (apiProvider === 'deepseek') {
+        analysis = await generateDeepSeekAnalysis(pdfText, pdfName);
+      } else {
+        // Default to Gemini or OpenAI
+        analysis = await generateGeminiAnalysis(pdfText, pdfName);
+      }
       
       onAnalysisComplete(analysis);
       setIsOpen(false);
-      setSelectedFile(null);
-      setFileText('');
-      setUploadProgress(0);
+      setPdfText('');
+      setPdfName('');
       
-      toast({
-        title: "PDF Analysis Complete",
-        description: "The legal document has been successfully analyzed",
-      });
+      toast.success("PDF analysis complete");
     } catch (error) {
-      console.error('Error analyzing PDF:', error);
-      toast({
-        variant: "destructive",
-        title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "Failed to analyze PDF",
-      });
+      console.error("Error analyzing PDF:", error);
+      toast.error("Failed to analyze PDF. Please try a different file or try again later.");
     } finally {
       setIsAnalyzing(false);
     }
   };
-
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          size="sm" 
-          className={`text-xs flex items-center gap-1 ${iconOnly ? 'px-2 h-8 min-w-8' : ''}`}
+          size="sm"
+          className="text-xs flex items-center gap-1 h-8"
         >
-          <FileUp className="h-3 w-3" />
+          <FileUp className="h-3.5 w-3.5" />
           {!iconOnly && <span>{buttonLabel}</span>}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
+      <DialogContent className="sm:max-w-[640px]">
         <DialogHeader>
-          <DialogTitle>PDF Document Analyzer</DialogTitle>
+          <DialogTitle>PDF Analyzer</DialogTitle>
+          <DialogDescription>
+            Upload a PDF document to extract and analyze its content with AI.
+          </DialogDescription>
         </DialogHeader>
+        
         <div className="grid gap-4 py-4">
-          {!selectedFile ? (
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center">
-              <input
-                id="pdf-upload"
-                type="file"
-                accept=".pdf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <label
-                htmlFor="pdf-upload"
-                className="flex flex-col items-center justify-center cursor-pointer"
-              >
-                <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-sm font-medium mb-1">Click to upload a PDF</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PDF (Max 10MB)
-                </p>
-              </label>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <FileUp className="h-4 w-4 text-blue-accent" />
-                  <span className="text-sm font-medium truncate max-w-[250px]">
-                    {selectedFile.name}
-                  </span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setFileText('');
-                    setUploadProgress(0);
-                  }}
-                >
-                  Remove
-                </Button>
-              </div>
-              
-              {uploadProgress < 100 ? (
-                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                  <div 
-                    className="bg-blue-accent h-2.5 rounded-full" 
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
-              ) : (
-                <div className="border rounded-lg p-3 max-h-48 overflow-y-auto">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {fileText}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+          <div className="grid gap-2">
+            <Label>Upload PDF Document</Label>
+            <PdfFileUpload 
+              onTextExtracted={handlePdfExtracted} 
+            />
+            {pdfName && (
+              <p className="text-sm mt-2 flex items-center">
+                <FileUp className="h-4 w-4 mr-2" />
+                {pdfName}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Upload your legal document, contract, or any PDF for AI-powered analysis.
+            </p>
+          </div>
         </div>
+        
         <DialogFooter>
-          <Button 
-            onClick={handleAnalyze} 
-            disabled={isAnalyzing || !fileText}
-            className="w-full"
+          <Button
+            onClick={analyzePdf}
+            disabled={isAnalyzing || !pdfText.trim()}
+            className="w-full sm:w-auto"
           >
             {isAnalyzing ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Analyzing...
               </>
             ) : (
-              "Analyze Document"
+              "Analyze PDF"
             )}
           </Button>
         </DialogFooter>

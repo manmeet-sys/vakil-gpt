@@ -8,6 +8,10 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
+// Primary and backup API keys
+const primaryOpenAiApiKey = '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';
+const backupOpenAiApiKey = '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';
+
 // Handle preflight OPTIONS request
 serve(async (req) => {
   // Handle CORS preflight request
@@ -33,46 +37,27 @@ serve(async (req) => {
       )
     }
     
-    // Use the hardcoded OpenAI API key
-    const openAiApiKey = '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';
-    
-    // Set up the request to OpenAI API
-    const openAiUrl = 'https://api.openai.com/v1/chat/completions';
-    
-    // Make the request to OpenAI
-    const openAiResponse = await fetch(openAiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openAiApiKey}`,
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.4,
-        max_tokens: 8192,
-        top_p: 0.95
-      }),
-    });
-    
-    // Return error if the OpenAI API request failed
-    if (!openAiResponse.ok) {
-      const errorData = await openAiResponse.json();
-      return new Response(
-        JSON.stringify({ error: errorData.error?.message || `OpenAI API error: ${openAiResponse.status}` }),
-        { 
-          status: openAiResponse.status, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+    // Try with primary API key first
+    try {
+      const response = await makeOpenAIRequest(prompt, model, primaryOpenAiApiKey);
+      return new Response(JSON.stringify(response), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (primaryError) {
+      console.error("Primary API key failed:", primaryError);
+      
+      // Try with backup API key if primary fails
+      try {
+        console.log("Trying backup API key...");
+        const response = await makeOpenAIRequest(prompt, model, backupOpenAiApiKey);
+        return new Response(JSON.stringify(response), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (backupError) {
+        console.error("Backup API key also failed:", backupError);
+        throw new Error(`Both API keys failed. Last error: ${backupError.message}`);
+      }
     }
-    
-    // Return the OpenAI API response
-    const data = await openAiResponse.json();
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-    
   } catch (error) {
     console.error("OpenAI proxy error:", error);
     // Return error response with detailed information
@@ -88,3 +73,36 @@ serve(async (req) => {
     );
   }
 });
+
+/**
+ * Make a request to the OpenAI API
+ */
+async function makeOpenAIRequest(prompt: string, model: string, apiKey: string) {
+  // Set up the request to OpenAI API
+  const openAiUrl = 'https://api.openai.com/v1/chat/completions';
+  
+  // Make the request to OpenAI
+  const openAiResponse = await fetch(openAiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.4,
+      max_tokens: 8192,
+      top_p: 0.95
+    }),
+  });
+  
+  // Return error if the OpenAI API request failed
+  if (!openAiResponse.ok) {
+    const errorData = await openAiResponse.json();
+    throw new Error(errorData.error?.message || `OpenAI API error: ${openAiResponse.status}`);
+  }
+  
+  // Return the OpenAI API response
+  return await openAiResponse.json();
+}

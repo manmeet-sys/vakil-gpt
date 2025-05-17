@@ -2,7 +2,6 @@
  * Utility functions for AI analysis with focus on Indian law
  */
 import { getOpenAIResponse } from '@/components/OpenAIIntegration';
-import { getGeminiResponse } from '@/components/GeminiProIntegration';
 
 /**
  * Gets the appropriate API key based on the provider
@@ -10,7 +9,7 @@ import { getGeminiResponse } from '@/components/GeminiProIntegration';
  */
 const getApiKey = (provider: 'openai' | 'gemini' | 'deepseek' = 'openai'): string => {
   return localStorage.getItem(`${provider}ApiKey`) || 
-    (provider === 'openai' ? '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' : '');
+    (provider === 'openai' ? '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' : '');
 };
 
 /**
@@ -60,37 +59,33 @@ Format your response with clear sections and be thorough yet concise in your leg
     // Default to OpenAI
     return await getOpenAIResponse(
       isGeneratingDocument ? generationPrompt : systemPrompt + "\n\n" + text,
-      getApiKey('openai')
+      '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'
     );
   } catch (error) {
     console.error("Error in generateAnalysis with OpenAI:", error);
     
-    // Fall back to Gemini if OpenAI fails
+    // Fall back with a different OpenAI key if first one fails
     try {
-      const geminiKey = getApiKey('gemini');
-      if (geminiKey) {
-        console.log('OpenAI API error, falling back to Gemini');
-        return await getGeminiResponse(
-          isGeneratingDocument ? generationPrompt : systemPrompt + "\n\n" + text,
-          geminiKey
-        );
-      }
+      console.log('First OpenAI API key failed, trying alternate key');
+      return await getOpenAIResponse(
+        isGeneratingDocument ? generationPrompt : systemPrompt + "\n\n" + text,
+        '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'
+      );
     } catch (fallbackError) {
-      console.error('Fallback to Gemini failed:', fallbackError);
+      console.error('Fallback to alternate key failed:', fallbackError);
+      throw new Error(`Failed to generate analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-    
-    throw new Error(`Failed to generate analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 
 /**
- * Generates analysis using DeepSeek API
+ * Generates analysis using OpenAI API
  * @param text The text to analyze
  * @param filename The name of the file being analyzed
  * @returns A promise that resolves to the analysis
  */
 export const generateDeepSeekAnalysis = async (text: string, filename: string): Promise<string> => {
-  // Instead of using DeepSeek, we'll use OpenAI
+  // Use OpenAI
   return generateGeminiAnalysis(text, filename);
 };
 
