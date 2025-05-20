@@ -41,9 +41,7 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
 
   const handleGenerateArguments = async () => {
     if (caseDescription.trim().length < 50) {
-      toast({
-        description: "Please provide more details about the case for accurate argument generation."
-      });
+      toast("Please provide more details about the case for accurate argument generation.");
       return;
     }
 
@@ -110,9 +108,7 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
           return jsonResponse as ArgumentBuilderType;
         } catch (parseError) {
           console.error("Error parsing AI response:", parseError);
-          toast({
-            description: "Unable to parse the response. Please try again."
-          });
+          toast("Unable to parse the response. Please try again.");
           throw parseError;
         }
       });
@@ -124,14 +120,10 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
         onComplete(result);
       }
       
-      toast({
-        description: "Legal arguments successfully generated"
-      });
+      toast("Legal arguments successfully generated");
     } catch (error) {
       console.error("Error generating arguments:", error);
-      toast({
-        description: "Failed to generate arguments. Please try again."
-      });
+      toast("Failed to generate arguments. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -139,9 +131,7 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
 
   const handleCopyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      description: "Content copied to clipboard"
-    });
+    toast("Content copied to clipboard");
   };
 
   return (

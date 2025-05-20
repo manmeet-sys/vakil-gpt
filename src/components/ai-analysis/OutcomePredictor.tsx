@@ -43,9 +43,7 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
 
   const handlePredict = async () => {
     if (caseDescription.trim().length < 100) {
-      toast({
-        description: "Please provide more details about the case for accurate prediction."
-      });
+      toast("Please provide more details about the case for accurate prediction.");
       return;
     }
 
@@ -101,20 +99,14 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
           onPredictionComplete(jsonResponse);
         }
         
-        toast({
-          description: "Case outcome prediction has been generated"
-        });
+        toast("Case outcome prediction has been generated");
       } catch (parseError) {
         console.error("Error parsing AI response:", parseError);
-        toast({
-          description: "Unable to parse AI response. Please try again."
-        });
+        toast("Unable to parse AI response. Please try again.");
       }
     } catch (error) {
       console.error("Error predicting outcome:", error);
-      toast({
-        description: error instanceof Error ? error.message : "Failed to generate prediction"
-      });
+      toast(error instanceof Error ? error.message : "Failed to generate prediction");
     } finally {
       setIsPredicting(false);
     }
@@ -139,9 +131,7 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
   };
   
   const openAISettings = () => {
-    toast({
-      description: "Navigate to AI Settings to customize AI behavior"
-    });
+    toast("Navigate to AI Settings to customize AI behavior");
   };
 
   return (
@@ -284,9 +274,7 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
               onClick={() => {
                 const formattedPrediction = JSON.stringify(prediction, null, 2);
                 navigator.clipboard.writeText(formattedPrediction);
-                toast({
-                  description: "Prediction data copied to clipboard"
-                });
+                toast("Prediction data copied to clipboard");
               }}
               variant="secondary"
             >
