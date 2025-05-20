@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { extractTextFromPdf, mockPdfExtraction } from '@/utils/pdfExtraction';
+import { extractTextFromPdf } from '@/utils/pdfExtraction';
 import { Button } from '@/components/ui/button';
-import { FileUp, Loader2, RefreshCw } from 'lucide-react';
+import { FileUp, Loader2, RefreshCw, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 import PdfFileUpload from './PdfFileUpload';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface PdfAnalyzerProps {
   onAnalysisComplete?: (analysis: string) => void;
@@ -20,6 +21,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete, iconOnly 
   const [analysis, setAnalysis] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('text');
+  const isMobile = useIsMobile();
 
   const handleTextExtracted = (text: string, fileName: string) => {
     setExtractedText(text);
@@ -32,9 +34,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete, iconOnly 
 
   const analyzeWithOpenAI = async () => {
     if (!extractedText) {
-      toast.error("No text to analyze", {
-        description: "Please upload a PDF document first"
-      });
+      toast("No text to analyze. Please upload a PDF document first");
       return;
     }
     
@@ -59,30 +59,48 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete, iconOnly 
         onAnalysisComplete(result);
       }
       
-      toast.success("Analysis complete", {
-        description: "The document analysis is ready for review"
-      });
+      toast("Analysis complete. The document analysis is ready for review");
     } catch (error) {
       console.error('Error analyzing document:', error);
-      toast.error("Analysis failed", {
-        description: "There was a problem analyzing the document. Please try again."
-      });
+      toast("Analysis failed. There was a problem analyzing the document. Please try again.");
     } finally {
       setIsAnalyzing(false);
     }
   };
 
+  if (iconOnly) {
+    return (
+      <Button 
+        variant="outline" 
+        size="icon" 
+        onClick={() => {
+          if (extractedText) {
+            toast("Document already loaded. You can ask questions about it.");
+          }
+        }}
+        className="relative"
+      >
+        <Upload className="h-4 w-4" />
+        {extractedText && (
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
+        )}
+      </Button>
+    );
+  }
+
   return (
-    <Card>
+    <Card className="shadow-sm dark:bg-zinc-900/80 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle>Indian Legal Document Analyzer</CardTitle>
+        <CardTitle className="text-xl">Indian Legal Document Analyzer</CardTitle>
         <CardDescription>
           Upload an Indian legal document in PDF format for AI-powered analysis based on Indian law
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {!extractedText ? (
-          <PdfFileUpload onTextExtracted={handleTextExtracted} />
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6">
+            <PdfFileUpload onTextExtracted={handleTextExtracted} />
+          </div>
         ) : (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -112,7 +130,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete, iconOnly 
             <Button 
               onClick={analyzeWithOpenAI} 
               disabled={isAnalyzing}
-              className="w-full"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isAnalyzing ? (
                 <>

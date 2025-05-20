@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { Avatar } from './ui/avatar';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 import { FileUp, Loader2, SendHorizontal, ChevronRight, Search, ArrowRight } from 'lucide-react';
 import LegalChatMessage from './LegalChatMessage';
@@ -29,6 +29,7 @@ interface ChatInterfaceProps {
   showFileUpload?: boolean;
   initialMessages?: Message[];
   onSendMessage?: (message: string) => Promise<string>;
+  hideHeader?: boolean;
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
@@ -39,13 +40,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   showFileUpload = true,
   initialMessages = [],
   onSendMessage,
+  hideHeader = false,
 }) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [documentText, setDocumentText] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
   const isMobile = useIsMobile();
 
   // Scroll to bottom when messages change
@@ -103,11 +104,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to get a response. Please try again.",
-        variant: "destructive",
-      });
+      toast("Failed to get a response. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -122,41 +119,40 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   const handleDocumentAnalysis = (analysis: string) => {
     setDocumentText(analysis);
-    toast({
-      title: "Document Processed",
-      description: "You can now ask questions about the document.",
-    });
+    toast("Document Processed. You can now ask questions about the document.");
   };
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-8rem)]">
-      <CardHeader className={isMobile ? "py-3" : "py-6"}>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
+    <Card className="flex flex-col h-full">
+      {!hideHeader && (
+        <CardHeader className={isMobile ? "py-3" : "py-4"}>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>{title}</CardTitle>
+              <CardDescription>{description}</CardDescription>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {showFileUpload && (
+                <PdfAnalyzer 
+                  onAnalysisComplete={handleDocumentAnalysis}
+                  iconOnly={true}
+                />
+              )}
+              <KnowledgeBaseButton iconOnly={true} />
+            </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            {showFileUpload && (
-              <PdfAnalyzer 
-                onAnalysisComplete={handleDocumentAnalysis}
-                iconOnly={true}
-              />
-            )}
-            <KnowledgeBaseButton iconOnly={true} />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-y-auto border-y">
+        </CardHeader>
+      )}
+      <CardContent className={`flex-1 overflow-y-auto border-y ${hideHeader ? "border-t-0" : ""}`}>
         <div className="space-y-4 pb-4">
           {messages.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center py-6">
               <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Search className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-medium text-lg mb-2">Ask anything about Indian law</h3>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto mb-8">
+              <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
                 Get accurate information on legal procedures, rights, documentation, and more, all based on Indian legal frameworks.
               </p>
               
@@ -220,14 +216,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         <Button 
           onClick={handleSendMessage} 
           disabled={isLoading || !input.trim()} 
-          className={`px-3 ${isMobile ? 'h-9 w-9' : ''}`}
+          size={isMobile ? "icon" : "default"}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <SendHorizontal className="h-4 w-4" />
+            <>
+              <SendHorizontal className="h-4 w-4" />
+              {!isMobile && <span className="ml-2">Send</span>}
+            </>
           )}
-          {!isMobile && <span className="ml-2">Send</span>}
         </Button>
       </CardFooter>
     </Card>

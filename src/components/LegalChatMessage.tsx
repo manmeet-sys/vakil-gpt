@@ -19,18 +19,18 @@ const LegalChatMessage: React.FC<LegalChatMessageProps> = ({
   
   return (
     <div className={cn(
-      "flex w-full gap-3 p-4 rounded-lg",
-      isAI ? "bg-secondary/50" : "bg-secondary/20"
+      "flex w-full gap-3 p-3 sm:p-4 rounded-lg",
+      isAI ? "bg-blue-50 dark:bg-blue-900/10" : "bg-gray-50 dark:bg-gray-800/20"
     )}>
       <Avatar className="h-8 w-8">
         {isAI ? (
           <>
-            <AvatarFallback className="bg-primary text-primary-foreground">AI</AvatarFallback>
+            <AvatarFallback className="bg-blue-500 text-white">AI</AvatarFallback>
             <AvatarImage src="/ai-avatar.png" alt="AI Assistant" />
           </>
         ) : (
           <>
-            <AvatarFallback className="bg-muted text-muted-foreground">U</AvatarFallback>
+            <AvatarFallback className="bg-gray-500 text-white">U</AvatarFallback>
             <AvatarImage src="/user-avatar.png" alt="User" />
           </>
         )}
@@ -46,7 +46,9 @@ const LegalChatMessage: React.FC<LegalChatMessageProps> = ({
           </time>
         </div>
         <div className="prose prose-sm dark:prose-invert max-w-none">
-          {message}
+          {message.split('\n').map((line, i) => (
+            line ? <p key={i} className="mb-2">{line}</p> : <br key={i} />
+          ))}
         </div>
       </div>
     </div>

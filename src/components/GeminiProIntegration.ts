@@ -3,6 +3,8 @@
  * GeminiProIntegration - Provides integration with Google's Gemini Pro AI model
  */
 
+import { toast } from 'sonner';
+
 /**
  * Sends a prompt to Gemini Pro AI model and returns the response
  * 
@@ -21,6 +23,7 @@ export const getGeminiResponse = async (prompt: string): Promise<string> => {
     return await getOpenAIResponse(prompt);
   } catch (error) {
     console.error('Error in Gemini Pro integration:', error);
+    toast("Failed to get response from Gemini Pro");
     throw new Error('Failed to get response from Gemini Pro');
   }
 };
@@ -43,6 +46,7 @@ export const streamGeminiResponse = async (
     onChunk(response);
   } catch (error) {
     console.error('Error streaming Gemini Pro response:', error);
+    toast("Failed to stream response from Gemini Pro");
     throw new Error('Failed to stream response from Gemini Pro');
   }
 };

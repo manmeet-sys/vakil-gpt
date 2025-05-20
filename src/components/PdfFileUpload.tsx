@@ -1,12 +1,10 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { FileUp, Loader2 } from 'lucide-react';
+import { extractTextFromPdf } from '@/utils/pdfExtraction';
 import { toast } from 'sonner';
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Set the worker source path properly
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+import { FileUp, Loader2, Upload } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PdfFileUploadProps {
   onTextExtracted: (text: string, fileName: string) => void;
@@ -14,86 +12,77 @@ interface PdfFileUploadProps {
 
 const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onTextExtracted }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const isMobile = useIsMobile();
 
-  const extractTextFromPdf = async (file: File): Promise<string> => {
-    setIsLoading(true);
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
       
-      let fullText = '';
-      
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const textItems = textContent.items.map((item: any) => item.str).join(' ');
-        fullText += textItems + ' ';
+      if (!file) {
+        return;
       }
-      
-      return fullText.trim();
-    } catch (error) {
-      console.error("Error extracting text from PDF:", error);
-      toast.error("Failed to extract text from PDF");
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length === 0) return;
-    
-    const file = acceptedFiles[0];
-    if (file.type !== 'application/pdf') {
-      toast.error("Please upload a PDF file");
-      return;
-    }
-    
-    try {
-      const text = await extractTextFromPdf(file);
-      onTextExtracted(text, file.name);
-      toast.success("PDF text extracted successfully");
-    } catch (error) {
-      console.error("Error processing PDF:", error);
-    }
-  }, [onTextExtracted]);
+      if (file.type !== 'application/pdf') {
+        toast("Please upload a PDF file");
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const text = await extractTextFromPdf(file);
+        onTextExtracted(text, file.name);
+        toast("Document uploaded successfully");
+      } catch (error) {
+        console.error('Error processing PDF:', error);
+        toast("Failed to process PDF. Please try another file.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [onTextExtracted]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'application/pdf': ['.pdf']
+      'application/pdf': ['.pdf'],
     },
-    maxFiles: 1
+    maxFiles: 1,
   });
 
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-md p-4 sm:p-6 cursor-pointer transition-colors ${
-        isDragActive 
-          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-          : 'border-gray-300 dark:border-gray-700'
+      className={`flex flex-col items-center justify-center w-full h-full cursor-pointer py-6 px-4 rounded-lg transition-all ${
+        isDragActive
+          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700'
+          : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
       }`}
     >
       <input {...getInputProps()} />
-      <div className="flex flex-col items-center justify-center text-center">
-        {isLoading ? (
-          <>
-            <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500 animate-spin mb-2" />
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Processing PDF...</p>
-          </>
-        ) : (
-          <>
-            <FileUp className="h-8 w-8 sm:h-10 sm:w-10 text-gray-400 dark:text-gray-600 mb-2" />
-            <p className="text-xs sm:text-sm font-medium mb-1">
-              {isDragActive ? "Drop the PDF here" : "Drag & drop a PDF file here"}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              or click to select a file
-            </p>
-          </>
-        )}
-      </div>
+      
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center text-center">
+          <Loader2 className="h-10 w-10 text-blue-500 animate-spin mb-4" />
+          <p className="text-sm text-muted-foreground">Processing document...</p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+            <Upload className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          </div>
+          <p className="text-sm sm:text-base font-medium mb-1">
+            {isMobile ? "Upload PDF" : "Drag & drop a PDF file here"}
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            {isMobile ? "Tap to browse files" : "or click to select a file"}
+          </p>
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            Max file size: 10MB
+          </p>
+        </div>
+      )}
     </div>
   );
 };
