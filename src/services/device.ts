@@ -1,162 +1,129 @@
 
-import { Capacitor } from '@capacitor/core';
-
-// Safe Network import that won't break if the module isn't available
-let Network: any = null;
-try {
-  import('@capacitor/network').then(module => {
-    Network = module.Network;
-  }).catch(error => {
-    console.warn('Capacitor Network plugin not available:', error.message);
-  });
-} catch (error) {
-  console.warn('Error importing Capacitor Network plugin:', error);
-}
+/**
+ * Device Service
+ * Utility service to handle device detection and capabilities
+ */
 
 export const DeviceService = {
   /**
-   * Check if the app is running on a mobile device
+   * Check if the current device is a mobile device
+   * @returns {boolean} True if the current device is a mobile device
    */
   isMobile(): boolean {
-    try {
-      return Capacitor.getPlatform() !== 'web';
-    } catch (error) {
-      console.warn('Error checking platform:', error);
+    // Check if running in a browser environment
+    if (typeof window === 'undefined') {
       return false;
-    }
-  },
-  
-  /**
-   * Check if the app is running on iOS
-   */
-  isIOS(): boolean {
-    try {
-      return Capacitor.getPlatform() === 'ios';
-    } catch (error) {
-      console.warn('Error checking if platform is iOS:', error);
-      return false;
-    }
-  },
-  
-  /**
-   * Check if the app is running on Android
-   */
-  isAndroid(): boolean {
-    try {
-      return Capacitor.getPlatform() === 'android';
-    } catch (error) {
-      console.warn('Error checking if platform is Android:', error);
-      return false;
-    }
-  },
-  
-  /**
-   * Check if the app is running in a web browser
-   */
-  isWeb(): boolean {
-    try {
-      return Capacitor.getPlatform() === 'web';
-    } catch (error) {
-      console.warn('Error checking if platform is web:', error);
-      return true; // Default to web if there's an error
-    }
-  },
-  
-  /**
-   * Get the platform name
-   */
-  getPlatform(): string {
-    try {
-      return Capacitor.getPlatform();
-    } catch (error) {
-      console.warn('Error getting platform:', error);
-      return 'web'; // Default to web if there's an error
-    }
-  },
-
-  /**
-   * Check if the device has network connectivity
-   * Falls back to navigator.onLine if Capacitor Network plugin isn't available
-   */
-  async hasNetworkConnectivity(): Promise<boolean> {
-    try {
-      if (Network) {
-        const status = await Network.getStatus();
-        return status.connected;
-      }
-    } catch (error) {
-      console.warn('Error checking network connectivity:', error);
     }
     
-    // Fallback to browser API
-    return navigator.onLine;
+    // Check for typical mobile user agents
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    
+    // Regular expressions for mobile detection
+    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+    
+    // Check screen width (common mobile breakpoint)
+    const isSmallScreen = window.innerWidth < 768;
+    
+    // Check if device supports touch
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // Combined checks for more accurate detection
+    return mobileRegex.test(userAgent) || (isSmallScreen && isTouchDevice);
   },
   
   /**
-   * Get the network connection type (wifi, cellular, none)
-   * Falls back to simple online/offline detection if Capacitor Network plugin isn't available
+   * Check if the device supports touch input
+   * @returns {boolean} True if the device supports touch input
    */
-  getNetworkConnectionType(): 'wifi' | 'cellular' | 'none' {
+  isTouchDevice(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    
+    return (
+      'ontouchstart' in window || 
+      navigator.maxTouchPoints > 0 || 
+      (window as any).DocumentTouch
+    );
+  },
+  
+  /**
+   * Get the device orientation
+   * @returns {'portrait' | 'landscape'} Current device orientation
+   */
+  getOrientation(): 'portrait' | 'landscape' {
+    if (typeof window === 'undefined') {
+      return 'landscape'; // Default for SSR
+    }
+    
+    return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+  },
+  
+  /**
+   * Check if the application is running as a PWA/installed app
+   * @returns {boolean} True if the app is running in standalone mode (installed)
+   */
+  isInstalledPWA(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           (window.navigator as any).standalone === true;
+  },
+  
+  /**
+   * Get the device type based on screen size
+   * @returns {'mobile' | 'tablet' | 'desktop'} Device type
+   */
+  getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
+    if (typeof window === 'undefined') {
+      return 'desktop'; // Default for SSR
+    }
+    
+    const width = window.innerWidth;
+    
+    if (width < 768) {
+      return 'mobile';
+    } else if (width >= 768 && width < 1024) {
+      return 'tablet';
+    } else {
+      return 'desktop';
+    }
+  },
+  
+  /**
+   * Check if the device has a slow connection
+   * @returns {Promise<boolean>} Promise resolving to true if the connection is slow
+   */
+  async hasSlowConnection(): Promise<boolean> {
+    if (typeof navigator === 'undefined' || !('connection' in navigator)) {
+      return false;
+    }
+    
+    const connection = (navigator as any).connection;
+    
+    if (connection) {
+      // Network Information API is available
+      return connection.saveData || 
+             connection.effectiveType === 'slow-2g' || 
+             connection.effectiveType === '2g' ||
+             connection.downlink < 0.5;  // Less than 0.5 Mbps
+    }
+    
+    // Fallback: check by measuring resource load time
     try {
-      if (!navigator.onLine) {
-        return 'none';
-      }
-
-      // If we can't access Network plugin details, just report 'wifi' for online state
-      // In a real app, we would use Network.getStatus().connectionType
-      return 'wifi';
+      const start = Date.now();
+      const response = await fetch('/favicon.ico', { cache: 'no-store' });
+      const end = Date.now();
+      
+      // If loading a tiny resource takes more than 300ms, consider it a slow connection
+      return end - start > 300;
     } catch (error) {
-      console.warn('Error getting network connection type:', error);
-      return navigator.onLine ? 'wifi' : 'none';
+      console.error('Error checking connection speed:', error);
+      return false;
     }
   }
 };
 
-// Additional utility for safe API calls with offline detection
-export const safeApiCall = async <T>(
-  apiCallFn: () => Promise<T>,
-  options?: {
-    offlineMessage?: string;
-    fallback?: T;
-    retryCount?: number;
-  }
-): Promise<T> => {
-  const { offlineMessage = "You're offline. Please check your connection.", fallback, retryCount = 2 } = options || {};
-  
-  let attempts = 0;
-  const maxAttempts = retryCount + 1; // +1 for initial attempt
-
-  while (attempts < maxAttempts) {
-    try {
-      if (!navigator.onLine) {
-        throw new Error('NETWORK_OFFLINE');
-      }
-      
-      return await apiCallFn();
-    } catch (error) {
-      attempts++;
-      const isOfflineError = 
-        (error instanceof Error && error.message === 'NETWORK_OFFLINE') ||
-        (error instanceof Error && error.message.includes('network')) ||
-        (!navigator.onLine);
-
-      if (isOfflineError) {
-        if (fallback !== undefined) {
-          console.warn('Network offline, using fallback data');
-          return fallback;
-        }
-        throw new Error(offlineMessage);
-      }
-      
-      if (attempts >= maxAttempts) {
-        throw error;
-      }
-      
-      // Wait before retrying (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 500));
-    }
-  }
-  
-  // This line should never be reached due to the loop above
-  throw new Error('Failed after maximum retry attempts');
-};
+export default DeviceService;

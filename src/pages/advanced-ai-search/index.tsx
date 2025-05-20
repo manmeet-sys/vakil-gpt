@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SearchResult {
   title: string;
@@ -35,6 +36,7 @@ const AdvancedAISearchPage: React.FC = () => {
   const [courtFilter, setCourtFilter] = useState<string>('all');
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [relevanceFilter, setRelevanceFilter] = useState<string>('high');
+  const isMobile = useIsMobile();
   
   // New filters for advanced search
   const [includeHeadnotes, setIncludeHeadnotes] = useState(true);
@@ -165,54 +167,56 @@ const AdvancedAISearchPage: React.FC = () => {
         />
       </Helmet>
 
-      <ResponsiveContainer className="py-8">
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
+      <ResponsiveContainer className="py-4 sm:py-8">
+        <div className="mb-4 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-full">
-                <Search className="h-5 w-5 text-green-700 dark:text-green-400" />
+                <Search className="h-4 w-4 sm:h-5 sm:w-5 text-green-700 dark:text-green-400" />
               </div>
-              <h1 className="text-3xl font-bold font-playfair">Advanced AI Legal Search</h1>
+              <h1 className="text-xl sm:text-3xl font-bold font-playfair">Advanced AI Legal Search</h1>
               <Badge variant="outline" className="bg-green-100/50 text-green-800 dark:bg-green-900/30 dark:text-green-400">Beta</Badge>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleSaveSearch} 
-                disabled={!searchQuery}
-              >
-                <Save className="h-4 w-4 mr-1" />
-                Save Search
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleExportResults}
-                disabled={!searchResults}
-              >
-                <Download className="h-4 w-4 mr-1" />
-                Export
-              </Button>
-            </div>
+            {!isMobile && (
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSaveSearch} 
+                  disabled={!searchQuery}
+                >
+                  <Save className="h-4 w-4 mr-1" />
+                  Save Search
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleExportResults}
+                  disabled={!searchResults}
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Export
+                </Button>
+              </div>
+            )}
           </div>
           
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
             Leverage AI to search across case law, statutes, and legal commentary with unprecedented precision and relevance.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
           <div className="lg:col-span-3">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <Card className="mb-6">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl font-playfair">Advanced Legal Search</CardTitle>
+              <Card className="mb-4 sm:mb-6">
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="text-lg sm:text-xl font-playfair">Advanced Legal Search</CardTitle>
                 </CardHeader>
                 <CardContent className="pb-0">
                   <Tabs defaultValue="case-law" value={searchType} onValueChange={handleSearchTypeChange}>
@@ -222,11 +226,11 @@ const AdvancedAISearchPage: React.FC = () => {
                       <TabsTrigger value="commentary">Legal Commentary</TabsTrigger>
                     </TabsList>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="searchQuery">Search Query</Label>
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                           <Input
                             id="searchQuery"
                             placeholder={`Search ${searchType}...`}
@@ -249,7 +253,7 @@ const AdvancedAISearchPage: React.FC = () => {
                       
                       {showAdvancedFilters && (
                         <div className="space-y-4 mt-4 border-t pt-4 border-gray-100 dark:border-gray-800">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             {searchType === 'case-law' && (
                               <>
                                 <div className="space-y-2">
@@ -344,7 +348,7 @@ const AdvancedAISearchPage: React.FC = () => {
                         </div>
                       )}
                       
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <p className="font-medium mb-1">Search tips:</p>
                         <ul className="list-disc pl-5 space-y-1">
                           <li>Use quotes for exact phrase matching: "habeas corpus"</li>
@@ -388,6 +392,30 @@ const AdvancedAISearchPage: React.FC = () => {
                 </CardFooter>
               </Card>
             </motion.div>
+            
+            {/* Mobile action buttons */}
+            {isMobile && searchResults && (
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSaveSearch} 
+                  className="flex-1"
+                >
+                  <Save className="h-4 w-4 mr-1" />
+                  Save
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleExportResults}
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Export
+                </Button>
+              </div>
+            )}
           </div>
           
           <div className="lg:col-span-2">
@@ -398,8 +426,8 @@ const AdvancedAISearchPage: React.FC = () => {
             >
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 font-playfair">
-                    <FileText className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-playfair">
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
                     Search Results
                   </CardTitle>
                 </CardHeader>
@@ -408,20 +436,20 @@ const AdvancedAISearchPage: React.FC = () => {
                   {isSearching ? (
                     <div className="flex flex-col items-center justify-center py-8">
                       <div className="h-10 w-10 animate-spin rounded-full border-4 border-t-transparent border-green-600"></div>
-                      <p className="mt-4 text-gray-500">Searching legal databases...</p>
+                      <p className="mt-4 text-sm text-gray-500">Searching legal databases...</p>
                     </div>
                   ) : searchResults ? (
-                    <div className="space-y-6">
+                    <div className="space-y-4 sm:space-y-6">
                       {searchResults.map((result, index) => (
                         <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <h3 className="font-medium text-lg font-playfair">{result.title}</h3>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1.5">
+                            <h3 className="font-medium text-base sm:text-lg font-playfair">{result.title}</h3>
+                            <Badge variant="outline" className="self-start sm:self-auto bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
                               {Math.round(result.relevance * 100)}% match
                             </Badge>
                           </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-1.5">{result.snippet}</p>
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-1.5">{result.snippet}</p>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
                             {result.source && <span>{result.source}</span>}
                             {result.date && <span>{result.date}</span>}
                             {result.citation && <span className="font-medium">{result.citation}</span>}
@@ -435,10 +463,10 @@ const AdvancedAISearchPage: React.FC = () => {
                       </Button>
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <Search className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-                      <h3 className="font-medium text-lg text-gray-400 dark:text-gray-500 font-playfair">No Results Yet</h3>
-                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1 max-w-xs mx-auto">
+                    <div className="text-center py-6 sm:py-8">
+                      <Search className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                      <h3 className="font-medium text-base sm:text-lg text-gray-400 dark:text-gray-500 font-playfair">No Results Yet</h3>
+                      <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-1 max-w-xs mx-auto">
                         Enter your search query and click the search button to find relevant legal documents
                       </p>
                     </div>

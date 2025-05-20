@@ -9,7 +9,7 @@ import { getOpenAIResponse } from '@/components/OpenAIIntegration';
  */
 export const getAIConfig = () => {
   // Use the hardcoded API key
-  const primaryApiKey = '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';
+  const primaryApiKey = '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';
   const backupApiKey = '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';
   
   return { primaryApiKey, backupApiKey };
@@ -104,5 +104,5 @@ export const generateEnhancedIndianContract = async (
   Please create a comprehensive Indian legal contract following all proper legal terminology, formatting, and requirements specific to Indian law. Include all standard and necessary clauses for this type of contract.`;
 
   // Use the OpenAI API to generate the contract
-  return await getOpenAIResponse(prompt);
+  return await getAIResponse(prompt);
 };

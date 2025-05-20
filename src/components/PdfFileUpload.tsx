@@ -69,7 +69,7 @@ const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onTextExtracted }) => {
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-md p-6 cursor-pointer transition-colors ${
+      className={`border-2 border-dashed rounded-md p-4 sm:p-6 cursor-pointer transition-colors ${
         isDragActive 
           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
           : 'border-gray-300 dark:border-gray-700'
@@ -79,13 +79,13 @@ const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onTextExtracted }) => {
       <div className="flex flex-col items-center justify-center text-center">
         {isLoading ? (
           <>
-            <Loader2 className="h-10 w-10 text-blue-500 animate-spin mb-2" />
-            <p className="text-sm text-gray-600 dark:text-gray-400">Processing PDF...</p>
+            <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500 animate-spin mb-2" />
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Processing PDF...</p>
           </>
         ) : (
           <>
-            <FileUp className="h-10 w-10 text-gray-400 dark:text-gray-600 mb-2" />
-            <p className="text-sm font-medium mb-1">
+            <FileUp className="h-8 w-8 sm:h-10 sm:w-10 text-gray-400 dark:text-gray-600 mb-2" />
+            <p className="text-xs sm:text-sm font-medium mb-1">
               {isDragActive ? "Drop the PDF here" : "Drag & drop a PDF file here"}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">

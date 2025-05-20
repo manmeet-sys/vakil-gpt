@@ -1,121 +1,91 @@
 
-import { useState, useEffect } from 'react';
-import { DeviceService } from '@/services/device';
+import * as React from "react";
+import { useIsMobile } from "./use-mobile";
 
-// Remove problematic dynamic import and use a more reliable approach
-// that won't cause the app to break if @capacitor/app isn't available
-const useAppInfo = () => {
-  const [appInfo, setAppInfo] = useState<{
-    version?: string;
-    build?: string;
-  }>({});
-
-  useEffect(() => {
-    // Only attempt to load app info if running in a native environment
-    if (DeviceService.isMobile()) {
-      const getAppInfo = async () => {
-        try {
-          // Use a safer import approach
-          const { App } = await import('@capacitor/app').catch(() => ({ App: null }));
-          
-          if (App) {
-            const info = await App.getInfo();
-            setAppInfo({
-              version: info.version,
-              build: info.build
-            });
-          } else {
-            console.info('Capacitor App plugin not available on this platform');
-          }
-        } catch (error) {
-          console.warn('Error getting app info:', error);
-          setAppInfo({
-            version: 'unknown',
-            build: 'unknown'
-          });
-        }
-      };
-      
-      getAppInfo();
-    }
-  }, []);
-
-  return appInfo;
-};
-
-interface DeviceState {
+interface DeviceContextProps {
   isMobile: boolean;
-  isIOS: boolean;
-  isAndroid: boolean;
-  isWeb: boolean;
-  platform: string;
-  isOnline: boolean;
-  connectionType: 'wifi' | 'cellular' | 'none';
-  appVersion?: string;
-  appBuild?: string;
+  isTablet: boolean;
+  isDesktop: boolean;
+  isTouch: boolean;
+  isLandscape: boolean;
+  isPortrait: boolean;
 }
 
-export function useDevice() {
-  const [deviceState, setDeviceState] = useState<DeviceState>({
-    isMobile: DeviceService.isMobile(),
-    isIOS: DeviceService.isIOS(),
-    isAndroid: DeviceService.isAndroid(),
-    isWeb: DeviceService.isWeb(),
-    platform: DeviceService.getPlatform(),
-    isOnline: navigator.onLine,
-    connectionType: DeviceService.getNetworkConnectionType()
-  });
+const DeviceContext = React.createContext<DeviceContextProps>({
+  isMobile: false,
+  isTablet: false,
+  isDesktop: true,
+  isTouch: false,
+  isLandscape: true,
+  isPortrait: false,
+});
+
+export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isMobile = useIsMobile();
+  const [windowWidth, setWindowWidth] = React.useState<number | undefined>(undefined);
+  const [orientation, setOrientation] = React.useState<"landscape" | "portrait">("landscape");
+  const [isTouch, setIsTouch] = React.useState<boolean>(false);
   
-  const appInfo = useAppInfo();
-  
-  useEffect(() => {
-    // Update app info when it changes
-    if (appInfo.version || appInfo.build) {
-      setDeviceState(prev => ({
-        ...prev,
-        appVersion: appInfo.version,
-        appBuild: appInfo.build
-      }));
-    }
-  }, [appInfo]);
-  
-  useEffect(() => {
-    // Monitor online/offline status
-    const handleOnline = () => {
-      setDeviceState(prev => ({ 
-        ...prev, 
-        isOnline: true,
-        connectionType: DeviceService.getNetworkConnectionType()
-      }));
+  React.useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      setOrientation(window.innerWidth > window.innerHeight ? "landscape" : "portrait");
     };
+
+    // Check if device has touch capabilities
+    setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
     
-    const handleOffline = () => {
-      setDeviceState(prev => ({ 
-        ...prev, 
-        isOnline: false,
-        connectionType: 'none' 
-      }));
-    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
     
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    // Check connection type periodically (simplified for this example)
-    const connectionChecker = setInterval(() => {
-      if (navigator.onLine) {
-        setDeviceState(prev => ({
-          ...prev,
-          connectionType: DeviceService.getNetworkConnectionType()
-        }));
+    // Handle orientation change on mobile devices
+    if (typeof window.matchMedia === 'function') {
+      const mediaQuery = window.matchMedia("(orientation: portrait)");
+      
+      const handleOrientationChange = (e: MediaQueryListEvent) => {
+        setOrientation(e.matches ? "portrait" : "landscape");
+      };
+      
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener("change", handleOrientationChange);
+      } else {
+        // Fallback for older browsers
+        window.addEventListener('resize', handleResize);
       }
-    }, 30000); // Check every 30 seconds
+      
+      return () => {
+        if (mediaQuery.removeEventListener) {
+          mediaQuery.removeEventListener("change", handleOrientationChange);
+        } else {
+          window.removeEventListener('resize', handleResize);
+        }
+      };
+    }
     
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      clearInterval(connectionChecker);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  return deviceState;
+  // Device type detection
+  const isTablet = windowWidth !== undefined && windowWidth >= 768 && windowWidth < 1024;
+  const isDesktop = windowWidth !== undefined && windowWidth >= 1024;
+  
+  const value = {
+    isMobile,
+    isTablet,
+    isDesktop,
+    isTouch,
+    isLandscape: orientation === "landscape",
+    isPortrait: orientation === "portrait"
+  };
+  
+  return (
+    <DeviceContext.Provider value={value}>
+      {children}
+    </DeviceContext.Provider>
+  );
+};
+
+export function useDevice(): DeviceContextProps {
+  const context = React.useContext(DeviceContext);
+  return context;
 }

@@ -9,11 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 import PdfFileUpload from './PdfFileUpload';
 
-interface PdfAnalyzerProps {
+export interface PdfAnalyzerProps {
   onAnalysisComplete?: (analysis: string) => void;
+  iconOnly?: boolean;
 }
 
-const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete }) => {
+const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete, iconOnly = false }) => {
   const [extractedText, setExtractedText] = useState<string>('');
   const [fileName, setFileName] = useState<string>('');
   const [analysis, setAnalysis] = useState<string>('');
@@ -84,7 +85,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete }) => {
           <PdfFileUpload onTextExtracted={handleTextExtracted} />
         ) : (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
                 <p className="text-sm font-medium">
                   {fileName}
@@ -101,6 +102,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete }) => {
                   setFileName('');
                   setAnalysis('');
                 }}
+                className="w-full sm:w-auto"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Upload Different Document
@@ -132,7 +134,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete }) => {
                 </TabsList>
                 <TabsContent value="text" className="mt-4">
                   <div className="relative">
-                    <div className="max-h-96 overflow-y-auto border rounded-md p-4 bg-gray-50 dark:bg-gray-900/50 text-sm font-mono">
+                    <div className="max-h-80 overflow-y-auto border rounded-md p-3 sm:p-4 bg-gray-50 dark:bg-gray-900/50 text-xs sm:text-sm font-mono">
                       {extractedText.split('\n').map((line, i) => (
                         <p key={i} className="mb-1">
                           {line || <br />}
@@ -143,7 +145,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete }) => {
                 </TabsContent>
                 <TabsContent value="analysis" className="mt-4">
                   {analysis ? (
-                    <div className="max-h-96 overflow-y-auto border rounded-md p-4 text-sm">
+                    <div className="max-h-80 overflow-y-auto border rounded-md p-3 sm:p-4 text-xs sm:text-sm">
                       {analysis.split('\n').map((line, i) => (
                         <p key={i} className="mb-2">
                           {line || <br />}
@@ -151,7 +153,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete }) => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center p-8 text-gray-500">
+                    <div className="text-center p-4 sm:p-8 text-gray-500">
                       {isAnalyzing ? (
                         <p>Analyzing document...</p>
                       ) : (
