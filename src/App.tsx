@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'sonner';
 import OptimizedAppLayout from './components/OptimizedAppLayout';
-
+import { NavigationProvider } from './context/NavigationContext';
+import { AuthProvider } from './context/AuthContext';
 import AdvancedAISearchPage from './pages/advanced-ai-search';
 import ContractDraftingPage from './pages/contract-drafting';
 import NotFound from './pages/NotFound';
@@ -15,24 +16,30 @@ import './App.css';
 
 const App = () => {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="vakil-theme">
-      <Helmet>
-        <title>VakilGPT - AI-Powered Legal Tools</title>
-        <meta name="description" content="AI-powered legal assistance for Indian lawyers" />
-      </Helmet>
-      
-      <Toaster position="top-center" />
-      
-      <Router>
-        <Routes>
-          <Route path="/" element={<OptimizedAppLayout><Index /></OptimizedAppLayout>} />
-          <Route path="/contract-drafting" element={<OptimizedAppLayout><ContractDraftingPage /></OptimizedAppLayout>} />
-          <Route path="/advanced-ai-search" element={<OptimizedAppLayout><AdvancedAISearchPage /></OptimizedAppLayout>} />
-          <Route path="/legal-document-analyzer" element={<OptimizedAppLayout><PdfAnalyzer /></OptimizedAppLayout>} />
-          <Route path="*" element={<OptimizedAppLayout><NotFound /></OptimizedAppLayout>} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider defaultTheme="system" storageKey="vakil-theme">
+        <Helmet>
+          <title>VakilGPT - AI-Powered Legal Tools</title>
+          <meta name="description" content="AI-powered legal assistance for Indian lawyers" />
+        </Helmet>
+        
+        <Toaster position="top-center" />
+        
+        <Router>
+          <AuthProvider>
+            <NavigationProvider>
+              <Routes>
+                <Route path="/" element={<OptimizedAppLayout><Index /></OptimizedAppLayout>} />
+                <Route path="/contract-drafting" element={<OptimizedAppLayout><ContractDraftingPage /></OptimizedAppLayout>} />
+                <Route path="/advanced-ai-search" element={<OptimizedAppLayout><AdvancedAISearchPage /></OptimizedAppLayout>} />
+                <Route path="/legal-document-analyzer" element={<OptimizedAppLayout><PdfAnalyzer /></OptimizedAppLayout>} />
+                <Route path="*" element={<OptimizedAppLayout><NotFound /></OptimizedAppLayout>} />
+              </Routes>
+            </NavigationProvider>
+          </AuthProvider>
+        </Router>
+      </ThemeProvider>
+    </HelmetProvider>
   );
 };
 

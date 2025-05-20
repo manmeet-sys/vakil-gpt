@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,7 +43,6 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
   const handlePredict = async () => {
     if (caseDescription.trim().length < 100) {
       toast({
-        title: "Insufficient Information",
         description: "Please provide more details about the case for accurate prediction.",
       });
       return;
@@ -103,20 +101,17 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
         }
         
         toast({
-          title: "Prediction Complete",
           description: "Case outcome prediction has been generated",
         });
       } catch (parseError) {
         console.error("Error parsing AI response:", parseError);
         toast({
-          title: "Format Error",
           description: "Unable to parse AI response. Please try again.",
         });
       }
     } catch (error) {
       console.error("Error predicting outcome:", error);
       toast({
-        title: "Prediction Failed",
         description: error instanceof Error ? error.message : "Failed to generate prediction",
       });
     } finally {
@@ -144,7 +139,6 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
   
   const openAISettings = () => {
     toast({
-      title: "Settings",
       description: "Navigate to AI Settings to customize AI behavior",
     });
   };
