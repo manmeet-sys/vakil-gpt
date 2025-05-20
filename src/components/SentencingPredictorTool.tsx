@@ -3,9 +3,33 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileText, Book, BarChart, AlertCircle, ChevronRight, AlertTriangle, Check, Info, Download, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { getOpenAIResponse } from '@/components/OpenAIIntegration';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from "@/components/ui/tabs";
+import { Separator } from '@/components/ui/separator';
 
 interface CrimeCategory {
   id: string;
@@ -222,10 +246,8 @@ const SentencingPredictorTool: React.FC = () => {
 
   const addPriorOffense = () => {
     if (!newPriorOffense.offense || !newPriorOffense.date) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please provide both the offense and date",
+      toast.error("Missing Information", {
+        description: "Please provide both the offense and date"
       });
       return;
     }
@@ -242,9 +264,8 @@ const SentencingPredictorTool: React.FC = () => {
       sentence: ''
     });
     
-    toast({
-      title: "Prior Offense Added",
-      description: "The offense has been added to the defendant's history",
+    toast.success("Prior Offense Added", {
+      description: "The offense has been added to the defendant's history"
     });
   };
 
@@ -266,18 +287,15 @@ const SentencingPredictorTool: React.FC = () => {
     localStorage.setItem('geminiApiKey', apiKey);
     setIsApiKeyDialogOpen(false);
     
-    toast({
-      title: "API Key Saved",
-      description: "Your Gemini API key has been saved for future use",
+    toast.success("API Key Saved", {
+      description: "Your Gemini API key has been saved for future use"
     });
   };
 
   const validateCaseInfo = () => {
     if (!selectedCategory || !selectedOffense || !offenseLevel || !jurisdiction) {
-      toast({
-        variant: "destructive",
-        title: "Missing Case Information",
-        description: "Please fill in all required case information fields",
+      toast.error("Missing Case Information", {
+        description: "Please fill in all required case information fields"
       });
       return false;
     }
@@ -288,10 +306,8 @@ const SentencingPredictorTool: React.FC = () => {
     if (!validateCaseInfo()) return;
     
     if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: "Please set your Gemini API key to use the analysis feature",
+      toast.error("API Key Required", {
+        description: "Please set your Gemini API key to use the analysis feature"
       });
       setIsApiKeyDialogOpen(true);
       return;
@@ -366,16 +382,13 @@ Ensure your analysis is balanced, fact-based, and considers both the prosecution
       
       setActiveTab('analysis');
       
-      toast({
-        title: "Analysis Complete",
-        description: "Sentencing prediction analysis has been generated",
+      toast.success("Analysis Complete", {
+        description: "Sentencing prediction analysis has been generated"
       });
     } catch (error) {
       console.error('Analysis error:', error);
-      toast({
-        variant: "destructive",
-        title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "Unable to complete the analysis",
+      toast.error("Analysis Failed", {
+        description: error instanceof Error ? error.message : "Unable to complete the analysis"
       });
     } finally {
       setIsAnalyzing(false);
@@ -397,9 +410,8 @@ Ensure your analysis is balanced, fact-based, and considers both the prosecution
     setAiAnalysis('');
     setActiveTab('case-info');
     
-    toast({
-      title: "Form Reset",
-      description: "All fields have been cleared",
+    toast.success("Form Reset", {
+      description: "All fields have been cleared"
     });
   };
 
@@ -446,9 +458,8 @@ This analysis is provided for informational purposes only and should not be cons
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast({
-      title: "Analysis Downloaded",
-      description: "Analysis has been downloaded as a text file",
+    toast.success("Analysis Downloaded", {
+      description: "Analysis has been downloaded as a text file"
     });
   };
 

@@ -31,10 +31,8 @@ const MADueDiligenceTool: React.FC<MADueDiligenceToolProps> = ({ onAnalysisCompl
 
   const generateDueDiligenceReport = async () => {
     if (!companyName || !industrySector || !financialData || !legalCompliance) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all fields before generating the report.",
-        variant: "destructive",
+      toast.error("Missing Information", {
+        description: "Please fill in all fields before generating the report."
       });
       return;
     }
@@ -58,16 +56,13 @@ const MADueDiligenceTool: React.FC<MADueDiligenceToolProps> = ({ onAnalysisCompl
         onAnalysisComplete(response);
       }
 
-      toast({
-        title: "Due Diligence Report Generated",
-        description: "The M&A due diligence report has been generated successfully.",
+      toast.success("Due Diligence Report Generated", {
+        description: "The M&A due diligence report has been generated successfully."
       });
     } catch (error) {
       console.error("Error generating due diligence report:", error);
-      toast({
-        title: "Report Generation Failed",
-        description: "There was an error generating the due diligence report. Please try again.",
-        variant: "destructive",
+      toast.error("Report Generation Failed", {
+        description: "There was an error generating the due diligence report. Please try again."
       });
     } finally {
       setIsAnalyzing(false);
