@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,7 +24,7 @@ interface ArgumentBuilderProps {
     description: string;
     precedents?: string[];
   };
-  onComplete?: (arguments: ArgumentBuilderType) => void;
+  onComplete?: (args: ArgumentBuilderType) => void;
 }
 
 const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({ 
@@ -41,7 +42,7 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
   const handleGenerateArguments = async () => {
     if (caseDescription.trim().length < 50) {
       toast({
-        description: "Please provide more details about the case for accurate argument generation.",
+        description: "Please provide more details about the case for accurate argument generation."
       });
       return;
     }
@@ -110,7 +111,7 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
         } catch (parseError) {
           console.error("Error parsing AI response:", parseError);
           toast({
-            description: "Unable to parse the response. Please try again.",
+            description: "Unable to parse the response. Please try again."
           });
           throw parseError;
         }
@@ -124,12 +125,12 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
       }
       
       toast({
-        description: "Legal arguments successfully generated",
+        description: "Legal arguments successfully generated"
       });
     } catch (error) {
       console.error("Error generating arguments:", error);
       toast({
-        description: "Failed to generate arguments. Please try again.",
+        description: "Failed to generate arguments. Please try again."
       });
     } finally {
       setIsGenerating(false);
@@ -139,7 +140,7 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
   const handleCopyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      description: "Content copied to clipboard",
+      description: "Content copied to clipboard"
     });
   };
 

@@ -1,17 +1,19 @@
 
+// Type definitions for the Argument Builder component
+
 export interface ArgumentBuilderType {
-  mainArguments: {
+  mainArguments: Array<{
     title: string;
     description: string;
-    strength: "strong" | "moderate" | "weak";
+    strength: 'strong' | 'moderate' | 'weak';
     supportingLaws: string[];
     supportingCases: string[];
-  }[];
-  counterArguments: {
+  }>;
+  counterArguments: Array<{
     title: string;
     description: string;
     refutationStrategy: string;
-  }[];
+  }>;
   statutoryReferences: string[];
   caseReferences: string[];
   constitutionalProvisions: string[];

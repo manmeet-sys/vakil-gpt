@@ -12,6 +12,7 @@ import NotFound from './pages/NotFound';
 import PdfAnalyzer from './components/PdfAnalyzer';
 import { ThemeProvider } from './components/ThemeProvider';
 import Index from './pages/Index';
+import LegalDocumentDraftingPage from './pages/legal-document-drafting';
 import './App.css';
 
 const App = () => {
@@ -33,6 +34,7 @@ const App = () => {
                 <Route path="/contract-drafting" element={<OptimizedAppLayout><ContractDraftingPage /></OptimizedAppLayout>} />
                 <Route path="/advanced-ai-search" element={<OptimizedAppLayout><AdvancedAISearchPage /></OptimizedAppLayout>} />
                 <Route path="/legal-document-analyzer" element={<OptimizedAppLayout><PdfAnalyzer /></OptimizedAppLayout>} />
+                <Route path="/legal-document-drafting" element={<OptimizedAppLayout><LegalDocumentDraftingPage /></OptimizedAppLayout>} />
                 <Route path="*" element={<OptimizedAppLayout><NotFound /></OptimizedAppLayout>} />
               </Routes>
             </NavigationProvider>

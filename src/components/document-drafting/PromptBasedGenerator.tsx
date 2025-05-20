@@ -35,7 +35,7 @@ const PromptBasedGenerator: React.FC<PromptBasedGeneratorProps> = ({
   const handleGenerate = async () => {
     if (prompt.trim().length < 10) {
       toast({
-        description: "Please provide more details for better results",
+        description: "Please provide more details for better results"
       });
       return;
     }
@@ -61,12 +61,12 @@ const PromptBasedGenerator: React.FC<PromptBasedGeneratorProps> = ({
       }
 
       toast({
-        description: "Document generated successfully",
+        description: "Document generated successfully"
       });
     } catch (error) {
       console.error("Error generating document:", error);
       toast({
-        description: "Failed to generate document. Please try again.",
+        description: "Failed to generate document. Please try again."
       });
     } finally {
       setIsGenerating(false);

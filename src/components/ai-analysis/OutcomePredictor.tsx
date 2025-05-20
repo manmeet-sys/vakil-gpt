@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -43,7 +44,7 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
   const handlePredict = async () => {
     if (caseDescription.trim().length < 100) {
       toast({
-        description: "Please provide more details about the case for accurate prediction.",
+        description: "Please provide more details about the case for accurate prediction."
       });
       return;
     }
@@ -101,18 +102,18 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
         }
         
         toast({
-          description: "Case outcome prediction has been generated",
+          description: "Case outcome prediction has been generated"
         });
       } catch (parseError) {
         console.error("Error parsing AI response:", parseError);
         toast({
-          description: "Unable to parse AI response. Please try again.",
+          description: "Unable to parse AI response. Please try again."
         });
       }
     } catch (error) {
       console.error("Error predicting outcome:", error);
       toast({
-        description: error instanceof Error ? error.message : "Failed to generate prediction",
+        description: error instanceof Error ? error.message : "Failed to generate prediction"
       });
     } finally {
       setIsPredicting(false);
@@ -139,7 +140,7 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
   
   const openAISettings = () => {
     toast({
-      description: "Navigate to AI Settings to customize AI behavior",
+      description: "Navigate to AI Settings to customize AI behavior"
     });
   };
 
@@ -284,8 +285,7 @@ const OutcomePredictor: React.FC<OutcomePredictorProps> = ({
                 const formattedPrediction = JSON.stringify(prediction, null, 2);
                 navigator.clipboard.writeText(formattedPrediction);
                 toast({
-                  title: "Copied",
-                  description: "Prediction data copied to clipboard",
+                  description: "Prediction data copied to clipboard"
                 });
               }}
               variant="secondary"
