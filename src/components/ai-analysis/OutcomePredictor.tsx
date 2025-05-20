@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Scale, FileText, AlertCircle, HelpCircle, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import GeminiFlashAnalyzer from '@/components/GeminiFlashAnalyzer';
+import OpenAIFlashAnalyzer from '@/components/OpenAIFlashAnalyzer';
 import LazyComponent from '@/components/LazyComponent';
 import AIAnalysisSkeleton from '../SkeletonLoaders/AIAnalysisSkeleton';
 import { design } from '@/lib/design-system';
@@ -14,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import InfoCard from '../ui/info-card';
 import ErrorMessage from '../ui/error-message';
-import { getGeminiResponse } from '../GeminiProIntegration';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 import { useNavigate } from 'react-router-dom';
 
 const OutcomePredictor = () => {
@@ -23,31 +22,10 @@ const OutcomePredictor = () => {
   const [caseDetail, setCaseDetail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<null | any>(null);
-  const [geminiAnalysis, setGeminiAnalysis] = useState('');
+  const [openAiAnalysis, setOpenAiAnalysis] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
-
-  const checkApiKey = (): boolean => {
-    const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
-    
-    if (!apiKey) {
-      setApiKeyError(`No ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key found. Please set one in AI Settings.`);
-      return false;
-    }
-    
-    setApiKeyError(null);
-    return true;
-  };
-
-  const navigateToSettings = () => {
-    navigate('/settings/ai');
-    toast({
-      title: "API Key Required",
-      description: "Please set your API key in AI Settings",
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,21 +43,12 @@ const OutcomePredictor = () => {
       return;
     }
     
-    // Check if API key is available
-    if (!checkApiKey()) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: "Please set your API key in Settings"
-      });
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
-      const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-      const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
+      const { primaryApiKey } = {
+        primaryApiKey: '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'
+      };
       
       // Create a prompt for the AI
       const prompt = `You are an AI legal assistant specializing in Indian law. Analyze the following case details and predict the likely outcome based on Indian legal precedents and statutes.
@@ -96,7 +65,7 @@ Provide your analysis in JSON format with the following structure:
 }`;
       
       // Make the API call
-      const responseText = await getGeminiResponse(prompt, apiKey);
+      const responseText = await getOpenAIResponse(prompt, primaryApiKey);
       
       // Parse the JSON response
       let jsonResponse;
@@ -133,20 +102,17 @@ Provide your analysis in JSON format with the following structure:
     }
   };
   
-  const handleGeminiAnalysis = (analysis: string) => {
-    setGeminiAnalysis(analysis);
+  const handleOpenAiAnalysis = (analysis: string) => {
+    setOpenAiAnalysis(analysis);
     
     try {
-      // Update our regular prediction with enhanced Gemini results
-      const parsedAnalysis = JSON.parse(analysis);
-      
-      // In a real app, you'd integrate this with the existing prediction
+      // Update our regular prediction with enhanced OpenAI results
       toast({
         title: "Enhanced Analysis Applied",
-        description: "Gemini insights have been incorporated into your prediction"
+        description: "OpenAI insights have been incorporated into your prediction"
       });
     } catch (e) {
-      console.error("Error parsing Gemini analysis:", e);
+      console.error("Error parsing OpenAI analysis:", e);
       toast({
         variant: "destructive",
         title: "Analysis Processing Error",
@@ -171,7 +137,7 @@ Provide your analysis in JSON format with the following structure:
                   <p>This tool uses AI to analyze case details and predict potential outcomes based on Indian legal precedents.</p>
                 </TooltipContent>
               </Tooltip>
-              <GeminiFlashAnalyzer onAnalysisComplete={handleGeminiAnalysis} />
+              <OpenAIFlashAnalyzer onAnalysisComplete={handleOpenAiAnalysis} />
             </h3>
           </div>
           
@@ -202,7 +168,7 @@ Provide your analysis in JSON format with the following structure:
               onDismiss={() => setShowOnboarding(false)}
             >
               <p>
-                Enter the details of your legal case including relevant facts, applicable laws, and jurisdiction information. 
+                Enter the details of your legal case including relevant facts, applicable laws, jurisdiction information. 
                 The AI will analyze your input and provide a prediction based on similar cases in Indian courts.
               </p>
             </InfoCard>
@@ -309,21 +275,21 @@ Provide your analysis in JSON format with the following structure:
                   </div>
                 </div>
                 
-                {geminiAnalysis && (
+                {openAiAnalysis && (
                   <div className="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Advanced Gemini Analysis</p>
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Advanced OpenAI Analysis</p>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <HelpCircle className="h-4 w-4 text-muted-foreground" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Enhanced analysis generated by Google's Gemini AI model</p>
+                          <p>Enhanced analysis generated by OpenAI's GPT-4 model</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
                     <pre className="text-xs bg-gray-50 dark:bg-gray-800 p-3 rounded overflow-auto max-h-[250px] border border-gray-200 dark:border-gray-700">
-                      {geminiAnalysis}
+                      {openAiAnalysis}
                     </pre>
                   </div>
                 )}

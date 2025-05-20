@@ -1,15 +1,15 @@
+
 /**
  * Utility functions for AI analysis with focus on Indian law
  */
 import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 /**
- * Gets the appropriate API key based on the provider
- * @returns API key for the selected provider
+ * Gets the appropriate API key
+ * @returns OpenAI API key
  */
-const getApiKey = (provider: 'openai' | 'gemini' | 'deepseek' = 'openai'): string => {
-  return localStorage.getItem(`${provider}ApiKey`) || 
-    (provider === 'openai' ? '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' : '');
+const getApiKey = (): string => {
+  return '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';
 };
 
 /**
@@ -77,6 +77,9 @@ Format your response with clear sections and be thorough yet concise in your leg
     }
   }
 };
+
+// Alias the function for backward compatibility during migration
+export const generateGeminiAnalysis = generateOpenAIAnalysis;
 
 /**
  * Generates contract analysis specific to Indian legal context

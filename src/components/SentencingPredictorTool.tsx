@@ -1,24 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { toast } from '@/hooks/use-toast';
-import { 
-  FileText, Scale, BarChart, History, ArrowRight, Check, RotateCcw, 
-  Clock, Briefcase, FileCheck, CircleHelp, ChevronRight, ChevronLeft, 
-  Shield, Trash, Loader2, AlertTriangle, AlertCircle, Book, Download, Info
-} from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { getGeminiResponse } from './GeminiProIntegration';
-import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 interface CrimeCategory {
   id: string;
@@ -374,7 +361,7 @@ Please structure your analysis with these sections:
 
 Ensure your analysis is balanced, fact-based, and considers both the prosecution and defense perspectives.`;
       
-      const response = await getGeminiResponse(prompt);
+      const response = await getOpenAIResponse(prompt);
       setAiAnalysis(response);
       
       setActiveTab('analysis');

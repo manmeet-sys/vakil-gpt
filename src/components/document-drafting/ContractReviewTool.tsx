@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
+import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +70,7 @@ const ContractReviewTool = () => {
         ${contractText.substring(0, 6000)}${contractText.length > 6000 ? '...' : ''}
       `;
       
-      const result = await generateGeminiAnalysis(prompt, "Contract Analysis");
+      const result = await generateOpenAIAnalysis(prompt, "Contract Analysis");
       
       // In a real implementation, we'd parse the structured response
       // For this demo, we'll create a simulated structured result

@@ -1,80 +1,98 @@
 
-import React, { useRef, useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { FileText } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { FileUp, Loader2, File } from 'lucide-react';
 import { toast } from 'sonner';
-import { extractTextFromPdf } from '@/utils/pdfExtraction';
+import * as pdfjsLib from 'pdfjs-dist';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
 
 interface PdfFileUploadProps {
-  onChange: (file: File | null) => void;
-  pdfFile: File | null;
-  onTextExtracted?: (text: string) => void;
+  onTextExtracted: (text: string, fileName: string) => void;
 }
 
-const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onChange, pdfFile, onTextExtracted }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isExtracting, setIsExtracting] = useState(false);
+const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onTextExtracted }) => {
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    
-    if (file && file.type === 'application/pdf') {
-      onChange(file);
+  const extractTextFromPdf = async (file: File): Promise<string> => {
+    setIsLoading(true);
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       
-      if (onTextExtracted) {
-        setIsExtracting(true);
-        try {
-          const text = await extractTextFromPdf(file);
-          onTextExtracted(text);
-        } catch (error) {
-          console.error("Failed to extract text from PDF:", error);
-          toast.error("Failed to extract text from PDF");
-        } finally {
-          setIsExtracting(false);
-        }
+      let fullText = '';
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const textItems = textContent.items.map((item: any) => item.str).join(' ');
+        fullText += textItems + ' ';
       }
-    } else if (file) {
-      onChange(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      toast.error("Please upload a valid PDF file");
+      
+      return fullText.trim();
+    } catch (error) {
+      console.error("Error extracting text from PDF:", error);
+      toast.error("Failed to extract text from PDF");
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
+  
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) return;
+    
+    const file = acceptedFiles[0];
+    
+    if (file.type !== 'application/pdf') {
+      toast.error("Please upload a PDF file");
+      return;
+    }
+    
+    try {
+      const text = await extractTextFromPdf(file);
+      onTextExtracted(text, file.name);
+      toast.success("PDF text extracted successfully");
+    } catch (error) {
+      console.error("Error processing PDF:", error);
+    }
+  }, [onTextExtracted]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+    onDrop,
+    accept: {
+      'application/pdf': ['.pdf']
+    },
+    maxFiles: 1
+  });
 
   return (
-    <div className="grid gap-2">
-      <Label htmlFor="pdf-upload">Upload PDF Document</Label>
-      <input
-        id="pdf-upload"
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        accept="application/pdf"
-        className="block w-full text-sm text-gray-500 dark:text-gray-400
-          file:mr-4 file:py-2 file:px-4
-          file:rounded-md file:border-0
-          file:text-sm file:font-semibold
-          file:bg-blue-50 file:text-blue-700
-          dark:file:bg-blue-900/20 dark:file:text-blue-400
-          hover:file:bg-blue-100 dark:hover:file:bg-blue-800/30
-          cursor-pointer"
-        disabled={isExtracting}
-      />
-      
-      {isExtracting && (
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md flex items-center text-sm">
-          <span className="animate-pulse mr-2">⏳</span>
-          <span>Extracting text from PDF...</span>
-        </div>
-      )}
-      
-      {pdfFile && (
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md flex items-center text-sm">
-          <FileText className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
-          <span className="font-medium text-blue-600 dark:text-blue-400">{pdfFile.name}</span>
-        </div>
-      )}
+    <div 
+      {...getRootProps()} 
+      className={`border-2 border-dashed rounded-md p-6 cursor-pointer transition-colors ${
+        isDragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-700'
+      }`}
+    >
+      <input {...getInputProps()} />
+      <div className="flex flex-col items-center justify-center text-center">
+        {isLoading ? (
+          <>
+            <Loader2 className="h-10 w-10 text-blue-500 animate-spin mb-2" />
+            <p className="text-sm text-gray-600 dark:text-gray-400">Processing PDF...</p>
+          </>
+        ) : (
+          <>
+            <FileUp className="h-10 w-10 text-gray-400 dark:text-gray-600 mb-2" />
+            <p className="text-sm font-medium mb-1">
+              {isDragActive ? "Drop the PDF here" : "Drag & drop a PDF file here"}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              or click to select a file
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 };

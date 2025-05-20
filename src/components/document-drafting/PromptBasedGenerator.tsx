@@ -1,18 +1,8 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MessageSquare, Loader2, FileText, Globe, Scale, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
-import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
-import { motion } from 'framer-motion';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { performanceMonitor } from '@/utils/performance-monitoring';
+import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 
 type PromptBasedGeneratorProps = {
   onDraftGenerated: (title: string, type: string, content: string) => void;
@@ -191,7 +181,7 @@ Document format: Return ONLY the complete document text, no explanations needed.
         console.log("Sending enhanced prompt for generation...");
         
         try {
-          const generatedContent = await generateGeminiAnalysis(enhancedPrompt, `Document Draft: ${title} (${selectedDocType} - ${selectedJurisdiction})`);
+          const generatedContent = await generateOpenAIAnalysis(enhancedPrompt, `Document Draft: ${title} (${selectedDocType} - ${selectedJurisdiction})`);
           console.log("Document generated successfully", { contentLength: generatedContent?.length });
           
           if (!generatedContent || generatedContent.length < 10) {

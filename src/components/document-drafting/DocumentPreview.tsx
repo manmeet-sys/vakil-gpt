@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Copy, Download, FileText, AlertCircle, Check, Send, Printer, Edit } fro
 import { motion } from 'framer-motion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
+import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -66,7 +67,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         5. Level of compliance with Indian legal standards
         `;
       
-      const analysis = await generateGeminiAnalysis(analysisPrompt, 'Document Analysis');
+      const analysis = await generateOpenAIAnalysis(analysisPrompt, "Document Analysis");
       setLegalAnalysis(analysis);
     } catch (error) {
       console.error('Error analyzing document:', error);

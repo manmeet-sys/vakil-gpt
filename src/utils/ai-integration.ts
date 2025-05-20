@@ -1,9 +1,8 @@
-
 /**
  * Utility functions for AI integration in legal tools
  */
 import { useState, useEffect } from 'react';
-import { generateGeminiAnalysis } from './aiAnalysis';
+import { generateOpenAIAnalysis } from './aiAnalysis';
 import { useToast } from '@/components/ui/use-toast';
 
 /**
@@ -21,7 +20,7 @@ export const useAIAnalysis = (initialState = false) => {
     
     setIsAnalyzing(true);
     try {
-      const result = await generateGeminiAnalysis(content, context);
+      const result = await generateOpenAIAnalysis(content, context);
       return result;
     } catch (error) {
       console.error("Error in AI analysis:", error);
@@ -64,7 +63,7 @@ export const generateCaseCitations = async (text: string): Promise<Array<{case: 
     Text to analyze:
     ${text}`;
     
-    const analysis = await generateGeminiAnalysis(prompt, "Case Citation Extraction");
+    const analysis = await generateOpenAIAnalysis(prompt, "Case Citation Extraction");
     
     // Try to parse the response as JSON
     try {
@@ -104,7 +103,7 @@ export const generateLegalPrinciples = async (text: string): Promise<Array<{prin
     Text to analyze:
     ${text}`;
     
-    const analysis = await generateGeminiAnalysis(prompt, "Legal Principles Extraction");
+    const analysis = await generateOpenAIAnalysis(prompt, "Legal Principles Extraction");
     
     // Try to parse the response as JSON
     try {
@@ -145,7 +144,7 @@ export const enhanceDocumentWithAI = async (documentTemplate: string, context: s
     
     Return only the improved document text without any explanations or commentary.`;
     
-    return await generateGeminiAnalysis(prompt, "Document Enhancement");
+    return await generateOpenAIAnalysis(prompt, "Document Enhancement");
   } catch (error) {
     console.error("Error in enhanceDocumentWithAI:", error);
     return documentTemplate; // Return original if enhancement fails

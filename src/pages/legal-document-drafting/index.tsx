@@ -1,32 +1,7 @@
-
-import React, { useState } from 'react';
-import { 
-  FileText, Pen, Copy, Download, Sparkles, MessageCircle, 
-  HelpCircle, Users, FileSearch, BookOpen, 
-  CheckCircle, PenTool, ClipboardCheck 
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { motion } from 'framer-motion';
-import LegalToolLayout from '@/components/LegalToolLayout';
-import DocumentDraftingForm from '@/components/document-drafting/DocumentDraftingForm';
-import DocumentPreview from '@/components/document-drafting/DocumentPreview';
-import GeminiFlashAnalyzer from '@/components/GeminiFlashAnalyzer';
-import PromptBasedGenerator from '@/components/document-drafting/PromptBasedGenerator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CollaborativeEditor from '@/components/document-drafting/CollaborativeEditor';
-import PdfUploader from '@/components/PdfUploader';
+import React from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import BackButton from '@/components/BackButton';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
-import { performanceMonitor } from '@/utils/performance-monitoring';
-import ContractReviewTool from '@/components/document-drafting/ContractReviewTool';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import OpenAIFlashAnalyzer from '@/components/OpenAIFlashAnalyzer';
 
 const LegalDocumentDraftingPage = () => {
   const [draftContent, setDraftContent] = useState('');
@@ -36,6 +11,8 @@ const LegalDocumentDraftingPage = () => {
   const [attachedDocuments, setAttachedDocuments] = useState<File[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   
+  const { toast } = useToast();
+
   const handleDraftGenerated = (title: string, type: string, content: string) => {
     console.log("Document draft generated:", { title, type, contentLength: content?.length });
     performanceMonitor.measure('DocumentDrafting', 'updateState', () => {
@@ -153,7 +130,7 @@ const LegalDocumentDraftingPage = () => {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <GeminiFlashAnalyzer onAnalysisComplete={handleAdvancedAnalysis} />
+              <OpenAIFlashAnalyzer onAnalysisComplete={handleAdvancedAnalysis} />
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>

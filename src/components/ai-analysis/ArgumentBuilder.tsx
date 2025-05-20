@@ -1,19 +1,11 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Loader2, Scale, BookOpen, CheckCircle, FilePenLine, AlignLeft, AlertTriangle, Sword, Info } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { getGeminiResponse } from '../GeminiProIntegration';
-import { ArgumentBuilder as ArgumentBuilderType } from '@/types/GlobalTypes';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import GeminiFlashAnalyzer from '../GeminiFlashAnalyzer';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
+import OpenAIFlashAnalyzer from '@/components/OpenAIFlashAnalyzer';
 
 interface ArgumentBuilderProps {
   caseDetails?: {
@@ -100,8 +92,8 @@ Your response should be in JSON format with the following structure:
 
 Include specific references to Indian laws, Indian Penal Code sections, Indian court precedents, and the Constitution of India where relevant. Provide at least 3 main arguments and 2 counter-arguments with refutations.`;
 
-      // Generate the arguments using Gemini
-      const response = await getGeminiResponse(prompt);
+      // Generate the arguments using OpenAI
+      const response = await getOpenAIResponse(prompt);
       
       try {
         // Parse the JSON response
@@ -199,7 +191,7 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
           <FilePenLine className="h-5 w-5 text-blue-600" />
           <span>Legal Argument Builder</span>
         </h2>
-        <GeminiFlashAnalyzer onAnalysisComplete={handleFlashAnalysis} />
+        <OpenAIFlashAnalyzer onAnalysisComplete={handleFlashAnalysis} />
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

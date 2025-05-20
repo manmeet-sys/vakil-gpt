@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BaseAnalyzer, AnalysisResult } from '@/components/practice-area-tools/base';
 import { Label } from '@/components/ui/label';
@@ -10,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { getGeminiResponse } from '@/components/GeminiProIntegration';
 import { Search, Book } from 'lucide-react';
 import { toast } from 'sonner';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 const CivilPrecedentSearch: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -190,11 +190,11 @@ const CivilPrecedentSearch: React.FC = () => {
         });
       }
       
-      // If we have the Gemini API integration enabled and query is specific enough,
+      // If we have the OpenAI API integration enabled and query is specific enough,
       // use AI to analyze the results
       if (searchQuery.length > 10 && searchType === 'semantic') {
         try {
-          const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+          const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'openai';
           const apiKey = localStorage.getItem(`${apiProvider}ApiKey`);
           
           if (apiKey) {
@@ -213,7 +213,7 @@ const CivilPrecedentSearch: React.FC = () => {
               Format your response in clear, concise bullet points focused on practical legal application.
             `;
             
-            const aiAnalysis = await getGeminiResponse(prompt, apiKey);
+            const aiAnalysis = await getOpenAIResponse(prompt, apiKey);
             
             results.push({
               title: "AI-Generated Case Analysis",

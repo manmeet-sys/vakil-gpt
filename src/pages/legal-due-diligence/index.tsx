@@ -1,14 +1,7 @@
-import React, { useState } from 'react';
-import LegalToolLayout from '@/components/LegalToolLayout';
-import { Scale, FileText, Loader2, Upload, IndianRupee, BookOpen, Building, Landmark, Gavel } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from '@/components/ui/label';
+import React from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { getGeminiResponse } from '@/components/GeminiProIntegration';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 const LegalDueDiligencePage = () => {
   const [transactionType, setTransactionType] = useState<string>('');

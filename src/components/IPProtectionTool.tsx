@@ -1,19 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from '@/hooks/use-toast';
-import { 
-  Search, FileText, Shield, Bookmark, Copyright, Hash, Database, 
-  CheckCircle, AlertTriangle, Loader2, Download, Edit, Plus, Trash,
-  IndianRupee, FileCheck, Building, Landmark
-} from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { getGeminiResponse } from './GeminiProIntegration';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 interface SearchResult {
   id: string;
@@ -349,7 +342,7 @@ Please structure your response with these sections:
 7. Risk Mitigation Recommendations under Indian IP Framework
 8. Relevant Indian Case Law`;
       
-      const response = await getGeminiResponse(prompt);
+      const response = await getOpenAIResponse(prompt);
       setAnalysisResult(response);
       
       toast({
@@ -633,7 +626,7 @@ Please structure your response with these sections:
                         
                         {result.similarityScore !== undefined && result.similarityScore > 0.7 && (
                           <div className="mt-3 p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-md flex items-start">
-                            <AlertTriangle className="h-4 w-4 text-red-500 mr-2 mt-0.5" />
+                            <AlertCircle className="h-4 w-4 text-red-500 mr-2 mt-0.5" />
                             <span className="text-sm text-red-700 dark:text-red-400">
                               High similarity detected. This may present significant legal risks under the Indian Trademarks Act, 1999 if used in commerce.
                             </span>
@@ -806,7 +799,7 @@ Please structure your response with these sections:
               <div className="grid grid-cols-1 gap-4">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="api-key" className="text-sm font-medium">
-                    Gemini API Key:
+                    OpenAI API Key:
                   </Label>
                   <Button 
                     variant="outline" 
@@ -880,15 +873,15 @@ Please structure your response with these sections:
       <Dialog open={isApiKeyDialogOpen} onOpenChange={setIsApiKeyDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Set Gemini API Key</DialogTitle>
+            <DialogTitle>Set OpenAI API Key</DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
-            <Label htmlFor="gemini-api-key" className="mb-2 block">
-              Enter your Gemini API Key
+            <Label htmlFor="openai-api-key" className="mb-2 block">
+              Enter your OpenAI API Key
             </Label>
             <Input
-              id="gemini-api-key"
+              id="openai-api-key"
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}

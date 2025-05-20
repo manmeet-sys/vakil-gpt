@@ -1,240 +1,544 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2, Building2, FileText, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { Home, FileText, Search, Building2, FileCheck, ArrowRight } from 'lucide-react';
-import PracticeAreaHeader from '@/components/practice-areas/PracticeAreaHeader';
-import PracticeAreaFeature from '@/components/practice-areas/PracticeAreaFeature';
-import LegalUpdatesSection from '@/components/practice-areas/LegalUpdatesSection';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BackButton from '@/components/BackButton';
-import { TitleSearchAssistant, RERAComplianceChecker, PropertyDocumentGenerator, PropertyDueDiligence } from '@/components/practice-area-tools/real-estate-law';
-import { TitleSearchSkeleton, RERAComplianceSkeleton, PropertyDocumentSkeleton, PropertyDueDiligenceSkeleton } from '@/components/SkeletonLoaders';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
-import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
 
 const RealEstateLawPage = () => {
-  const [activeTab, setActiveTab] = useState<string>("tools");
-  const [selectedTool, setSelectedTool] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
-
-  // Parse URL parameters to determine which tool to show
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tool = urlParams.get('tool');
-    if (tool) {
-      setSelectedTool(tool);
-      setActiveTab("generator");
+  const [activeTab, setActiveTab] = useState('property-analysis');
+  const [isLoading, setIsLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  
+  // Property Analysis Form State
+  const [propertyType, setPropertyType] = useState('residential');
+  const [propertyAddress, setPropertyAddress] = useState('');
+  const [propertyDetails, setPropertyDetails] = useState('');
+  const [propertyState, setPropertyState] = useState('');
+  
+  // Document Review Form State
+  const [documentType, setDocumentType] = useState('sale-deed');
+  const [documentText, setDocumentText] = useState('');
+  
+  // Dispute Analysis Form State
+  const [disputeType, setDisputeType] = useState('boundary');
+  const [disputeDetails, setDisputeDetails] = useState('');
+  const [partiesInvolved, setPartiesInvolved] = useState('');
+  
+  const indianStates = [
+    { value: 'andhra-pradesh', label: 'Andhra Pradesh' },
+    { value: 'delhi', label: 'Delhi' },
+    { value: 'goa', label: 'Goa' },
+    { value: 'gujarat', label: 'Gujarat' },
+    { value: 'haryana', label: 'Haryana' },
+    { value: 'karnataka', label: 'Karnataka' },
+    { value: 'kerala', label: 'Kerala' },
+    { value: 'maharashtra', label: 'Maharashtra' },
+    { value: 'punjab', label: 'Punjab' },
+    { value: 'rajasthan', label: 'Rajasthan' },
+    { value: 'tamil-nadu', label: 'Tamil Nadu' },
+    { value: 'telangana', label: 'Telangana' },
+    { value: 'uttar-pradesh', label: 'Uttar Pradesh' },
+    { value: 'west-bengal', label: 'West Bengal' },
+  ];
+  
+  const propertyTypes = [
+    { value: 'residential', label: 'Residential Property' },
+    { value: 'commercial', label: 'Commercial Property' },
+    { value: 'agricultural', label: 'Agricultural Land' },
+    { value: 'industrial', label: 'Industrial Property' },
+    { value: 'mixed-use', label: 'Mixed-Use Property' },
+  ];
+  
+  const documentTypes = [
+    { value: 'sale-deed', label: 'Sale Deed' },
+    { value: 'lease-agreement', label: 'Lease Agreement' },
+    { value: 'gift-deed', label: 'Gift Deed' },
+    { value: 'mortgage-deed', label: 'Mortgage Deed' },
+    { value: 'power-of-attorney', label: 'Power of Attorney' },
+    { value: 'agreement-to-sell', label: 'Agreement to Sell' },
+    { value: 'conveyance-deed', label: 'Conveyance Deed' },
+  ];
+  
+  const disputeTypes = [
+    { value: 'boundary', label: 'Boundary Dispute' },
+    { value: 'title', label: 'Title Dispute' },
+    { value: 'possession', label: 'Possession Dispute' },
+    { value: 'tenant', label: 'Tenant Dispute' },
+    { value: 'construction', label: 'Construction Dispute' },
+    { value: 'inheritance', label: 'Inheritance Dispute' },
+  ];
+  
+  const analyzeProperty = async () => {
+    if (!propertyAddress || !propertyDetails || !propertyState) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
     }
-  }, []);
-
-  const handleToolSelect = (toolId: string) => {
+    
     setIsLoading(true);
-    setSelectedTool(toolId);
     
-    // Update URL with the selected tool
-    const url = new URL(window.location.href);
-    url.searchParams.set('tool', toolId);
-    window.history.pushState({}, '', url);
-    
-    setTimeout(() => {
-      setActiveTab("generator");
+    try {
+      const selectedState = indianStates.find(s => s.value === propertyState)?.label || propertyState;
+      const selectedType = propertyTypes.find(t => t.value === propertyType)?.label || propertyType;
+      
+      const prompt = `
+        As a real estate legal expert in India, analyze this property based on the following details:
+        
+        Property Type: ${selectedType}
+        Location: ${propertyAddress}
+        State: ${selectedState}
+        Details: ${propertyDetails}
+        
+        Please provide a comprehensive analysis including:
+        1. Key legal considerations for this type of property in ${selectedState}
+        2. Applicable state-specific real estate laws and regulations
+        3. Required documentation and registration process
+        4. Potential legal risks or issues to be aware of
+        5. Tax implications (property tax, stamp duty, etc.)
+        6. Recommendations for due diligence
+        
+        Format your response in a structured manner with clear sections.
+      `;
+      
+      const analysis = await generateOpenAIAnalysis(prompt, "Real Estate Property Analysis");
+      
+      setAnalysisResult({
+        type: 'property',
+        content: analysis,
+        title: `${selectedType} Analysis - ${selectedState}`,
+        date: new Date().toISOString()
+      });
+      
+      toast({
+        title: "Analysis Complete",
+        description: "Property analysis has been generated successfully"
+      });
+    } catch (error) {
+      console.error("Error analyzing property:", error);
+      toast({
+        title: "Analysis Failed",
+        description: "There was an error generating the analysis",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
   
-  const handleBackToTools = () => {
-    setSelectedTool(null);
-    setActiveTab("tools");
+  const analyzeDocument = async () => {
+    if (!documentText.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter the document text",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    // Remove tool parameter from URL
-    const url = new URL(window.location.href);
-    url.searchParams.delete('tool');
-    window.history.pushState({}, '', url);
+    setIsLoading(true);
+    
+    try {
+      const selectedDocType = documentTypes.find(d => d.value === documentType)?.label || documentType;
+      
+      const prompt = `
+        As a real estate legal expert in India, review this ${selectedDocType} document text:
+        
+        ${documentText.substring(0, 4000)}${documentText.length > 4000 ? '...' : ''}
+        
+        Please provide a comprehensive analysis including:
+        1. Validity and completeness of the document under Indian law
+        2. Key terms and conditions and their legal implications
+        3. Any missing clauses or potential issues
+        4. Compliance with relevant Indian real estate laws and regulations
+        5. Registration requirements and stamp duty considerations
+        6. Recommendations for improvement or modification
+        
+        Format your response in a structured manner with clear sections.
+      `;
+      
+      const analysis = await generateOpenAIAnalysis(prompt, "Real Estate Document Review");
+      
+      setAnalysisResult({
+        type: 'document',
+        content: analysis,
+        title: `${selectedDocType} Review`,
+        date: new Date().toISOString()
+      });
+      
+      toast({
+        title: "Review Complete",
+        description: "Document review has been generated successfully"
+      });
+    } catch (error) {
+      console.error("Error reviewing document:", error);
+      toast({
+        title: "Review Failed",
+        description: "There was an error generating the review",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  const realEstateLawTools = [
-    {
-      id: 'titlesearch',
-      title: 'Title Search Assistant',
-      description: 'Comprehensive tool to analyze property documents, verify ownership chain, and identify potential title defects or encumbrances',
-      icon: <Search className="h-4 w-4 text-blue-600" />,
-      linkPath: '#',
-      linkText: 'Verify Property Title'
-    },
-    {
-      id: 'reracompliance',
-      title: 'RERA Compliance Assistant',
-      description: 'Interactive system to verify Real Estate Regulatory Authority compliance for projects and generate required documentation',
-      icon: <Building2 className="h-4 w-4 text-blue-600" />,
-      linkPath: '#',
-      linkText: 'Check RERA Compliance'
-    },
-    {
-      id: 'propertydocuments',
-      title: 'Property Document Generator',
-      description: 'Advanced tool to generate legally sound property documents including sale deeds, lease agreements, and conveyance deeds',
-      icon: <FileText className="h-4 w-4 text-blue-600" />,
-      linkPath: '#',
-      linkText: 'Generate Property Documents'
-    },
-    {
-      id: 'duediligence',
-      title: 'Property Due Diligence',
-      description: 'Structured workflow for conducting comprehensive due diligence on property transactions with customizable checklists',
-      icon: <FileCheck className="h-4 w-4 text-blue-600" />,
-      linkPath: '#',
-      linkText: 'Start Due Diligence'
-    },
-  ];
   
-  const realEstateLawUpdates = [
-    {
-      title: 'RERA Amendment Notification',
-      date: '2024-04-20',
-      description: 'Central government notifies amendments to RERA rules strengthening penalties for non-compliance by developers.',
-      source: 'Gazette Notification dated 20.04.2024'
-    },
-    {
-      title: 'Digital Property Registration',
-      date: '2024-03-05',
-      description: 'Several states implement comprehensive digital property registration systems with blockchain verification.',
-      source: 'Ministry of Housing and Urban Affairs'
-    },
-    {
-      title: 'Supreme Court on Force Majeure in Real Estate',
-      date: '2024-02-22',
-      description: 'Landmark judgment clarifies application of force majeure clauses in real estate agreements post-pandemic.',
-      source: 'Supreme Court of India, Civil Appeal No. 2225 of 2023'
-    },
-    {
-      title: 'Stamp Duty Rationalization',
-      date: '2024-01-15',
-      description: 'Maharashtra, Karnataka, and Delhi announce rationalization of stamp duty rates for property transactions.',
-      source: 'State Government Notifications'
-    }
-  ];
-  
-  const realEstateLegalPrinciples = [
-    {
-      title: 'Caveat Emptor',
-      description: 'Buyer beware principle requiring property buyers to exercise due diligence before purchase, with exceptions for latent defects.',
-      source: 'Section 55, Transfer of Property Act'
-    },
-    {
-      title: 'Specific Performance',
-      description: 'Real estate contracts can be specifically enforced subject to the discretionary considerations under the Specific Relief Act.',
-      source: 'Section 10, Specific Relief Act'
-    },
-    {
-      title: 'RERA Compliance',
-      description: 'Real estate projects must be registered with the regulatory authority and developers must provide accurate project information.',
-      source: 'Section 3, Real Estate (Regulation and Development) Act'
-    },
-    {
-      title: 'Easement Rights',
-      description: 'Properties may be subject to easement rights allowing limited use by non-owners for specific purposes.',
-      source: 'Sections 4-44, Indian Easements Act, 1882'
-    },
-    {
-      title: 'Constructive Notice',
-      description: 'Registration of property documents provides constructive notice to the world at large about rights and interests in property.',
-      source: 'Section 50, Registration Act, 1908'
-    }
-  ];
-  
-  const renderSelectedTool = () => {
-    if (isLoading) {
-      switch (selectedTool) {
-        case 'titlesearch':
-          return <TitleSearchSkeleton />;
-        case 'reracompliance':
-          return <RERAComplianceSkeleton />;
-        case 'propertydocuments':
-          return <PropertyDocumentSkeleton />;
-        case 'duediligence':
-          return <PropertyDueDiligenceSkeleton />;
-        default:
-          return null;
-      }
+  const analyzeDispute = async () => {
+    if (!disputeDetails || !partiesInvolved) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
     }
     
-    switch (selectedTool) {
-      case 'titlesearch':
-        return <TitleSearchAssistant useAI={true} aiDescription="AI will analyze your property documents and highlight potential issues with the title chain" />;
-      case 'reracompliance':
-        return <RERAComplianceChecker useAI={true} aiDescription="AI will check your project details against RERA regulations and identify compliance requirements" />;
-      case 'propertydocuments':
-        return <PropertyDocumentGenerator useAI={true} aiPrompt="Generate legally compliant property documents enhanced with relevant legal clauses" />;
-      case 'duediligence':
-        return <PropertyDueDiligence useAI={true} aiDescription="AI will identify potential risks and compliance issues based on property details" />;
-      default:
-        return null;
+    setIsLoading(true);
+    
+    try {
+      const selectedDisputeType = disputeTypes.find(d => d.value === disputeType)?.label || disputeType;
+      
+      const prompt = `
+        As a real estate legal expert in India, analyze this property dispute:
+        
+        Dispute Type: ${selectedDisputeType}
+        Parties Involved: ${partiesInvolved}
+        Details: ${disputeDetails}
+        
+        Please provide a comprehensive analysis including:
+        1. Legal framework applicable to this type of dispute in India
+        2. Potential remedies and legal recourse available
+        3. Relevant case law and precedents from Indian courts
+        4. Estimated timeline and process for resolution
+        5. Documentation required to support the case
+        6. Recommendations for dispute resolution (litigation, mediation, etc.)
+        
+        Format your response in a structured manner with clear sections.
+      `;
+      
+      const analysis = await generateOpenAIAnalysis(prompt, "Real Estate Dispute Analysis");
+      
+      setAnalysisResult({
+        type: 'dispute',
+        content: analysis,
+        title: `${selectedDisputeType} Analysis`,
+        date: new Date().toISOString()
+      });
+      
+      toast({
+        title: "Analysis Complete",
+        description: "Dispute analysis has been generated successfully"
+      });
+    } catch (error) {
+      console.error("Error analyzing dispute:", error);
+      toast({
+        title: "Analysis Failed",
+        description: "There was an error generating the analysis",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
   
   return (
     <LegalToolLayout
-      title="Real Estate Law Practice Tools"
-      description="Specialized tools for real estate law practice including title analysis, RERA compliance, and property document generation"
-      icon={<Home className="w-6 h-6 text-blue-600" />}
+      title="Real Estate Law Assistant"
+      description="Analyze property details, review real estate documents, and get insights on property disputes under Indian law"
+      icon={<Building2 className="h-6 w-6 text-blue-600" />}
     >
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex items-center justify-between mb-4">
-          <TabsList>
-            <TabsTrigger value="tools" onClick={() => handleBackToTools()}>Tools</TabsTrigger>
-            <TabsTrigger value="generator" disabled={!selectedTool}>
-              {selectedTool === 'titlesearch' && 'Title Search Assistant'}
-              {selectedTool === 'reracompliance' && 'RERA Compliance Assistant'}
-              {selectedTool === 'propertydocuments' && 'Property Document Generator'}
-              {selectedTool === 'duediligence' && 'Property Due Diligence'}
-              {!selectedTool && 'Tool'}
-            </TabsTrigger>
-          </TabsList>
-          
-          <BackButton to="/practice-areas" label="Back to Practice Areas" />
-        </div>
+      <BackButton to="/tools" label="Back to Tools" />
       
-        <TabsContent value="tools" className="mt-0">
-          <PracticeAreaHeader
-            title="Real Estate Law Practice"
-            description="Tools and resources for Indian property law and real estate transactions"
-            icon={<Home className="h-6 w-6 text-blue-600" />}
-          />
-          
-          <section className="mb-8">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-blue-600" />
-              <span>Real Estate Legal Tools</span>
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {realEstateLawTools.map((tool) => (
-                <PracticeAreaFeature
-                  key={tool.id}
-                  title={tool.title}
-                  description={tool.description}
-                  icon={tool.icon}
-                  onClick={() => handleToolSelect(tool.id)}
-                  linkPath={tool.linkPath}
-                  linkText={tool.linkText}
+      <div className="mb-6">
+        <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/30">
+          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertTitle className="text-blue-800 dark:text-blue-300">Indian Real Estate Law</AlertTitle>
+          <AlertDescription className="text-blue-700 dark:text-blue-400">
+            This tool provides analysis based on Indian real estate laws including the Real Estate (Regulation and Development) Act, 2016 (RERA), 
+            Transfer of Property Act, 1882, Registration Act, 1908, and relevant state-specific regulations.
+          </AlertDescription>
+        </Alert>
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-3 mb-8">
+          <TabsTrigger value="property-analysis">Property Analysis</TabsTrigger>
+          <TabsTrigger value="document-review">Document Review</TabsTrigger>
+          <TabsTrigger value="dispute-analysis">Dispute Analysis</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="property-analysis" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-blue-600" />
+                Property Legal Analysis
+              </CardTitle>
+              <CardDescription>
+                Analyze property details for legal considerations under Indian law
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="property-type">Property Type</Label>
+                  <Select value={propertyType} onValueChange={setPropertyType}>
+                    <SelectTrigger id="property-type">
+                      <SelectValue placeholder="Select property type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {propertyTypes.map(type => (
+                        <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="property-state">State/UT</Label>
+                  <Select value={propertyState} onValueChange={setPropertyState}>
+                    <SelectTrigger id="property-state">
+                      <SelectValue placeholder="Select state/UT" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {indianStates.map(state => (
+                        <SelectItem key={state.value} value={state.value}>{state.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="property-address">Property Address/Location</Label>
+                <Input
+                  id="property-address"
+                  value={propertyAddress}
+                  onChange={(e) => setPropertyAddress(e.target.value)}
+                  placeholder="Enter property address or location"
                 />
-              ))}
-            </div>
-          </section>
-          
-          <LegalUpdatesSection
-            lawUpdates={realEstateLawUpdates}
-            keyLegalPrinciples={realEstateLegalPrinciples}
-          />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="property-details">Property Details</Label>
+                <Textarea
+                  id="property-details"
+                  value={propertyDetails}
+                  onChange={(e) => setPropertyDetails(e.target.value)}
+                  placeholder="Describe the property including size, features, age, current status, etc."
+                  className="min-h-[120px]"
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                onClick={analyzeProperty} 
+                disabled={isLoading || !propertyAddress || !propertyDetails || !propertyState}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  'Generate Property Analysis'
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
         </TabsContent>
         
-        <TabsContent value="generator" className="mt-0 space-y-6">
-          {renderSelectedTool()}
+        <TabsContent value="document-review" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+                Real Estate Document Review
+              </CardTitle>
+              <CardDescription>
+                Review real estate documents for legal validity and compliance
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="document-type">Document Type</Label>
+                <Select value={documentType} onValueChange={setDocumentType}>
+                  <SelectTrigger id="document-type">
+                    <SelectValue placeholder="Select document type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {documentTypes.map(type => (
+                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="document-text">Document Text</Label>
+                <Textarea
+                  id="document-text"
+                  value={documentText}
+                  onChange={(e) => setDocumentText(e.target.value)}
+                  placeholder="Paste the document text here for analysis..."
+                  className="min-h-[250px]"
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                onClick={analyzeDocument} 
+                disabled={isLoading || !documentText.trim()}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Reviewing...
+                  </>
+                ) : (
+                  'Review Document'
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="dispute-analysis" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                Property Dispute Analysis
+              </CardTitle>
+              <CardDescription>
+                Analyze property disputes and get legal insights
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="dispute-type">Dispute Type</Label>
+                <Select value={disputeType} onValueChange={setDisputeType}>
+                  <SelectTrigger id="dispute-type">
+                    <SelectValue placeholder="Select dispute type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {disputeTypes.map(type => (
+                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="parties-involved">Parties Involved</Label>
+                <Input
+                  id="parties-involved"
+                  value={partiesInvolved}
+                  onChange={(e) => setPartiesInvolved(e.target.value)}
+                  placeholder="Describe the parties involved in the dispute"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="dispute-details">Dispute Details</Label>
+                <Textarea
+                  id="dispute-details"
+                  value={disputeDetails}
+                  onChange={(e) => setDisputeDetails(e.target.value)}
+                  placeholder="Describe the dispute in detail including timeline, facts, and current status..."
+                  className="min-h-[150px]"
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                onClick={analyzeDispute} 
+                disabled={isLoading || !disputeDetails || !partiesInvolved}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  'Generate Dispute Analysis'
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
         </TabsContent>
       </Tabs>
+      
+      {analysisResult && (
+        <div className="mt-8 space-y-4">
+          <Card className="border-blue-200 dark:border-blue-900/30">
+            <CardHeader className="bg-blue-50 dark:bg-blue-900/20">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-xl text-blue-800 dark:text-blue-300">
+                  {analysisResult.title}
+                </CardTitle>
+                <Badge variant="outline" className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700">
+                  {new Date(analysisResult.date).toLocaleDateString()}
+                </Badge>
+              </div>
+              <CardDescription>
+                {analysisResult.type === 'property' && 'Property legal analysis based on Indian real estate laws'}
+                {analysisResult.type === 'document' && 'Document review and legal assessment'}
+                {analysisResult.type === 'dispute' && 'Property dispute analysis and recommendations'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="prose dark:prose-invert max-w-none">
+                <div dangerouslySetInnerHTML={{ __html: analysisResult.content.replace(/\n/g, '<br/>') }} />
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between border-t border-gray-200 dark:border-gray-800 pt-4">
+              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                <Info className="h-4 w-4 mr-1" />
+                Analysis based on Indian real estate laws and regulations
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  navigator.clipboard.writeText(analysisResult.content);
+                  toast({
+                    title: "Copied",
+                    description: "Analysis copied to clipboard"
+                  });
+                }}
+              >
+                Copy Analysis
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/30">
+            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <AlertTitle className="text-amber-800 dark:text-amber-300">Legal Disclaimer</AlertTitle>
+            <AlertDescription className="text-amber-700 dark:text-amber-400">
+              This analysis is provided for informational purposes only and does not constitute legal advice. 
+              Please consult with a qualified legal professional for specific advice regarding your property matters.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
     </LegalToolLayout>
   );
 };
