@@ -4,9 +4,40 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { 
+  AlertCircle, 
+  Loader2, 
+  Hash,
+  Database,
+  Copyright,
+  FileCheck,
+  Landmark,
+  Search,
+  Shield,
+  FileText,
+  Bookmark,
+  Plus,
+  Edit,
+  Trash,
+  Download
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { getOpenAIResponse } from '@/components/OpenAIIntegration';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from '@/components/ui/tabs';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 
 interface SearchResult {
   id: string;
@@ -153,9 +184,7 @@ const IPProtectionTool: React.FC = () => {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Search Query Required",
+      toast.error("Search Query Required", {
         description: "Please enter a search term",
       });
       return;
@@ -195,15 +224,12 @@ const IPProtectionTool: React.FC = () => {
         setSearchResults([]);
       }
       
-      toast({
-        title: "Search Complete",
+      toast.success("Search Complete", {
         description: `Found ${searchResults.length} results for "${searchQuery}" in Indian IP databases`,
       });
     } catch (error) {
       console.error('Search error:', error);
-      toast({
-        variant: "destructive",
-        title: "Search Failed",
+      toast.error("Search Failed", {
         description: "Unable to complete the search in Indian IP databases. Please try again later.",
       });
     } finally {
@@ -215,8 +241,7 @@ const IPProtectionTool: React.FC = () => {
     localStorage.setItem('geminiApiKey', apiKey);
     setIsApiKeyDialogOpen(false);
     
-    toast({
-      title: "API Key Saved",
+    toast.success("API Key Saved", {
       description: "Your Gemini API key has been saved for future use",
     });
   };
@@ -236,17 +261,14 @@ const IPProtectionTool: React.FC = () => {
     
     setMyIpAssets([...myIpAssets, newIpAsset]);
     
-    toast({
-      title: "Added to Portfolio",
+    toast.success("Added to Portfolio", {
       description: `"${result.name}" has been added to your Indian IP portfolio`,
     });
   };
 
   const addNewAsset = () => {
     if (!newAsset.name.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Name Required",
+      toast.error("Name Required", {
         description: "Please enter a name for your IP asset",
       });
       return;
@@ -271,8 +293,7 @@ const IPProtectionTool: React.FC = () => {
       indianJurisdiction: 'Indian Intellectual Property Office'
     });
     
-    toast({
-      title: "Asset Added",
+    toast.success("Asset Added", {
       description: `"${asset.name}" has been added to your Indian IP portfolio`,
     });
   };
@@ -289,8 +310,7 @@ const IPProtectionTool: React.FC = () => {
     setIsAssetDialogOpen(false);
     setSelectedAsset(null);
     
-    toast({
-      title: "Asset Updated",
+    toast.success("Asset Updated", {
       description: `"${selectedAsset.name}" has been updated in your Indian IP portfolio`,
     });
   };
@@ -298,26 +318,21 @@ const IPProtectionTool: React.FC = () => {
   const deleteAsset = (id: string) => {
     setMyIpAssets(myIpAssets.filter(asset => asset.id !== id));
     
-    toast({
-      title: "Asset Deleted",
+    toast.success("Asset Deleted", {
       description: "The IP asset has been removed from your portfolio",
     });
   };
 
   const analyzeIPRisk = async () => {
     if (!analysisText.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Text Required",
+      toast.error("Text Required", {
         description: "Please enter text to analyze for IP risks",
       });
       return;
     }
     
     if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
+      toast.error("API Key Required", {
         description: "Please set your Gemini API key to use the analysis feature",
       });
       setIsApiKeyDialogOpen(true);
@@ -342,18 +357,15 @@ Please structure your response with these sections:
 7. Risk Mitigation Recommendations under Indian IP Framework
 8. Relevant Indian Case Law`;
       
-      const response = await getOpenAIResponse(prompt);
+      const response = await generateOpenAIAnalysis(prompt);
       setAnalysisResult(response);
       
-      toast({
-        title: "Analysis Complete",
+      toast.success("Analysis Complete", {
         description: "Indian IP risk analysis has been generated",
       });
     } catch (error) {
       console.error('Analysis error:', error);
-      toast({
-        variant: "destructive",
-        title: "Analysis Failed",
+      toast.error("Analysis Failed", {
         description: error instanceof Error ? error.message : "Unable to complete the analysis",
       });
     } finally {
@@ -381,8 +393,7 @@ Please structure your response with these sections:
       myIpAssets.map(a => a.id === assetId ? updatedAsset : a)
     );
     
-    toast({
-      title: "Document Added",
+    toast.success("Document Added", {
       description: `Document has been added to "${asset.name}"`,
     });
   };

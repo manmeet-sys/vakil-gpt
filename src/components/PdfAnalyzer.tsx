@@ -1,123 +1,171 @@
 
 import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { extractTextFromPdf, mockPdfExtraction } from '@/utils/pdfExtraction';
 import { Button } from '@/components/ui/button';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle,
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Loader2, FileUp } from 'lucide-react';
+import { FileUp, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 import PdfFileUpload from './PdfFileUpload';
 
 interface PdfAnalyzerProps {
-  onAnalysisComplete: (analysis: string) => void;
-  buttonLabel?: string;
-  iconOnly?: boolean;
+  onAnalysisComplete?: (analysis: string) => void;
 }
 
-const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ 
-  onAnalysisComplete,
-  buttonLabel = "PDF Analyzer",
-  iconOnly = false
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [pdfText, setPdfText] = useState('');
-  const [pdfName, setPdfName] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  
-  const handlePdfExtracted = (text: string, fileName: string) => {
-    setPdfText(text);
-    setPdfName(fileName);
+const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ onAnalysisComplete }) => {
+  const [extractedText, setExtractedText] = useState<string>('');
+  const [fileName, setFileName] = useState<string>('');
+  const [analysis, setAnalysis] = useState<string>('');
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>('text');
+
+  const handleTextExtracted = (text: string, fileName: string) => {
+    setExtractedText(text);
+    setFileName(fileName);
+    setAnalysis('');
+    if (onAnalysisComplete) {
+      onAnalysisComplete(text);
+    }
   };
-  
-  const analyzePdf = async () => {
-    if (!pdfText.trim()) {
-      toast.error("Please upload a PDF file first");
+
+  const analyzeWithOpenAI = async () => {
+    if (!extractedText) {
+      toast.error("No text to analyze", {
+        description: "Please upload a PDF document first"
+      });
       return;
     }
     
     setIsAnalyzing(true);
     
     try {
-      const analysis = await generateOpenAIAnalysis(pdfText, pdfName);
+      const prompt = `
+        Analyze the following legal document text and provide a comprehensive summary.
+        Include key points, parties involved, obligations, rights, important clauses, 
+        potential legal issues, and any significant terms or conditions.
+        
+        Document text:
+        ${extractedText.slice(0, 15000)}
+      `;
       
-      onAnalysisComplete(analysis);
-      setIsOpen(false);
-      setPdfText('');
-      setPdfName('');
+      const result = await generateOpenAIAnalysis(prompt, "Legal Document Analysis");
       
-      toast.success("PDF analysis complete");
+      setAnalysis(result);
+      setActiveTab('analysis');
+      
+      if (onAnalysisComplete) {
+        onAnalysisComplete(result);
+      }
+      
+      toast.success("Analysis complete", {
+        description: "The document analysis is ready for review"
+      });
     } catch (error) {
-      console.error("Error analyzing PDF:", error);
-      toast.error("Failed to analyze PDF. Please try a different file or try again later.");
+      console.error('Error analyzing document:', error);
+      toast.error("Analysis failed", {
+        description: "There was a problem analyzing the document. Please try again."
+      });
     } finally {
       setIsAnalyzing(false);
     }
   };
-  
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="text-xs flex items-center gap-1 h-8"
-        >
-          <FileUp className="h-3.5 w-3.5" />
-          {!iconOnly && <span>{buttonLabel}</span>}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[640px]">
-        <DialogHeader>
-          <DialogTitle>PDF Analyzer</DialogTitle>
-          <DialogDescription>
-            Upload a PDF document to extract and analyze its content with AI.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label>Upload PDF Document</Label>
-            <PdfFileUpload 
-              onTextExtracted={handlePdfExtracted} 
-            />
-            {pdfName && (
-              <p className="text-sm mt-2 flex items-center">
-                <FileUp className="h-4 w-4 mr-2" />
-                {pdfName}
-              </p>
+    <Card>
+      <CardHeader>
+        <CardTitle>Indian Legal Document Analyzer</CardTitle>
+        <CardDescription>
+          Upload an Indian legal document in PDF format for AI-powered analysis based on Indian law
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {!extractedText ? (
+          <PdfFileUpload onTextExtracted={handleTextExtracted} />
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">
+                  {fileName}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {extractedText.length} characters extracted
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setExtractedText('');
+                  setFileName('');
+                  setAnalysis('');
+                }}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Upload Different Document
+              </Button>
+            </div>
+            
+            <Button 
+              onClick={analyzeWithOpenAI} 
+              disabled={isAnalyzing}
+              className="w-full"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Analyzing Document...
+                </>
+              ) : (
+                <>
+                  Analyze Document with AI
+                </>
+              )}
+            </Button>
+            
+            {(extractedText || analysis) && (
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-2">
+                  <TabsTrigger value="text">Extracted Text</TabsTrigger>
+                  <TabsTrigger value="analysis">AI Analysis</TabsTrigger>
+                </TabsList>
+                <TabsContent value="text" className="mt-4">
+                  <div className="relative">
+                    <div className="max-h-96 overflow-y-auto border rounded-md p-4 bg-gray-50 dark:bg-gray-900/50 text-sm font-mono">
+                      {extractedText.split('\n').map((line, i) => (
+                        <p key={i} className="mb-1">
+                          {line || <br />}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="analysis" className="mt-4">
+                  {analysis ? (
+                    <div className="max-h-96 overflow-y-auto border rounded-md p-4 text-sm">
+                      {analysis.split('\n').map((line, i) => (
+                        <p key={i} className="mb-2">
+                          {line || <br />}
+                        </p>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center p-8 text-gray-500">
+                      {isAnalyzing ? (
+                        <p>Analyzing document...</p>
+                      ) : (
+                        <p>Click "Analyze Document" to get an AI-powered analysis</p>
+                      )}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             )}
-            <p className="text-xs text-muted-foreground">
-              Upload your legal document, contract, or any PDF for AI-powered analysis.
-            </p>
           </div>
-        </div>
-        
-        <DialogFooter>
-          <Button
-            onClick={analyzePdf}
-            disabled={isAnalyzing || !pdfText.trim()}
-            className="w-full sm:w-auto"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              "Analyze PDF"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

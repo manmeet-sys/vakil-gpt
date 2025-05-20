@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { FileUp, Loader2, File } from 'lucide-react';
+import { FileUp, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -17,7 +17,6 @@ const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onTextExtracted }) => {
 
   const extractTextFromPdf = async (file: File): Promise<string> => {
     setIsLoading(true);
-
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -40,12 +39,11 @@ const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onTextExtracted }) => {
       setIsLoading(false);
     }
   };
-  
+
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
     
     const file = acceptedFiles[0];
-    
     if (file.type !== 'application/pdf') {
       toast.error("Please upload a PDF file");
       return;
@@ -60,7 +58,7 @@ const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onTextExtracted }) => {
     }
   }, [onTextExtracted]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'application/pdf': ['.pdf']
@@ -69,10 +67,12 @@ const PdfFileUpload: React.FC<PdfFileUploadProps> = ({ onTextExtracted }) => {
   });
 
   return (
-    <div 
-      {...getRootProps()} 
+    <div
+      {...getRootProps()}
       className={`border-2 border-dashed rounded-md p-6 cursor-pointer transition-colors ${
-        isDragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-700'
+        isDragActive 
+          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+          : 'border-gray-300 dark:border-gray-700'
       }`}
     >
       <input {...getInputProps()} />
