@@ -1,9 +1,10 @@
+
 /**
  * Utility functions for AI integration in legal tools
  */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { generateOpenAIAnalysis } from './aiAnalysis';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Hook to use AI analysis capabilities

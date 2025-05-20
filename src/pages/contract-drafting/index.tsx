@@ -1,10 +1,10 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 import ContractDraftingForm from '@/components/document-drafting/ContractDraftingForm';
 import DocumentPreview from '@/components/document-drafting/DocumentPreview';
-import { useState } from 'react';
 import { Download } from 'lucide-react';
 
 const ContractDraftingPage = () => {

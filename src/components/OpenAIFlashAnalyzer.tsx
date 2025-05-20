@@ -1,26 +1,31 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Zap } from 'lucide-react';
 import { toast } from 'sonner';
-import { getOpenAIResponse } from './OpenAIIntegration';
+import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 
 interface OpenAIFlashAnalyzerProps {
   onAnalysisComplete: (analysis: string) => void;
+  text?: string;
+  context?: string;
 }
 
-const OpenAIFlashAnalyzer: React.FC<OpenAIFlashAnalyzerProps> = ({ onAnalysisComplete }) => {
-  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+const OpenAIFlashAnalyzer: React.FC<OpenAIFlashAnalyzerProps> = ({ 
+  onAnalysisComplete,
+  text = "",
+  context = ""
+}) => {
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleClick = async () => {
     setIsAnalyzing(true);
     
     try {
-      // This is a simplified version that would typically analyze content from context
-      // In a real implementation, you'd likely want to analyze relevant content from the component's parent
-      const analysis = await getOpenAIResponse(
-        "Provide a brief analysis of potential approaches to this legal case."
-      );
+      const contentToAnalyze = text || "Provide a brief analysis of this legal case.";
+      const contextInfo = context || "Legal Analysis";
+      
+      const analysis = await generateOpenAIAnalysis(contentToAnalyze, contextInfo);
       
       onAnalysisComplete(analysis);
       toast.success("Enhanced analysis applied");

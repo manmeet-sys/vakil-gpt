@@ -5,7 +5,8 @@ import { FileUp, Loader2, File } from 'lucide-react';
 import { toast } from 'sonner';
 import * as pdfjsLib from 'pdfjs-dist';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+// Set the worker source path properly
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface PdfFileUploadProps {
   onTextExtracted: (text: string, fileName: string) => void;
