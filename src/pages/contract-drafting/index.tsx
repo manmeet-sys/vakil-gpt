@@ -2,16 +2,31 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 import ContractDraftingForm from '@/components/document-drafting/ContractDraftingForm';
 import DocumentPreview from '@/components/document-drafting/DocumentPreview';
 import { Download } from 'lucide-react';
+import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
 
 const ContractDraftingPage = () => {
   const { toast } = useToast();
   const [documentContent, setDocumentContent] = useState<string>('');
   const [documentTitle, setDocumentTitle] = useState<string>('');
   const [documentType, setDocumentType] = useState<string>('');
+
+  // Function to get AI response for document generation
+  const getOpenAIResponse = async (prompt: string, context: string) => {
+    try {
+      return await generateOpenAIAnalysis(prompt, context);
+    } catch (error) {
+      console.error('Error generating document:', error);
+      toast({
+        title: "Generation Error",
+        description: "Failed to generate document. Please try again.",
+        variant: "destructive"
+      });
+      return '';
+    }
+  };
 
   const handleGenerateDocument = (content: string, title: string, type: string) => {
     setDocumentContent(content);
