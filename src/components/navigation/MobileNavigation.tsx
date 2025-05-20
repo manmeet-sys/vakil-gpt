@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { X, User, LogOut, LogIn, Menu, Wifi, WifiOff } from 'lucide-react';
@@ -139,7 +138,6 @@ const MobileNavigation: React.FC = () => {
               </div>
             </nav>
             
-            {/* Platform indicator */}
             <div className="px-4 py-2 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800">
               {platform !== 'web' ? `${platform.charAt(0).toUpperCase() + platform.slice(1)} App` : 'Web App'}
             </div>

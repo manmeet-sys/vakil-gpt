@@ -32,6 +32,32 @@ export const DeviceService = {
   },
   
   /**
+   * Check if the device is running Android
+   * @returns {boolean} True if the device is running Android
+   */
+  isAndroid(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /android/i.test(userAgent);
+  },
+  
+  /**
+   * Check if the device is running iOS
+   * @returns {boolean} True if the device is running iOS
+   */
+  isIOS(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/i.test(userAgent);
+  },
+  
+  /**
    * Check if the device supports touch input
    * @returns {boolean} True if the device supports touch input
    */

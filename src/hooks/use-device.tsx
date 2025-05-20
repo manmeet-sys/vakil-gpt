@@ -9,6 +9,8 @@ interface DeviceContextProps {
   isTouch: boolean;
   isLandscape: boolean;
   isPortrait: boolean;
+  platform: 'web' | 'android' | 'ios' | 'unknown';
+  isOnline: boolean;
 }
 
 const DeviceContext = React.createContext<DeviceContextProps>({
@@ -18,6 +20,8 @@ const DeviceContext = React.createContext<DeviceContextProps>({
   isTouch: false,
   isLandscape: true,
   isPortrait: false,
+  platform: 'web',
+  isOnline: true,
 });
 
 export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -25,8 +29,23 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [windowWidth, setWindowWidth] = React.useState<number | undefined>(undefined);
   const [orientation, setOrientation] = React.useState<"landscape" | "portrait">("landscape");
   const [isTouch, setIsTouch] = React.useState<boolean>(false);
+  const [platform, setPlatform] = React.useState<'web' | 'android' | 'ios' | 'unknown'>('web');
+  const [isOnline, setIsOnline] = React.useState<boolean>(true);
   
   React.useEffect(() => {
+    const detectPlatform = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      if (/android/i.test(userAgent)) {
+        return 'android';
+      } else if (/iphone|ipad|ipod/i.test(userAgent)) {
+        return 'ios';
+      } else {
+        return 'web';
+      }
+    };
+
+    setPlatform(detectPlatform());
+    
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
       setOrientation(window.innerWidth > window.innerHeight ? "landscape" : "portrait");
@@ -34,6 +53,15 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // Check if device has touch capabilities
     setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    
+    // Check online status
+    const handleOnlineStatus = () => {
+      setIsOnline(navigator.onLine);
+    };
+
+    window.addEventListener('online', handleOnlineStatus);
+    window.addEventListener('offline', handleOnlineStatus);
+    handleOnlineStatus();
     
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -54,15 +82,23 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
       
       return () => {
+        window.removeEventListener('online', handleOnlineStatus);
+        window.removeEventListener('offline', handleOnlineStatus);
+        
         if (mediaQuery.removeEventListener) {
           mediaQuery.removeEventListener("change", handleOrientationChange);
         } else {
           window.removeEventListener('resize', handleResize);
         }
+        window.removeEventListener('resize', handleResize);
       };
     }
     
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('online', handleOnlineStatus);
+      window.removeEventListener('offline', handleOnlineStatus);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
   
   // Device type detection
@@ -75,7 +111,9 @@ export const DeviceProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     isDesktop,
     isTouch,
     isLandscape: orientation === "landscape",
-    isPortrait: orientation === "portrait"
+    isPortrait: orientation === "portrait",
+    platform,
+    isOnline
   };
   
   return (

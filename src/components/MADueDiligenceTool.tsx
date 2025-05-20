@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -134,14 +135,14 @@ const MADueDiligenceTool: React.FC<MADueDiligenceToolProps> = ({ onAnalysisCompl
         </Button>
       </CardFooter>
       {analysisResult && (
-        <CardContent className="mt-4">
-          <CardTitle>Analysis Result</CardTitle>
+        <div className="mt-4 p-4 border-t">
+          <h3 className="text-lg font-medium mb-2">Analysis Result</h3>
           <Textarea
             value={analysisResult}
             readOnly
             className="min-h-[150px] resize-none"
           />
-        </CardContent>
+        </div>
       )}
     </Card>
   );
