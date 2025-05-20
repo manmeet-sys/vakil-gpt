@@ -1,326 +1,312 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Scale, FileText, AlertCircle, HelpCircle, Info } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import OpenAIFlashAnalyzer from '@/components/OpenAIFlashAnalyzer';
-import LazyComponent from '@/components/LazyComponent';
-import AIAnalysisSkeleton from '../SkeletonLoaders/AIAnalysisSkeleton';
-import { design } from '@/lib/design-system';
-import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import InfoCard from '../ui/info-card';
-import ErrorMessage from '../ui/error-message';
+import { Loader2, AlertCircle, Settings } from 'lucide-react';
+import { toast } from 'sonner';
 import { getOpenAIResponse } from '@/components/OpenAIIntegration';
-import { useNavigate } from 'react-router-dom';
+import { 
+  Card, CardContent, CardDescription, 
+  CardFooter, CardHeader, CardTitle 
+} from '@/components/ui/card';
 
-const OutcomePredictor = () => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [caseDetail, setCaseDetail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<null | any>(null);
-  const [openAiAnalysis, setOpenAiAnalysis] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+interface OutcomePredictorProps {
+  caseDetails?: {
+    id: string;
+    title: string;
+    description?: string;
+    courts?: string[]
+    precedents?: string[]
+  };
+  onPredictionComplete?: (prediction: any) => void;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Reset error states at the beginning of submission
-    setError(null);
-    setApiKeyError(null);
-    
-    if (!caseDetail.trim()) {
+interface PredictionResults {
+  probability: number;
+  favorableFactors: string[];
+  unfavorableFactors: string[];
+  relevantPrecedents: string[];
+  suggestedApproach: string;
+}
+
+const OutcomePredictor: React.FC<OutcomePredictorProps> = ({ 
+  caseDetails,
+  onPredictionComplete 
+}) => {
+  const [caseDescription, setCaseDescription] = useState<string>(caseDetails?.description || '');
+  const [court, setCourt] = useState<string>('');
+  const [precedents, setPrecedents] = useState<string>(caseDetails?.precedents?.join('\n') || '');
+  const [isPredicting, setIsPredicting] = useState<boolean>(false);
+  const [prediction, setPrediction] = useState<PredictionResults | null>(null);
+
+  const handlePredict = async () => {
+    if (caseDescription.trim().length < 100) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please provide case details for analysis"
+        title: "Insufficient Information",
+        description: "Please provide more details about the case for accurate prediction.",
       });
       return;
     }
-    
-    setIsLoading(true);
+
+    setIsPredicting(true);
     
     try {
-      const { primaryApiKey } = {
-        primaryApiKey: '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'
-      };
-      
-      // Create a prompt for the AI
-      const prompt = `You are an AI legal assistant specializing in Indian law. Analyze the following case details and predict the likely outcome based on Indian legal precedents and statutes.
-      
-Case details:
-${caseDetail}
+      const promptText = `
+        You are an experienced legal analyst with expertise in Indian law. Analyze the following case and predict its likely outcome:
+        
+        Case Description:
+        ${caseDescription}
+        
+        ${court ? `Court: ${court}` : ''}
+        
+        ${precedents ? `Relevant Precedents:
+        ${precedents}` : ''}
+        
+        Based on Indian legal principles, statutory provisions, and case law, provide:
+        1. A probability percentage of a favorable outcome, considering the strength of the case
+        2. Key favorable legal factors that support this case
+        3. Key unfavorable legal factors that may weaken this case
+        4. Relevant legal precedents from Indian courts that might apply
+        5. Suggested approach to improve chances of success
+        
+        Format your response as JSON with the following structure:
+        {
+          "probability": [number between 0-100],
+          "favorableFactors": ["factor1", "factor2", ...],
+          "unfavorableFactors": ["factor1", "factor2", ...],
+          "relevantPrecedents": ["precedent with citation", ...],
+          "suggestedApproach": "detailed strategic recommendation"
+        }
+      `;
 
-Provide your analysis in JSON format with the following structure:
-{
-  "prediction": "Brief outcome prediction (1-2 sentences)",
-  "confidence": [Number between 0-100 representing confidence level],
-  "relevantCases": ["Case citation 1", "Case citation 2", "Case citation 3"],
-  "analysis": "Detailed analysis explaining the prediction (2-3 paragraphs)"
-}`;
+      const response = await getOpenAIResponse(promptText);
       
-      // Make the API call
-      const responseText = await getOpenAIResponse(prompt, primaryApiKey);
-      
-      // Parse the JSON response
-      let jsonResponse;
       try {
-        // Find JSON content in the response (in case the AI wraps it in markdown code blocks)
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        const jsonString = jsonMatch ? jsonMatch[0] : responseText;
-        jsonResponse = JSON.parse(jsonString);
+        // Extract JSON if it's wrapped in text or code blocks
+        const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || 
+                          response.match(/```\s*([\s\S]*?)\s*```/) || 
+                          response.match(/{[\s\S]*}/);
+        
+        let jsonResponse;
+        if (jsonMatch) {
+          jsonResponse = JSON.parse(jsonMatch[1] || jsonMatch[0]);
+        } else {
+          jsonResponse = JSON.parse(response);
+        }
+        
+        setPrediction(jsonResponse);
+        
+        if (onPredictionComplete) {
+          onPredictionComplete(jsonResponse);
+        }
+        
+        toast({
+          title: "Prediction Complete",
+          description: "Case outcome prediction has been generated",
+        });
       } catch (parseError) {
         console.error("Error parsing AI response:", parseError);
-        throw new Error("Failed to parse AI response. Please try again.");
+        toast({
+          title: "Format Error",
+          description: "Unable to parse AI response. Please try again.",
+        });
       }
-      
-      // Set the result
-      setResult(jsonResponse);
-      
-      // Hide onboarding message after successful analysis
-      setShowOnboarding(false);
-      
-      toast({
-        title: "Analysis Complete",
-        description: "Case outcome prediction generated successfully"
-      });
     } catch (error) {
       console.error("Error predicting outcome:", error);
-      setError(error instanceof Error ? error.message : "An unexpected error occurred");
       toast({
-        variant: "destructive",
         title: "Prediction Failed",
-        description: error instanceof Error ? error.message : "Failed to analyze case details. Please try again."
+        description: error instanceof Error ? error.message : "Failed to generate prediction",
       });
     } finally {
-      setIsLoading(false);
+      setIsPredicting(false);
     }
   };
-  
-  const handleOpenAiAnalysis = (analysis: string) => {
-    setOpenAiAnalysis(analysis);
+
+  const getProbabilityDisplay = (probability: number) => {
+    let color;
+    let text;
     
-    try {
-      // Update our regular prediction with enhanced OpenAI results
-      toast({
-        title: "Enhanced Analysis Applied",
-        description: "OpenAI insights have been incorporated into your prediction"
-      });
-    } catch (e) {
-      console.error("Error parsing OpenAI analysis:", e);
-      toast({
-        variant: "destructive",
-        title: "Analysis Processing Error",
-        description: "Could not process the enhanced analysis. The basic results are still available."
-      });
+    if (probability >= 70) {
+      color = "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400";
+      text = "Favorable";
+    } else if (probability >= 40) {
+      color = "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400";
+      text = "Uncertain";
+    } else {
+      color = "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400";
+      text = "Unfavorable";
     }
+    
+    return { color, text };
   };
   
+  const openAISettings = () => {
+    toast({
+      title: "Settings",
+      description: "Navigate to AI Settings to customize AI behavior",
+    });
+  };
+
   return (
-    <TooltipProvider>
-      <div className={cn("space-y-6", design.spacing.section)}>
-        <div>
-          <div className="flex justify-between items-center mb-3">
-            <h3 className={cn(design.text.heading, "text-lg flex items-center gap-2")}>
-              <Scale className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              Case Outcome Prediction
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>This tool uses AI to analyze case details and predict potential outcomes based on Indian legal precedents.</p>
-                </TooltipContent>
-              </Tooltip>
-              <OpenAIFlashAnalyzer onAnalysisComplete={handleOpenAiAnalysis} />
-            </h3>
-          </div>
-          
-          {apiKeyError && (
-            <InfoCard
-              title="API Key Required"
-              type="help"
-              className="mb-4"
-            >
-              <p className="mb-3">{apiKeyError}</p>
-              <Button 
-                onClick={navigateToSettings}
-                variant="outline" 
-                size="sm"
-                className="mt-2"
-              >
-                Go to AI Settings
-              </Button>
-            </InfoCard>
-          )}
-          
-          {showOnboarding && !apiKeyError && (
-            <InfoCard
-              title="How to use this tool"
-              type="info"
-              className="mb-4"
-              dismissible
-              onDismiss={() => setShowOnboarding(false)}
-            >
-              <p>
-                Enter the details of your legal case including relevant facts, applicable laws, jurisdiction information. 
-                The AI will analyze your input and provide a prediction based on similar cases in Indian courts.
-              </p>
-            </InfoCard>
-          )}
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Case Outcome Predictor</h2>
+        <Button variant="outline" size="sm" onClick={openAISettings}>
+          <Settings className="h-4 w-4 mr-1" />
+          AI Settings
+        </Button>
+      </div>
+      
+      {!prediction ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Predict Case Outcome</CardTitle>
+            <CardDescription>
+              Enter case details to get an AI prediction based on Indian legal precedents and principles
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="caseDetails" className={cn(design.text.body, "font-medium")}>
-                  Enter Case Details
-                </Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p className="max-w-xs">Include case facts, applicable laws, jurisdiction details, and precedents if known.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <Textarea
-                id="caseDetails"
-                placeholder="Provide facts of the case, applicable laws, jurisdiction, and relevant circumstances..."
-                value={caseDetail}
-                onChange={e => setCaseDetail(e.target.value)}
-                className={cn("min-h-[150px] resize-y", error ? "border-red-300 dark:border-red-700" : "")}
+              <Label htmlFor="case-details">Case Details</Label>
+              <Textarea 
+                id="case-details" 
+                value={caseDescription}
+                onChange={(e) => setCaseDescription(e.target.value)}
+                placeholder="Describe the case in detail, including facts, legal issues, arguments from both sides..."
+                className="min-h-[150px]"
               />
-              
-              {error && (
-                <ErrorMessage 
-                  message={error}
-                  severity="error"
-                  className="mt-2"
-                />
-              )}
+              <p className="text-xs text-muted-foreground">
+                Provide comprehensive details for more accurate predictions (minimum 100 characters)
+              </p>
             </div>
             
+            <div className="space-y-2">
+              <Label htmlFor="court">Court/Tribunal</Label>
+              <Input 
+                id="court"
+                value={court}
+                onChange={(e) => setCourt(e.target.value)}
+                placeholder="e.g., Supreme Court of India, Delhi High Court, NCLT..."
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="precedents">
+                Relevant Precedents <span className="text-xs text-muted-foreground">(Optional)</span>
+              </Label>
+              <Textarea 
+                id="precedents"
+                value={precedents}
+                onChange={(e) => setPrecedents(e.target.value)}
+                placeholder="List any relevant case law or precedents, one per line..."
+                className="min-h-[100px]"
+              />
+            </div>
+          </CardContent>
+          <CardFooter>
             <Button 
-              type="submit" 
-              className="w-full sm:w-auto" 
-              disabled={isLoading || !!apiKeyError}
+              onClick={handlePredict} 
+              disabled={isPredicting || caseDescription.trim().length < 100}
+              className="w-full"
             >
-              {isLoading ? (
+              {isPredicting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyzing...
+                  Analyzing Case...
                 </>
               ) : (
-                'Generate Prediction'
+                'Predict Outcome'
               )}
             </Button>
-          </form>
-        </div>
-        
-        <LazyComponent 
-          fallback={<AIAnalysisSkeleton />} 
-          delayMs={200}
-          minimumLoadTimeMs={800}
-        >
-          {result && (
-            <Card className="border border-blue-200 dark:border-blue-900/50">
-              <CardHeader className="pb-2 space-y-1.5">
-                <CardTitle className={cn(design.text.heading, "text-lg text-blue-700 dark:text-blue-400")}>
-                  Prediction Results
-                </CardTitle>
-                <CardDescription>
-                  AI-generated legal prediction based on similar Indian cases and precedents
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg flex items-center justify-between sm:w-1/2">
-                    <div>
-                      <p className={cn(design.text.caption, "mb-1")}>Predicted Outcome</p>
-                      <p className="text-xl font-semibold text-blue-700 dark:text-blue-400">{result.prediction}</p>
-                    </div>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <div className="text-3xl font-bold text-blue-700 dark:text-blue-400">{result.confidence}%</div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Confidence score based on analysis of similar cases</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg sm:w-1/2">
-                    <p className={cn(design.text.caption, "mb-1")}>Key Analysis</p>
-                    <p className={cn(design.text.body, "text-sm")}>{result.analysis}</p>
-                  </div>
+          </CardFooter>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Case Outcome Prediction</span>
+              {prediction && (
+                <div className={`px-3 py-1 rounded-full text-sm font-medium ${getProbabilityDisplay(prediction.probability).color}`}>
+                  {prediction.probability}% - {getProbabilityDisplay(prediction.probability).text}
                 </div>
-                
-                <div>
-                  <p className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Relevant Indian Precedents</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {result.relevantCases.map((caseRef: string, i: number) => (
-                      <div key={i} className="flex items-center p-2 border border-gray-200 dark:border-gray-800 rounded-md gap-2 bg-white dark:bg-gray-900">
-                        <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                        <span className="text-sm">{caseRef}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {openAiAnalysis && (
-                  <div className="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Advanced OpenAI Analysis</p>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Enhanced analysis generated by OpenAI's GPT-4 model</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <pre className="text-xs bg-gray-50 dark:bg-gray-800 p-3 rounded overflow-auto max-h-[250px] border border-gray-200 dark:border-gray-700">
-                      {openAiAnalysis}
-                    </pre>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="flex justify-end pt-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(JSON.stringify(result, null, 2));
-                        toast({
-                          title: "Copied",
-                          description: "Prediction results copied to clipboard"
-                        });
-                      }}
-                    >
-                      Export Results
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Copy prediction results to clipboard</p>
-                  </TooltipContent>
-                </Tooltip>
-              </CardFooter>
-            </Card>
-          )}
-        </LazyComponent>
-      </div>
-    </TooltipProvider>
+              )}
+            </CardTitle>
+            <CardDescription>
+              AI prediction based on Indian legal precedents and principles
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-green-700 dark:text-green-400">Favorable Factors</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  {prediction.favorableFactors.map((factor, i) => (
+                    <li key={i} className="text-sm">{factor}</li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-red-700 dark:text-red-400">Unfavorable Factors</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  {prediction.unfavorableFactors.map((factor, i) => (
+                    <li key={i} className="text-sm">{factor}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-blue-700 dark:text-blue-400">Relevant Legal Precedents</h4>
+              <ul className="list-disc pl-5 space-y-1">
+                {prediction.relevantPrecedents.map((precedent, i) => (
+                  <li key={i} className="text-sm">{precedent}</li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="space-y-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+              <h4 className="text-sm font-medium text-blue-700 dark:text-blue-400">Suggested Approach</h4>
+              <p className="text-sm">{prediction.suggestedApproach}</p>
+            </div>
+            
+            <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-md flex gap-2">
+              <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-800 dark:text-amber-300">
+                This prediction is based on the information provided and should be used for reference only.
+                Actual case outcomes depend on many factors including evidence presented, court jurisdiction,
+                and judicial interpretation that may not be reflected in this analysis.
+              </p>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => setPrediction(null)}>
+              New Prediction
+            </Button>
+            <Button 
+              onClick={() => {
+                const formattedPrediction = JSON.stringify(prediction, null, 2);
+                navigator.clipboard.writeText(formattedPrediction);
+                toast({
+                  title: "Copied",
+                  description: "Prediction data copied to clipboard",
+                });
+              }}
+              variant="secondary"
+            >
+              Copy Data
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
+      
+      <p className="text-xs text-gray-500 dark:text-gray-400 italic text-center">
+        Using AI to analyze Indian legal precedents and principles for predictive insights.
+        Results should be reviewed by qualified legal professionals.
+      </p>
+    </div>
   );
 };
 

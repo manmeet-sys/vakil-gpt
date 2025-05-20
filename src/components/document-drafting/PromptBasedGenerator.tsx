@@ -1,8 +1,18 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, BookOpen, FileText, Loader2, MessageSquare, Globe, Scale } from "lucide-react";
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 
 type PromptBasedGeneratorProps = {
   onDraftGenerated: (title: string, type: string, content: string) => void;
@@ -130,12 +140,18 @@ const PromptBasedGenerator: React.FC<PromptBasedGeneratorProps> = ({ onDraftGene
 
   const handleGenerateDocument = async () => {
     if (!prompt.trim()) {
-      toast.error('Please enter a prompt to generate a document');
+      toast({
+        title: 'Missing Information',
+        description: 'Please enter a prompt to generate a document'
+      });
       return;
     }
 
     if (!title.trim()) {
-      toast.error('Please enter a document title');
+      toast({
+        title: 'Missing Information',
+        description: 'Please enter a document title'
+      });
       return;
     }
 
@@ -146,23 +162,21 @@ const PromptBasedGenerator: React.FC<PromptBasedGeneratorProps> = ({ onDraftGene
       console.log("Starting document generation...");
       const startTime = Date.now();
       
-      // Track performance using our monitor
-      return await performanceMonitor.measureAsync('PromptBasedGenerator', 'generateDocument', async () => {
-        // Save the prompt to recent prompts list for reuse
-        setRecentPrompts(prev => {
-          const newPrompts = [prompt, ...prev.filter(p => p !== prompt)].slice(0, 5);
-          localStorage.setItem('recentDocumentPrompts', JSON.stringify(newPrompts));
-          return newPrompts;
-        });
+      // Save the prompt to recent prompts list for reuse
+      setRecentPrompts(prev => {
+        const newPrompts = [prompt, ...prev.filter(p => p !== prompt)].slice(0, 5);
+        localStorage.setItem('recentDocumentPrompts', JSON.stringify(newPrompts));
+        return newPrompts;
+      });
 
-        // Get selected jurisdiction and court labels for context
-        const selectedJurisdiction = jurisdictions.find(j => j.value === jurisdiction)?.label || 'Delhi';
-        const selectedCourt = courtsMap[jurisdiction]?.find(c => c.value === court)?.label || 'Delhi High Court';
-        const selectedDocType = documentTypes.find(d => d.value === documentType)?.label || 'Affidavit';
-        
-        // Enhance the prompt with specific Indian legal context
-        const enhancedPrompt = `Generate a professional Indian legal document (${selectedDocType}) for ${selectedJurisdiction} jurisdiction and ${selectedCourt} based on the following request:
-        
+      // Get selected jurisdiction and court labels for context
+      const selectedJurisdiction = jurisdictions.find(j => j.value === jurisdiction)?.label || 'Delhi';
+      const selectedCourt = courtsMap[jurisdiction]?.find(c => c.value === court)?.label || 'Delhi High Court';
+      const selectedDocType = documentTypes.find(d => d.value === documentType)?.label || 'Affidavit';
+      
+      // Enhance the prompt with specific Indian legal context
+      const enhancedPrompt = `Generate a professional Indian legal document (${selectedDocType}) for ${selectedJurisdiction} jurisdiction and ${selectedCourt} based on the following request:
+      
 "${prompt}"
 
 Create a complete and properly formatted legal document that:
@@ -178,45 +192,50 @@ Create a complete and properly formatted legal document that:
 
 Document format: Return ONLY the complete document text, no explanations needed.`;
 
-        console.log("Sending enhanced prompt for generation...");
+      console.log("Sending enhanced prompt for generation...");
+      
+      try {
+        const generatedContent = await generateOpenAIAnalysis(enhancedPrompt, `Document Draft: ${title} (${selectedDocType} - ${selectedJurisdiction})`);
+        console.log("Document generated successfully", { contentLength: generatedContent?.length });
         
-        try {
-          const generatedContent = await generateOpenAIAnalysis(enhancedPrompt, `Document Draft: ${title} (${selectedDocType} - ${selectedJurisdiction})`);
-          console.log("Document generated successfully", { contentLength: generatedContent?.length });
-          
-          if (!generatedContent || generatedContent.length < 10) {
-            throw new Error("Generated content is empty or too short");
-          }
-          
-          // Auto-detect document type if not explicitly set
-          let finalDocType = documentType;
-          if (finalDocType === 'other' || !finalDocType) {
-            const lowerPrompt = prompt.toLowerCase();
-            if (lowerPrompt.includes('affidavit')) finalDocType = 'affidavit';
-            else if (lowerPrompt.includes('pil') || lowerPrompt.includes('public interest')) finalDocType = 'pil';
-            else if (lowerPrompt.includes('writ')) finalDocType = 'writ_petition';
-            else if (lowerPrompt.includes('notice') && !lowerPrompt.includes('reply')) finalDocType = 'legal_notice';
-            else if (lowerPrompt.includes('reply') && lowerPrompt.includes('notice')) finalDocType = 'reply_notice';
-            else if (lowerPrompt.includes('vakalatnama')) finalDocType = 'vakalatnama';
-            else if (lowerPrompt.includes('complaint') && lowerPrompt.includes('consumer')) finalDocType = 'consumer_complaint';
-            else if ((lowerPrompt.includes('rent') || lowerPrompt.includes('lease')) && 
-                    (lowerPrompt.includes('agreement') || lowerPrompt.includes('contract'))) finalDocType = 'rental_agreement';
-            else if (lowerPrompt.includes('will') || lowerPrompt.includes('testament')) finalDocType = 'will';
-            else if (lowerPrompt.includes('mou') || lowerPrompt.includes('memorandum of understanding')) finalDocType = 'mou';
-            else if (title.toLowerCase().includes('affidavit')) finalDocType = 'affidavit';
-            else if (title.toLowerCase().includes('petition')) finalDocType = 'writ_petition';
-          }
-          
-          console.log(`Generation completed in ${Date.now() - startTime}ms`);
-          onDraftGenerated(title, finalDocType, generatedContent);
-          toast.success('Legal document generated successfully');
-        } catch (genError) {
-          console.error('Error in AI generation:', genError);
-          setGenerationError('Failed to generate document with AI. Please try with different inputs or check your connection.');
-          toast.error('Failed to generate document with AI. Please try again.');
-          throw genError;
+        if (!generatedContent || generatedContent.length < 10) {
+          throw new Error("Generated content is empty or too short");
         }
-      });
+        
+        // Auto-detect document type if not explicitly set
+        let finalDocType = documentType;
+        if (finalDocType === 'other' || !finalDocType) {
+          const lowerPrompt = prompt.toLowerCase();
+          if (lowerPrompt.includes('affidavit')) finalDocType = 'affidavit';
+          else if (lowerPrompt.includes('pil') || lowerPrompt.includes('public interest')) finalDocType = 'pil';
+          else if (lowerPrompt.includes('writ')) finalDocType = 'writ_petition';
+          else if (lowerPrompt.includes('notice') && !lowerPrompt.includes('reply')) finalDocType = 'legal_notice';
+          else if (lowerPrompt.includes('reply') && lowerPrompt.includes('notice')) finalDocType = 'reply_notice';
+          else if (lowerPrompt.includes('vakalatnama')) finalDocType = 'vakalatnama';
+          else if (lowerPrompt.includes('complaint') && lowerPrompt.includes('consumer')) finalDocType = 'consumer_complaint';
+          else if ((lowerPrompt.includes('rent') || lowerPrompt.includes('lease')) && 
+                  (lowerPrompt.includes('agreement') || lowerPrompt.includes('contract'))) finalDocType = 'rental_agreement';
+          else if (lowerPrompt.includes('will') || lowerPrompt.includes('testament')) finalDocType = 'will';
+          else if (lowerPrompt.includes('mou') || lowerPrompt.includes('memorandum of understanding')) finalDocType = 'mou';
+          else if (title.toLowerCase().includes('affidavit')) finalDocType = 'affidavit';
+          else if (title.toLowerCase().includes('petition')) finalDocType = 'writ_petition';
+        }
+        
+        console.log(`Generation completed in ${Date.now() - startTime}ms`);
+        onDraftGenerated(title, finalDocType, generatedContent);
+        toast({
+          title: 'Success',
+          description: 'Legal document generated successfully'
+        });
+      } catch (genError) {
+        console.error('Error in AI generation:', genError);
+        setGenerationError('Failed to generate document with AI. Please try with different inputs or check your connection.');
+        toast({
+          title: 'Generation Error',
+          description: 'Failed to generate document with AI. Please try again.'
+        });
+        throw genError;
+      }
     } catch (error) {
       console.error('Error handling document generation:', error);
       // Error already handled in the inner try-catch

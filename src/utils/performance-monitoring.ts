@@ -1,138 +1,161 @@
 
 /**
- * Performance monitoring utilities
- * Helps track, measure and report performance metrics
+ * Performance monitoring utility for tracking and measuring function performance
  */
-import React from 'react';
 
-interface PerformanceEntry {
-  component: string;
-  action: string;
+interface PerformanceMetric {
+  componentName: string;
+  functionName: string;
   startTime: number;
   endTime?: number;
   duration?: number;
+  status: 'started' | 'completed' | 'failed';
+  error?: Error;
 }
 
 class PerformanceMonitor {
-  private measurements: Map<string, PerformanceEntry> = new Map();
-  private completedMeasurements: PerformanceEntry[] = [];
-  
+  private metrics: PerformanceMetric[] = [];
+
   /**
-   * Start timing a performance measurement
+   * Measures the execution time of an async function
    */
-  start(component: string, action: string): string {
-    const id = `${component}-${action}-${Date.now()}`;
-    this.measurements.set(id, {
-      component,
-      action,
-      startTime: performance.now()
-    });
+  async measureAsync<T>(
+    componentName: string, 
+    functionName: string, 
+    fn: () => Promise<T>
+  ): Promise<T> {
+    const startTime = performance.now();
     
-    return id;
-  }
-  
-  /**
-   * End timing a performance measurement
-   */
-  end(id: string): PerformanceEntry | undefined {
-    const measurement = this.measurements.get(id);
-    if (!measurement) {
-      console.warn(`Performance measurement ${id} not found`);
-      return;
-    }
-    
-    const endTime = performance.now();
-    const duration = endTime - measurement.startTime;
-    
-    const completedMeasurement: PerformanceEntry = {
-      ...measurement,
-      endTime,
-      duration
+    const metric: PerformanceMetric = {
+      componentName,
+      functionName,
+      startTime,
+      status: 'started'
     };
     
-    this.completedMeasurements.push(completedMeasurement);
-    this.measurements.delete(id);
+    this.metrics.push(metric);
     
-    // Log performance metrics for critical paths
-    if (duration > 500) {
-      console.warn(`Slow ${completedMeasurement.component} ${completedMeasurement.action}: ${duration.toFixed(2)}ms`);
+    try {
+      const result = await fn();
+      
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+      
+      // Update the metric
+      metric.endTime = endTime;
+      metric.duration = duration;
+      metric.status = 'completed';
+      
+      console.log(`[Performance] ${componentName}.${functionName} completed in ${duration.toFixed(2)}ms`);
+      
+      return result;
+    } catch (error) {
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+      
+      // Update the metric with error information
+      metric.endTime = endTime;
+      metric.duration = duration;
+      metric.status = 'failed';
+      metric.error = error instanceof Error ? error : new Error(String(error));
+      
+      console.error(`[Performance] ${componentName}.${functionName} failed after ${duration.toFixed(2)}ms:`, error);
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Measures the execution time of a synchronous function
+   */
+  measure<T>(
+    componentName: string,
+    functionName: string,
+    fn: () => T
+  ): T {
+    const startTime = performance.now();
+    
+    try {
+      const result = fn();
+      
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+      
+      this.metrics.push({
+        componentName,
+        functionName,
+        startTime,
+        endTime,
+        duration,
+        status: 'completed'
+      });
+      
+      console.log(`[Performance] ${componentName}.${functionName} executed in ${duration.toFixed(2)}ms`);
+      
+      return result;
+    } catch (error) {
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+      
+      this.metrics.push({
+        componentName,
+        functionName,
+        startTime,
+        endTime,
+        duration,
+        status: 'failed',
+        error: error instanceof Error ? error : new Error(String(error))
+      });
+      
+      console.error(`[Performance] ${componentName}.${functionName} failed after ${duration.toFixed(2)}ms:`, error);
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Get all collected performance metrics
+   */
+  getMetrics(): PerformanceMetric[] {
+    return [...this.metrics];
+  }
+
+  /**
+   * Clear all collected metrics
+   */
+  clearMetrics(): void {
+    this.metrics = [];
+  }
+
+  /**
+   * Gets metrics for a specific component
+   */
+  getComponentMetrics(componentName: string): PerformanceMetric[] {
+    return this.metrics.filter(metric => metric.componentName === componentName);
+  }
+
+  /**
+   * Gets the average duration for a specific function
+   */
+  getAverageDuration(componentName: string, functionName: string): number | null {
+    const relevantMetrics = this.metrics.filter(
+      metric => 
+        metric.componentName === componentName && 
+        metric.functionName === functionName &&
+        metric.status === 'completed' &&
+        typeof metric.duration === 'number'
+    );
+    
+    if (relevantMetrics.length === 0) {
+      return null;
     }
     
-    return completedMeasurement;
-  }
-  
-  /**
-   * Measure a function execution time
-   */
-  measure<T>(component: string, action: string, fn: () => T): T {
-    const id = this.start(component, action);
-    try {
-      return fn();
-    } finally {
-      this.end(id);
-    }
-  }
-  
-  /**
-   * Measure an async function execution time
-   */
-  async measureAsync<T>(component: string, action: string, fn: () => Promise<T>): Promise<T> {
-    const id = this.start(component, action);
-    try {
-      return await fn();
-    } finally {
-      this.end(id);
-    }
-  }
-  
-  /**
-   * Get performance report
-   */
-  getReport(): PerformanceEntry[] {
-    return [...this.completedMeasurements];
-  }
-  
-  /**
-   * Clear all measurements
-   */
-  clear(): void {
-    this.measurements.clear();
-    this.completedMeasurements = [];
+    const totalDuration = relevantMetrics.reduce((sum, metric) => sum + (metric.duration || 0), 0);
+    return totalDuration / relevantMetrics.length;
   }
 }
 
-// Create and export a singleton instance
+// Export a singleton instance
 export const performanceMonitor = new PerformanceMonitor();
 
-/**
- * Hook to measure component render performance
- */
-export function useComponentPerformance(componentName: string) {
-  React.useEffect(() => {
-    // Use the Web Performance API for component render timing
-    const id = `${componentName}-render-${Date.now()}`;
-    performance.mark(`${id}-start`);
-    
-    return () => {
-      performance.mark(`${id}-end`);
-      performance.measure(
-        `${componentName} render time`,
-        `${id}-start`,
-        `${id}-end`
-      );
-      
-      // Get the measurement
-      const measurements = performance.getEntriesByName(`${componentName} render time`);
-      const duration = measurements[0]?.duration;
-      
-      if (duration && duration > 200) {
-        console.warn(`Slow render for ${componentName}: ${duration.toFixed(2)}ms`);
-      }
-      
-      // Clean up marks
-      performance.clearMarks(`${id}-start`);
-      performance.clearMarks(`${id}-end`);
-      performance.clearMeasures(`${componentName} render time`);
-    };
-  }, [componentName]);
-}
+export default performanceMonitor;

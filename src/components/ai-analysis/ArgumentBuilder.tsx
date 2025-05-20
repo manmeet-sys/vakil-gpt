@@ -1,11 +1,19 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, BookOpen, AlertTriangle, CheckCircle, FilePenLine } from 'lucide-react';
 import { toast } from 'sonner';
 import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 import OpenAIFlashAnalyzer from '@/components/OpenAIFlashAnalyzer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
+import { ArgumentBuilderType } from '@/types/ArgumentBuilderTypes';
 
 interface ArgumentBuilderProps {
   caseDetails?: {
@@ -46,7 +54,6 @@ const ArgumentBuilder: React.FC<ArgumentBuilderProps> = ({
   const handleGenerateArguments = async () => {
     if (caseDescription.trim().length < 50 || legalIssue.trim().length < 10) {
       toast({
-        variant: "destructive",
         title: "Insufficient Information",
         description: "Please provide more details about the case and legal issues.",
       });
@@ -124,7 +131,6 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
       } catch (parseError) {
         console.error("Error parsing AI response:", parseError);
         toast({
-          variant: "destructive",
           title: "Format Error",
           description: "Unable to parse AI response. Please try again.",
         });
@@ -132,7 +138,6 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
     } catch (error) {
       console.error("Error generating arguments:", error);
       toast({
-        variant: "destructive",
         title: "Generation Failed",
         description: error instanceof Error ? error.message : "Failed to generate arguments",
       });
@@ -159,7 +164,6 @@ Include specific references to Indian laws, Indian Penal Code sections, Indian c
     } catch (parseError) {
       console.error("Error parsing flash analysis:", parseError);
       toast({
-        variant: "destructive",
         title: "Format Error",
         description: "Unable to parse analysis. Please try again.",
       });
