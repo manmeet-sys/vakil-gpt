@@ -1,11 +1,9 @@
 
 import React, { ReactNode, useEffect } from 'react';
 import Footer from '@/components/Footer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Settings2 } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { toast } from 'sonner';
+import designSystem from '@/lib/design-system-standards';
 
 interface LegalToolLayoutProps {
   children: ReactNode;
@@ -15,38 +13,35 @@ interface LegalToolLayoutProps {
 }
 
 const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayoutProps) => {
+  const [apiProvider, setApiProvider] = React.useState<'deepseek' | 'gemini'>('gemini');
+
+  useEffect(() => {
+    // Load preferred API provider on component mount
+    const provider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+    setApiProvider(provider);
+    
+    // Set default API keys if not already set
+    if (!localStorage.getItem('geminiApiKey')) {
+      localStorage.setItem('geminiApiKey', '');
+    }
+    
+    if (!localStorage.getItem('deepseekApiKey')) {
+      localStorage.setItem('deepseekApiKey', '');
+    }
+  }, []);
+
   // Update title for accessibility
   useEffect(() => {
-    try {
-      if (title) {
-        document.title = `${title} | VakilGPT`;
-      }
-      return () => {
-        document.title = 'VakilGPT';
-      };
-    } catch (error) {
-      console.error('Error updating document title:', error);
+    if (title) {
+      document.title = `${title} | VakilGPT`;
     }
+    return () => {
+      document.title = 'VakilGPT';
+    };
   }, [title]);
-  
-  // Animation variants optimized for performance
-  const pageVariants = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1, transition: { duration: 0.3 } },
-  };
-  
-  const titleVariants = {
-    initial: { opacity: 0, y: -10 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-  };
-  
-  const descriptionVariants = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1, transition: { duration: 0.3, delay: 0.1 } },
-  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background font-sans">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Skip to content link for keyboard accessibility */}
       <a href="#main-content" className="skip-to-content">
         Skip to content
@@ -54,66 +49,61 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
       
       <main id="main-content" className="flex-1 w-full mx-auto pt-6 pb-12">
         <div className="container px-4 sm:px-6">
-          <div className="flex justify-between items-center mb-6">
-            <motion.div 
-              role="region" 
-              aria-labelledby="page-title" 
-              className="flex items-start gap-3"
-              initial="initial"
-              animate="animate"
-              variants={pageVariants}
-              style={{ willChange: 'opacity, transform' }}
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+          <div role="region" aria-labelledby="page-title" className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
                 {icon}
               </div>
-              <div>
-                <motion.h1 
-                  id="page-title"
-                  className="text-2xl font-playfair font-medium tracking-tight"
-                  variants={titleVariants}
-                >
-                  {title}
-                </motion.h1>
-                
-                {description && (
-                  <motion.p 
-                    className="text-base text-muted-foreground max-w-3xl"
-                    variants={descriptionVariants}
-                  >
-                    {description}
-                  </motion.p>
-                )}
-              </div>
-            </motion.div>
+              <motion.h1 
+                id="page-title"
+                className={designSystem.apply.heading(1)}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {title}
+              </motion.h1>
+            </div>
             
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Settings2 className="h-4 w-4" />
-                  <span className="sr-md:hidden">Settings</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-56" align="end">
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm">API Settings</h4>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium">
-                      Using OpenAI GPT-4
-                    </p>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+            {description && (
+              <motion.p 
+                className={designSystem.typography.body.large}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                {description}
+              </motion.p>
+            )}
           </div>
           
           <motion.div 
             className="mb-6 sm:mb-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
-          >            
-            {children}
+          >
+            <Tabs 
+              defaultValue={apiProvider} 
+              onValueChange={(value) => {
+                setApiProvider(value as 'deepseek' | 'gemini');
+                localStorage.setItem('preferredApiProvider', value);
+              }}
+              className="w-full"
+            >
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6" aria-label="AI Model Selection">
+                <TabsTrigger value="gemini" className="px-4 py-2 text-sm font-medium">Gemini AI</TabsTrigger>
+                <TabsTrigger value="deepseek" className="px-4 py-2 text-sm font-medium">DeepSeek AI</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="gemini" className="mt-2">
+                {apiProvider === 'gemini' && children}
+              </TabsContent>
+              
+              <TabsContent value="deepseek" className="mt-2">
+                {apiProvider === 'deepseek' && children}
+              </TabsContent>
+            </Tabs>
           </motion.div>
         </div>
       </main>

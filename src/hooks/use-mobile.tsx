@@ -1,5 +1,5 @@
+
 import * as React from "react"
-import { DeviceService } from "@/services/device"
 
 // Define mobile breakpoint using the design system approach
 const MOBILE_BREAKPOINT = 768
@@ -8,13 +8,7 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
-    // First check if running on a native mobile app via Capacitor
-    if (DeviceService.isMobile()) {
-      setIsMobile(true);
-      return;
-    }
-    
-    // Otherwise, check based on window width for web
+    // Initial check based on window width
     const checkMobile = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }

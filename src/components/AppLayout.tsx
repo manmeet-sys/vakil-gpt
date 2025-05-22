@@ -11,8 +11,6 @@ import AuthButtons from './navigation/AuthButtons';
 import { design } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import BottomTabBar from './mobile/BottomTabBar';
-import { useDevice } from '@/hooks/use-device';
 
 // Lazy-loaded MobileNavigation
 const MobileNavigation = lazy(() => import('./navigation/MobileNavigation'));
@@ -29,11 +27,7 @@ const MobileMenuFallback = () => (
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
-  const { isMobile, platform } = useDevice();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/reset-password';
-  
-  // Determine if we need to add padding for the bottom tab bar
-  const needsBottomPadding = isMobile && !isAuthPage;
   
   return (
     <div className="min-h-screen w-full flex flex-col bg-background transition-colors duration-300">
@@ -54,11 +48,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <Badge variant="outline" className="ml-1.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full border-blue-200 dark:border-blue-800/50">
                 BETA
               </Badge>
-              {platform !== 'web' && (
-                <Badge variant="outline" className="ml-1.5 hidden sm:inline-flex text-xs bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded-full border-green-200 dark:border-green-800/50">
-                  APP
-                </Badge>
-              )}
             </motion.h1>
           </Link>
           
@@ -90,14 +79,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       
       <main className={cn(
         "flex-1 flex flex-col py-6 md:py-8 overflow-hidden",
-        design.spacing.container,
-        needsBottomPadding && "pb-20" // Add padding for bottom tab bar
+        design.spacing.container
       )}>
         {children}
       </main>
-      
-      {/* Add BottomTabBar component */}
-      <BottomTabBar />
     </div>
   );
 };

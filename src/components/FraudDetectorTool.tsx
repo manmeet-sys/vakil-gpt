@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { AlertTriangle, Check, ChevronRight, Info, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { getOpenAIResponse } from '@/components/OpenAIIntegration';
+import { getGeminiResponse } from '@/components/GeminiProIntegration';
 
 interface FraudAnalysisResult {
   summary: string;
@@ -74,7 +73,7 @@ const FraudDetectorTool = () => {
         (Include at least 2 regulatory considerations)
       `;
 
-      const response = await getOpenAIResponse(prompt);
+      const response = await getGeminiResponse(prompt);
       
       // Parse the AI response to extract structured data
       const result = parseAIResponse(response);

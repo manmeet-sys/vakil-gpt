@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { X, User, LogOut, LogIn, Menu, Wifi, WifiOff } from 'lucide-react';
+import { X, User, LogOut, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -12,29 +13,13 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useNavigation } from '@/context/NavigationContext';
 import { design } from '@/lib/design-system';
-import { useDevice } from '@/hooks/use-device';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const MobileNavigation: React.FC = () => {
   const { user, userProfile, signOut } = useAuth();
   const { mainItems, resourceItems, currentPath, isMobileMenuOpen, setIsMobileMenuOpen } = useNavigation();
-  const { isOnline, platform } = useDevice();
   
   return (
     <div className="md:hidden">
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className="rounded-full relative" 
-        onClick={() => setIsMobileMenuOpen(true)}
-        aria-label="Open mobile navigation menu"
-      >
-        <Menu className="h-5 w-5" />
-        {!isOnline && (
-          <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500" />
-        )}
-      </Button>
-      
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent 
           side="right" 
@@ -49,40 +34,12 @@ const MobileNavigation: React.FC = () => {
                   BETA
                 </Badge>
               </h2>
-              <div className="flex items-center gap-2">
-                {/* Network status indicator */}
-                <AnimatePresence mode="wait">
-                  {isOnline ? (
-                    <motion.div
-                      key="online"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center text-green-500 dark:text-green-400 text-xs"
-                    >
-                      <Wifi className="h-3.5 w-3.5 mr-1" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="offline"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center text-red-500 dark:text-red-400 text-xs"
-                    >
-                      <WifiOff className="h-3.5 w-3.5 mr-1" />
-                      <span className="sr-only md:not-sr-only">Offline</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                
-                <SheetClose asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                  </Button>
-                </SheetClose>
-              </div>
+              <SheetClose asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </SheetClose>
             </div>
             
             <nav className="flex-1 overflow-y-auto">
@@ -137,10 +94,6 @@ const MobileNavigation: React.FC = () => {
                 </ul>
               </div>
             </nav>
-            
-            <div className="px-4 py-2 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800">
-              {platform !== 'web' ? `${platform.charAt(0).toUpperCase() + platform.slice(1)} App` : 'Web App'}
-            </div>
             
             <div className="p-4 border-t border-gray-100 dark:border-gray-800">
               {user ? (

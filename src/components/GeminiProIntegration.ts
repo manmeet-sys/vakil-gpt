@@ -1,57 +1,132 @@
 
-/**
- * GeminiProIntegration - Provides integration with Google's Gemini Pro AI model
- */
-
-import { toast } from 'sonner';
+// This file exports the API functions from GeminiProIntegration component
+// to be used directly by other components
 
 /**
- * Sends a prompt to Gemini Pro AI model and returns the response
- * 
- * @param prompt The text prompt to send to Gemini Pro
- * @returns Promise containing the generated text response
+ * Makes a request to the Gemini Pro API and returns the response text
+ * @param prompt The text prompt to send to the API
+ * @param apiKey Optional API key to override the default
+ * @returns A Promise that resolves to the response text
  */
-export const getGeminiResponse = async (prompt: string): Promise<string> => {
+export const getGeminiResponse = async (prompt: string, apiKey?: string): Promise<string> => {
   try {
-    // For now, we're falling back to the OpenAI integration
-    // In a real implementation, this would connect to Google's Gemini API
-    const { getOpenAIResponse } = await import('./OpenAIIntegration');
+    if (!apiKey) {
+      throw new Error("API key is required. Please set your API key in Settings > AI Settings.");
+    }
     
-    console.log('Using Gemini Pro integration for prompt:', prompt.substring(0, 100) + '...');
+    // Check if we should use the Supabase edge function or direct API call
+    const useEdgeFunction = localStorage.getItem('useEdgeFunction') === 'true';
     
-    // Forward the request to OpenAI for now
-    return await getOpenAIResponse(prompt);
+    if (useEdgeFunction) {
+      // Use Supabase Edge Function for secure API calls
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({ prompt })
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage;
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || `API error: ${response.status}`;
+        } catch (e) {
+          errorMessage = `API error: ${response.status}`;
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      const data = await response.json();
+      if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+        return data.candidates[0].content.parts[0].text;
+      } else {
+        throw new Error('Invalid response format from Gemini API');
+      }
+    } else {
+      // Direct API call to Gemini
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 8192,
+            topK: 40,
+            topP: 0.95
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+        return data.candidates[0].content.parts[0].text;
+      } else {
+        throw new Error('Invalid response format from Gemini API');
+      }
+    }
   } catch (error) {
-    console.error('Error in Gemini Pro integration:', error);
-    toast("Failed to get response from Gemini Pro");
-    throw new Error('Failed to get response from Gemini Pro');
+    console.error('Error in Gemini API request:', error);
+    throw error;
   }
 };
 
 /**
- * Streams a response from Gemini Pro
- * 
- * @param prompt The text prompt to send to Gemini Pro
- * @param onChunk Callback function that receives each chunk of the streamed response
- * @returns Promise that resolves when streaming is complete
+ * Generates an enhanced contract with detailed clauses specific to Indian law
+ * @param contractType The type of contract to generate
+ * @param parties Information about the parties involved
+ * @param details Contract details including jurisdiction, purpose, terms
+ * @returns A Promise that resolves to the generated contract text
  */
-export const streamGeminiResponse = async (
-  prompt: string,
-  onChunk: (chunk: string) => void
-): Promise<void> => {
-  try {
-    // Implement streaming functionality here
-    // For now, we just simulate streaming with a single response
-    const response = await getGeminiResponse(prompt);
-    onChunk(response);
-  } catch (error) {
-    console.error('Error streaming Gemini Pro response:', error);
-    toast("Failed to stream response from Gemini Pro");
-    throw new Error('Failed to stream response from Gemini Pro');
+export const generateEnhancedIndianContract = async (
+  contractType: string,
+  parties: {
+    partyA: string;
+    partyAType: string;
+    partyB: string;
+    partyBType: string;
+  },
+  details: {
+    jurisdiction: string;
+    effectiveDate: string;
+    purpose: string;
+    keyTerms: string;
   }
-};
+): Promise<string> => {
+  // Get the API key from localStorage
+  const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
+  const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
+  
+  if (!apiKey) {
+    throw new Error("API key is required. Please set your API key in Settings > AI Settings.");
+  }
 
-export default {
-  getGeminiResponse,
-  streamGeminiResponse
+  const { partyA, partyAType, partyB, partyBType } = parties;
+  const { jurisdiction, effectiveDate, purpose, keyTerms } = details;
+  
+  // Create the prompt for contract generation
+  const prompt = `Generate an enhanced legal contract with the following details:
+  - Contract Type: ${contractType}
+  - Party A: ${partyA} (${partyAType})
+  - Party B: ${partyB} (${partyBType})
+  - Jurisdiction: ${jurisdiction}
+  - Effective Date: ${effectiveDate || new Date().toISOString().split('T')[0]}
+  - Purpose: ${purpose || "mutual business collaboration and benefit"}
+  - Key Terms: ${keyTerms || "Standard terms apply"}
+  
+  Please create a comprehensive Indian legal contract following all proper legal terminology, formatting, and requirements specific to Indian law. Include all standard and necessary clauses for this type of contract.`;
+
+  // Use the main Gemini function to generate the contract
+  return await getGeminiResponse(prompt, apiKey);
 };

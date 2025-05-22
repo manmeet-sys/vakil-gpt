@@ -3,12 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { RotateCcw, Smartphone, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AnimatePresence, motion } from 'framer-motion';
-import { DeviceService } from '@/services/device';
-import { useDevice } from '@/hooks/use-device';
 
 const OrientationMessage: React.FC = () => {
   const isMobile = useIsMobile();
-  const { platform } = useDevice();
   const [isPortrait, setIsPortrait] = useState<boolean>(false);
   const [dismissed, setDismissed] = useState<boolean>(false);
   
@@ -22,12 +19,6 @@ const OrientationMessage: React.FC = () => {
   
   // Monitor device orientation
   useEffect(() => {
-    // If it's running in a native app, don't show this message
-    if (platform === 'android' || platform === 'ios') {
-      setDismissed(true);
-      return;
-    }
-    
     const checkOrientation = () => {
       if (window.matchMedia) {
         const portrait = window.matchMedia("(orientation: portrait)").matches;
@@ -50,7 +41,7 @@ const OrientationMessage: React.FC = () => {
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
     };
-  }, [platform]);
+  }, []);
   
   const handleDismiss = () => {
     setDismissed(true);

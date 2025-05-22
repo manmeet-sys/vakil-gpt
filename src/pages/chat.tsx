@@ -4,14 +4,13 @@ import { Helmet } from 'react-helmet-async';
 import AppLayout from '@/components/AppLayout';
 import BackButton from '@/components/BackButton';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ResponsiveContainer } from '@/components/ui/responsive-container';
 
 // Lazy load ChatInterface component
 const ChatInterface = lazy(() => import('@/components/ChatInterface'));
 
 // Chat loading skeleton
 const ChatLoadingSkeleton = () => (
-  <div className="w-full h-[calc(100vh-16rem)] min-h-[500px] flex flex-col">
+  <div className="w-full h-[calc(100vh-350px)] min-h-[500px] flex flex-col">
     <div className="flex-1 p-4 overflow-hidden">
       <div className="space-y-6">
         {[1, 2, 3].map((i) => (
@@ -37,25 +36,34 @@ const ChatPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Don't use AppLayout here since ChatInterface has its own styling
   return (
-    <>
+    <AppLayout>
       <Helmet>
         <title>AI Legal Chat | VakilGPT</title>
       </Helmet>
-      <ResponsiveContainer>
-        <BackButton className="mb-4 mt-4" />
+      <div className="container mx-auto px-4 py-6">
+        <BackButton />
         
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden mb-8">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden mt-4">
+          {/* Browser-like top bar */}
+          <div className="flex items-center bg-gray-100 dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex space-x-2 mr-4">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            </div>
+            <h2 className="font-medium text-gray-700 dark:text-gray-200">VakilGPT Chat Interface</h2>
+          </div>
+          
           {/* Chat interface container with Suspense */}
-          <div className="h-[calc(100vh-16rem)] min-h-[500px]">
+          <div className="h-[calc(100vh-350px)] min-h-[500px]">
             <Suspense fallback={<ChatLoadingSkeleton />}>
-              <ChatInterface hideHeader={true} />
+              <ChatInterface />
             </Suspense>
           </div>
         </div>
-      </ResponsiveContainer>
-    </>
+      </div>
+    </AppLayout>
   );
 };
 

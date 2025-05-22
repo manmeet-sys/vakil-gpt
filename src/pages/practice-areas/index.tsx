@@ -124,7 +124,7 @@ const PracticeAreasPage = () => {
       ]
     },
     {
-      title: "Legal Research",
+      title: "Advanced Legal Research",
       description: "Case law research, statute tracking, and legal analysis tools",
       icon: <Search className="h-5 w-5 text-blue-600" />,
       path: "/case-law-research",

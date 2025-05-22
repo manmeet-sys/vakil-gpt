@@ -1,34 +1,23 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Loader2, FileText, Book, BarChart, AlertCircle, ChevronRight, AlertTriangle, Check, Info, Download, Trash } from 'lucide-react';
-import { toast } from 'sonner';
-import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from "@/components/ui/tabs";
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { toast } from '@/hooks/use-toast';
+import { 
+  FileText, Scale, BarChart, History, ArrowRight, Check, RotateCcw, 
+  Clock, Briefcase, FileCheck, CircleHelp, ChevronRight, ChevronLeft, 
+  Shield, Trash, Loader2, AlertTriangle, AlertCircle, Book, Download, Info
+} from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { getGeminiResponse } from './GeminiProIntegration';
 import { Separator } from '@/components/ui/separator';
 
 interface CrimeCategory {
@@ -246,8 +235,10 @@ const SentencingPredictorTool: React.FC = () => {
 
   const addPriorOffense = () => {
     if (!newPriorOffense.offense || !newPriorOffense.date) {
-      toast.error("Missing Information", {
-        description: "Please provide both the offense and date"
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please provide both the offense and date",
       });
       return;
     }
@@ -264,8 +255,9 @@ const SentencingPredictorTool: React.FC = () => {
       sentence: ''
     });
     
-    toast.success("Prior Offense Added", {
-      description: "The offense has been added to the defendant's history"
+    toast({
+      title: "Prior Offense Added",
+      description: "The offense has been added to the defendant's history",
     });
   };
 
@@ -287,15 +279,18 @@ const SentencingPredictorTool: React.FC = () => {
     localStorage.setItem('geminiApiKey', apiKey);
     setIsApiKeyDialogOpen(false);
     
-    toast.success("API Key Saved", {
-      description: "Your Gemini API key has been saved for future use"
+    toast({
+      title: "API Key Saved",
+      description: "Your Gemini API key has been saved for future use",
     });
   };
 
   const validateCaseInfo = () => {
     if (!selectedCategory || !selectedOffense || !offenseLevel || !jurisdiction) {
-      toast.error("Missing Case Information", {
-        description: "Please fill in all required case information fields"
+      toast({
+        variant: "destructive",
+        title: "Missing Case Information",
+        description: "Please fill in all required case information fields",
       });
       return false;
     }
@@ -306,8 +301,10 @@ const SentencingPredictorTool: React.FC = () => {
     if (!validateCaseInfo()) return;
     
     if (!apiKey) {
-      toast.error("API Key Required", {
-        description: "Please set your Gemini API key to use the analysis feature"
+      toast({
+        variant: "destructive",
+        title: "API Key Required",
+        description: "Please set your Gemini API key to use the analysis feature",
       });
       setIsApiKeyDialogOpen(true);
       return;
@@ -377,18 +374,21 @@ Please structure your analysis with these sections:
 
 Ensure your analysis is balanced, fact-based, and considers both the prosecution and defense perspectives.`;
       
-      const response = await getOpenAIResponse(prompt);
+      const response = await getGeminiResponse(prompt);
       setAiAnalysis(response);
       
       setActiveTab('analysis');
       
-      toast.success("Analysis Complete", {
-        description: "Sentencing prediction analysis has been generated"
+      toast({
+        title: "Analysis Complete",
+        description: "Sentencing prediction analysis has been generated",
       });
     } catch (error) {
       console.error('Analysis error:', error);
-      toast.error("Analysis Failed", {
-        description: error instanceof Error ? error.message : "Unable to complete the analysis"
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Unable to complete the analysis",
       });
     } finally {
       setIsAnalyzing(false);
@@ -410,8 +410,9 @@ Ensure your analysis is balanced, fact-based, and considers both the prosecution
     setAiAnalysis('');
     setActiveTab('case-info');
     
-    toast.success("Form Reset", {
-      description: "All fields have been cleared"
+    toast({
+      title: "Form Reset",
+      description: "All fields have been cleared",
     });
   };
 
@@ -458,8 +459,9 @@ This analysis is provided for informational purposes only and should not be cons
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast.success("Analysis Downloaded", {
-      description: "Analysis has been downloaded as a text file"
+    toast({
+      title: "Analysis Downloaded",
+      description: "Analysis has been downloaded as a text file",
     });
   };
 

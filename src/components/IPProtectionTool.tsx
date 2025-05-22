@@ -1,43 +1,19 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  AlertCircle, 
-  Loader2, 
-  Hash,
-  Database,
-  Copyright,
-  FileCheck,
-  Landmark,
-  Search,
-  Shield,
-  FileText,
-  Bookmark,
-  Plus,
-  Edit,
-  Trash,
-  Download
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from '@/components/ui/tabs';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { generateOpenAIAnalysis } from '@/utils/aiAnalysis';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
+import { 
+  Search, FileText, Shield, Bookmark, Copyright, Hash, Database, 
+  CheckCircle, AlertTriangle, Loader2, Download, Edit, Plus, Trash,
+  IndianRupee, FileCheck, Building, Landmark
+} from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { getGeminiResponse } from './GeminiProIntegration';
 
 interface SearchResult {
   id: string;
@@ -184,7 +160,9 @@ const IPProtectionTool: React.FC = () => {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      toast.error("Search Query Required", {
+      toast({
+        variant: "destructive",
+        title: "Search Query Required",
         description: "Please enter a search term",
       });
       return;
@@ -224,12 +202,15 @@ const IPProtectionTool: React.FC = () => {
         setSearchResults([]);
       }
       
-      toast.success("Search Complete", {
+      toast({
+        title: "Search Complete",
         description: `Found ${searchResults.length} results for "${searchQuery}" in Indian IP databases`,
       });
     } catch (error) {
       console.error('Search error:', error);
-      toast.error("Search Failed", {
+      toast({
+        variant: "destructive",
+        title: "Search Failed",
         description: "Unable to complete the search in Indian IP databases. Please try again later.",
       });
     } finally {
@@ -241,7 +222,8 @@ const IPProtectionTool: React.FC = () => {
     localStorage.setItem('geminiApiKey', apiKey);
     setIsApiKeyDialogOpen(false);
     
-    toast.success("API Key Saved", {
+    toast({
+      title: "API Key Saved",
       description: "Your Gemini API key has been saved for future use",
     });
   };
@@ -261,14 +243,17 @@ const IPProtectionTool: React.FC = () => {
     
     setMyIpAssets([...myIpAssets, newIpAsset]);
     
-    toast.success("Added to Portfolio", {
+    toast({
+      title: "Added to Portfolio",
       description: `"${result.name}" has been added to your Indian IP portfolio`,
     });
   };
 
   const addNewAsset = () => {
     if (!newAsset.name.trim()) {
-      toast.error("Name Required", {
+      toast({
+        variant: "destructive",
+        title: "Name Required",
         description: "Please enter a name for your IP asset",
       });
       return;
@@ -293,7 +278,8 @@ const IPProtectionTool: React.FC = () => {
       indianJurisdiction: 'Indian Intellectual Property Office'
     });
     
-    toast.success("Asset Added", {
+    toast({
+      title: "Asset Added",
       description: `"${asset.name}" has been added to your Indian IP portfolio`,
     });
   };
@@ -310,7 +296,8 @@ const IPProtectionTool: React.FC = () => {
     setIsAssetDialogOpen(false);
     setSelectedAsset(null);
     
-    toast.success("Asset Updated", {
+    toast({
+      title: "Asset Updated",
       description: `"${selectedAsset.name}" has been updated in your Indian IP portfolio`,
     });
   };
@@ -318,21 +305,26 @@ const IPProtectionTool: React.FC = () => {
   const deleteAsset = (id: string) => {
     setMyIpAssets(myIpAssets.filter(asset => asset.id !== id));
     
-    toast.success("Asset Deleted", {
+    toast({
+      title: "Asset Deleted",
       description: "The IP asset has been removed from your portfolio",
     });
   };
 
   const analyzeIPRisk = async () => {
     if (!analysisText.trim()) {
-      toast.error("Text Required", {
+      toast({
+        variant: "destructive",
+        title: "Text Required",
         description: "Please enter text to analyze for IP risks",
       });
       return;
     }
     
     if (!apiKey) {
-      toast.error("API Key Required", {
+      toast({
+        variant: "destructive",
+        title: "API Key Required",
         description: "Please set your Gemini API key to use the analysis feature",
       });
       setIsApiKeyDialogOpen(true);
@@ -357,15 +349,18 @@ Please structure your response with these sections:
 7. Risk Mitigation Recommendations under Indian IP Framework
 8. Relevant Indian Case Law`;
       
-      const response = await generateOpenAIAnalysis(prompt);
+      const response = await getGeminiResponse(prompt);
       setAnalysisResult(response);
       
-      toast.success("Analysis Complete", {
+      toast({
+        title: "Analysis Complete",
         description: "Indian IP risk analysis has been generated",
       });
     } catch (error) {
       console.error('Analysis error:', error);
-      toast.error("Analysis Failed", {
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
         description: error instanceof Error ? error.message : "Unable to complete the analysis",
       });
     } finally {
@@ -393,7 +388,8 @@ Please structure your response with these sections:
       myIpAssets.map(a => a.id === assetId ? updatedAsset : a)
     );
     
-    toast.success("Document Added", {
+    toast({
+      title: "Document Added",
       description: `Document has been added to "${asset.name}"`,
     });
   };
@@ -637,7 +633,7 @@ Please structure your response with these sections:
                         
                         {result.similarityScore !== undefined && result.similarityScore > 0.7 && (
                           <div className="mt-3 p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-md flex items-start">
-                            <AlertCircle className="h-4 w-4 text-red-500 mr-2 mt-0.5" />
+                            <AlertTriangle className="h-4 w-4 text-red-500 mr-2 mt-0.5" />
                             <span className="text-sm text-red-700 dark:text-red-400">
                               High similarity detected. This may present significant legal risks under the Indian Trademarks Act, 1999 if used in commerce.
                             </span>
@@ -810,7 +806,7 @@ Please structure your response with these sections:
               <div className="grid grid-cols-1 gap-4">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="api-key" className="text-sm font-medium">
-                    OpenAI API Key:
+                    Gemini API Key:
                   </Label>
                   <Button 
                     variant="outline" 
@@ -884,15 +880,15 @@ Please structure your response with these sections:
       <Dialog open={isApiKeyDialogOpen} onOpenChange={setIsApiKeyDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Set OpenAI API Key</DialogTitle>
+            <DialogTitle>Set Gemini API Key</DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
-            <Label htmlFor="openai-api-key" className="mb-2 block">
-              Enter your OpenAI API Key
+            <Label htmlFor="gemini-api-key" className="mb-2 block">
+              Enter your Gemini API Key
             </Label>
             <Input
-              id="openai-api-key"
+              id="gemini-api-key"
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}

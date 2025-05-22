@@ -1,11 +1,10 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ArrowRight, BookOpen, FileText, Scale } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Separator } from '@/components/ui/separator';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface PracticeAreaToolsProps {
   practiceArea: string;
@@ -39,146 +38,97 @@ const PracticeAreaTools: React.FC<PracticeAreaToolsProps> = ({
   keyLegalPrinciples = []
 }) => {
   const navigate = useNavigate();
-  const [activeToolId, setActiveToolId] = useState<string | null>(tools.length > 0 ? tools[0].id : null);
-  
-  const activeTool = tools.find(tool => tool.id === activeToolId);
   
   return (
-    <div className="space-y-8">
-      <motion.div 
-        className="flex items-center gap-3"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
           {icon}
         </div>
         <div>
-          <h1 className="text-2xl font-playfair tracking-tight">{practiceArea}</h1>
+          <h1 className="text-xl font-semibold">{practiceArea}</h1>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
-      </motion.div>
+      </div>
       
-      {/* Tools Navigation */}
-      <section>
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-lg font-playfair font-medium">Practice Tools</h2>
-        </div>
+      <Tabs defaultValue="tools" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsTrigger value="tools">Tools</TabsTrigger>
+          <TabsTrigger value="updates">Law Updates</TabsTrigger>
+          <TabsTrigger value="principles">Key Principles</TabsTrigger>
+        </TabsList>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Tool Navigation Sidebar */}
-          <div className="space-y-3">
+        <TabsContent value="tools" className="space-y-4 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tools.map((tool) => (
-              <Card 
-                key={tool.id} 
-                className={`cursor-pointer transition-all hover:shadow-md ${activeToolId === tool.id ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10' : 'border-border'}`}
-                onClick={() => setActiveToolId(tool.id)}
-              >
-                <CardHeader className="p-4 pb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      {tool.icon}
-                    </div>
-                    <CardTitle className="text-base font-playfair">{tool.title}</CardTitle>
+              <Card key={tool.id} className="overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                    {tool.icon}
                   </div>
-                </CardHeader>
-                <CardContent className="p-4 pt-1">
-                  <CardDescription className="line-clamp-2 text-xs">
+                  <CardTitle className="text-lg">{tool.title}</CardTitle>
+                  <CardDescription className="line-clamp-2">
                     {tool.description}
                   </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {tool.content}
                 </CardContent>
               </Card>
             ))}
           </div>
-          
-          {/* Active Tool Content */}
-          <div className="md:col-span-3 bg-card rounded-lg border border-border p-4">
-            {activeTool ? activeTool.content : (
-              <div className="flex items-center justify-center h-64">
-                <p className="text-muted-foreground">Select a tool to get started</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-      
-      {/* Law Updates Section - Enhanced with motion */}
-      {lawUpdates.length > 0 && (
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <h2 className="text-lg font-playfair font-medium mb-4 flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-blue-600" />
-            Recent Legal Updates
-          </h2>
-          <div className="grid gap-4">
-            {lawUpdates.map((update, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * index }}
-              >
-                <Card className="border-l-4 border-l-blue-500 overflow-hidden">
-                  <CardHeader className="pb-2 bg-muted/30">
+        </TabsContent>
+        
+        <TabsContent value="updates" className="space-y-4 pt-4">
+          {lawUpdates.length > 0 ? (
+            <div className="space-y-4">
+              {lawUpdates.map((update, index) => (
+                <Card key={index}>
+                  <CardHeader className="pb-2">
                     <div className="flex justify-between items-center">
-                      <CardTitle className="text-base font-playfair">{update.title}</CardTitle>
-                      <span className="text-xs text-muted-foreground bg-primary/5 px-2 py-1 rounded-full">{update.date}</span>
+                      <CardTitle className="text-base">{update.title}</CardTitle>
+                      <span className="text-xs text-muted-foreground">{update.date}</span>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-3">
+                  <CardContent>
                     <p className="text-sm text-muted-foreground">{update.description}</p>
                   </CardContent>
-                  <CardFooter className="pt-0 pb-3 px-6">
-                    <Button variant="link" className="p-0 h-auto text-xs text-blue-600 flex items-center gap-1">
-                      Read more <ArrowRight className="h-3 w-3" />
-                    </Button>
-                  </CardFooter>
                 </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-      )}
-      
-      {/* Legal Principles Section - Enhanced with motion */}
-      {keyLegalPrinciples.length > 0 && (
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <h2 className="text-lg font-playfair font-medium mb-4 flex items-center gap-2">
-            <Scale className="h-4 w-4 text-amber-600" />
-            Key Legal Principles
-          </h2>
-          <div className="grid gap-4">
-            {keyLegalPrinciples.map((principle, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * index }}
-              >
-                <Card className="border-l-4 border-l-amber-500">
-                  <CardHeader className="pb-2 bg-amber-50/50 dark:bg-amber-900/10">
-                    <CardTitle className="text-base font-playfair">{principle.title}</CardTitle>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <FileText className="mx-auto h-8 w-8 text-muted-foreground/60" />
+              <p className="mt-2 text-muted-foreground">No recent law updates available</p>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="principles" className="space-y-4 pt-4">
+          {keyLegalPrinciples.length > 0 ? (
+            <div className="space-y-4">
+              {keyLegalPrinciples.map((principle, index) => (
+                <Card key={index}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">{principle.title}</CardTitle>
                     {principle.source && (
-                      <CardDescription className="text-xs italic">{principle.source}</CardDescription>
+                      <CardDescription className="text-xs">{principle.source}</CardDescription>
                     )}
                   </CardHeader>
-                  <CardContent className="pt-3">
+                  <CardContent>
                     <p className="text-sm text-muted-foreground">{principle.description}</p>
                   </CardContent>
                 </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-      )}
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <BookOpen className="mx-auto h-8 w-8 text-muted-foreground/60" />
+              <p className="mt-2 text-muted-foreground">No key legal principles available</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -7,25 +7,22 @@ interface LazyComponentProps {
   fallback?: ReactNode;
   delayMs?: number;
   minimumLoadTimeMs?: number;
-  priority?: boolean;
 }
 
 /**
  * An enhanced wrapper component for lazy loading components with customizable loading behavior
  * - delayMs: Delay before showing the loading state to prevent flickering for fast loads
  * - minimumLoadTimeMs: Minimum time to show the loading state to prevent jarring transitions
- * - priority: Whether this component should be loaded with higher priority
  */
 const LazyComponent: React.FC<LazyComponentProps> = ({ 
   children, 
   fallback,
   delayMs = 300,
-  minimumLoadTimeMs = 500,
-  priority = false
+  minimumLoadTimeMs = 500
 }) => {
   const [shouldRender, setShouldRender] = useState(delayMs === 0);
   const [loadStartTime, setLoadStartTime] = useState(0);
-  
+
   useEffect(() => {
     if (delayMs === 0) return;
     
@@ -36,22 +33,6 @@ const LazyComponent: React.FC<LazyComponentProps> = ({
     
     return () => clearTimeout(timer);
   }, [delayMs]);
-
-  // Use requestIdleCallback if available for non-priority components
-  useEffect(() => {
-    if (!priority || typeof window.requestIdleCallback !== 'function') return;
-    
-    // Mark this component as ready to render during idle time
-    const idleCallback = window.requestIdleCallback(() => {
-      setShouldRender(true);
-    });
-    
-    return () => {
-      if (typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(idleCallback);
-      }
-    };
-  }, [priority]);
 
   const handleFallbackRender = () => {
     // If we haven't started showing the fallback yet, show nothing

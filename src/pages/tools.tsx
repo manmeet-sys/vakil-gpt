@@ -142,14 +142,13 @@ const ToolsPage = () => {
         { 
           name: 'DPDP Compliance', 
           icon: Shield, 
-          path: '/dpdp-compliance',
+          path: '/gdpr-compliance',
           badge: 'Critical'
         },
         { 
           name: 'AML Compliance', 
           icon: AlertTriangle, 
-          path: '/aml-compliance',
-          badge: 'Updated'
+          path: '/aml-compliance' 
         }
       ]
     },
@@ -216,12 +215,6 @@ const ToolsPage = () => {
       icon: <Calculator className="h-6 w-6 text-teal-600" />,
       tools: [
         { 
-          name: 'Legal Calculator', 
-          icon: Calculator, 
-          path: '/legal-calculator',
-          badge: 'New'
-        },
-        { 
           name: 'Financial Obligations', 
           icon: FileText, 
           path: '/financial-obligations' 
@@ -234,7 +227,7 @@ const ToolsPage = () => {
         },
         { 
           name: 'Tax Compliance', 
-          icon: IndianRupee, 
+          icon: Calculator, 
           path: '/tax-compliance' 
         }
       ]
@@ -311,7 +304,7 @@ const ToolsPage = () => {
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-6 md:p-8 rounded-2xl shadow-elegant">
             <div className="text-center md:text-left max-w-2xl">
-              <h1 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-3 tracking-tight font-playfair">
+              <h1 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-3 tracking-tight">
                 Indian Legal Tools Suite
               </h1>
               <p className="text-legal-muted dark:text-gray-300 text-lg">
@@ -358,7 +351,7 @@ const ToolsPage = () => {
                         {category.icon}
                       </div>
                       <div>
-                        <CardTitle className="text-xl font-semibold text-legal-slate dark:text-white truncate font-playfair">
+                        <CardTitle className="text-xl font-semibold text-legal-slate dark:text-white truncate">
                           {category.title}
                         </CardTitle>
                       </div>

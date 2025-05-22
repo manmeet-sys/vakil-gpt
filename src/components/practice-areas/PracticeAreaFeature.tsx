@@ -11,7 +11,6 @@ interface PracticeAreaFeatureProps {
   icon: React.ReactNode;
   linkPath: string;
   linkText: string;
-  onClick?: () => void;
   bgColor?: string;
 }
 
@@ -21,15 +20,8 @@ const PracticeAreaFeature: React.FC<PracticeAreaFeatureProps> = ({
   icon,
   linkPath,
   linkText,
-  onClick,
   bgColor = 'bg-blue-50 dark:bg-blue-900/20'
 }) => {
-  const handleClick = () => {
-    if (onClick) {
-      onClick();
-    }
-  };
-
   return (
     <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 shadow-sm">
       <CardHeader>
@@ -44,19 +36,12 @@ const PracticeAreaFeature: React.FC<PracticeAreaFeatureProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        {onClick ? (
-          <Button variant="outline" className="w-full justify-between group" onClick={handleClick}>
+        <Link to={linkPath}>
+          <Button variant="outline" className="w-full justify-between group">
             {linkText}
             <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
           </Button>
-        ) : (
-          <Link to={linkPath}>
-            <Button variant="outline" className="w-full justify-between group">
-              {linkText}
-              <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </Link>
-        )}
+        </Link>
       </CardContent>
     </Card>
   );

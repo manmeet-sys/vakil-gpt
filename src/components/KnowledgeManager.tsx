@@ -1,458 +1,949 @@
-
 import React, { useState, useEffect } from 'react';
-import { Button } from './ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
-import { Input } from './ui/input';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './ui/select';
-import { Textarea } from './ui/textarea';
-import { Badge } from './ui/badge';
-import { toast } from 'sonner';
-import { FileUp, Book, Globe, Database, Landmark, Gavel, Search, Plus } from 'lucide-react';
-import { generateOpenAIAnalysis, fetchIndianLegalUpdates, subscribeToLegalUpdates } from '@/utils/aiAnalysis';
+import { Plus, File, Globe, Trash2, AlertCircle, Gavel, LibraryBig, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { fetchIndianLegalUpdates, subscribeToLegalUpdates } from '@/utils/aiAnalysis';
 
-// Define types for knowledge items
+// Define types for our knowledge items
 interface KnowledgeItem {
   id: string;
+  type: 'document' | 'url' | 'text' | 'precedent' | 'legislation';
   title: string;
-  content?: string;
-  url?: string;
-  type: 'document' | 'text' | 'url' | 'precedent' | 'legislation';
-  tags?: string[];
+  content: string;
+  source?: string;
   dateAdded: string;
-  userId?: string;
+  size?: string;
+  citation?: string;
+  court?: string;
+  statuteType?: string;
+  effectiveDate?: string;
+  jurisdiction?: string;
+  tags?: string[];
 }
 
-// Mock data for demonstration purposes
-const legalKnowledgeSuggestions = [
-  { title: "Indian Contract Act, 1872", type: "legislation" },
-  { title: "Code of Civil Procedure, 1908", type: "legislation" },
-  { title: "Indian Penal Code, 1860", type: "legislation" },
-  { title: "The Companies Act, 2013", type: "legislation" },
-  { title: "M.C. Mehta v. Union of India", type: "precedent" },
-  { title: "Kesavananda Bharati v. State of Kerala", type: "precedent" },
-  { title: "Vishaka v. State of Rajasthan", type: "precedent" },
-  { title: "ADM Jabalpur v. Shivkant Shukla", type: "precedent" },
-];
+interface StatuteUpdate {
+  id: number;
+  name: string;
+  date: string;
+  description: string;
+  type: string;
+}
+
+interface PrecedentUpdate {
+  id: number;
+  case: string;
+  court: string;
+  date: string;
+  summary: string;
+  impact: string;
+}
+
+interface LegalUpdates {
+  statutes: StatuteUpdate[];
+  precedents: PrecedentUpdate[];
+}
 
 const KnowledgeManager: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('add');
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [addType, setAddType] = useState<string>('text');
+  const [documentTitle, setDocumentTitle] = useState('');
+  const [urlInput, setUrlInput] = useState('');
+  const [urlTitle, setUrlTitle] = useState('');
+  const [textContent, setTextContent] = useState('');
+  const [textTitle, setTextTitle] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('document');
+  const [legalUpdates, setLegalUpdates] = useState<LegalUpdates | null>(null);
+  const [isLoadingUpdates, setIsLoadingUpdates] = useState(false);
+  const [selectedUpdates, setSelectedUpdates] = useState<Array<{id: number, name: string}>>([]);
+  const [subscriberEmail, setSubscriberEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
   
-  // Form states
-  const [title, setTitle] = useState<string>('');
-  const [content, setContent] = useState<string>('');
-  const [url, setUrl] = useState<string>('');
-  const [tags, setTags] = useState<string>('');
-  const [suggestionFilter, setSuggestionFilter] = useState<string>('all');
-  const [legalUpdates, setLegalUpdates] = useState<string>('Loading legal updates...');
+  // Precedent specific states
+  const [precedentTitle, setPrecedentTitle] = useState('');
+  const [precedentCitation, setPrecedentCitation] = useState('');
+  const [precedentCourt, setPrecedentCourt] = useState('');
+  const [precedentContent, setPrecedentContent] = useState('');
+  
+  // Legislation specific states
+  const [legislationTitle, setLegislationTitle] = useState('');
+  const [legislationType, setLegislationType] = useState('');
+  const [legislationDate, setLegislationDate] = useState('');
+  const [legislationJurisdiction, setLegislationJurisdiction] = useState('');
+  const [legislationContent, setLegislationContent] = useState('');
 
   // Load knowledge items from localStorage on component mount
   useEffect(() => {
     const savedItems = localStorage.getItem('precedentAI-knowledge');
     if (savedItems) {
-      setKnowledgeItems(JSON.parse(savedItems));
+      try {
+        setKnowledgeItems(JSON.parse(savedItems));
+      } catch (e) {
+        console.error('Failed to parse saved knowledge items:', e);
+      }
     }
     
-    // Fetch legal updates
-    fetchLegalUpdates();
+    // Load legal updates when component mounts
+    loadLegalUpdates();
   }, []);
-  
-  const fetchLegalUpdates = async () => {
+
+  // Save knowledge items to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('precedentAI-knowledge', JSON.stringify(knowledgeItems));
+  }, [knowledgeItems]);
+
+  const loadLegalUpdates = async () => {
+    setIsLoadingUpdates(true);
     try {
       const updates = await fetchIndianLegalUpdates();
       setLegalUpdates(updates);
     } catch (error) {
-      console.error('Failed to fetch legal updates:', error);
-      setLegalUpdates('Could not load legal updates. Please try again later.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch legal updates. Please try again later.",
+      });
+    } finally {
+      setIsLoadingUpdates(false);
     }
   };
-  
-  // Subscribe to legal updates
-  const handleSubscribeToUpdates = async (email: string, area: string) => {
+
+  const handleSubscribe = async () => {
+    if (!subscriberEmail) {
+      toast({
+        variant: "destructive",
+        title: "Missing email",
+        description: "Please enter your email address",
+      });
+      return;
+    }
+    
+    if (selectedUpdates.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No updates selected",
+        description: "Please select at least one update to subscribe to",
+      });
+      return;
+    }
+    
+    setIsSubscribing(true);
     try {
-      const result = await subscribeToLegalUpdates(area, email);
-      toast.success('Subscription successful', {
-        description: result
+      const result = await subscribeToLegalUpdates(selectedUpdates, subscriberEmail);
+      toast({
+        title: "Subscription successful",
+        description: result,
       });
+      setSelectedUpdates([]);
+      setSubscriberEmail('');
     } catch (error) {
-      toast.error('Subscription failed', {
-        description: 'Could not subscribe to legal updates'
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to subscribe to updates. Please try again later.",
+      });
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  const handleUpdateSelection = (update: StatuteUpdate | PrecedentUpdate, isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedUpdates(prev => [...prev, { id: update.id, name: 'name' in update ? update.name : update.case }]);
+    } else {
+      setSelectedUpdates(prev => prev.filter(item => item.id !== update.id));
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Only accept PDF, DOCX, and TXT files
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please upload a PDF, DOCX, or TXT file",
+      });
+      return;
+    }
+
+    // Set a default title based on the file name if no title is provided
+    if (!documentTitle) {
+      setDocumentTitle(file.name.split('.')[0]);
+    }
+
+    setIsUploading(true);
+    
+    // Simulate file processing with a progress bar
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 5;
+      setUploadProgress(progress);
+      
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          processFile(file);
+          setIsUploading(false);
+          setUploadProgress(0);
+        }, 500);
+      }
+    }, 100);
+  };
+
+  const processFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      
+      // For demo purposes, we'll just store the first 1000 characters
+      // In a real application, you would process the full content
+      const content = result.substring(0, 1000);
+      
+      const newItem: KnowledgeItem = {
+        id: Date.now().toString(),
+        type: 'document',
+        title: documentTitle || file.name,
+        content: content,
+        source: file.name,
+        dateAdded: new Date().toISOString(),
+        size: formatFileSize(file.size)
+      };
+      
+      setKnowledgeItems(prev => [...prev, newItem]);
+      setDocumentTitle('');
+      
+      toast({
+        title: "Document added",
+        description: `${file.name} has been added to your knowledge base`,
+      });
+    };
+    
+    reader.onerror = () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to read the file",
+      });
+    };
+    
+    reader.readAsText(file);
+  };
+
+  const handleAddUrl = async () => {
+    if (!urlInput) {
+      toast({
+        variant: "destructive",
+        title: "Missing URL",
+        description: "Please enter a URL",
+      });
+      return;
+    }
+    
+    // Simple URL validation
+    if (!urlInput.startsWith('http://') && !urlInput.startsWith('https://')) {
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid URL starting with http:// or https://",
+      });
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    try {
+      // In a real application, you would fetch the content from the URL
+      // Here, we'll simulate it for demo purposes
+      
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        setUploadProgress(progress);
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            const newItem: KnowledgeItem = {
+              id: Date.now().toString(),
+              type: 'url',
+              title: urlTitle || new URL(urlInput).hostname,
+              content: `Content from ${urlInput} would be fetched and processed here.`,
+              source: urlInput,
+              dateAdded: new Date().toISOString()
+            };
+            
+            setKnowledgeItems(prev => [...prev, newItem]);
+            setUrlInput('');
+            setUrlTitle('');
+            setIsUploading(false);
+            setUploadProgress(0);
+            
+            toast({
+              title: "URL added",
+              description: "The URL has been added to your knowledge base",
+            });
+          }, 500);
+        }
+      }, 100);
+    } catch (error) {
+      setIsUploading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to process the URL",
       });
     }
   };
 
-  // Filter knowledge items based on search query and type
-  const filteredItems = knowledgeItems.filter((item) => {
-    return item.title.toLowerCase().includes(searchQuery.toLowerCase());
-  });
-  
-  // Filter suggestions based on suggestionFilter
-  const filteredSuggestions = legalKnowledgeSuggestions.filter((suggestion) => {
-    return suggestionFilter === 'all' || suggestion.type === suggestionFilter;
-  });
-
-  // Add a new knowledge item
-  const handleAddItem = () => {
-    if (!title) {
-      toast.error('Title is required');
-      return;
-    }
-    
-    if (addType === 'url' && !url) {
-      toast.error('URL is required');
-      return;
-    }
-    
-    if (addType === 'text' && !content) {
-      toast.error('Content is required');
+  const handleAddText = () => {
+    if (!textContent) {
+      toast({
+        variant: "destructive",
+        title: "Missing content",
+        description: "Please enter some text content",
+      });
       return;
     }
     
     const newItem: KnowledgeItem = {
       id: Date.now().toString(),
-      title,
-      type: addType as any,
-      dateAdded: new Date().toISOString(),
-      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      type: 'text',
+      title: textTitle || `Text ${knowledgeItems.filter(item => item.type === 'text').length + 1}`,
+      content: textContent,
+      dateAdded: new Date().toISOString()
     };
     
-    if (addType === 'text') {
-      newItem.content = content;
-    }
+    setKnowledgeItems(prev => [...prev, newItem]);
+    setTextContent('');
+    setTextTitle('');
     
-    if (addType === 'url') {
-      newItem.url = url;
-    }
-    
-    const updatedItems = [...knowledgeItems, newItem];
-    setKnowledgeItems(updatedItems);
-    localStorage.setItem('precedentAI-knowledge', JSON.stringify(updatedItems));
-    
-    // Reset form
-    setTitle('');
-    setContent('');
-    setUrl('');
-    setTags('');
-    
-    toast.success('Knowledge item added successfully');
-    
-    // Switch to browse tab
-    setActiveTab('browse');
+    toast({
+      title: "Text added",
+      description: "The text has been added to your knowledge base",
+    });
   };
 
-  // Handle suggestion click
-  const handleSuggestionClick = (suggestion: any) => {
-    setTitle(suggestion.title);
-    setAddType(suggestion.type);
+  const handleAddPrecedent = () => {
+    if (!precedentTitle || !precedentContent) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please provide at least a title and content for the precedent",
+      });
+      return;
+    }
+    
+    const newItem: KnowledgeItem = {
+      id: Date.now().toString(),
+      type: 'precedent',
+      title: precedentTitle,
+      content: precedentContent,
+      citation: precedentCitation,
+      court: precedentCourt,
+      dateAdded: new Date().toISOString(),
+    };
+    
+    setKnowledgeItems(prev => [...prev, newItem]);
+    setPrecedentTitle('');
+    setPrecedentCitation('');
+    setPrecedentCourt('');
+    setPrecedentContent('');
+    
+    toast({
+      title: "Precedent added",
+      description: `${precedentTitle} has been added to your knowledge base`,
+    });
+  };
+  
+  const handleAddLegislation = () => {
+    if (!legislationTitle || !legislationContent) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please provide at least a title and content for the legislation",
+      });
+      return;
+    }
+    
+    const newItem: KnowledgeItem = {
+      id: Date.now().toString(),
+      type: 'legislation',
+      title: legislationTitle,
+      content: legislationContent,
+      statuteType: legislationType,
+      effectiveDate: legislationDate,
+      jurisdiction: legislationJurisdiction,
+      dateAdded: new Date().toISOString(),
+    };
+    
+    setKnowledgeItems(prev => [...prev, newItem]);
+    setLegislationTitle('');
+    setLegislationType('');
+    setLegislationDate('');
+    setLegislationJurisdiction('');
+    setLegislationContent('');
+    
+    toast({
+      title: "Legislation added",
+      description: `${legislationTitle} has been added to your knowledge base`,
+    });
   };
 
-  // Delete a knowledge item
-  const handleDeleteItem = (id: string) => {
-    const updatedItems = knowledgeItems.filter(item => item.id !== id);
-    setKnowledgeItems(updatedItems);
-    localStorage.setItem('precedentAI-knowledge', JSON.stringify(updatedItems));
-    
-    toast.success('Knowledge item deleted successfully');
+  const confirmDelete = (id: string) => {
+    setItemToDelete(id);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDelete = () => {
+    if (itemToDelete) {
+      setKnowledgeItems(prev => prev.filter(item => item.id !== itemToDelete));
+      setShowDeleteDialog(false);
+      setItemToDelete(null);
+      
+      toast({
+        title: "Item deleted",
+        description: "The item has been removed from your knowledge base",
+      });
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' bytes';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+  
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'document': return <File className="h-6 w-6 text-blue-500" />;
+      case 'url': return <Globe className="h-6 w-6 text-green-500" />;
+      case 'text': return <File className="h-6 w-6 text-purple-500" />;
+      case 'precedent': return <Gavel className="h-6 w-6 text-amber-500" />;
+      case 'legislation': return <BookOpen className="h-6 w-6 text-red-500" />;
+      default: return <File className="h-6 w-6 text-gray-500" />;
+    }
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Database className="h-5 w-5 text-blue-500" />
-          Knowledge Base Manager
-        </CardTitle>
-        <CardDescription>
-          Add, organize, and browse your legal knowledge repository
-        </CardDescription>
-      </CardHeader>
+    <div className="flex flex-col space-y-6 p-6 bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-800">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">VakilGPT Knowledge Base</h2>
+        <Button 
+          onClick={() => window.history.back()} 
+          variant="outline"
+        >
+          Back to Chat
+        </Button>
+      </div>
+
+      <Alert className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+        <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
+        <AlertTitle>Knowledge Management</AlertTitle>
+        <AlertDescription>
+          Add documents, URLs, precedents, legislation or text to enhance VakilGPT's knowledge base. This information will be used to provide more accurate and relevant responses aligned with Indian law.
+        </AlertDescription>
+      </Alert>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-5 mb-4">
+          <TabsTrigger value="document">Documents</TabsTrigger>
+          <TabsTrigger value="url">URLs</TabsTrigger>
+          <TabsTrigger value="text">Text</TabsTrigger>
+          <TabsTrigger value="precedent">Precedents</TabsTrigger>
+          <TabsTrigger value="legislation">Legislation</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="document" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="document-title">Document Title (Optional)</Label>
+            <Input
+              id="document-title"
+              placeholder="Enter a title for this document"
+              value={documentTitle}
+              onChange={(e) => setDocumentTitle(e.target.value)}
+              disabled={isUploading}
+            />
+          </div>
+          
+          <div className="border-2 border-dashed rounded-md p-6 text-center">
+            <Input
+              id="document-upload"
+              type="file"
+              className="hidden"
+              accept=".pdf,.docx,.txt"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+            />
+            <Label 
+              htmlFor="document-upload" 
+              className="cursor-pointer flex flex-col items-center justify-center"
+            >
+              <File className="h-10 w-10 text-blue-500 mb-2" />
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Click to upload PDF, DOCX, or TXT files
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                Maximum file size: 10MB
+              </p>
+            </Label>
+          </div>
+          
+          {isUploading && (
+            <div className="space-y-2">
+              <Progress value={uploadProgress} className="w-full" />
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                Processing document... {uploadProgress}%
+              </p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="url" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="url-title">URL Title (Optional)</Label>
+            <Input
+              id="url-title"
+              placeholder="Enter a title for this URL"
+              value={urlTitle}
+              onChange={(e) => setUrlTitle(e.target.value)}
+              disabled={isUploading}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="url-input">URL</Label>
+            <div className="flex space-x-2">
+              <Input
+                id="url-input"
+                placeholder="https://example.com/article"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                disabled={isUploading}
+              />
+              <Button onClick={handleAddUrl} disabled={isUploading}>
+                <Plus className="h-4 w-4 mr-1" /> Add
+              </Button>
+            </div>
+          </div>
+          
+          {isUploading && (
+            <div className="space-y-2">
+              <Progress value={uploadProgress} className="w-full" />
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                Processing URL... {uploadProgress}%
+              </p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="text" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="text-title">Text Title (Optional)</Label>
+            <Input
+              id="text-title"
+              placeholder="Enter a title for this text"
+              value={textTitle}
+              onChange={(e) => setTextTitle(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="text-content">Text Content</Label>
+            <Textarea
+              id="text-content"
+              placeholder="Enter legal text, case law, or other information..."
+              value={textContent}
+              onChange={(e) => setTextContent(e.target.value)}
+              rows={6}
+            />
+          </div>
+          
+          <Button onClick={handleAddText}>
+            <Plus className="h-4 w-4 mr-1" /> Add Text
+          </Button>
+        </TabsContent>
+        
+        <TabsContent value="precedent" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="precedent-title">Case Name/Title</Label>
+            <Input
+              id="precedent-title"
+              placeholder="e.g., Kesavananda Bharati v. State of Kerala"
+              value={precedentTitle}
+              onChange={(e) => setPrecedentTitle(e.target.value)}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="precedent-citation">Citation</Label>
+              <Input
+                id="precedent-citation"
+                placeholder="e.g., AIR 1973 SC 1461"
+                value={precedentCitation}
+                onChange={(e) => setPrecedentCitation(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="precedent-court">Court</Label>
+              <Select value={precedentCourt} onValueChange={setPrecedentCourt}>
+                <SelectTrigger id="precedent-court">
+                  <SelectValue placeholder="Select court" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="supreme-court">Supreme Court of India</SelectItem>
+                  <SelectItem value="high-court">High Court</SelectItem>
+                  <SelectItem value="district-court">District Court</SelectItem>
+                  <SelectItem value="tribunals">Tribunals</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="precedent-content">Key Points & Holdings</Label>
+            <Textarea
+              id="precedent-content"
+              placeholder="Enter key legal points, holdings, and significance of this precedent..."
+              value={precedentContent}
+              onChange={(e) => setPrecedentContent(e.target.value)}
+              rows={6}
+            />
+          </div>
+          
+          <Button onClick={handleAddPrecedent}>
+            <Plus className="h-4 w-4 mr-1" /> Add Precedent
+          </Button>
+        </TabsContent>
+        
+        <TabsContent value="legislation" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="legislation-title">Title</Label>
+            <Input
+              id="legislation-title"
+              placeholder="e.g., The Bharatiya Nyaya Sanhita, 2023"
+              value={legislationTitle}
+              onChange={(e) => setLegislationTitle(e.target.value)}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="legislation-type">Type</Label>
+              <Select value={legislationType} onValueChange={setLegislationType}>
+                <SelectTrigger id="legislation-type">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="act">Act</SelectItem>
+                  <SelectItem value="rules">Rules</SelectItem>
+                  <SelectItem value="regulations">Regulations</SelectItem>
+                  <SelectItem value="notification">Notification</SelectItem>
+                  <SelectItem value="order">Order</SelectItem>
+                  <SelectItem value="amendment">Amendment</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="legislation-date">Effective Date</Label>
+              <Input
+                id="legislation-date"
+                type="date"
+                value={legislationDate}
+                onChange={(e) => setLegislationDate(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="legislation-jurisdiction">Jurisdiction</Label>
+              <Select value={legislationJurisdiction} onValueChange={setLegislationJurisdiction}>
+                <SelectTrigger id="legislation-jurisdiction">
+                  <SelectValue placeholder="Select jurisdiction" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="central">Central/Union</SelectItem>
+                  <SelectItem value="state">State</SelectItem>
+                  <SelectItem value="local">Local</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="legislation-content">Key Provisions</Label>
+            <Textarea
+              id="legislation-content"
+              placeholder="Enter key provisions and significance of this legislation..."
+              value={legislationContent}
+              onChange={(e) => setLegislationContent(e.target.value)}
+              rows={6}
+            />
+          </div>
+          
+          <Button onClick={handleAddLegislation}>
+            <Plus className="h-4 w-4 mr-1" /> Add Legislation
+          </Button>
+        </TabsContent>
+      </Tabs>
       
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="add">
-              <Plus className="h-4 w-4 mr-1" />
-              Add Knowledge
-            </TabsTrigger>
-            <TabsTrigger value="browse">
-              <Search className="h-4 w-4 mr-1" />
-              Browse Knowledge
-            </TabsTrigger>
-            <TabsTrigger value="updates">
-              <Book className="h-4 w-4 mr-1" />
-              Legal Updates
-            </TabsTrigger>
+      <div className="mt-4">
+        <Tabs defaultValue="knowledge-items" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="knowledge-items">My Knowledge Items</TabsTrigger>
+            <TabsTrigger value="legal-updates">Legal Updates</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="add">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Knowledge Type</label>
-                <Select value={addType} onValueChange={setAddType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="text">Text Note</SelectItem>
-                    <SelectItem value="url">URL / Web Resource</SelectItem>
-                    <SelectItem value="document">Document</SelectItem>
-                    <SelectItem value="precedent">Case Law / Precedent</SelectItem>
-                    <SelectItem value="legislation">Legislation / Statute</SelectItem>
-                  </SelectContent>
-                </Select>
+          <TabsContent value="knowledge-items" className="space-y-4">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Knowledge Items ({knowledgeItems.length})</h3>
+            
+            {knowledgeItems.length === 0 ? (
+              <div className="text-center py-6 bg-gray-50 dark:bg-zinc-800/20 rounded-md">
+                <p className="text-gray-500 dark:text-gray-400">
+                  No knowledge items added yet. Upload documents, add URLs, precedents, legislation or enter text to enhance VakilGPT.
+                </p>
               </div>
-              
-              <div>
-                <label className="text-sm font-medium mb-1 block">Title</label>
-                <Input 
-                  placeholder="Enter a title" 
-                  value={title} 
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-              
-              {addType === 'text' && (
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Content</label>
-                  <Textarea 
-                    placeholder="Enter your notes or content" 
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)} 
-                    rows={6}
-                  />
-                </div>
-              )}
-              
-              {addType === 'url' && (
-                <div>
-                  <label className="text-sm font-medium mb-1 block">URL</label>
-                  <Input 
-                    placeholder="https://example.com" 
-                    type="url" 
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)} 
-                  />
-                </div>
-              )}
-              
-              {addType === 'document' && (
-                <div className="border-2 border-dashed rounded-md p-6 text-center">
-                  <FileUp className="h-10 w-10 mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm font-medium mb-1">Drag & drop a document here</p>
-                  <p className="text-xs text-gray-500">or click to select a file</p>
-                  <p className="text-xs text-gray-500 mt-4">(Document upload is not yet implemented)</p>
-                </div>
-              )}
-              
-              <div>
-                <label className="text-sm font-medium mb-1 block">Tags (comma separated)</label>
-                <Input 
-                  placeholder="contract, civil, property, etc." 
-                  value={tags}
-                  onChange={(e) => setTags(e.target.value)} 
-                />
-              </div>
-              
-              <Button onClick={handleAddItem} className="w-full">
-                Add to Knowledge Base
-              </Button>
-              
-              <div className="mt-6">
-                <h3 className="text-sm font-medium mb-3">Recommended Knowledge</h3>
-                
-                <div className="flex items-center gap-2 mb-3">
-                  <Select value={suggestionFilter} onValueChange={setSuggestionFilter}>
-                    <SelectTrigger className="h-8 text-xs w-[180px]">
-                      <SelectValue placeholder="Filter suggestions" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="legislation">Legislation</SelectItem>
-                      <SelectItem value="precedent">Case Law</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {filteredSuggestions.map((suggestion, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center justify-between border rounded-md p-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                    >
-                      <div className="flex items-center gap-2">
-                        {suggestion.type === 'legislation' ? (
-                          <Landmark className="h-4 w-4 text-blue-500" />
-                        ) : (
-                          <Gavel className="h-4 w-4 text-amber-500" />
-                        )}
-                        <span className="text-sm">{suggestion.title}</span>
-                      </div>
-                      <Badge variant={suggestion.type === 'legislation' ? "outline" : "secondary"} className="text-xs">
-                        {suggestion.type === 'legislation' ? 'Statute' : 'Case'}
-                      </Badge>
+            ) : (
+              <div className="space-y-4">
+                {knowledgeItems.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className="flex items-start p-4 rounded-md border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/20"
+                  >
+                    <div className="mr-4 mt-1">
+                      {getTypeIcon(item.type)}
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="browse">
-            <div className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input 
-                  placeholder="Search knowledge base..."
-                  className="pl-9"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              
-              {filteredItems.length > 0 ? (
-                <div className="space-y-3 mt-4">
-                  {filteredItems.map((item) => (
-                    <div key={item.id} className="border rounded-md p-3">
+                    
+                    <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-medium">{item.title}</h3>
-                          <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                            <span>{new Date(item.dateAdded).toLocaleDateString()}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {item.type === 'text' ? 'Note' : 
-                               item.type === 'url' ? 'URL' : 
-                               item.type === 'document' ? 'Document' :
-                               item.type === 'precedent' ? 'Case Law' : 'Legislation'}
-                            </Badge>
-                          </div>
-                          
-                          {item.tags && item.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {item.tags.map((tag, i) => (
-                                <Badge key={i} variant="secondary" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                          
-                          {item.content && (
-                            <div className="mt-2 text-sm bg-gray-50 dark:bg-gray-800 p-2 rounded-md max-h-20 overflow-y-auto">
-                              {item.content}
-                            </div>
-                          )}
-                          
-                          {item.url && (
-                            <div className="mt-2">
-                              <a 
-                                href={item.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-sm text-blue-600 hover:underline flex items-center"
-                              >
-                                <Globe className="h-3 w-3 mr-1" />
-                                {item.url.length > 40 ? item.url.slice(0, 40) + '...' : item.url}
-                              </a>
-                            </div>
-                          )}
+                          <h4 className="font-medium text-gray-800 dark:text-white">{item.title}</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            Added on {formatDate(item.dateAdded)}
+                          </p>
                         </div>
                         
                         <Button 
                           variant="ghost" 
-                          size="icon"
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="h-7 w-7 text-gray-500 hover:text-red-500"
+                          size="sm" 
+                          onClick={() => confirmDelete(item.id)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
+                      
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {item.type === 'document' ? 'Document' : 
+                           item.type === 'url' ? 'URL' : 
+                           item.type === 'text' ? 'Text' :
+                           item.type === 'precedent' ? 'Precedent' : 'Legislation'}
+                        </Badge>
+                        
+                        {item.source && (
+                          <Badge variant="outline" className="text-xs text-blue-500 dark:text-blue-400">
+                            {item.type === 'url' ? new URL(item.source).hostname : item.source}
+                          </Badge>
+                        )}
+                        
+                        {item.citation && (
+                          <Badge variant="outline" className="text-xs text-amber-500 dark:text-amber-400">
+                            {item.citation}
+                          </Badge>
+                        )}
+                        
+                        {item.court && (
+                          <Badge variant="outline" className="text-xs text-purple-500 dark:text-purple-400">
+                            {item.court === 'supreme-court' ? 'Supreme Court' : 
+                             item.court === 'high-court' ? 'High Court' : 
+                             item.court === 'district-court' ? 'District Court' : 
+                             item.court === 'tribunals' ? 'Tribunal' : 'Other Court'}
+                          </Badge>
+                        )}
+                        
+                        {item.statuteType && (
+                          <Badge variant="outline" className="text-xs text-red-500 dark:text-red-400">
+                            {item.statuteType === 'act' ? 'Act' : 
+                             item.statuteType === 'rules' ? 'Rules' : 
+                             item.statuteType === 'regulations' ? 'Regulations' : 
+                             item.statuteType === 'notification' ? 'Notification' : 
+                             item.statuteType === 'order' ? 'Order' : 'Amendment'}
+                          </Badge>
+                        )}
+                        
+                        {item.jurisdiction && (
+                          <Badge variant="outline" className="text-xs text-green-500 dark:text-green-400">
+                            {item.jurisdiction === 'central' ? 'Central' : 
+                             item.jurisdiction === 'state' ? 'State' : 'Local'}
+                          </Badge>
+                        )}
+                        
+                        {item.size && (
+                          <Badge variant="outline" className="text-xs">
+                            {item.size}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {(item.type === 'text' || item.type === 'precedent' || item.type === 'legislation') && (
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                          {item.content}
+                        </p>
+                      )}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Database className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">No knowledge items found</p>
-                  <Button variant="secondary" size="sm" className="mt-4" onClick={() => setActiveTab('add')}>
-                    <Plus className="h-4 w-4 mr-1" /> 
-                    Add Knowledge
-                  </Button>
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
           
-          <TabsContent value="updates">
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Legal Updates</CardTitle>
-                  <CardDescription>
-                    Latest developments in Indian law and jurisprudence
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="max-h-80 overflow-y-auto">
-                    {legalUpdates === 'Loading legal updates...' ? (
-                      <div className="flex justify-center items-center h-32">
-                        <div className="animate-spin h-8 w-8 border-t-2 border-blue-500 rounded-full" />
-                      </div>
-                    ) : (
-                      <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <div dangerouslySetInnerHTML={{ __html: legalUpdates.replace(/\n/g, '<br />') }} />
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" size="sm" onClick={fetchLegalUpdates} className="w-full">
-                    Refresh Updates
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Subscribe to Updates</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Practice Area</label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select practice area" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="corporate">Corporate Law</SelectItem>
-                          <SelectItem value="criminal">Criminal Law</SelectItem>
-                          <SelectItem value="tax">Tax Law</SelectItem>
-                          <SelectItem value="ip">Intellectual Property</SelectItem>
-                          <SelectItem value="real-estate">Real Estate Law</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+          <TabsContent value="legal-updates" className="space-y-6">
+            {isLoadingUpdates ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : legalUpdates ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
+                      <BookOpen className="mr-2 h-5 w-5 text-red-500" /> Recent Statutory Updates
+                    </h3>
                     
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Email</label>
-                      <Input placeholder="your-email@example.com" type="email" />
-                    </div>
+                    {legalUpdates.statutes.map((statute) => (
+                      <div 
+                        key={statute.id}
+                        className="p-4 rounded-md border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/20"
+                      >
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-gray-800 dark:text-white">{statute.name}</h4>
+                          <input 
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-gray-300"
+                            onChange={(e) => handleUpdateSelection(statute, e.target.checked)}
+                            checked={selectedUpdates.some(item => item.id === statute.id)}
+                          />
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge variant="outline" className="text-xs">{statute.type}</Badge>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{statute.date}</span>
+                        </div>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{statute.description}</p>
+                      </div>
+                    ))}
                   </div>
-                </CardContent>
-                <CardFooter>
-                  <Button size="sm" className="w-full">Subscribe</Button>
-                </CardFooter>
-              </Card>
-            </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
+                      <Gavel className="mr-2 h-5 w-5 text-amber-500" /> Recent Case Law Developments
+                    </h3>
+                    
+                    {legalUpdates.precedents.map((precedent) => (
+                      <div 
+                        key={precedent.id}
+                        className="p-4 rounded-md border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/20"
+                      >
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-gray-800 dark:text-white">{precedent.case}</h4>
+                          <input 
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-gray-300"
+                            onChange={(e) => handleUpdateSelection(precedent, e.target.checked)}
+                            checked={selectedUpdates.some(item => item.id === precedent.id)}
+                          />
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge variant="outline" className="text-xs">{precedent.court}</Badge>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{precedent.date}</span>
+                        </div>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{precedent.summary}</p>
+                        <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">Impact: {precedent.impact}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg p-4 mt-6">
+                  <h3 className="text-base font-medium mb-3">Subscribe to Legal Updates</h3>
+                  
+                  <div className="flex flex-col md:flex-row gap-3">
+                    <Input
+                      placeholder="Your email address"
+                      type="email"
+                      value={subscriberEmail}
+                      onChange={(e) => setSubscriberEmail(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={handleSubscribe} disabled={isSubscribing || selectedUpdates.length === 0}>
+                      {isSubscribing ? "Subscribing..." : "Subscribe"}
+                    </Button>
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Subscribe to receive notifications when selected legal updates are modified or new related updates are published.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400">Failed to load legal updates.</p>
+                <Button variant="outline" className="mt-4" onClick={loadLegalUpdates}>
+                  Try Again
+                </Button>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+      </div>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this item from your knowledge base? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
