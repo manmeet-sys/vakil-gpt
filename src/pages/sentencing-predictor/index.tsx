@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Scale, FileText, BookOpen, Gavel } from 'lucide-react';
-import SentencingPredictorTool from '@/components/SentencingPredictorTool';
+import SentencingPredictorTool from '@/components/practice-area-tools/criminal-law/SentencingPredictorTool';
 import SentencingPredictorSkeleton from '@/components/SkeletonLoaders/SentencingPredictorSkeleton';
 import BackButton from '@/components/BackButton';
 

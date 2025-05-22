@@ -22,7 +22,7 @@ const LegalChatMessage: React.FC<LegalChatMessageProps> = ({
       "flex w-full gap-3 p-3 sm:p-4 rounded-lg",
       isAI ? "bg-blue-50 dark:bg-blue-900/10" : "bg-gray-50 dark:bg-gray-800/20"
     )}>
-      <Avatar className="h-8 w-8">
+      <Avatar className="h-8 w-8 flex-shrink-0">
         {isAI ? (
           <>
             <AvatarFallback className="bg-blue-500 text-white">AI</AvatarFallback>
@@ -36,7 +36,7 @@ const LegalChatMessage: React.FC<LegalChatMessageProps> = ({
         )}
       </Avatar>
       
-      <div className="flex flex-col flex-1 gap-1">
+      <div className="flex flex-col flex-1 gap-1 overflow-hidden">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium">
             {isAI ? 'VakilGPT Assistant' : 'You'}
@@ -45,7 +45,7 @@ const LegalChatMessage: React.FC<LegalChatMessageProps> = ({
             {format(timestamp, 'HH:mm')}
           </time>
         </div>
-        <div className="prose prose-sm dark:prose-invert max-w-none">
+        <div className="prose prose-sm dark:prose-invert max-w-none break-words">
           {message.split('\n').map((line, i) => (
             line ? <p key={i} className="mb-2">{line}</p> : <br key={i} />
           ))}

@@ -46,15 +46,6 @@ const ChatPage = () => {
         <BackButton className="mb-4" />
         
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden mb-8">
-          <div className="flex items-center bg-gray-100 dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex space-x-2 mr-4">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            </div>
-            <h2 className="font-medium text-gray-700 dark:text-gray-200">VakilGPT Chat Interface</h2>
-          </div>
-          
           {/* Chat interface container with Suspense */}
           <div className="h-[calc(100vh-16rem)] min-h-[500px]">
             <Suspense fallback={<ChatLoadingSkeleton />}>

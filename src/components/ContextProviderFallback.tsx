@@ -2,6 +2,7 @@
 import React from 'react';
 import { AuthProvider } from '@/context/AuthContext';
 import { NavigationProvider } from '@/context/NavigationContext';
+import { ThemeProvider } from './ThemeProvider';
 
 interface ContextProviderFallbackProps {
   children: React.ReactNode;
@@ -16,11 +17,13 @@ const ContextProviderFallback: React.FC<ContextProviderFallbackProps> = ({ child
   // will have access to the required providers even if they're used
   // outside the normal app hierarchy (like in storybook or tests)
   return (
-    <AuthProvider>
-      <NavigationProvider>
-        {children}
-      </NavigationProvider>
-    </AuthProvider>
+    <ThemeProvider defaultTheme="system" storageKey="vakil-theme">
+      <AuthProvider>
+        <NavigationProvider>
+          {children}
+        </NavigationProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
