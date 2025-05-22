@@ -37,13 +37,14 @@ const ChatPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  // Don't use AppLayout here since ChatInterface has its own styling
   return (
-    <AppLayout>
+    <>
       <Helmet>
         <title>AI Legal Chat | VakilGPT</title>
       </Helmet>
       <ResponsiveContainer>
-        <BackButton className="mb-4" />
+        <BackButton className="mb-4 mt-4" />
         
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden mb-8">
           {/* Chat interface container with Suspense */}
@@ -54,7 +55,7 @@ const ChatPage = () => {
           </div>
         </div>
       </ResponsiveContainer>
-    </AppLayout>
+    </>
   );
 };
 
