@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -160,29 +159,34 @@ const ToolsPage = () => {
         { 
           name: 'Legal Risk Assessment', 
           icon: BarChart2, 
-          path: '/legal-risk-assessment' 
+          path: '/legal-risk-assessment', 
+          description: 'AI-powered assessment of legal risks for Indian businesses'
         },
         { 
           name: 'Litigation Prediction', 
           icon: Scale, 
           path: '/litigation-prediction',
-          badge: 'AI-Powered'
+          badge: 'AI-Powered',
+          description: 'Predict case outcomes based on Indian judicial precedents'
         },
         { 
           name: 'Legal Due Diligence', 
           icon: FileSearch, 
-          path: '/legal-due-diligence' 
+          path: '/legal-due-diligence',
+          description: 'Comprehensive legal review for business transactions in India'
         },
         { 
           name: 'Plea Bargain Assistant', 
           icon: Gavel, 
           path: '/plea-bargain',
-          badge: 'New'
+          badge: 'New',
+          description: 'Navigate plea bargaining under the Bharatiya Nyaya Sanhita'
         },
         { 
           name: 'Sentencing Predictor', 
           icon: Scale, 
-          path: '/sentencing-predictor' 
+          path: '/sentencing-predictor',
+          description: 'Analyze potential sentences under Indian criminal codes'
         }
       ]
     },
@@ -267,6 +271,7 @@ const ToolsPage = () => {
     }
   };
 
+  // Enhanced badge styling for better UI
   const getBadgeVariant = (badgeText?: string) => {
     if (!badgeText) return '';
     
@@ -320,6 +325,7 @@ const ToolsPage = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
               <AnimatedLogo className="hidden md:block" />
             </div>
@@ -379,6 +385,11 @@ const ToolsPage = () => {
                                     </Badge>
                                   )}
                                 </div>
+                                {tool.description && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                    {tool.description}
+                                  </p>
+                                )}
                               </div>
                               <div className="w-6 h-6 flex-shrink-0 rounded-full flex items-center justify-center bg-legal-accent/10 text-legal-accent ml-auto">
                                 <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

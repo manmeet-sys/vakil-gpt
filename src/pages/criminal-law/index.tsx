@@ -1,4 +1,3 @@
-
 import React from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { Gavel, Library, BookOpen, Scale, AlertTriangle, FileText, Search, ArrowRight } from 'lucide-react';
