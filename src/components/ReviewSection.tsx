@@ -404,10 +404,8 @@ const ReviewSection = () => {
                           </Button>
                           <ShareButton 
                             title={`Review by ${review.name} - VakilGPT`}
-                            description={review.comment}
-                            className="text-legal-muted hover:text-legal-accent group-hover:bg-indigo-50/50 dark:group-hover:bg-indigo-900/10"
-                            variant="ghost"
-                            size="sm"
+                            content={review.comment}
+                            filename={`review-${review.name.replace(/\s+/g, '-').toLowerCase()}`}
                           />
                         </CardFooter>
                       </Card>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { FileText, Search, Filter, Plus } from 'lucide-react';
@@ -36,7 +37,10 @@ const LegalDocumentDraftingPage = () => {
               <DocumentDraftingForm onDocumentGenerated={setDocumentText} />
             )}
             {activeTab === 'template' && (
-              <DocumentTemplateSelector onDocumentSelected={setDocumentText} />
+              <DocumentTemplateSelector onSelect={(templateId) => {
+                console.log('Template selected:', templateId);
+                setDocumentText(`Selected template: ${templateId}`);
+              }} />
             )}
             {activeTab === 'search' && (
               <SearchDocuments onSearch={handleSearch} />
