@@ -84,24 +84,26 @@ const ToolsPage = () => {
     },
     {
       id: 'ai-assistance',
-      title: 'AI Legal Assistant',
-      icon: <MessageSquare className="h-6 w-6 text-indigo-600" />,
+      title: 'AI Legal Assistant (OpenAI Powered)',
+      icon: <MessageSquare className="h-6 w-6 text-green-600" />,
       tools: [
         { 
           name: 'Legal Chat Bot', 
           icon: MessageSquare, 
           path: '/chat',
-          badge: 'Popular'
+          badge: 'OpenAI'
         },
         { 
           name: 'Legal Document Analyzer', 
           icon: FileSearch, 
-          path: '/legal-document-analyzer' 
+          path: '/legal-document-analyzer',
+          badge: 'OpenAI'
         },
         { 
           name: 'Legal Brief Generation', 
           icon: BookOpen, 
-          path: '/legal-brief-generation' 
+          path: '/legal-brief-generation',
+          badge: 'OpenAI'
         }
       ]
     },
@@ -113,7 +115,8 @@ const ToolsPage = () => {
         { 
           name: 'Case Law Research', 
           icon: Scale, 
-          path: '/case-law-research' 
+          path: '/case-law-research',
+          badge: 'OpenAI'
         },
         { 
           name: 'Statute Tracker', 
@@ -136,7 +139,8 @@ const ToolsPage = () => {
         { 
           name: 'Contract Drafting', 
           icon: Clipboard, 
-          path: '/contract-drafting' 
+          path: '/contract-drafting',
+          badge: 'OpenAI'
         },
         { 
           name: 'DPDP Compliance', 
@@ -159,33 +163,36 @@ const ToolsPage = () => {
         { 
           name: 'Legal Risk Assessment', 
           icon: BarChart2, 
-          path: '/legal-risk-assessment', 
+          path: '/legal-risk-assessment',
+          badge: 'OpenAI',
           description: 'AI-powered assessment of legal risks for Indian businesses'
         },
         { 
           name: 'Litigation Prediction', 
           icon: Scale, 
           path: '/litigation-prediction',
-          badge: 'AI-Powered',
+          badge: 'OpenAI',
           description: 'Predict case outcomes based on Indian judicial precedents'
         },
         { 
           name: 'Legal Due Diligence', 
           icon: FileSearch, 
           path: '/legal-due-diligence',
+          badge: 'OpenAI',
           description: 'Comprehensive legal review for business transactions in India'
         },
         { 
           name: 'Plea Bargain Assistant', 
           icon: Gavel, 
           path: '/plea-bargain',
-          badge: 'New',
+          badge: 'OpenAI',
           description: 'Navigate plea bargaining under the Bharatiya Nyaya Sanhita'
         },
         { 
           name: 'Sentencing Predictor', 
           icon: Scale, 
           path: '/sentencing-predictor',
+          badge: 'OpenAI',
           description: 'Analyze potential sentences under Indian criminal codes'
         }
       ]
@@ -198,18 +205,20 @@ const ToolsPage = () => {
         { 
           name: 'Startup Toolkit', 
           icon: Briefcase, 
-          path: '/startup-toolkit' 
+          path: '/startup-toolkit',
+          badge: 'OpenAI'
         },
         { 
           name: 'M&A Due Diligence', 
           icon: Handshake, 
           path: '/m&a-due-diligence',
-          badge: 'Premium'
+          badge: 'OpenAI'
         },
         { 
           name: 'IP Protection', 
           icon: Shield, 
-          path: '/ip-protection' 
+          path: '/ip-protection',
+          badge: 'OpenAI'
         }
       ]
     },
@@ -227,12 +236,13 @@ const ToolsPage = () => {
           name: 'Financial Fraud Detector', 
           icon: AlertTriangle, 
           path: '/fraud-detector',
-          badge: 'AI-Powered'
+          badge: 'OpenAI'
         },
         { 
           name: 'Tax Compliance', 
           icon: Calculator, 
-          path: '/tax-compliance' 
+          path: '/tax-compliance',
+          badge: 'OpenAI'
         }
       ]
     }
@@ -282,8 +292,8 @@ const ToolsPage = () => {
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800/30';
       case 'updated':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800/30';
-      case 'ai-powered':
-        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/30';
+      case 'openai':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800/30';
       case 'premium':
         return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800/30';
       case 'critical':
@@ -307,13 +317,13 @@ const ToolsPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-6 md:p-8 rounded-2xl shadow-elegant">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 md:p-8 rounded-2xl shadow-elegant">
             <div className="text-center md:text-left max-w-2xl">
               <h1 className="text-3xl md:text-4xl font-bold text-legal-slate dark:text-white mb-3 tracking-tight">
                 Indian Legal Tools Suite
               </h1>
               <p className="text-legal-muted dark:text-gray-300 text-lg">
-                Access specialized tools for Indian legal practitioners
+                Powered by OpenAI for precise Indian legal analysis
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">

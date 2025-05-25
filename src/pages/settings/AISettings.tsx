@@ -11,85 +11,61 @@ import { toast } from 'sonner';
 import { Sparkles, MessageSquare, Key, Brain, Cpu, AlertCircle, CheckCircle2 } from 'lucide-react';
 import ErrorMessage from '@/components/ui/error-message';
 import { supabase } from '@/integrations/supabase/client';
+import { OPENAI_MODELS, OpenAIModel } from '@/components/OpenAIIntegration';
 
 const AISettings: React.FC = () => {
-  const [provider, setProvider] = useState<'gemini' | 'deepseek'>('gemini');
-  const [apiKey, setApiKey] = useState({
-    gemini: localStorage.getItem('geminiApiKey') || '',
-    deepseek: localStorage.getItem('deepseekApiKey') || '',
-  });
+  const [selectedModel, setSelectedModel] = useState<OpenAIModel>('gpt-4o-mini');
+  const [apiKey, setApiKey] = useState(localStorage.getItem('openaiApiKey') || '');
   const [temperature, setTemperature] = useState(0.7);
   const [historyEnabled, setHistoryEnabled] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
-  const [validationStatus, setValidationStatus] = useState<{
-    gemini: 'idle' | 'validating' | 'valid' | 'invalid';
-    deepseek: 'idle' | 'validating' | 'valid' | 'invalid';
-  }>({
-    gemini: 'idle',
-    deepseek: 'idle',
-  });
+  const [validationStatus, setValidationStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   useEffect(() => {
-    // Load the preferred provider from localStorage
-    const savedProvider = localStorage.getItem('preferredApiProvider') as 'gemini' | 'deepseek' || 'gemini';
-    setProvider(savedProvider);
-    
-    // Load other settings
+    // Load settings from localStorage
+    const savedModel = localStorage.getItem('openaiModel') as OpenAIModel || 'gpt-4o-mini';
     const savedTemperature = parseFloat(localStorage.getItem('ai-temperature') || '0.7');
     const savedHistoryEnabled = localStorage.getItem('ai-history-enabled') !== 'false';
     
+    setSelectedModel(savedModel);
     setTemperature(savedTemperature);
     setHistoryEnabled(savedHistoryEnabled);
   }, []);
   
-  const validateGeminiKey = async (key: string): Promise<boolean> => {
+  const validateOpenAIKey = async (key: string): Promise<boolean> => {
     try {
-      setValidationStatus(prev => ({ ...prev, gemini: 'validating' }));
+      setValidationStatus('validating');
       
       // Simple test request to validate the key
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${key}`, {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
         body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: 'Hello, please respond with "API key is valid."' }] }],
-          generationConfig: {
-            maxOutputTokens: 10,
-          }
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: 'Hello, please respond with "API key is valid."' }],
+          max_tokens: 10,
         })
       });
       
       if (!response.ok) {
-        setErrorMessage("Gemini API key validation failed. Please check your key.");
-        setValidationStatus(prev => ({ ...prev, gemini: 'invalid' }));
+        setErrorMessage("OpenAI API key validation failed. Please check your key.");
+        setValidationStatus('invalid');
         return false;
       }
       
-      setValidationStatus(prev => ({ ...prev, gemini: 'valid' }));
+      setValidationStatus('valid');
       setErrorMessage(null);
       return true;
     } catch (error) {
-      console.error('Error validating Gemini API key:', error);
-      setErrorMessage(error instanceof Error ? error.message : "Failed to validate Gemini API key");
-      setValidationStatus(prev => ({ ...prev, gemini: 'invalid' }));
+      console.error('Error validating OpenAI API key:', error);
+      setErrorMessage(error instanceof Error ? error.message : "Failed to validate OpenAI API key");
+      setValidationStatus('invalid');
       return false;
     }
-  };
-  
-  const validateDeepseekKey = async (key: string): Promise<boolean> => {
-    // In a real implementation, you would validate against DeepSeek's API
-    // For now, we'll consider it valid if it's at least 32 characters
-    setValidationStatus(prev => ({ ...prev, deepseek: 'validating' }));
-    
-    if (key.length >= 32) {
-      setValidationStatus(prev => ({ ...prev, deepseek: 'valid' }));
-      setErrorMessage(null);
-      return true;
-    }
-    
-    setErrorMessage("DeepSeek API key should be at least 32 characters long");
-    setValidationStatus(prev => ({ ...prev, deepseek: 'invalid' }));
-    return false;
   };
   
   const saveSettings = async () => {
@@ -97,40 +73,27 @@ const AISettings: React.FC = () => {
     setErrorMessage(null);
     
     try {
-      // Validate keys before saving
-      let isGeminiValid = true;
-      let isDeepseekValid = true;
+      // Validate key before saving
+      let isValid = true;
       
-      if (apiKey.gemini) {
-        isGeminiValid = await validateGeminiKey(apiKey.gemini);
+      if (apiKey) {
+        isValid = await validateOpenAIKey(apiKey);
       }
       
-      if (apiKey.deepseek) {
-        isDeepseekValid = await validateDeepseekKey(apiKey.deepseek);
-      }
-      
-      if (!isGeminiValid || !isDeepseekValid) {
+      if (!isValid) {
         return;
       }
       
       // Save all settings to localStorage
-      localStorage.setItem('preferredApiProvider', provider);
-      localStorage.setItem('geminiApiKey', apiKey.gemini);
-      localStorage.setItem('deepseekApiKey', apiKey.deepseek);
+      localStorage.setItem('openaiModel', selectedModel);
+      localStorage.setItem('openaiApiKey', apiKey);
       localStorage.setItem('ai-temperature', temperature.toString());
       localStorage.setItem('ai-history-enabled', String(historyEnabled));
       
       // If the user is authenticated, we could also save their preferences to Supabase
-      // This is optional and would require additional implementation
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         // You could implement this to save user preferences to a database
-        // await supabase.from('user_preferences').upsert({
-        //   user_id: session.user.id,
-        //   preferred_api_provider: provider,
-        //   ai_temperature: temperature,
-        //   ai_history_enabled: historyEnabled,
-        // });
       }
       
       toast.success('AI settings saved successfully');
@@ -149,27 +112,18 @@ const AISettings: React.FC = () => {
     setTemperature(value[0]);
   };
   
-  const handleApiKeyChange = (provider: 'gemini' | 'deepseek', value: string) => {
-    setApiKey(prev => ({
-      ...prev,
-      [provider]: value,
-    }));
-    
+  const handleApiKeyChange = (value: string) => {
+    setApiKey(value);
     // Reset validation status when key changes
-    setValidationStatus(prev => ({
-      ...prev,
-      [provider]: 'idle'
-    }));
+    setValidationStatus('idle');
   };
   
-  const getKeyStatus = (provider: 'gemini' | 'deepseek') => {
-    const status = validationStatus[provider];
-    
-    if (status === 'validating') {
+  const getKeyStatus = () => {
+    if (validationStatus === 'validating') {
       return <Cpu className="h-4 w-4 animate-spin text-blue-500" />;
-    } else if (status === 'valid') {
+    } else if (validationStatus === 'valid') {
       return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-    } else if (status === 'invalid') {
+    } else if (validationStatus === 'invalid') {
       return <AlertCircle className="h-4 w-4 text-red-500" />;
     }
     
@@ -189,67 +143,55 @@ const AISettings: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-blue-600" />
-            <CardTitle>AI Provider Settings</CardTitle>
+            <Sparkles className="h-5 w-5 text-green-600" />
+            <CardTitle>OpenAI Settings</CardTitle>
           </div>
           <CardDescription>
-            Choose your preferred AI provider and configure model settings
+            Configure your OpenAI API key and model preferences for VakilGPT
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="ai-provider">Primary AI Provider</Label>
-            <Select value={provider} onValueChange={(value) => setProvider(value as 'gemini' | 'deepseek')}>
-              <SelectTrigger id="ai-provider" className="w-full">
-                <SelectValue placeholder="Select AI provider" />
+            <Label htmlFor="ai-model">OpenAI Model</Label>
+            <Select value={selectedModel} onValueChange={(value: OpenAIModel) => setSelectedModel(value)}>
+              <SelectTrigger id="ai-model" className="w-full">
+                <SelectValue placeholder="Select OpenAI model" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="gemini">Google Gemini</SelectItem>
-                <SelectItem value="deepseek">DeepSeek AI</SelectItem>
+                {Object.entries(OPENAI_MODELS).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              GPT-4o models are more capable but cost more. GPT-4o Mini is fast and cost-effective.
+            </p>
           </div>
           
           <div className="space-y-4">
             <h3 className="text-sm font-medium flex items-center">
-              <Key className="h-4 w-4 mr-2" /> API Keys
+              <Key className="h-4 w-4 mr-2" /> API Key
             </h3>
             
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="gemini-api-key">Gemini API Key</Label>
-                <div>{getKeyStatus('gemini')}</div>
+                <Label htmlFor="openai-api-key">OpenAI API Key</Label>
+                <div>{getKeyStatus()}</div>
               </div>
               <div className="relative">
                 <Input
-                  id="gemini-api-key"
+                  id="openai-api-key"
                   type="password"
-                  value={apiKey.gemini}
-                  onChange={(e) => handleApiKeyChange('gemini', e.target.value)}
-                  placeholder="Enter your Gemini API key"
-                  className={validationStatus.gemini === 'invalid' ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                  value={apiKey}
+                  onChange={(e) => handleApiKeyChange(e.target.value)}
+                  placeholder="Enter your OpenAI API key"
+                  className={validationStatus === 'invalid' ? 'border-red-500 focus-visible:ring-red-500' : ''}
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Get your Gemini API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google AI Studio</a>
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="deepseek-api-key">DeepSeek API Key</Label>
-                <div>{getKeyStatus('deepseek')}</div>
-              </div>
-              <Input
-                id="deepseek-api-key"
-                type="password"
-                value={apiKey.deepseek}
-                onChange={(e) => handleApiKeyChange('deepseek', e.target.value)}
-                placeholder="Enter your DeepSeek API key"
-                className={validationStatus.deepseek === 'invalid' ? 'border-red-500 focus-visible:ring-red-500' : ''}
-              />
-              <p className="text-xs text-muted-foreground">
-                Get your DeepSeek API key from <a href="https://platform.deepseek.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">DeepSeek Platform</a>
+                Get your OpenAI API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">OpenAI Platform</a>
               </p>
             </div>
           </div>
@@ -259,7 +201,7 @@ const AISettings: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-blue-600" />
+            <Brain className="h-5 w-5 text-green-600" />
             <CardTitle>Model Settings</CardTitle>
           </div>
           <CardDescription>
@@ -307,7 +249,7 @@ const AISettings: React.FC = () => {
           <Button 
             onClick={saveSettings} 
             disabled={isValidating}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
           >
             {isValidating && <Cpu className="h-4 w-4 animate-spin" />}
             Save Settings

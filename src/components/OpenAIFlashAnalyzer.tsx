@@ -2,14 +2,14 @@
 import React, { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { getGeminiResponse } from './GeminiProIntegration';
+import { getOpenAIResponse } from './OpenAIIntegration';
 import { toast } from 'sonner';
 
-interface GeminiFlashAnalyzerProps {
+interface OpenAIFlashAnalyzerProps {
   onAnalysisComplete?: (analysis: string) => void;
 }
 
-const GeminiFlashAnalyzer: React.FC<GeminiFlashAnalyzerProps> = ({ 
+const OpenAIFlashAnalyzer: React.FC<OpenAIFlashAnalyzerProps> = ({ 
   onAnalysisComplete 
 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -19,22 +19,20 @@ const GeminiFlashAnalyzer: React.FC<GeminiFlashAnalyzerProps> = ({
     
     try {
       // Check for API key
-      const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-      const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
+      const apiKey = localStorage.getItem('openaiApiKey') || '';
       
       if (!apiKey) {
         toast.error(
           "API key required", 
           { 
-            description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key in AI Settings.` 
+            description: "Please set your OpenAI API key in AI Settings." 
           }
         );
         setIsAnalyzing(false);
         return;
       }
       
-      // In a real implementation, this would use relevant data from the current context
-      // For now, we'll generate a mock analysis
+      // Generate a mock analysis for demonstration
       const prompt = `You are a legal analysis system. Generate a detailed analysis of a contract dispute case between two technology companies regarding intellectual property rights. Include relevant Indian laws and precedents.
 
 Format the response as JSON with the following structure:
@@ -52,7 +50,7 @@ Format the response as JSON with the following structure:
   "recommendations": ["Recommendation 1", "Recommendation 2", ...]
 }`;
 
-      const analysis = await getGeminiResponse(prompt, apiKey);
+      const analysis = await getOpenAIResponse(prompt);
       
       if (onAnalysisComplete) {
         onAnalysisComplete(analysis);
@@ -63,7 +61,7 @@ Format the response as JSON with the following structure:
       });
       
     } catch (error) {
-      console.error("Error in GeminiFlashAnalyzer:", error);
+      console.error("Error in OpenAIFlashAnalyzer:", error);
       toast.error(
         "Analysis failed", 
         { 
@@ -84,21 +82,21 @@ Format the response as JSON with the following structure:
           <button 
             onClick={runFlashAnalysis}
             disabled={isAnalyzing}
-            aria-label="Run Gemini Flash Analysis"
+            aria-label="Run OpenAI Flash Analysis"
             aria-busy={isAnalyzing}
-            className={`inline-flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white 
-              transition-all hover:from-blue-600 hover:to-indigo-700 focus:ring-2 focus:ring-blue-300 focus-visible:outline-none
+            className={`inline-flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-white 
+              transition-all hover:from-green-600 hover:to-emerald-700 focus:ring-2 focus:ring-green-300 focus-visible:outline-none
               ${isAnalyzing ? 'opacity-70 cursor-wait' : 'cursor-pointer'}`}
           >
             <Sparkles className="h-3 w-3" />
           </button>
         </TooltipTrigger>
         <TooltipContent side="top">
-          <p>Run Gemini Flash Analysis</p>
+          <p>Run OpenAI Flash Analysis</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
 };
 
-export default GeminiFlashAnalyzer;
+export default OpenAIFlashAnalyzer;

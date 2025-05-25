@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import BackButton from '@/components/BackButton';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 const LegalRiskAssessmentPage = () => {
   const [businessDescription, setBusinessDescription] = useState<string>('');
@@ -16,16 +17,6 @@ const LegalRiskAssessmentPage = () => {
   const [isAssessing, setIsAssessing] = useState(false);
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>('');
-  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
-
-  // Load API key on component mount
-  React.useEffect(() => {
-    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setApiProvider(storedApiProvider);
-    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
-    setApiKey(storedApiKey);
-  }, []);
 
   const handleAssessRisks = async () => {
     if (!businessDescription.trim()) {
@@ -37,11 +28,12 @@ const LegalRiskAssessmentPage = () => {
       return;
     }
 
+    const apiKey = localStorage.getItem('openaiApiKey');
     if (!apiKey) {
       toast({
         variant: "destructive",
         title: "API Key Required",
-        description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key first`,
+        description: "Please set your OpenAI API key in Settings first",
       });
       return;
     }
@@ -49,13 +41,25 @@ const LegalRiskAssessmentPage = () => {
     setIsAssessing(true);
 
     try {
-      let riskAssessment = '';
-      
-      if (apiProvider === 'gemini') {
-        riskAssessment = await generateGeminiRiskAssessment();
-      } else if (apiProvider === 'deepseek') {
-        riskAssessment = await generateDeepSeekRiskAssessment();
-      }
+      const systemPrompt = `You are VakilGPT's legal risk assessment specialist with expertise in Indian law.
+    
+Generate a comprehensive legal risk assessment based on the following information:
+- Business Description: ${businessDescription}
+- Risk Category Focus: ${riskCategory}
+
+Include:
+1. Identification of potential legal risks in the context of Indian law
+2. Risk severity assessment (High/Medium/Low) with justification
+3. Potential legal implications of each identified risk
+4. Recommended risk mitigation strategies
+5. Relevant Indian legal frameworks and compliance considerations
+
+Format your response with clear sections and prioritize risks by severity.`;
+
+      const riskAssessment = await getOpenAIResponse(systemPrompt, { 
+        model: 'gpt-4o', 
+        temperature: 0.2 
+      });
 
       setResults(riskAssessment);
       toast({
@@ -72,92 +76,6 @@ const LegalRiskAssessmentPage = () => {
     } finally {
       setIsAssessing(false);
     }
-  };
-
-  const generateGeminiRiskAssessment = async (): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's legal risk assessment specialist with expertise in Indian law.
-    
-    Generate a comprehensive legal risk assessment based on the following information:
-    - Business Description: ${businessDescription}
-    - Risk Category Focus: ${riskCategory}
-    
-    Include:
-    1. Identification of potential legal risks in the context of Indian law
-    2. Risk severity assessment (High/Medium/Low) with justification
-    3. Potential legal implications of each identified risk
-    4. Recommended risk mitigation strategies
-    5. Relevant Indian legal frameworks and compliance considerations
-    
-    Format your response with clear sections and prioritize risks by severity.`;
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: systemPrompt }] }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 4000,
-          topK: 40,
-          topP: 0.95
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response format from Gemini API');
-    }
-  };
-
-  const generateDeepSeekRiskAssessment = async (): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's legal risk assessment specialist with expertise in Indian law.
-    
-    Generate a comprehensive legal risk assessment based on the following information:
-    - Business Description: ${businessDescription}
-    - Risk Category Focus: ${riskCategory}
-    
-    Include:
-    1. Identification of potential legal risks in the context of Indian law
-    2. Risk severity assessment (High/Medium/Low) with justification
-    3. Potential legal implications of each identified risk
-    4. Recommended risk mitigation strategies
-    5. Relevant Indian legal frameworks and compliance considerations
-    
-    Format your response with clear sections and prioritize risks by severity.`;
-    
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemPrompt }
-        ],
-        temperature: 0.2,
-        max_tokens: 4000
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   };
 
   return (

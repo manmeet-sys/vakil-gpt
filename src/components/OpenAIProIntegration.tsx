@@ -7,17 +7,17 @@ import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getGeminiResponse } from './GeminiProIntegration';
+import { getOpenAIResponse, OPENAI_MODELS, OpenAIModel } from './OpenAIIntegration';
 import ErrorMessage from './ui/error-message';
 import InfoCard from './ui/info-card';
 import { useNavigate } from 'react-router-dom';
 
-interface GeminiProIntegrationProps {
+interface OpenAIProIntegrationProps {
   onAnalysisComplete: (analysis: string) => void;
   className?: string;
 }
 
-const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({ 
+const OpenAIProIntegration: React.FC<OpenAIProIntegrationProps> = ({ 
   onAnalysisComplete,
   className
 }) => {
@@ -26,6 +26,7 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('text');
   const [analysisType, setAnalysisType] = useState('legal-brief');
+  const [selectedModel, setSelectedModel] = useState<OpenAIModel>('gpt-4o-mini');
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -34,11 +35,10 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     
-    const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
+    const apiKey = localStorage.getItem('openaiApiKey') || '';
     
     if (!apiKey) {
-      setApiKeyError(`No ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key found. Please set one in AI Settings.`);
+      setApiKeyError('No OpenAI API key found. Please set one in AI Settings.');
     } else {
       setApiKeyError(null);
     }
@@ -71,7 +71,7 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
     navigate('/settings/ai');
     toast({
       title: "API Key Required",
-      description: "Please set your API key in AI Settings",
+      description: "Please set your OpenAI API key in AI Settings",
     });
   };
 
@@ -85,11 +85,10 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
       return;
     }
 
-    const apiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    const apiKey = localStorage.getItem(`${apiProvider}ApiKey`) || '';
+    const apiKey = localStorage.getItem('openaiApiKey') || '';
 
     if (!apiKey) {
-      setApiKeyError(`No ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key found. Please set one in AI Settings.`);
+      setApiKeyError('No OpenAI API key found. Please set one in AI Settings.');
       return;
     }
 
@@ -98,7 +97,7 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
 
     try {
       const prompt = getPromptTemplate(analysisType, text);
-      const analysis = await getGeminiResponse(prompt, apiKey);
+      const analysis = await getOpenAIResponse(prompt, { model: selectedModel });
       
       onAnalysisComplete(analysis);
       setIsOpen(false);
@@ -131,12 +130,12 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
           className="text-xs flex items-center gap-1"
         >
           <Zap className="h-3 w-3" />
-          Gemini Pro
+          OpenAI
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px] bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
         <DialogHeader>
-          <DialogTitle>Gemini Pro Legal Analysis</DialogTitle>
+          <DialogTitle>OpenAI Legal Analysis</DialogTitle>
         </DialogHeader>
         
         {apiKeyError ? (
@@ -151,8 +150,8 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
               type="info"
             >
               <p className="mb-3">
-                To use this feature, you need to set up your Gemini API key in the AI Settings page.
-                You can get a free API key from the Google AI Studio.
+                To use this feature, you need to set up your OpenAI API key in the AI Settings page.
+                You can get an API key from the OpenAI Platform.
               </p>
               
               <Button onClick={navigateToSettings} className="mt-2">
@@ -174,6 +173,22 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
                   {analysisOptions.map(option => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select 
+                value={selectedModel} 
+                onValueChange={(value: OpenAIModel) => setSelectedModel(value)}
+              >
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Select model" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(OPENAI_MODELS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -209,7 +224,7 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
             <Button 
               onClick={generateAnalysis} 
               disabled={isGenerating || !text.trim()}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
               {isGenerating ? (
                 <>
@@ -230,4 +245,4 @@ const GeminiProIntegration: React.FC<GeminiProIntegrationProps> = ({
   );
 };
 
-export default GeminiProIntegration;
+export default OpenAIProIntegration;
