@@ -1,17 +1,11 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { MessageSquare, Loader2, FileText, Globe, Scale, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
-import { generateGeminiAnalysis } from '@/utils/aiAnalysis';
-import { motion } from 'framer-motion';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Wand2, FileText } from 'lucide-react';
+import { toast } from 'sonner';
+import { generateAIAnalysis } from '@/utils/aiAnalysis';
 
 type PromptBasedGeneratorProps = {
   onDraftGenerated: (title: string, type: string, content: string) => void;
@@ -180,7 +174,7 @@ Create a complete and properly formatted legal document that:
 
 Document format: Return ONLY the complete document text, no explanations needed.`;
 
-      const generatedContent = await generateGeminiAnalysis(enhancedPrompt, `Document Draft: ${title} (${selectedDocType} - ${selectedJurisdiction})`);
+      const generatedContent = await generateAIAnalysis(enhancedPrompt, `Document Draft: ${title} (${selectedDocType} - ${selectedJurisdiction})`);
       
       // Auto-detect document type if not explicitly set
       let finalDocType = documentType;
@@ -247,7 +241,7 @@ Document format: Return ONLY the complete document text, no explanations needed.
       <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-full bg-purple-500/10 text-purple-500">
-            <MessageSquare className="h-5 w-5" />
+            <Wand2 className="h-5 w-5" />
           </div>
           <div>
             <CardTitle className="text-xl text-slate-800 dark:text-white">AI-Powered Indian Legal Document Generation</CardTitle>
@@ -261,7 +255,7 @@ Document format: Return ONLY the complete document text, no explanations needed.
         <Tabs defaultValue="prompt">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="prompt">
-              <MessageSquare className="h-4 w-4 mr-2" />
+              <Wand2 className="h-4 w-4 mr-2" />
               Prompt-Based
             </TabsTrigger>
             <TabsTrigger value="settings">
@@ -415,7 +409,7 @@ Document format: Return ONLY the complete document text, no explanations needed.
               </>
             ) : (
               <>
-                <MessageSquare className="mr-2 h-4 w-4" />
+                <Wand2 className="mr-2 h-4 w-4" />
                 Generate Document
               </>
             )}

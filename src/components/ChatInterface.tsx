@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import LegalChatMessage from './LegalChatMessage';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
-import { getGeminiResponse } from './GeminiProIntegration';
+import { getOpenAIResponse } from './OpenAIIntegration';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
@@ -32,32 +33,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [selectedProvider, setSelectedProvider] = useState<'gemini' | 'deepseek'>(() => 
-    localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini'
-  );
-  const [isOpen, setIsOpen] = useState(false);
-  const [analysisType, setAnalysisType] = useState('legal-brief');
-  const [text, setText] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
   const isMobile = useIsMobile();
-  
-  const analysisOptions = [
-    { value: 'legal-brief', label: 'Legal Brief Generation' },
-    { value: 'contract-analysis', label: 'Contract Analysis' },
-    { value: 'case-precedent', label: 'Case Precedent Research' },
-    { value: 'compliance-check', label: 'Compliance Check' },
-    { value: 'risk-assessment', label: 'Legal Risk Assessment' },
-    { value: 'document-summary', label: 'Document Summary' }
-  ];
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  useEffect(() => {
-    const storedProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setSelectedProvider(storedProvider);
-  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -78,19 +58,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     setIsLoading(true);
 
     try {
-      let response = '';
-      
-      if (selectedProvider === 'gemini') {
-        response = await getGeminiResponse(
-          `You are VakilGPT, a legal assistant specializing in Indian law. 
-          Respond to the following query with accurate legal information relevant to Indian law, Indian legal procedures, Supreme Court and High Court decisions, and the Indian Constitution:
-          
-          ${input}`
-        );
-      } else {
-        // For DeepSeek (currently using a placeholder response)
-        response = "DeepSeek response will be implemented here";
-      }
+      const response = await getOpenAIResponse(
+        `You are VakilGPT, a legal assistant specializing in Indian law. 
+        Respond to the following query with accurate legal information relevant to Indian law, Indian legal procedures, Supreme Court and High Court decisions, and the Indian Constitution:
+        
+        ${input}`
+      );
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -136,55 +109,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     setMessages((prev) => [...prev, assistantMessage]);
   };
 
-  const getPromptTemplate = (type: string, content: string): string => {
-    const templates: Record<string, string> = {
-      'legal-brief': `Generate a comprehensive legal brief based on the following information, focusing on relevant Indian law. Include Supreme Court and High Court citations, and structured arguments according to Indian legal practice:\n\n${content}`,
-      'contract-analysis': `Analyze this contract text from an Indian legal perspective and identify key clauses, potential risks, obligations, and suggested modifications according to Indian contract law:\n\n${content}`,
-      'case-precedent': `Research and identify relevant Indian case precedents related to this legal issue. Include case names, citations from Supreme Court and High Courts, and brief summaries of their relevance:\n\n${content}`,
-      'compliance-check': `Perform a compliance check on this text to identify potential regulatory issues, focusing on applicable Indian laws and regulations:\n\n${content}`,
-      'risk-assessment': `Conduct a legal risk assessment based on this information in the context of Indian law. Identify potential legal risks, their likelihood, potential impact, and mitigation strategies:\n\n${content}`,
-      'document-summary': `Provide a comprehensive yet concise summary of this Indian legal document, highlighting key points, implications, and important considerations under Indian law:\n\n${content}`
-    };
-    
-    return templates[type] || templates['document-summary'];
-  };
-
-  const generateAnalysis = async () => {
-    if (!text.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter some text to analyze",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-
-    try {
-      const prompt = getPromptTemplate(analysisType, text);
-      const analysis = await getGeminiResponse(prompt);
-      
-      handleAnalysisComplete(analysis);
-      setIsOpen(false);
-      setText('');
-      
-      toast({
-        title: "Analysis Complete",
-        description: `${analysisOptions.find(opt => opt.value === analysisType)?.label} has been generated successfully`,
-      });
-    } catch (error) {
-      console.error(`Error generating analysis:`, error);
-      toast({
-        variant: "destructive",
-        title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "Failed to generate analysis",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   return (
     <div className={`flex flex-col border rounded-xl bg-white dark:bg-zinc-800 shadow-sm h-full ${className}`}>
       {/* Chat Header */}
@@ -202,7 +126,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
         </div>
         <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
           <LegalAnalysisGenerator
-            apiProvider="gemini"
             onAnalysisComplete={handleAnalysisComplete}
             buttonLabel={isMobile ? "Analysis" : "Legal Analysis"}
             iconOnly={isMobile}
@@ -214,7 +137,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           />
           
           <PdfAnalyzer 
-            apiProvider="gemini"
             onAnalysisComplete={handleAnalysisComplete}
             buttonLabel={isMobile ? "PDF" : "PDF Analysis"}
             iconOnly={isMobile}

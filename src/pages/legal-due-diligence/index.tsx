@@ -1,361 +1,291 @@
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { Scale, FileText, Loader2, Upload, IndianRupee, BookOpen, Building, Landmark, Gavel } from 'lucide-react';
+import { Search, Loader2, FileText, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { getGeminiResponse } from '@/components/GeminiProIntegration';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import BackButton from '@/components/BackButton';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
+
+interface DueDiligenceResult {
+  summary: string;
+  keyFindings: string[];
+  riskAssessment: {
+    level: 'high' | 'medium' | 'low';
+    description: string;
+  }[];
+  recommendations: string[];
+}
 
 const LegalDueDiligencePage = () => {
-  const [transactionType, setTransactionType] = useState<string>('');
-  const [dueDiligenceInfo, setDueDiligenceInfo] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [results, setResults] = useState<string>('');
   const { toast } = useToast();
-  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
-  const [activeTab, setActiveTab] = useState<string>('transaction-details');
+  const [documentType, setDocumentType] = useState<string>('');
   const [industryType, setIndustryType] = useState<string>('');
-  const [indianJurisdiction, setIndianJurisdiction] = useState<string>('national');
+  const [documentDetails, setDocumentDetails] = useState<string>('');
+  const [dueDiligenceResult, setDueDiligenceResult] = useState<DueDiligenceResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
-  React.useEffect(() => {
-    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setApiProvider(storedApiProvider);
-  }, []);
-
-  const handleGenerateDueDiligence = async () => {
-    if (!transactionType || !dueDiligenceInfo.trim()) {
+  const generateDueDiligence = async () => {
+    if (!documentType || !industryType || !documentDetails.trim()) {
       toast({
+        title: "Missing information",
+        description: "Please fill in all required fields before analyzing.",
         variant: "destructive",
-        title: "Missing Information",
-        description: "Please fill in all required fields",
       });
       return;
     }
 
-    setIsGenerating(true);
+    setIsAnalyzing(true);
 
     try {
-      let dueDiligenceResults = '';
-      
-      if (apiProvider === 'gemini') {
-        dueDiligenceResults = await generateGeminiDueDiligenceResults();
-      } else if (apiProvider === 'deepseek') {
-        dueDiligenceResults = await generateDeepSeekDueDiligenceResults();
-      }
+      const prompt = `
+        Act as a legal due diligence specialist. Based on the following information, provide a comprehensive legal due diligence report:
 
-      setResults(dueDiligenceResults);
+        Document Type: ${documentType}
+        Industry: ${industryType}
+        Document Details: ${documentDetails}
+
+        Format your response exactly as follows (do not include any extra text except what fits in these sections):
+
+        SUMMARY: A brief summary of the document and key findings.
+
+        KEY_FINDINGS:
+        - First key finding
+        - Second key finding
+        (Include at least 3 key findings)
+
+        RISK_ASSESSMENT:
+        - [HIGH/MEDIUM/LOW]: First risk and explanation
+        - [HIGH/MEDIUM/LOW]: Second risk and explanation
+        (Include at least 3 risks)
+
+        RECOMMENDATIONS:
+        - First recommendation
+        - Second recommendation
+        (Include at least 3 recommendations)
+      `;
+
+      const response = await getOpenAIResponse(prompt);
+
+      const result = parseAIResponse(response);
+      setDueDiligenceResult(result);
+
       toast({
-        title: "Due Diligence Complete",
-        description: "Your Indian legal due diligence report has been generated",
+        title: "Analysis Complete",
+        description: "Legal due diligence report has been generated successfully.",
       });
-      setActiveTab('results');
     } catch (error) {
-      console.error('Error generating due diligence report:', error);
+      console.error("Error generating due diligence report:", error);
       toast({
+        title: "Analysis Failed",
+        description: "There was an error generating the report. Please try again.",
         variant: "destructive",
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate due diligence report",
       });
     } finally {
-      setIsGenerating(false);
+      setIsAnalyzing(false);
     }
   };
 
-  const generateGeminiDueDiligenceResults = async (): Promise<string> => {
-    const systemPrompt = `You are VakilGPT's legal due diligence specialist with expertise in Indian corporate and commercial law.
-    
-    Generate a comprehensive legal due diligence report based on the following information:
-    - Transaction Type: ${transactionType}
-    - Industry: ${industryType || "Not specified"}
-    - Jurisdiction in India: ${indianJurisdiction}
-    - Transaction Details: ${dueDiligenceInfo}
-    
-    Include:
-    1. Key areas of legal due diligence required for this transaction under Indian law
-    2. Document checklist and information requirements specific to Indian jurisdiction
-    3. Potential legal issues to investigate under relevant Indian laws
-    4. Risk assessment framework based on Indian regulatory environment
-    5. Due diligence process recommendations compliant with Indian legal practices
-    6. Relevant Indian legal considerations with specific references to:
-       - Companies Act, 2013
-       - Indian Contract Act, 1872
-       - Competition Act, 2002
-       - Foreign Exchange Management Act, 1999 (if applicable)
-       - Income Tax Act, 1961
-       - Bharatiya Nyaya Sanhita, 2023 compliance (replacing IPC) if relevant
-       - Relevant state-specific regulations when applicable
-    7. References to relevant Supreme Court and High Court precedents
-    
-    Format your response as a professional due diligence report with clear sections.`;
+  const parseAIResponse = (response: string): DueDiligenceResult => {
+    const result: DueDiligenceResult = {
+      summary: '',
+      keyFindings: [],
+      riskAssessment: [],
+      recommendations: [],
+    };
 
-    return await getGeminiResponse(systemPrompt);
+    try {
+      const summaryMatch = response.match(/SUMMARY:(.*?)(?=KEY_FINDINGS:|$)/s);
+      if (summaryMatch && summaryMatch[1]) {
+        result.summary = summaryMatch[1].trim();
+      }
+
+      const keyFindingsMatch = response.match(/KEY_FINDINGS:(.*?)(?=RISK_ASSESSMENT:|$)/s);
+      if (keyFindingsMatch && keyFindingsMatch[1]) {
+        const findingsText = keyFindingsMatch[1].trim();
+        result.keyFindings = findingsText.split('\n-').map(item => item.trim()).filter(Boolean);
+      }
+
+      const riskAssessmentMatch = response.match(/RISK_ASSESSMENT:(.*?)(?=RECOMMENDATIONS:|$)/s);
+      if (riskAssessmentMatch && riskAssessmentMatch[1]) {
+        const risksText = riskAssessmentMatch[1].trim();
+        const riskItems = risksText.split('\n-').map(item => item.trim()).filter(Boolean);
+
+        riskItems.forEach(item => {
+          const levelMatch = item.match(/\[(HIGH|MEDIUM|LOW)\]:/i);
+          if (levelMatch) {
+            const level = levelMatch[1].toLowerCase() as 'high' | 'medium' | 'low';
+            const description = item.replace(/\[(HIGH|MEDIUM|LOW)\]:/i, '').trim();
+            result.riskAssessment.push({ level, description });
+          }
+        });
+      }
+
+      const recommendationsMatch = response.match(/RECOMMENDATIONS:(.*?)$/s);
+      if (recommendationsMatch && recommendationsMatch[1]) {
+        const recsText = recommendationsMatch[1].trim();
+        result.recommendations = recsText.split('\n-').map(item => item.trim()).filter(Boolean);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error parsing AI response:", error);
+      return {
+        summary: "Unable to parse the analysis results. Please try again.",
+        keyFindings: [],
+        riskAssessment: [{ level: 'medium', description: 'Analysis parsing error' }],
+        recommendations: ["Try regenerating the analysis"],
+      };
+    }
   };
 
-  const generateDeepSeekDueDiligenceResults = async (): Promise<string> => {
-    const systemPrompt = `You are VakilGPT's legal due diligence specialist with expertise in Indian corporate and commercial law.
-    
-    Generate a comprehensive legal due diligence report based on the following information:
-    - Transaction Type: ${transactionType}
-    - Industry: ${industryType || "Not specified"}
-    - Jurisdiction in India: ${indianJurisdiction}
-    - Transaction Details: ${dueDiligenceInfo}
-    
-    Include:
-    1. Key areas of legal due diligence required for this transaction under Indian law
-    2. Document checklist and information requirements specific to Indian jurisdiction
-    3. Potential legal issues to investigate under relevant Indian laws
-    4. Risk assessment framework based on Indian regulatory environment
-    5. Due diligence process recommendations compliant with Indian legal practices
-    6. Relevant Indian legal considerations with specific references to:
-       - Companies Act, 2013
-       - Indian Contract Act, 1872
-       - Competition Act, 2002
-       - Foreign Exchange Management Act, 1999 (if applicable)
-       - Income Tax Act, 1961
-       - Bharatiya Nyaya Sanhita, 2023 compliance (replacing IPC) if relevant
-       - Relevant state-specific regulations when applicable
-    7. References to relevant Supreme Court and High Court precedents
-    
-    Format your response as a professional due diligence report with clear sections.`;
-    
-    return await getGeminiResponse(systemPrompt);
+  const getRiskBadgeColor = (level: string) => {
+    switch (level) {
+      case 'high':
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'low':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      default:
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+    }
   };
-
-  const industryOptions = [
-    { value: 'technology', label: 'Technology & IT' },
-    { value: 'manufacturing', label: 'Manufacturing' },
-    { value: 'pharma', label: 'Pharmaceutical & Healthcare' },
-    { value: 'financial', label: 'Financial Services' },
-    { value: 'retail', label: 'Retail & E-commerce' },
-    { value: 'realestate', label: 'Real Estate & Construction' },
-    { value: 'energy', label: 'Energy & Utilities' },
-    { value: 'telecom', label: 'Telecommunications' },
-    { value: 'hospitality', label: 'Hospitality & Tourism' },
-    { value: 'media', label: 'Media & Entertainment' },
-    { value: 'agriculture', label: 'Agriculture & Food Processing' },
-    { value: 'education', label: 'Education & EdTech' },
-    { value: 'logistics', label: 'Logistics & Transportation' },
-    { value: 'textile', label: 'Textile & Apparel' },
-    { value: 'other', label: 'Other Industry' }
-  ];
-
-  const jurisdictionOptions = [
-    { value: 'national', label: 'National (All India)' },
-    { value: 'delhi', label: 'Delhi NCR' },
-    { value: 'maharashtra', label: 'Maharashtra' },
-    { value: 'karnataka', label: 'Karnataka' },
-    { value: 'tamilnadu', label: 'Tamil Nadu' },
-    { value: 'telangana', label: 'Telangana' },
-    { value: 'gujarat', label: 'Gujarat' },
-    { value: 'westbengal', label: 'West Bengal' },
-    { value: 'uttarpradesh', label: 'Uttar Pradesh' },
-    { value: 'punjab', label: 'Punjab' },
-    { value: 'haryana', label: 'Haryana' },
-    { value: 'other', label: 'Other State/UT' }
-  ];
 
   return (
-    <LegalToolLayout 
-      title="Legal Due Diligence" 
-      description="Generate comprehensive due diligence reports for Indian legal transactions"
-      icon={<Scale className="h-6 w-6 text-blue-600" />}
+    <LegalToolLayout
+      title="Legal Due Diligence"
+      description="Perform legal due diligence on documents using AI"
+      icon={<Search className="h-6 w-6 text-blue-600" />}
     >
+      <BackButton to="/tools" label="Back to Tools" />
+
       <div className="max-w-4xl mx-auto">
-        <Card className="mb-6 border-blue-100 dark:border-blue-900">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-t-lg pb-4">
-            <div className="flex items-start gap-4">
-              <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
-                <Landmark className="h-7 w-7 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Indian Legal Due Diligence</CardTitle>
-                <CardDescription className="mt-1.5">
-                  Generate detailed due diligence reports tailored to Indian laws, regulations, and case precedents
-                </CardDescription>
-              </div>
-            </div>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Legal Due Diligence Analysis</CardTitle>
+            <CardDescription>
+              Provide document details for AI-powered legal due diligence analysis
+            </CardDescription>
           </CardHeader>
-          <CardContent className="p-0">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="transaction-details">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Transaction Details
-                </TabsTrigger>
-                <TabsTrigger value="results" disabled={!results}>
-                  <Gavel className="mr-2 h-4 w-4" />
-                  Due Diligence Report
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="transaction-details" className="p-6 space-y-4">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="transaction-type">Transaction Type</Label>
-                      <Select value={transactionType} onValueChange={setTransactionType}>
-                        <SelectTrigger id="transaction-type">
-                          <SelectValue placeholder="Select transaction type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="acquisition">Merger & Acquisition</SelectItem>
-                          <SelectItem value="investment">Investment/Funding Round</SelectItem>
-                          <SelectItem value="joint-venture">Joint Venture</SelectItem>
-                          <SelectItem value="asset-purchase">Asset Purchase</SelectItem>
-                          <SelectItem value="real-estate">Real Estate Transaction</SelectItem>
-                          <SelectItem value="licensing">Licensing Agreement</SelectItem>
-                          <SelectItem value="corporate-restructuring">Corporate Restructuring</SelectItem>
-                          <SelectItem value="ipo">IPO Preparation</SelectItem>
-                          <SelectItem value="franchise">Franchise Agreement</SelectItem>
-                          <SelectItem value="other">Other Transaction</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="industry-type">Industry Sector</Label>
-                      <Select value={industryType} onValueChange={setIndustryType}>
-                        <SelectTrigger id="industry-type">
-                          <SelectValue placeholder="Select industry sector" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {industryOptions.map(option => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="indian-jurisdiction">Indian Jurisdiction</Label>
-                    <Select value={indianJurisdiction} onValueChange={setIndianJurisdiction}>
-                      <SelectTrigger id="indian-jurisdiction">
-                        <SelectValue placeholder="Select applicable jurisdiction" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {jurisdictionOptions.map(option => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Select the primary Indian jurisdiction applicable to this transaction.
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="diligence-info">Transaction Details</Label>
-                    <Textarea
-                      id="diligence-info"
-                      value={dueDiligenceInfo}
-                      onChange={(e) => setDueDiligenceInfo(e.target.value)}
-                      placeholder="Describe the transaction, parties involved, key concerns, and any specific areas you'd like the due diligence to focus on under Indian law. Include details like transaction value, entity structures, or regulatory considerations."
-                      className="min-h-[180px]"
-                    />
-                  </div>
-                  
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 p-4 rounded-md mb-4">
-                    <div className="flex items-start gap-3">
-                      <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
-                      <div>
-                        <h4 className="text-sm font-medium text-amber-800 dark:text-amber-300">Indian Legal Framework</h4>
-                        <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
-                          Your due diligence report will include analysis based on relevant Indian laws including Companies Act 2013, 
-                          Contract Act 1872, FEMA 1999, Competition Act 2002, and applicable BNS/BNSS provisions as well as state-specific 
-                          regulations based on your selected jurisdiction.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="api-provider">AI Model Selection</Label>
-                    <Select value={apiProvider} onValueChange={(value: 'deepseek' | 'gemini') => setApiProvider(value)}>
-                      <SelectTrigger id="api-provider">
-                        <SelectValue placeholder="Select AI model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="gemini">Google Gemini Pro</SelectItem>
-                        <SelectItem value="deepseek">DeepSeek AI</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Select the AI model to use for generating your Indian legal due diligence report.
-                    </p>
-                  </div>
-                  
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 p-4 rounded-md mb-4">
-                    <div className="flex items-start gap-3">
-                      <IndianRupee className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                      <div>
-                        <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">Indian Financial Compliance</h4>
-                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
-                          Your report will include considerations for Indian financial regulations including RBI guidelines, 
-                          SEBI regulations, GST compliance, income tax implications, and foreign investment rules as applicable 
-                          to your transaction type.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    onClick={handleGenerateDueDiligence} 
-                    disabled={isGenerating || !transactionType || !dueDiligenceInfo.trim()}
-                    className="w-full"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating Indian Legal Due Diligence Report...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Generate Indian Due Diligence Report
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="results" className="p-0">
-                {results && (
-                  <div>
-                    <div className="p-6">
-                      <div className="prose dark:prose-invert max-w-none">
-                        <div dangerouslySetInnerHTML={{ __html: results.replace(/\n/g, '<br />') }} />
-                      </div>
-                    </div>
-                    <CardFooter className="bg-gray-50 dark:bg-gray-900/30 p-4 border-t border-gray-100 dark:border-gray-800 rounded-b-lg">
-                      <div className="w-full flex flex-col sm:flex-row gap-3 justify-between items-center">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          This report is generated using AI and should be reviewed by a qualified Indian legal professional before use.
-                        </p>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setActiveTab('transaction-details')}
-                          size="sm"
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          Edit Details
-                        </Button>
-                      </div>
-                    </CardFooter>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <Label htmlFor="document-type">Document Type</Label>
+              <Select value={documentType} onValueChange={setDocumentType}>
+                <SelectTrigger id="document-type">
+                  <SelectValue placeholder="Select document type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contract">Contract</SelectItem>
+                  <SelectItem value="agreement">Agreement</SelectItem>
+                  <SelectItem value="license">License</SelectItem>
+                  <SelectItem value="memorandum">Memorandum</SelectItem>
+                  <SelectItem value="articles-of-association">Articles of Association</SelectItem>
+                  <SelectItem value="financial-statement">Financial Statement</SelectItem>
+                  <SelectItem value="legal-opinion">Legal Opinion</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-3">
+              <Label htmlFor="industry-type">Industry</Label>
+              <Select value={industryType} onValueChange={setIndustryType}>
+                <SelectTrigger id="industry-type">
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="banking">Banking</SelectItem>
+                  <SelectItem value="insurance">Insurance</SelectItem>
+                  <SelectItem value="investment">Investment & Securities</SelectItem>
+                  <SelectItem value="real-estate">Real Estate</SelectItem>
+                  <SelectItem value="retail">Retail</SelectItem>
+                  <SelectItem value="healthcare">Healthcare</SelectItem>
+                  <SelectItem value="technology">Technology</SelectItem>
+                  <SelectItem value="cryptocurrency">Cryptocurrency</SelectItem>
+                  <SelectItem value="government">Government</SelectItem>
+                  <SelectItem value="non-profit">Non-Profit</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-3">
+              <Label htmlFor="document-details">Document Details</Label>
+              <Textarea
+                id="document-details"
+                placeholder="Describe the document in detail, including parties involved, amounts, dates, key clauses, etc."
+                value={documentDetails}
+                onChange={(e) => setDocumentDetails(e.target.value)}
+                rows={6}
+                className="resize-none"
+              />
+            </div>
           </CardContent>
+          <CardFooter>
+            <Button
+              onClick={generateDueDiligence}
+              disabled={isAnalyzing || !documentType || !industryType || !documentDetails.trim()}
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Generate Due Diligence Report
+                </>
+              )}
+            </Button>
+          </CardFooter>
         </Card>
+
+        {dueDiligenceResult && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Legal Due Diligence Report</CardTitle>
+              <CardDescription>
+                Analysis for {documentType.replace('-', ' ')} in the {industryType.replace('-', ' ')} industry
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Summary</h3>
+                <p className="text-gray-700 dark:text-gray-300">{dueDiligenceResult.summary}</p>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-lg font-medium mb-3">Key Findings</h3>
+                <ul className="list-disc list-inside">
+                  {dueDiligenceResult.keyFindings.map((finding, index) => (
+                    <li key={index} className="text-gray-700 dark:text-gray-300">{finding}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-lg font-medium mb-3">Risk Assessment</h3>
+                {dueDiligenceResult.riskAssessment.map((risk, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className={`rounded-full w-3 h-3 ${getRiskBadgeColor(risk.level)}`}></div>
+                    <span className="text-gray-700 dark:text-gray-300">{risk.description}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-lg font-medium mb-3">Recommendations</h3>
+                <ul className="list-decimal list-inside">
+                  {dueDiligenceResult.recommendations.map((recommendation, index) => (
+                    <li key={index} className="text-gray-700 dark:text-gray-300">{recommendation}</li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </LegalToolLayout>
   );
