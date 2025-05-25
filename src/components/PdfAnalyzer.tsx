@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from '@/hooks/use-toast';
 import { getOpenAIResponse } from './OpenAIIntegration';
-import { extractTextFromPDF } from '@/utils/pdfExtraction';
+import { extractTextFromPdf } from '@/utils/pdfExtraction';
 
 interface PdfAnalyzerProps {
   onAnalysisComplete: (analysis: string) => void;
@@ -41,7 +41,7 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({
     setSelectedFile(file);
     
     try {
-      const text = await extractTextFromPDF(file);
+      const text = await extractTextFromPdf(file);
       setExtractedText(text);
     } catch (error) {
       console.error('Error extracting text from PDF:', error);

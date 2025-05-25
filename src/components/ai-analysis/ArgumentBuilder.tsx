@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ interface Argument {
 
 const ArgumentBuilder = () => {
   const [topic, setTopic] = useState('');
-  const [arguments, setArguments] = useState<Argument[]>([]);
+  const [argumentsList, setArgumentsList] = useState<Argument[]>([]);
   const [newArgumentText, setNewArgumentText] = useState('');
   const [newArgumentType, setNewArgumentType] = useState<'pro' | 'con'>('pro');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -43,17 +44,17 @@ const ArgumentBuilder = () => {
       strength: 50,
     };
 
-    setArguments([...arguments, newArgument]);
+    setArgumentsList([...argumentsList, newArgument]);
     setNewArgumentText('');
   };
 
   const removeArgument = (id: string) => {
-    setArguments(arguments.filter((arg) => arg.id !== id));
+    setArgumentsList(argumentsList.filter((arg) => arg.id !== id));
   };
 
   const updateArgumentStrength = (id: string, newStrength: number) => {
-    setArguments(
-      arguments.map((arg) =>
+    setArgumentsList(
+      argumentsList.map((arg) =>
         arg.id === id ? { ...arg, strength: newStrength } : arg
       )
     );
@@ -91,7 +92,7 @@ const ArgumentBuilder = () => {
         return null;
       }).filter(arg => arg !== null) as Argument[];
 
-      setArguments([...arguments, ...parsedArguments]);
+      setArgumentsList([...argumentsList, ...parsedArguments]);
       toast({
         title: "AI Arguments Generated",
         description: "Arguments have been generated successfully.",
@@ -173,15 +174,15 @@ const ArgumentBuilder = () => {
 
         <Separator />
 
-        {arguments.length > 0 && (
+        {argumentsList.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Arguments</h3>
             <ul className="space-y-2">
-              {arguments.map((arg) => (
+              {argumentsList.map((arg) => (
                 <li key={arg.id} className="border rounded-md p-4">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <Badge variant={arg.type === 'pro' ? 'success' : 'destructive'}>
+                      <Badge variant={arg.type === 'pro' ? 'default' : 'destructive'}>
                         {arg.type === 'pro' ? 'Pro' : 'Con'}
                       </Badge>
                       <p>{arg.text}</p>
