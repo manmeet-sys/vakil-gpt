@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -13,13 +12,6 @@ const LegalDocumentAnalyzerPage = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [analysisResult, setAnalysisResult] = useState<string>('');
-  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
-  
-  // Load API provider preference on component mount
-  React.useEffect(() => {
-    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setApiProvider(storedApiProvider);
-  }, []);
   
   const handleAnalysisComplete = (analysis: string) => {
     setAnalysisResult(analysis);
@@ -61,7 +53,6 @@ const LegalDocumentAnalyzerPage = () => {
             
             <div className="flex justify-center mb-6">
               <PdfAnalyzer 
-                apiProvider={apiProvider}
                 onAnalysisComplete={handleAnalysisComplete}
               />
             </div>

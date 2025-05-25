@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { FileContract, Loader2, Download } from 'lucide-react';
+import { FileText, Loader2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -118,7 +118,7 @@ const ContractDraftingPage = () => {
     <LegalToolLayout
       title="Indian Contract Drafting Tool"
       description="Generate enhanced legal contracts tailored for Indian jurisdiction"
-      icon={<FileContract className="h-6 w-6 text-blue-600" />}
+      icon={<FileText className="h-6 w-6 text-blue-600" />}
     >
       <BackButton to="/tools" label="Back to Tools" />
 
@@ -250,7 +250,7 @@ const ContractDraftingPage = () => {
                 </>
               ) : (
                 <>
-                  <FileContract className="mr-2 h-4 w-4" />
+                  <FileText className="mr-2 h-4 w-4" />
                   Generate Enhanced Contract
                 </>
               )}

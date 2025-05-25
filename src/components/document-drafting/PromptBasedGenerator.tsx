@@ -3,9 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Wand2, FileText } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Wand2, FileText, Globe, Scale, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateAIAnalysis } from '@/utils/aiAnalysis';
+import { motion } from 'framer-motion';
 
 type PromptBasedGeneratorProps = {
   onDraftGenerated: (title: string, type: string, content: string) => void;

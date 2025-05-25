@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { Search, Loader2, FileText, AlertCircle } from 'lucide-react';
+import { Search, FileText, Loader2, AlertTriangle, CheckCircle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import BackButton from '@/components/BackButton';
 import { getOpenAIResponse } from '@/components/OpenAIIntegration';
@@ -26,6 +30,14 @@ const LegalDueDiligencePage = () => {
   const [documentDetails, setDocumentDetails] = useState<string>('');
   const [dueDiligenceResult, setDueDiligenceResult] = useState<DueDiligenceResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [dueDiligenceData, setDueDiligenceData] = useState({
+    entityName: '',
+    entityType: '',
+    transactionType: '',
+    transactionValue: 0,
+    specificConcerns: '',
+  });
 
   const generateDueDiligence = async () => {
     if (!documentType || !industryType || !documentDetails.trim()) {
@@ -85,6 +97,69 @@ const LegalDueDiligencePage = () => {
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const performDueDiligence = async () => {
+    if (!dueDiligenceData.entityName || !dueDiligenceData.entityType || !dueDiligenceData.transactionType || !dueDiligenceData.transactionValue || !dueDiligenceData.specificConcerns.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields before performing due diligence.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const prompt = `
+        Act as a legal due diligence specialist. Based on the following information, provide a comprehensive legal due diligence report:
+
+        Entity/Company Name: ${dueDiligenceData.entityName}
+        Entity Type: ${dueDiligenceData.entityType}
+        Transaction Type: ${dueDiligenceData.transactionType}
+        Transaction Value (₹): ${dueDiligenceData.transactionValue}
+        Specific Legal Concerns: ${dueDiligenceData.specificConcerns}
+
+        Format your response exactly as follows (do not include any extra text except what fits in these sections):
+
+        SUMMARY: A brief summary of the document and key findings.
+
+        KEY_FINDINGS:
+        - First key finding
+        - Second key finding
+        (Include at least 3 key findings)
+
+        RISK_ASSESSMENT:
+        - [HIGH/MEDIUM/LOW]: First risk and explanation
+        - [HIGH/MEDIUM/LOW]: Second risk and explanation
+        (Include at least 3 risks)
+
+        RECOMMENDATIONS:
+        - First recommendation
+        - Second recommendation
+        (Include at least 3 recommendations)
+      `;
+
+      const response = await getOpenAIResponse(prompt);
+
+      const result = parseAIResponse(response);
+      setDueDiligenceResult(result);
+
+      toast({
+        title: "Analysis Complete",
+        description: "Legal due diligence report has been generated successfully.",
+      });
+    } catch (error) {
+      console.error("Error generating due diligence report:", error);
+      toast({
+        title: "Analysis Failed",
+        description: "There was an error generating the report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -154,10 +229,17 @@ const LegalDueDiligencePage = () => {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setDueDiligenceData(prevState => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
   return (
     <LegalToolLayout
-      title="Legal Due Diligence"
-      description="Perform legal due diligence on documents using AI"
+      title="Legal Due Diligence Tool"
+      description="Comprehensive legal due diligence for Indian entities and transactions"
       icon={<Search className="h-6 w-6 text-blue-600" />}
     >
       <BackButton to="/tools" label="Back to Tools" />
@@ -165,77 +247,104 @@ const LegalDueDiligencePage = () => {
       <div className="max-w-4xl mx-auto">
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Legal Due Diligence Analysis</CardTitle>
+            <CardTitle>Entity Information</CardTitle>
             <CardDescription>
-              Provide document details for AI-powered legal due diligence analysis
+              Enter the details of the entity or transaction for due diligence analysis.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <Label htmlFor="document-type">Document Type</Label>
-              <Select value={documentType} onValueChange={setDocumentType}>
-                <SelectTrigger id="document-type">
-                  <SelectValue placeholder="Select document type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="contract">Contract</SelectItem>
-                  <SelectItem value="agreement">Agreement</SelectItem>
-                  <SelectItem value="license">License</SelectItem>
-                  <SelectItem value="memorandum">Memorandum</SelectItem>
-                  <SelectItem value="articles-of-association">Articles of Association</SelectItem>
-                  <SelectItem value="financial-statement">Financial Statement</SelectItem>
-                  <SelectItem value="legal-opinion">Legal Opinion</SelectItem>
-                </SelectContent>
-              </Select>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="entity-name">Entity/Company Name</Label>
+                <Input
+                  id="entity-name"
+                  name="entityName"
+                  value={dueDiligenceData.entityName}
+                  onChange={handleInputChange}
+                  placeholder="Enter entity or company name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="entity-type">Entity Type</Label>
+                <Select 
+                  name="entityType" 
+                  value={dueDiligenceData.entityType} 
+                  onValueChange={(value) => handleInputChange({ target: { name: 'entityType', value } } as any)}
+                >
+                  <SelectTrigger id="entity-type">
+                    <SelectValue placeholder="Select Entity Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="private-limited">Private Limited Company</SelectItem>
+                    <SelectItem value="public-limited">Public Limited Company</SelectItem>
+                    <SelectItem value="partnership">Partnership Firm</SelectItem>
+                    <SelectItem value="llp">Limited Liability Partnership</SelectItem>
+                    <SelectItem value="proprietorship">Sole Proprietorship</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              <Label htmlFor="industry-type">Industry</Label>
-              <Select value={industryType} onValueChange={setIndustryType}>
-                <SelectTrigger id="industry-type">
-                  <SelectValue placeholder="Select industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="banking">Banking</SelectItem>
-                  <SelectItem value="insurance">Insurance</SelectItem>
-                  <SelectItem value="investment">Investment & Securities</SelectItem>
-                  <SelectItem value="real-estate">Real Estate</SelectItem>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="healthcare">Healthcare</SelectItem>
-                  <SelectItem value="technology">Technology</SelectItem>
-                  <SelectItem value="cryptocurrency">Cryptocurrency</SelectItem>
-                  <SelectItem value="government">Government</SelectItem>
-                  <SelectItem value="non-profit">Non-Profit</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="transaction-type">Transaction Type</Label>
+                <Select 
+                  name="transactionType" 
+                  value={dueDiligenceData.transactionType} 
+                  onValueChange={(value) => handleInputChange({ target: { name: 'transactionType', value } } as any)}
+                >
+                  <SelectTrigger id="transaction-type">
+                    <SelectValue placeholder="Select Transaction Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="acquisition">Acquisition</SelectItem>
+                    <SelectItem value="merger">Merger</SelectItem>
+                    <SelectItem value="investment">Investment</SelectItem>
+                    <SelectItem value="joint-venture">Joint Venture</SelectItem>
+                    <SelectItem value="asset-purchase">Asset Purchase</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="transaction-value">Transaction Value (₹)</Label>
+                <Input
+                  id="transaction-value"
+                  name="transactionValue"
+                  type="number"
+                  value={dueDiligenceData.transactionValue}
+                  onChange={handleInputChange}
+                  placeholder="Enter transaction value in INR"
+                />
+              </div>
             </div>
 
-            <div className="space-y-3">
-              <Label htmlFor="document-details">Document Details</Label>
+            <div>
+              <Label htmlFor="specific-concerns">Specific Legal Concerns</Label>
               <Textarea
-                id="document-details"
-                placeholder="Describe the document in detail, including parties involved, amounts, dates, key clauses, etc."
-                value={documentDetails}
-                onChange={(e) => setDocumentDetails(e.target.value)}
-                rows={6}
-                className="resize-none"
+                id="specific-concerns"
+                name="specificConcerns"
+                value={dueDiligenceData.specificConcerns}
+                onChange={handleInputChange}
+                placeholder="Describe any specific legal concerns or areas of focus"
+                className="min-h-[100px]"
               />
             </div>
           </CardContent>
           <CardFooter>
             <Button
-              onClick={generateDueDiligence}
-              disabled={isAnalyzing || !documentType || !industryType || !documentDetails.trim()}
+              onClick={performDueDiligence}
+              disabled={isLoading}
+              className="w-full"
             >
-              {isAnalyzing ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyzing...
+                  Performing Due Diligence...
                 </>
               ) : (
                 <>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Generate Due Diligence Report
+                  <Search className="mr-2 h-4 w-4" />
+                  Perform Due Diligence
                 </>
               )}
             </Button>
