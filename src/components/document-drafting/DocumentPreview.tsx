@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,9 +49,9 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {enhancedContent !== null ? (
-          <TextPreview content={enhancedContent} />
+          <TextPreview text={enhancedContent} />
         ) : (
-          <TextPreview content={content} />
+          <TextPreview text={content} />
         )}
       </CardContent>
       <CardContent className="py-0">
@@ -72,7 +73,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
               <Download className="h-4 w-4 mr-2" />
               Download
             </Button>
-            <ShareButton title={title} description={description} content={content} />
+            <ShareButton content={content} />
           </div>
           <Button
             size="sm"

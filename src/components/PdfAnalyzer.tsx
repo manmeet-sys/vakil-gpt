@@ -1,76 +1,64 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileUp, Upload, Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { FileText, Upload, Loader2, AlertCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from '@/hooks/use-toast';
-import { getGeminiResponse } from './GeminiProIntegration';
+import { getOpenAIResponse } from './OpenAIIntegration';
+import { extractTextFromPDF } from '@/utils/pdfExtraction';
 
 interface PdfAnalyzerProps {
-  apiProvider: 'gemini' | 'deepseek';
   onAnalysisComplete: (analysis: string) => void;
   buttonLabel?: string;
   iconOnly?: boolean;
 }
 
 const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({ 
-  apiProvider, 
   onAnalysisComplete,
   buttonLabel = "PDF Analysis",
   iconOnly = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileText, setFileText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [extractedText, setExtractedText] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== 'application/pdf') {
-        toast({
-          variant: "destructive",
-          title: "Invalid file format",
-          description: "Please upload a PDF file",
-        });
-        return;
-      }
-      
-      if (file.size > 10 * 1024 * 1024) { // 10MB
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: "Please upload a file smaller than 10MB",
-        });
-        return;
-      }
-      
-      setSelectedFile(file);
-      simulateUpload();
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      toast({
+        variant: "destructive",
+        title: "Invalid File Type",
+        description: "Please select a PDF file",
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    try {
+      const text = await extractTextFromPDF(file);
+      setExtractedText(text);
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      toast({
+        variant: "destructive",
+        title: "Extraction Failed",
+        description: "Failed to extract text from PDF",
+      });
     }
   };
 
-  const simulateUpload = () => {
-    setUploadProgress(0);
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setFileText("Sample extracted text from PDF document. In real implementation, this would be the actual content extracted from the PDF file.");
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
-  };
-
-  const handleAnalyze = async () => {
-    if (!fileText) {
+  const analyzePDF = async () => {
+    if (!extractedText.trim()) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No text to analyze",
+        title: "No Content",
+        description: "No text content found in the PDF",
       });
       return;
     }
@@ -78,18 +66,24 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({
     setIsAnalyzing(true);
 
     try {
-      const prompt = `Analyze this Indian legal document and provide a comprehensive analysis focusing on key legal points, relevant statutes, case laws, and implications:\n\n${fileText}`;
-      const analysis = await getGeminiResponse(prompt);
+      const prompt = `Analyze this legal document from an Indian law perspective. Provide a comprehensive analysis including:
+      1. Document type and purpose
+      2. Key legal provisions under Indian law
+      3. Potential issues or risks
+      4. Recommendations for Indian legal practice
+      
+      Document content: ${extractedText}`;
+
+      const analysis = await getOpenAIResponse(prompt);
       
       onAnalysisComplete(analysis);
       setIsOpen(false);
       setSelectedFile(null);
-      setFileText('');
-      setUploadProgress(0);
+      setExtractedText('');
       
       toast({
-        title: "PDF Analysis Complete",
-        description: "The legal document has been successfully analyzed",
+        title: "Analysis Complete",
+        description: "PDF has been analyzed successfully",
       });
     } catch (error) {
       console.error('Error analyzing PDF:', error);
@@ -111,90 +105,67 @@ const PdfAnalyzer: React.FC<PdfAnalyzerProps> = ({
           size="sm" 
           className={`text-xs flex items-center gap-1 ${iconOnly ? 'px-2 h-8 min-w-8' : ''}`}
         >
-          <FileUp className="h-3 w-3" />
+          <FileText className="h-3 w-3" />
           {!iconOnly && <span>{buttonLabel}</span>}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>PDF Document Analyzer</DialogTitle>
+          <DialogTitle>PDF Legal Document Analyzer</DialogTitle>
         </DialogHeader>
+        
         <div className="grid gap-4 py-4">
-          {!selectedFile ? (
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center">
-              <input
-                id="pdf-upload"
-                type="file"
-                accept=".pdf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <label
-                htmlFor="pdf-upload"
-                className="flex flex-col items-center justify-center cursor-pointer"
-              >
-                <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-sm font-medium mb-1">Click to upload a PDF</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PDF (Max 10MB)
+          <div className="space-y-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              variant="outline"
+              className="w-full"
+              disabled={isAnalyzing}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Select PDF File
+            </Button>
+            
+            {selectedFile && (
+              <Alert>
+                <FileText className="h-4 w-4" />
+                <AlertDescription>
+                  Selected: {selectedFile.name}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {extractedText && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Text extracted successfully. Click analyze to proceed.
                 </p>
-              </label>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <FileUp className="h-4 w-4 text-blue-accent" />
-                  <span className="text-sm font-medium truncate max-w-[250px]">
-                    {selectedFile.name}
-                  </span>
-                </div>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setFileText('');
-                    setUploadProgress(0);
-                  }}
+                  onClick={analyzePDF}
+                  disabled={isAnalyzing}
+                  className="w-full"
                 >
-                  Remove
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    "Analyze Document"
+                  )}
                 </Button>
               </div>
-              
-              {uploadProgress < 100 ? (
-                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                  <div 
-                    className="bg-blue-accent h-2.5 rounded-full" 
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
-              ) : (
-                <div className="border rounded-lg p-3 max-h-48 overflow-y-auto">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {fileText}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-          <Button 
-            onClick={handleAnalyze} 
-            disabled={isAnalyzing || !fileText}
-            className="w-full"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              "Analyze Document"
             )}
-          </Button>
-        </DialogFooter>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

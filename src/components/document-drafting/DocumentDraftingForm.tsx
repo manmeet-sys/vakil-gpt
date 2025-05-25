@@ -5,17 +5,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Eye, Share2, Wand2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { FileText, Download, Eye, Share2, Wand2, Search } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { generateAIAnalysis } from '@/utils/aiAnalysis';
 import ShareButton from '../ShareButton';
 import TextPreview from '../TextPreview';
 
 interface DocumentDraftingFormProps {
-  onDocumentDrafted: (draft: string) => void;
+  onDocumentGenerated: (document: string) => void;
 }
 
-const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ onDocumentDrafted }) => {
+const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ onDocumentGenerated }) => {
   const [documentType, setDocumentType] = useState<string>('');
   const [documentTitle, setDocumentTitle] = useState<string>('');
   const [documentDescription, setDocumentDescription] = useState<string>('');
@@ -58,7 +58,7 @@ const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ onDocumentD
       const prompt = `Generate a ${documentType} titled "${documentTitle}" with the following description: ${documentDescription}. Ensure the document is legally sound, well-structured, and includes all necessary clauses and sections.`;
       const aiResponse = await generateAIAnalysis(prompt, documentTitle);
       setGeneratedDocument(aiResponse);
-      onDocumentDrafted(aiResponse);
+      onDocumentGenerated(aiResponse);
       toast({
         title: "Document Generated",
         description: "The document has been generated successfully.",
@@ -243,7 +243,7 @@ const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ onDocumentD
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <TextPreview content={generatedDocument} />
+              <TextPreview text={generatedDocument} />
             </CardContent>
             <div className="flex justify-between items-center p-4">
               <div className="flex gap-2">
@@ -279,7 +279,7 @@ const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ onDocumentD
                   <FileText className="mr-2 h-4 w-4" />
                   {isTextCopied ? 'Copied!' : 'Copy Text'}
                 </Button>
-                <ShareButton title={documentTitle} text={generatedDocument} />
+                <ShareButton content={generatedDocument} />
               </div>
             </div>
           </Card>

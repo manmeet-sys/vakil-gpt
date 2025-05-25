@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { toast } from '@/hooks/use-toast';
-import { 
-  FileText, Scale, BarChart, History, ArrowRight, Check, RotateCcw, 
-  Clock, Briefcase, FileCheck, CircleHelp, ChevronRight, ChevronLeft, 
-  Shield, Trash, Loader2, AlertTriangle, AlertCircle, Book, Download, Info
-} from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { getGeminiResponse } from './GeminiProIntegration';
+import { Scale, FileText, AlertTriangle, CheckCircle, Calendar, Clock, Gavel, BookOpen, User, MapPin, Award, AlertCircle, TrendingUp, Download, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Slider } from '@/components/ui/slider';
+import { toast } from '@/hooks/use-toast';
+import { getOpenAIResponse } from './OpenAIIntegration';
 
 interface CrimeCategory {
   id: string;
@@ -222,7 +218,7 @@ const SentencingPredictorTool: React.FC = () => {
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [sentencingEstimate, setSentencingEstimate] = useState<SentencingEstimate | null>(null);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('openaiApiKey') || '');
   const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState('');
   
@@ -230,7 +226,7 @@ const SentencingPredictorTool: React.FC = () => {
   const [isOffenseDialogOpen, setIsOffenseDialogOpen] = useState(false);
   
   React.useEffect(() => {
-    localStorage.setItem('geminiApiKey', apiKey);
+    localStorage.setItem('openaiApiKey', apiKey);
   }, [apiKey]);
 
   const addPriorOffense = () => {
@@ -276,12 +272,12 @@ const SentencingPredictorTool: React.FC = () => {
   };
 
   const saveApiKey = () => {
-    localStorage.setItem('geminiApiKey', apiKey);
+    localStorage.setItem('openaiApiKey', apiKey);
     setIsApiKeyDialogOpen(false);
     
     toast({
       title: "API Key Saved",
-      description: "Your Gemini API key has been saved for future use",
+      description: "Your OpenAI API key has been saved for future use",
     });
   };
 
@@ -304,7 +300,7 @@ const SentencingPredictorTool: React.FC = () => {
       toast({
         variant: "destructive",
         title: "API Key Required",
-        description: "Please set your Gemini API key to use the analysis feature",
+        description: "Please set your OpenAI API key to use the analysis feature",
       });
       setIsApiKeyDialogOpen(true);
       return;
@@ -374,7 +370,7 @@ Please structure your analysis with these sections:
 
 Ensure your analysis is balanced, fact-based, and considers both the prosecution and defense perspectives.`;
       
-      const response = await getGeminiResponse(prompt);
+      const response = await getOpenAIResponse(prompt);
       setAiAnalysis(response);
       
       setActiveTab('analysis');
@@ -499,11 +495,11 @@ This analysis is provided for informational purposes only and should not be cons
             Case Information
           </TabsTrigger>
           <TabsTrigger value="defendant-info">
-            <Book className="mr-2 h-4 w-4" />
+            <BookOpen className="mr-2 h-4 w-4" />
             Defendant Profile
           </TabsTrigger>
           <TabsTrigger value="analysis">
-            <BarChart className="mr-2 h-4 w-4" />
+            <Gavel className="mr-2 h-4 w-4" />
             Sentencing Analysis
           </TabsTrigger>
         </TabsList>
@@ -854,7 +850,7 @@ This analysis is provided for informational purposes only and should not be cons
           {!sentencingEstimate ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <BarChart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <Gavel className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-medium mb-2">No Analysis Generated Yet</h3>
                 <p className="text-muted-foreground mb-4">
                   Fill in the case and defendant information, then generate an analysis to see results.
@@ -951,7 +947,7 @@ This analysis is provided for informational purposes only and should not be cons
                             <div className="flex items-center">
                               {factor.direction === 'increase' 
                                 ? <AlertTriangle className="h-4 w-4 text-red-500 mr-2" />
-                                : <Check className="h-4 w-4 text-green-500 mr-2" />
+                                : <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                               }
                               <span>{factor.key}</span>
                             </div>
@@ -975,7 +971,7 @@ This analysis is provided for informational purposes only and should not be cons
                         {sentencingEstimate.alternativeSentences?.map((alt, index) => (
                           <div key={index} className="p-3">
                             <div className="flex items-center">
-                              <Check className="h-4 w-4 text-green-500 mr-2" />
+                              <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                               <span>{alt}</span>
                             </div>
                           </div>
@@ -1044,15 +1040,15 @@ This analysis is provided for informational purposes only and should not be cons
       <Dialog open={isApiKeyDialogOpen} onOpenChange={setIsApiKeyDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Set Gemini API Key</DialogTitle>
+            <DialogTitle>Set OpenAI API Key</DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
-            <Label htmlFor="gemini-api-key" className="mb-2 block">
-              Enter your Gemini API Key
+            <Label htmlFor="openai-api-key" className="mb-2 block">
+              Enter your OpenAI API Key
             </Label>
             <Input
-              id="gemini-api-key"
+              id="openai-api-key"
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
@@ -1113,7 +1109,7 @@ This analysis is provided for informational purposes only and should not be cons
               ))}
               
               <h3 className="font-medium flex items-center mt-4">
-                <Check className="h-4 w-4 text-green-500 mr-2" />
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                 Mitigating Factors
               </h3>
               

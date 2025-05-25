@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,13 +6,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';
-import { getGeminiResponse } from './GeminiProIntegration';
+import { getOpenAIResponse } from './OpenAIIntegration';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 
 interface LegalAnalysisGeneratorProps {
-  apiProvider: 'gemini' | 'deepseek';
   onAnalysisComplete: (analysis: string) => void;
   buttonLabel?: string;
   iconOnly?: boolean;
@@ -22,7 +20,6 @@ interface LegalAnalysisGeneratorProps {
 }
 
 const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({ 
-  apiProvider, 
   onAnalysisComplete,
   buttonLabel = "Legal Analysis",
   iconOnly = false,
@@ -165,7 +162,7 @@ const LegalAnalysisGenerator: React.FC<LegalAnalysisGeneratorProps> = ({
         prompt = getPracticeAreaPrompt(selectedArea, text);
       }
       
-      const analysis = await getGeminiResponse(prompt);
+      const analysis = await getOpenAIResponse(prompt);
       
       onAnalysisComplete(analysis);
       setIsOpen(false);
