@@ -19,13 +19,13 @@ serve(async (req) => {
     })
   }
 
-  // Get the API key from request authorization header
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  // Get the centralized API key from Supabase secrets
+  const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
+  if (!openaiApiKey) {
     return new Response(
-      JSON.stringify({ error: 'Unauthorized - Missing or invalid authorization header' }),
+      JSON.stringify({ error: 'OpenAI API key not configured on server' }),
       {
-        status: 401,
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
@@ -51,8 +51,7 @@ serve(async (req) => {
       )
     }
     
-    // Set up the request to OpenAI API
-    const openaiApiKey = authHeader.split('Bearer ')[1]
+    // Set up the request to OpenAI API using the centralized key
     const openaiUrl = 'https://api.openai.com/v1/chat/completions'
     
     // Make the request to OpenAI

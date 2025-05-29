@@ -4,22 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
-import { Sparkles, MessageSquare, Key, Brain, Cpu, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Sparkles, MessageSquare, Brain, Cpu, CheckCircle2 } from 'lucide-react';
 import ErrorMessage from '@/components/ui/error-message';
 import { supabase } from '@/integrations/supabase/client';
 import { OPENAI_MODELS, OpenAIModel } from '@/components/OpenAIIntegration';
 
 const AISettings: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<OpenAIModel>('gpt-4o-mini');
-  const [apiKey, setApiKey] = useState(localStorage.getItem('openaiApiKey') || '');
   const [temperature, setTemperature] = useState(0.7);
   const [historyEnabled, setHistoryEnabled] = useState(true);
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationStatus, setValidationStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
+  const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   useEffect(() => {
@@ -33,60 +30,13 @@ const AISettings: React.FC = () => {
     setHistoryEnabled(savedHistoryEnabled);
   }, []);
   
-  const validateOpenAIKey = async (key: string): Promise<boolean> => {
-    try {
-      setValidationStatus('validating');
-      
-      // Simple test request to validate the key
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${key}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Hello, please respond with "API key is valid."' }],
-          max_tokens: 10,
-        })
-      });
-      
-      if (!response.ok) {
-        setErrorMessage("OpenAI API key validation failed. Please check your key.");
-        setValidationStatus('invalid');
-        return false;
-      }
-      
-      setValidationStatus('valid');
-      setErrorMessage(null);
-      return true;
-    } catch (error) {
-      console.error('Error validating OpenAI API key:', error);
-      setErrorMessage(error instanceof Error ? error.message : "Failed to validate OpenAI API key");
-      setValidationStatus('invalid');
-      return false;
-    }
-  };
-  
   const saveSettings = async () => {
-    setIsValidating(true);
+    setIsSaving(true);
     setErrorMessage(null);
     
     try {
-      // Validate key before saving
-      let isValid = true;
-      
-      if (apiKey) {
-        isValid = await validateOpenAIKey(apiKey);
-      }
-      
-      if (!isValid) {
-        return;
-      }
-      
       // Save all settings to localStorage
       localStorage.setItem('openaiModel', selectedModel);
-      localStorage.setItem('openaiApiKey', apiKey);
       localStorage.setItem('ai-temperature', temperature.toString());
       localStorage.setItem('ai-history-enabled', String(historyEnabled));
       
@@ -104,30 +54,12 @@ const AISettings: React.FC = () => {
         description: error instanceof Error ? error.message : "An unexpected error occurred"
       });
     } finally {
-      setIsValidating(false);
+      setIsSaving(false);
     }
   };
   
   const handleTemperatureChange = (value: number[]) => {
     setTemperature(value[0]);
-  };
-  
-  const handleApiKeyChange = (value: string) => {
-    setApiKey(value);
-    // Reset validation status when key changes
-    setValidationStatus('idle');
-  };
-  
-  const getKeyStatus = () => {
-    if (validationStatus === 'validating') {
-      return <Cpu className="h-4 w-4 animate-spin text-blue-500" />;
-    } else if (validationStatus === 'valid') {
-      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-    } else if (validationStatus === 'invalid') {
-      return <AlertCircle className="h-4 w-4 text-red-500" />;
-    }
-    
-    return null;
   };
 
   return (
@@ -147,7 +79,7 @@ const AISettings: React.FC = () => {
             <CardTitle>OpenAI Settings</CardTitle>
           </div>
           <CardDescription>
-            Configure your OpenAI API key and model preferences for VakilGPT
+            Configure your AI model preferences for VakilGPT. The OpenAI API key is managed centrally by the system.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -170,30 +102,16 @@ const AISettings: React.FC = () => {
             </p>
           </div>
           
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium flex items-center">
-              <Key className="h-4 w-4 mr-2" /> API Key
-            </h3>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="openai-api-key">OpenAI API Key</Label>
-                <div>{getKeyStatus()}</div>
-              </div>
-              <div className="relative">
-                <Input
-                  id="openai-api-key"
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => handleApiKeyChange(e.target.value)}
-                  placeholder="Enter your OpenAI API key"
-                  className={validationStatus === 'invalid' ? 'border-red-500 focus-visible:ring-red-500' : ''}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Get your OpenAI API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">OpenAI Platform</a>
-              </p>
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <h3 className="text-sm font-medium text-green-800 dark:text-green-200">
+                Centralized API Key
+              </h3>
             </div>
+            <p className="text-xs text-green-700 dark:text-green-300">
+              The OpenAI API key is managed centrally by the system. You don't need to provide your own API key to use VakilGPT's AI features.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -248,10 +166,10 @@ const AISettings: React.FC = () => {
         <CardFooter className="justify-end pt-4 border-t">
           <Button 
             onClick={saveSettings} 
-            disabled={isValidating}
+            disabled={isSaving}
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
           >
-            {isValidating && <Cpu className="h-4 w-4 animate-spin" />}
+            {isSaving && <Cpu className="h-4 w-4 animate-spin" />}
             Save Settings
           </Button>
         </CardFooter>

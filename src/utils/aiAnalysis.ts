@@ -1,11 +1,11 @@
 
 /**
- * Utility functions for AI analysis with focus on Indian law using OpenAI
+ * Utility functions for AI analysis with focus on Indian law using centralized OpenAI integration
  */
 import { getOpenAIResponse, generateOpenAILegalAnalysis, generateIndianContractAnalysis, fetchIndianLegalUpdates, subscribeToLegalUpdates } from '@/components/OpenAIIntegration';
 
 /**
- * Generates analysis using OpenAI API
+ * Generates analysis using centralized OpenAI API
  * @param text The text to analyze
  * @param filename The name of the file being analyzed
  * @returns A promise that resolves to the analysis

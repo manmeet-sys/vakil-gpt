@@ -1,11 +1,8 @@
 
 /**
  * OpenAI API Integration for VakilGPT
- * This module provides centralized OpenAI API functionality for the entire application
+ * This module provides centralized OpenAI API functionality using Supabase Edge Functions
  */
-
-// OpenAI API configuration
-const OPENAI_API_BASE_URL = 'https://api.openai.com/v1';
 
 /**
  * Available OpenAI models for the application
@@ -40,89 +37,46 @@ const DEFAULT_CONFIG: Required<OpenAIConfig> = {
 };
 
 /**
- * Gets the OpenAI API key from localStorage or environment
- */
-const getOpenAIApiKey = (): string => {
-  const apiKey = localStorage.getItem('openaiApiKey') || '';
-  if (!apiKey) {
-    throw new Error("OpenAI API key is required. Please set your API key in Settings.");
-  }
-  return apiKey;
-};
-
-/**
- * Makes a request to OpenAI API via Supabase Edge Function for security
+ * Makes a request to OpenAI API via Supabase Edge Function (centralized API key)
  */
 export const getOpenAIResponse = async (
   prompt: string, 
   config: OpenAIConfig = {}
 ): Promise<string> => {
   try {
-    const apiKey = getOpenAIApiKey();
     const finalConfig = { ...DEFAULT_CONFIG, ...config };
     
-    // Check if we should use the Supabase edge function or direct API call
-    const useEdgeFunction = localStorage.getItem('useEdgeFunction') === 'true';
+    // Always use the Supabase Edge Function with centralized API key
+    const response = await fetch(`https://clyqfnqkicwvpymbqijn.supabase.co/functions/v1/openai-proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNseXFmbnFraWN3dnB5bWJxaWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4MDczODAsImV4cCI6MjA1OTM4MzM4MH0.CiGisrTRO87EcpytzoUUAnmpJKAkDyt-qx8oed2yQ5A`
+      },
+      body: JSON.stringify({ 
+        prompt, 
+        model: finalConfig.model,
+        temperature: finalConfig.temperature,
+        max_tokens: finalConfig.maxTokens
+      })
+    });
     
-    if (useEdgeFunction) {
-      // Use Supabase Edge Function for secure API calls
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/openai-proxy`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({ 
-          prompt, 
-          model: finalConfig.model,
-          temperature: finalConfig.temperature,
-          max_tokens: finalConfig.maxTokens
-        })
-      });
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage;
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage;
-        
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || `API error: ${response.status}`;
-        } catch (e) {
-          errorMessage = `API error: ${response.status}`;
-        }
-        
-        throw new Error(errorMessage);
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || `API error: ${response.status}`;
+      } catch (e) {
+        errorMessage = `API error: ${response.status}`;
       }
       
-      const data = await response.json();
-      return data.content || data.message || '';
-    } else {
-      // Direct API call to OpenAI
-      const response = await fetch(`${OPENAI_API_BASE_URL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: finalConfig.model,
-          messages: [
-            { role: 'user', content: prompt }
-          ],
-          temperature: finalConfig.temperature,
-          max_tokens: finalConfig.maxTokens,
-          stream: finalConfig.stream
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || `API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.choices[0]?.message?.content || '';
+      throw new Error(errorMessage);
     }
+    
+    const data = await response.json();
+    return data.content || data.message || '';
   } catch (error) {
     console.error('Error in OpenAI API request:', error);
     throw error;
