@@ -19,7 +19,8 @@ import {
   Calculator,
   Clock,
   Star,
-  Zap
+  Zap,
+  Search
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
