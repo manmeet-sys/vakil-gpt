@@ -16,16 +16,6 @@ const ComplianceAssistancePage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>('');
-  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
-
-  // Load API key on component mount
-  React.useEffect(() => {
-    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setApiProvider(storedApiProvider);
-    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
-    setApiKey(storedApiKey);
-  }, []);
 
   const handleGenerateCompliance = async () => {
     if (!industry || !companySize || !complianceDescription.trim()) {
@@ -37,11 +27,12 @@ const ComplianceAssistancePage = () => {
       return;
     }
 
+    const apiKey = localStorage.getItem('openaiApiKey');
     if (!apiKey) {
       toast({
         variant: "destructive",
         title: "API Key Required",
-        description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key first`,
+        description: "Please set your OpenAI API key in settings first",
       });
       return;
     }
@@ -49,14 +40,7 @@ const ComplianceAssistancePage = () => {
     setIsGenerating(true);
 
     try {
-      let complianceResults = '';
-      
-      if (apiProvider === 'gemini') {
-        complianceResults = await generateGeminiComplianceResults();
-      } else if (apiProvider === 'deepseek') {
-        complianceResults = await generateDeepSeekComplianceResults();
-      }
-
+      const complianceResults = await generateOpenAIComplianceResults(apiKey);
       setResults(complianceResults);
       toast({
         title: "Compliance Guidance Generated",
@@ -74,8 +58,8 @@ const ComplianceAssistancePage = () => {
     }
   };
 
-  const generateGeminiComplianceResults = async (): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's compliance specialist focused on Indian regulatory frameworks. 
+  const generateOpenAIComplianceResults = async (apiKey: string): Promise<string> => {
+    const systemPrompt = `You are VakilGPT's compliance specialist focused on Indian regulatory frameworks. 
     
     Generate a comprehensive compliance guide based on the following information:
     - Industry: ${industry}
@@ -91,62 +75,17 @@ const ComplianceAssistancePage = () => {
     
     Format your response with clear sections and practical guidance.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: systemPrompt }] }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 4000,
-          topK: 40,
-          topP: 0.95
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response format from Gemini API');
-    }
-  };
-
-  const generateDeepSeekComplianceResults = async (): Promise<string> => {
-    const systemPrompt = `You are PrecedentAI's compliance specialist focused on Indian regulatory frameworks. 
-    
-    Generate a comprehensive compliance guide based on the following information:
-    - Industry: ${industry}
-    - Company Size: ${companySize}
-    - Compliance Context: ${complianceDescription}
-    
-    Include:
-    1. Key Indian regulations and laws applicable to this scenario
-    2. Compliance requirements and obligations
-    3. Recommended implementation steps
-    4. Common compliance challenges and solutions
-    5. Resources for staying updated on regulatory changes
-    
-    Format your response with clear sections and practical guidance.`;
-    
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'gpt-4',
         messages: [
-          { role: 'system', content: systemPrompt }
+          { role: 'system', content: 'You are VakilGPT, an expert in Indian legal compliance.' },
+          { role: 'user', content: systemPrompt }
         ],
         temperature: 0.2,
         max_tokens: 4000
@@ -155,7 +94,7 @@ const ComplianceAssistancePage = () => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
+      throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -165,7 +104,7 @@ const ComplianceAssistancePage = () => {
   return (
     <LegalToolLayout 
       title="Compliance Assistance" 
-      description="Get tailored compliance guidance for your business needs"
+      description="Get tailored compliance guidance for your business needs using OpenAI"
       icon={<ClipboardCheck className="h-6 w-6 text-blue-600" />}
     >
       <div className="max-w-4xl mx-auto">
@@ -173,7 +112,7 @@ const ComplianceAssistancePage = () => {
           <CardHeader>
             <CardTitle>Compliance Information</CardTitle>
             <CardDescription>
-              Provide details about your business to receive tailored compliance guidance.
+              Provide details about your business to receive AI-powered compliance guidance.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -239,7 +178,7 @@ const ComplianceAssistancePage = () => {
                     Generating Guidance...
                   </>
                 ) : (
-                  'Generate Compliance Guidance'
+                  'Generate AI Compliance Guidance'
                 )}
               </Button>
             </div>
@@ -249,9 +188,9 @@ const ComplianceAssistancePage = () => {
         {results && (
           <Card>
             <CardHeader>
-              <CardTitle>Compliance Guidance</CardTitle>
+              <CardTitle>AI Compliance Guidance</CardTitle>
               <CardDescription>
-                Tailored compliance recommendations for your business.
+                Tailored compliance recommendations powered by OpenAI.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -267,4 +206,3 @@ const ComplianceAssistancePage = () => {
 };
 
 export default ComplianceAssistancePage;
-

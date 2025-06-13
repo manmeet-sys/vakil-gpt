@@ -1,7 +1,6 @@
 
 import React, { ReactNode, useEffect } from 'react';
 import Footer from '@/components/Footer';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
 import designSystem from '@/lib/design-system-standards';
 
@@ -13,23 +12,6 @@ interface LegalToolLayoutProps {
 }
 
 const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayoutProps) => {
-  const [apiProvider, setApiProvider] = React.useState<'deepseek' | 'gemini'>('gemini');
-
-  useEffect(() => {
-    // Load preferred API provider on component mount
-    const provider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setApiProvider(provider);
-    
-    // Set default API keys if not already set
-    if (!localStorage.getItem('geminiApiKey')) {
-      localStorage.setItem('geminiApiKey', '');
-    }
-    
-    if (!localStorage.getItem('deepseekApiKey')) {
-      localStorage.setItem('deepseekApiKey', '');
-    }
-  }, []);
-
   // Update title for accessibility
   useEffect(() => {
     if (title) {
@@ -83,27 +65,7 @@ const LegalToolLayout = ({ children, title, description, icon }: LegalToolLayout
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <Tabs 
-              defaultValue={apiProvider} 
-              onValueChange={(value) => {
-                setApiProvider(value as 'deepseek' | 'gemini');
-                localStorage.setItem('preferredApiProvider', value);
-              }}
-              className="w-full"
-            >
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6" aria-label="AI Model Selection">
-                <TabsTrigger value="gemini" className="px-4 py-2 text-sm font-medium">Gemini AI</TabsTrigger>
-                <TabsTrigger value="deepseek" className="px-4 py-2 text-sm font-medium">DeepSeek AI</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="gemini" className="mt-2">
-                {apiProvider === 'gemini' && children}
-              </TabsContent>
-              
-              <TabsContent value="deepseek" className="mt-2">
-                {apiProvider === 'deepseek' && children}
-              </TabsContent>
-            </Tabs>
+            {children}
           </motion.div>
         </div>
       </main>

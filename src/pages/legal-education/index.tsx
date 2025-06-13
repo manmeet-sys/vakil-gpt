@@ -19,15 +19,6 @@ const LegalEducationPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [results, setResults] = useState<string>('');
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>('');
-  const [apiProvider, setApiProvider] = useState<'deepseek' | 'gemini'>('gemini');
-
-  React.useEffect(() => {
-    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setApiProvider(storedApiProvider);
-    const storedApiKey = localStorage.getItem(`${storedApiProvider}ApiKey`) || '';
-    setApiKey(storedApiKey);
-  }, []);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -61,11 +52,12 @@ const LegalEducationPage = () => {
       return;
     }
 
+    const apiKey = localStorage.getItem('openaiApiKey');
     if (!apiKey) {
       toast({
         variant: "destructive",
         title: "API Key Required",
-        description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key first`,
+        description: "Please set your OpenAI API key in settings first",
       });
       return;
     }
@@ -73,18 +65,11 @@ const LegalEducationPage = () => {
     setIsGenerating(true);
 
     try {
-      let educationalContent = '';
-      
-      if (apiProvider === 'gemini') {
-        educationalContent = await generateGeminiEducationalContent(prompt);
-      } else if (apiProvider === 'deepseek') {
-        educationalContent = await generateDeepSeekEducationalContent(prompt);
-      }
-
+      const educationalContent = await generateOpenAIEducationalContent(prompt, apiKey);
       setResults(educationalContent);
       toast({
         title: "Content Generated",
-        description: "Your legal educational content has been generated",
+        description: "Your legal educational content has been generated using OpenAI",
       });
     } catch (error) {
       console.error('Error generating educational content:', error);
@@ -98,128 +83,7 @@ const LegalEducationPage = () => {
     }
   };
 
-  const generateGeminiEducationalContent = async (prompt: string): Promise<string> => {
-    let systemPrompt = '';
-    
-    if (activeTab === 'explain') {
-      systemPrompt = `You are VakilGPT's legal education specialist focusing on Indian law.
-      
-      Explain the following legal concept in a clear, educational way:
-      "${prompt}"
-      
-      Your explanation should:
-      1. Define the concept and its importance in Indian law
-      2. Explain key principles and applications
-      3. Reference relevant sections of Indian legislation or constitutional provisions
-      4. Mention landmark Indian court cases if applicable
-      5. Provide practical examples of how this concept works in real-world scenarios
-      
-      Format your explanation to be educational, accurate, and accessible to law students or professionals seeking to understand this concept better.`;
-    } else if (activeTab === 'case-study') {
-      systemPrompt = `You are VakilGPT's legal education specialist focusing on Indian law.
-      
-      Create an educational case study on the following legal topic or case:
-      "${prompt}"
-      
-      Your case study should include:
-      1. Background and context of the case/topic
-      2. Key legal issues and questions presented
-      3. The court's analysis and reasoning (if a specific case)
-      4. The legal significance and precedent established
-      5. Impact on Indian law and subsequent developments
-      6. Lessons and principles that can be learned
-      
-      Format your case study to be educational, detailed, and useful for law students or professionals studying Indian law.`;
-    } else if (activeTab === 'compare') {
-      systemPrompt = `You are VakilGPT's legal education specialist focusing on Indian law.
-      
-      Compare and contrast the following legal concepts or areas of law:
-      "${prompt}"
-      
-      Your comparison should:
-      1. Define each concept/area clearly
-      2. Identify key similarities between them
-      3. Highlight important differences
-      4. Explain when each would apply in legal practice
-      5. Reference relevant Indian legislation or constitutional provisions
-      6. Mention significant Indian cases that illustrate the distinctions
-      
-      Format your comparison in a structured, educational manner that helps clarify the distinctions and relationships between these legal concepts.`;
-    } else if (activeTab === 'specialist') {
-      const specialistProfiles = {
-        constitutional: {
-          title: "Constitutional Law Specialist",
-          expertise: "expert in constitutional law, Indian constitution, fundamental rights, directive principles, constitutional amendments, and landmark Supreme Court judgments"
-        },
-        criminal: {
-          title: "Criminal Law Specialist",
-          expertise: "expert in Indian criminal law, Indian Penal Code, Criminal Procedure Code, criminal defense, prosecution procedures, bail provisions, and criminal jurisprudence"
-        },
-        corporate: {
-          title: "Corporate Law Specialist",
-          expertise: "expert in Indian corporate law, Companies Act, corporate governance, mergers and acquisitions, securities law, corporate compliance, and business regulations"
-        },
-        property: {
-          title: "Property Law Specialist",
-          expertise: "expert in Indian property law, real estate transactions, land acquisition, property registration, tenancy laws, and property dispute resolution"
-        },
-        family: {
-          title: "Family Law Specialist",
-          expertise: "expert in Indian family law, personal laws, marriage, divorce, adoption, maintenance, succession, and family dispute resolution"
-        },
-        tax: {
-          title: "Tax Law Specialist",
-          expertise: "expert in Indian tax law, income tax, GST, international taxation, tax planning, tax compliance, and tax dispute resolution"
-        }
-      };
-      
-      const specialist = specialistProfiles[specialistType as keyof typeof specialistProfiles];
-      
-      systemPrompt = `You are VakilGPT's virtual ${specialist.title}, an ${specialist.expertise} with focus on the Indian legal system.
-      
-      Answer the following legal question with your specialized knowledge:
-      "${prompt}"
-      
-      Your response should:
-      1. Provide an expert perspective based on your specialist area of law
-      2. Reference relevant Indian legal provisions and authorities
-      3. Explain legal concepts specific to ${specialistType} law clearly
-      4. Mention important case precedents if applicable
-      5. Outline practical implications and considerations
-      
-      Format your response in a structured, educational manner, making complex legal concepts accessible while demonstrating your specialist expertise. Remember to note that your response is educational information, not legal advice.`;
-    }
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: systemPrompt }] }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 4000,
-          topK: 40,
-          topP: 0.95
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response format from Gemini API');
-    }
-  };
-
-  const generateDeepSeekEducationalContent = async (prompt: string): Promise<string> => {
+  const generateOpenAIEducationalContent = async (prompt: string, apiKey: string): Promise<string> => {
     let systemPrompt = '';
     
     if (activeTab === 'explain') {
@@ -311,16 +175,17 @@ const LegalEducationPage = () => {
       Format your response in a structured, educational manner, making complex legal concepts accessible while demonstrating your specialist expertise. Remember to note that your response is educational information, not legal advice.`;
     }
     
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'gpt-4',
         messages: [
-          { role: 'system', content: systemPrompt }
+          { role: 'system', content: 'You are VakilGPT, an expert legal education specialist focusing on Indian law.' },
+          { role: 'user', content: systemPrompt }
         ],
         temperature: 0.2,
         max_tokens: 4000
@@ -329,7 +194,7 @@ const LegalEducationPage = () => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
+      throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -338,8 +203,8 @@ const LegalEducationPage = () => {
 
   return (
     <LegalToolLayout 
-      title="Legal Education" 
-      description="Learn and understand complex legal concepts through clear explanations"
+      title="AI Legal Education" 
+      description="Learn and understand complex legal concepts through clear AI-powered explanations"
       icon={<GraduationCap className="h-6 w-6 text-blue-600" />}
     >
       <div className="max-w-4xl mx-auto">
@@ -354,9 +219,9 @@ const LegalEducationPage = () => {
           <TabsContent value="explain">
             <Card>
               <CardHeader>
-                <CardTitle>Legal Concept Explanation</CardTitle>
+                <CardTitle>AI Legal Concept Explanation</CardTitle>
                 <CardDescription>
-                  Get clear explanations of complex legal concepts and principles.
+                  Get clear AI-powered explanations of complex legal concepts and principles.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -374,12 +239,12 @@ const LegalEducationPage = () => {
                     {isGenerating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating Explanation...
+                        Generating AI Explanation...
                       </>
                     ) : (
                       <>
                         <BookOpen className="mr-2 h-4 w-4" />
-                        Explain Concept
+                        Generate AI Explanation
                       </>
                     )}
                   </Button>
@@ -521,18 +386,11 @@ const LegalEducationPage = () => {
         </Tabs>
 
         {results && (
-          <Card>
+          <Card className="mt-6">
             <CardHeader>
-              <CardTitle>
-                {activeTab === 'explain' ? 'Concept Explanation' : 
-                 activeTab === 'case-study' ? 'Case Study' : 
-                 activeTab === 'compare' ? 'Concept Comparison' :
-                 'Specialist Consultation'}
-              </CardTitle>
+              <CardTitle>AI Educational Content</CardTitle>
               <CardDescription>
-                {activeTab === 'specialist' 
-                  ? `Expert insights from a ${specialistType.charAt(0).toUpperCase() + specialistType.slice(1)} Law Specialist`
-                  : 'Legal educational content based on your request.'}
+                Generated using OpenAI's advanced language model for Indian legal education.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -540,11 +398,6 @@ const LegalEducationPage = () => {
                 <div dangerouslySetInnerHTML={{ __html: results.replace(/\n/g, '<br />') }} />
               </div>
             </CardContent>
-            <CardFooter className="flex justify-end border-t p-4">
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                For educational purposes only. Not legal advice.
-              </div>
-            </CardFooter>
           </Card>
         )}
       </div>

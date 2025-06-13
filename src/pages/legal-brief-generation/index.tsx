@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { BookOpen, Send, RefreshCw, Bell } from 'lucide-react';
@@ -20,7 +19,6 @@ const LegalBriefGenerationPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedBrief, setGeneratedBrief] = useState('');
   const { toast } = useToast();
-  const [apiProvider, setApiProvider] = useState<'gemini' | 'deepseek'>('gemini');
   const [activeTab, setActiveTab] = useState('generate');
   const [legalUpdates, setLegalUpdates] = useState<any>({ statutes: [], precedents: [] });
   const [isLoadingUpdates, setIsLoadingUpdates] = useState(false);
@@ -29,8 +27,6 @@ const LegalBriefGenerationPage = () => {
   const [isSubscribing, setIsSubscribing] = useState(false);
   
   React.useEffect(() => {
-    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setApiProvider(storedApiProvider);
     fetchLatestUpdates();
   }, []);
   
@@ -63,13 +59,12 @@ const LegalBriefGenerationPage = () => {
     setIsGenerating(true);
     
     try {
-      // Get API key based on provider
-      const apiKey = localStorage.getItem(`${apiProvider}ApiKey`);
+      const apiKey = localStorage.getItem('openaiApiKey');
       
       if (!apiKey) {
         toast({
           title: "API Key Required",
-          description: `Please set your ${apiProvider.charAt(0).toUpperCase() + apiProvider.slice(1)} API key in settings first`,
+          description: "Please set your OpenAI API key in settings first",
           variant: "destructive"
         });
         setIsGenerating(false);
@@ -89,71 +84,38 @@ const LegalBriefGenerationPage = () => {
       
       Additional context for consideration: ${context || 'None provided'}`;
       
-      let briefText = '';
+      // Generate with OpenAI
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            { role: 'system', content: 'You are VakilGPT, an expert in Indian law and legal brief writing.' },
+            { role: 'user', content: systemPrompt }
+          ],
+          temperature: 0.2,
+          max_tokens: 4000
+        })
+      });
       
-      if (apiProvider === 'gemini') {
-        // Generate with Gemini
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              { role: 'user', parts: [{ text: systemPrompt }] }
-            ],
-            generationConfig: {
-              temperature: 0.2,
-              maxOutputTokens: 4000,
-              topK: 40,
-              topP: 0.95
-            }
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error?.message || `API error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-          briefText = data.candidates[0].content.parts[0].text;
-        } else {
-          throw new Error('Invalid response format from Gemini API');
-        }
-      } else {
-        // Generate with DeepSeek
-        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: 'deepseek-chat',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: `Generate a legal brief on ${topic}` }
-            ],
-            temperature: 0.2,
-            max_tokens: 4000
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error?.message || `API error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        briefText = data.choices[0].message.content;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
       }
+      
+      const data = await response.json();
+      const briefText = data.choices[0].message.content;
       
       setGeneratedBrief(briefText);
       setIsGenerating(false);
       
       toast({
         title: "Brief Generated",
-        description: "Your legal brief has been generated successfully",
+        description: "Your legal brief has been generated successfully using OpenAI",
       });
     } catch (error) {
       toast({
@@ -197,9 +159,6 @@ const LegalBriefGenerationPage = () => {
 
     setIsSubscribing(true);
     try {
-      // In a production environment, this would call the actual subscription service
-      const message = "Successfully subscribed to updates for the selected items";
-      
       // Save subscription in localStorage for demo purposes
       const existingSubscriptions = JSON.parse(localStorage.getItem('vakilgpt-legal-subscriptions') || '[]');
       const newSubscription = {
@@ -211,7 +170,7 @@ const LegalBriefGenerationPage = () => {
       
       toast({
         title: "Subscription Successful",
-        description: message
+        description: "Successfully subscribed to updates for the selected items"
       });
       setSelectedUpdates([]);
       setUpdateEmail('');
@@ -228,8 +187,8 @@ const LegalBriefGenerationPage = () => {
   
   return (
     <LegalToolLayout
-      title="AI-Powered Indian Legal Brief Generation"
-      description="Generate comprehensive legal briefs based on Indian law. Our AI analyzes relevant case law, statutes, and constitutional provisions to provide structured and well-cited legal briefs for Indian legal practice."
+      title="AI Legal Brief Generation"
+      description="Generate comprehensive legal briefs based on Indian law using OpenAI. Our AI analyzes relevant case law, statutes, and constitutional provisions to provide structured and well-cited legal briefs."
       icon={<BookOpen className="w-6 h-6 text-white" />}
     >
       <div className="max-w-4xl mx-auto space-y-6">
@@ -300,7 +259,7 @@ const LegalBriefGenerationPage = () => {
                     <>Generating Brief...</>
                   ) : (
                     <>
-                      Generate Legal Brief
+                      Generate Legal Brief with AI
                       <Send className="ml-2 h-4 w-4" />
                     </>
                   )}
@@ -311,7 +270,7 @@ const LegalBriefGenerationPage = () => {
             {generatedBrief && (
               <Card className="bg-white dark:bg-legal-slate/10 border-legal-border dark:border-legal-slate/20">
                 <CardContent className="pt-6">
-                  <h3 className="text-xl font-semibold mb-4">Generated Legal Brief</h3>
+                  <h3 className="text-xl font-semibold mb-4">AI-Generated Legal Brief</h3>
                   <div className="bg-gray-50 dark:bg-legal-slate/20 p-4 rounded-md whitespace-pre-wrap font-mono text-sm">
                     {generatedBrief}
                   </div>
