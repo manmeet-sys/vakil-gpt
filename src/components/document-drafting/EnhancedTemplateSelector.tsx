@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -122,7 +121,12 @@ const EnhancedTemplateSelector: React.FC<EnhancedTemplateSelectorProps> = ({ onS
     setComplexity('');
   };
 
-  const selectedCategoryData = TEMPLATE_CATEGORIES.find(cat => cat.id === selectedCategory);
+  // Filter out categories and subcategories with empty IDs
+  const filteredCategories = TEMPLATE_CATEGORIES.filter(cat => cat.id && cat.id.trim() !== '');
+  const selectedCategoryData = filteredCategories.find(cat => cat.id === selectedCategory);
+  const filteredSubcategories = selectedCategoryData 
+    ? selectedCategoryData.subcategories.filter(sub => sub.id && sub.id.trim() !== '')
+    : [];
 
   const renderTemplateCard = (template: LegalTemplate, compact: boolean = false) => (
     <motion.div
@@ -222,7 +226,7 @@ const EnhancedTemplateSelector: React.FC<EnhancedTemplateSelectorProps> = ({ onS
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Categories</SelectItem>
-                    {TEMPLATE_CATEGORIES.map(category => {
+                    {filteredCategories.map(category => {
                       const IconComponent = iconMap[category.icon as keyof typeof iconMap];
                       return (
                         <SelectItem key={category.id} value={category.id}>
@@ -236,14 +240,14 @@ const EnhancedTemplateSelector: React.FC<EnhancedTemplateSelectorProps> = ({ onS
                   </SelectContent>
                 </Select>
 
-                {selectedCategoryData && (
+                {selectedCategoryData && filteredSubcategories.length > 0 && (
                   <Select value={selectedSubcategory} onValueChange={setSelectedSubcategory}>
                     <SelectTrigger className="w-[200px]">
                       <SelectValue placeholder="Select Subcategory" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">All Subcategories</SelectItem>
-                      {selectedCategoryData.subcategories.map(sub => (
+                      {filteredSubcategories.map(sub => (
                         <SelectItem key={sub.id} value={sub.id}>
                           {sub.name}
                         </SelectItem>
@@ -295,7 +299,7 @@ const EnhancedTemplateSelector: React.FC<EnhancedTemplateSelectorProps> = ({ onS
             {/* Category Navigation */}
             {!selectedCategory && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                {TEMPLATE_CATEGORIES.map(category => {
+                {filteredCategories.map(category => {
                   const IconComponent = iconMap[category.icon as keyof typeof iconMap];
                   return (
                     <Card

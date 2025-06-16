@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +32,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
     { id: 'contract', label: 'Contract' },
     { id: 'notice', label: 'Legal Notice' },
     { id: 'will', label: 'Will & Testament' },
-  ];
+  ].filter(item => item.id && item.id.trim() !== ''); // Filter out empty IDs
   
   const jurisdictions: FilterOption[] = [
     { id: 'delhi', label: 'Delhi' },
@@ -41,14 +40,14 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
     { id: 'karnataka', label: 'Karnataka' },
     { id: 'tamil_nadu', label: 'Tamil Nadu' },
     { id: 'west_bengal', label: 'West Bengal' },
-  ];
+  ].filter(item => item.id && item.id.trim() !== ''); // Filter out empty IDs
   
   const courts: FilterOption[] = [
     { id: 'supreme_court', label: 'Supreme Court' },
     { id: 'high_court', label: 'High Court' },
     { id: 'district_court', label: 'District Court' },
     { id: 'consumer_forum', label: 'Consumer Forum' },
-  ];
+  ].filter(item => item.id && item.id.trim() !== ''); // Filter out empty IDs
   
   const addFilter = (category: string, value: string) => {
     // Ensure we never add empty strings
