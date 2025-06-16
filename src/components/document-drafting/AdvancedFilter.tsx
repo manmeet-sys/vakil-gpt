@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -94,10 +95,10 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
     }, 0);
   };
 
-  // Helper function to get safe Select value - always returns 'all' as fallback
-  const getSafeSelectValue = (filterArray: string[]) => {
+  // Helper function to get safe Select value - returns meaningful default values
+  const getSafeSelectValue = (filterArray: string[], defaultValue: string) => {
     const validValues = filterArray.filter(v => v && v.trim() !== '');
-    return validValues.length > 0 ? validValues[0] : 'all';
+    return validValues.length > 0 ? validValues[0] : defaultValue;
   };
   
   return (
@@ -162,19 +163,19 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                 <Label htmlFor="jurisdiction" className="text-xs font-medium mb-1.5 block">Jurisdiction</Label>
                 <Select 
                   onValueChange={(value) => {
-                    if (value === 'all') {
+                    if (value === 'all-jurisdictions') {
                       setFilters(prev => ({...prev, jurisdiction: []}));
                     } else if (value && value.trim() !== '') {
                       setFilters(prev => ({...prev, jurisdiction: [value]}));
                     }
                   }}
-                  value={getSafeSelectValue(filters.jurisdiction)}
+                  value={getSafeSelectValue(filters.jurisdiction, 'all-jurisdictions')}
                 >
                   <SelectTrigger id="jurisdiction" className="w-full">
                     <SelectValue placeholder="Select jurisdiction" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Jurisdictions</SelectItem>
+                    <SelectItem value="all-jurisdictions">All Jurisdictions</SelectItem>
                     {jurisdictions.map((jurisdiction) => (
                       <SelectItem key={jurisdiction.id} value={jurisdiction.id}>
                         {jurisdiction.label}
@@ -188,19 +189,19 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                 <Label htmlFor="court" className="text-xs font-medium mb-1.5 block">Court/Authority</Label>
                 <Select
                   onValueChange={(value) => {
-                    if (value === 'all') {
+                    if (value === 'all-courts') {
                       setFilters(prev => ({...prev, court: []}));
                     } else if (value && value.trim() !== '') {
                       setFilters(prev => ({...prev, court: [value]}));
                     }
                   }}
-                  value={getSafeSelectValue(filters.court)}
+                  value={getSafeSelectValue(filters.court, 'all-courts')}
                 >
                   <SelectTrigger id="court" className="w-full">
                     <SelectValue placeholder="Select court" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Courts</SelectItem>
+                    <SelectItem value="all-courts">All Courts</SelectItem>
                     {courts.map((court) => (
                       <SelectItem key={court.id} value={court.id}>
                         {court.label}

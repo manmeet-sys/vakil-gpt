@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -220,12 +221,18 @@ const EnhancedTemplateSelector: React.FC<EnhancedTemplateSelectorProps> = ({ onS
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Select value={selectedCategory || 'all-categories'} onValueChange={(value) => {
+                  if (value === 'all-categories') {
+                    setSelectedCategory('');
+                  } else {
+                    setSelectedCategory(value);
+                  }
+                }}>
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
+                    <SelectItem value="all-categories">All Categories</SelectItem>
                     {filteredCategories.map(category => {
                       const IconComponent = iconMap[category.icon as keyof typeof iconMap];
                       return (
@@ -241,12 +248,18 @@ const EnhancedTemplateSelector: React.FC<EnhancedTemplateSelectorProps> = ({ onS
                 </Select>
 
                 {selectedCategoryData && filteredSubcategories.length > 0 && (
-                  <Select value={selectedSubcategory} onValueChange={setSelectedSubcategory}>
+                  <Select value={selectedSubcategory || 'all-subcategories'} onValueChange={(value) => {
+                    if (value === 'all-subcategories') {
+                      setSelectedSubcategory('');
+                    } else {
+                      setSelectedSubcategory(value);
+                    }
+                  }}>
                     <SelectTrigger className="w-[200px]">
                       <SelectValue placeholder="Select Subcategory" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Subcategories</SelectItem>
+                      <SelectItem value="all-subcategories">All Subcategories</SelectItem>
                       {filteredSubcategories.map(sub => (
                         <SelectItem key={sub.id} value={sub.id}>
                           {sub.name}
@@ -256,12 +269,18 @@ const EnhancedTemplateSelector: React.FC<EnhancedTemplateSelectorProps> = ({ onS
                   </Select>
                 )}
 
-                <Select value={complexity} onValueChange={setComplexity}>
+                <Select value={complexity || 'all-levels'} onValueChange={(value) => {
+                  if (value === 'all-levels') {
+                    setComplexity('');
+                  } else {
+                    setComplexity(value);
+                  }
+                }}>
                   <SelectTrigger className="w-[150px]">
                     <SelectValue placeholder="Complexity" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Levels</SelectItem>
+                    <SelectItem value="all-levels">All Levels</SelectItem>
                     <SelectItem value="basic">Basic</SelectItem>
                     <SelectItem value="intermediate">Intermediate</SelectItem>
                     <SelectItem value="advanced">Advanced</SelectItem>
