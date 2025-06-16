@@ -95,10 +95,10 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
     }, 0);
   };
 
-  // Helper function to get safe Select value
-  const getSafeSelectValue = (filterArray: string[], fallback: string = '') => {
+  // Helper function to get safe Select value - always returns 'all' as fallback
+  const getSafeSelectValue = (filterArray: string[]) => {
     const validValues = filterArray.filter(v => v && v.trim() !== '');
-    return validValues.length > 0 ? validValues[0] : fallback;
+    return validValues.length > 0 ? validValues[0] : 'all';
   };
   
   return (
@@ -169,7 +169,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                       setFilters(prev => ({...prev, jurisdiction: [value]}));
                     }
                   }}
-                  value={getSafeSelectValue(filters.jurisdiction, 'all')}
+                  value={getSafeSelectValue(filters.jurisdiction)}
                 >
                   <SelectTrigger id="jurisdiction" className="w-full">
                     <SelectValue placeholder="Select jurisdiction" />
@@ -195,7 +195,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                       setFilters(prev => ({...prev, court: [value]}));
                     }
                   }}
-                  value={getSafeSelectValue(filters.court, 'all')}
+                  value={getSafeSelectValue(filters.court)}
                 >
                   <SelectTrigger id="court" className="w-full">
                     <SelectValue placeholder="Select court" />
