@@ -145,19 +145,19 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                 <Label htmlFor="jurisdiction" className="text-xs font-medium mb-1.5 block">Jurisdiction</Label>
                 <Select 
                   onValueChange={(value) => {
-                    if (value && value !== 'all') {
-                      setFilters(prev => ({...prev, jurisdiction: [value]}));
-                    } else {
+                    if (value === 'clear_selection') {
                       setFilters(prev => ({...prev, jurisdiction: []}));
+                    } else if (value) {
+                      setFilters(prev => ({...prev, jurisdiction: [value]}));
                     }
                   }}
-                  value={filters.jurisdiction[0] || undefined} 
+                  value={filters.jurisdiction.length > 0 ? filters.jurisdiction[0] : 'clear_selection'} 
                 >
                   <SelectTrigger id="jurisdiction" className="w-full">
                     <SelectValue placeholder="Select jurisdiction" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Jurisdictions</SelectItem>
+                    <SelectItem value="clear_selection">All Jurisdictions</SelectItem>
                     {jurisdictions.map((jurisdiction) => (
                       <SelectItem key={jurisdiction.id} value={jurisdiction.id}>
                         {jurisdiction.label}
@@ -171,19 +171,19 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                 <Label htmlFor="court" className="text-xs font-medium mb-1.5 block">Court/Authority</Label>
                 <Select
                   onValueChange={(value) => {
-                    if (value && value !== 'all') {
-                      setFilters(prev => ({...prev, court: [value]}));
-                    } else {
+                    if (value === 'clear_selection') {
                       setFilters(prev => ({...prev, court: []}));
+                    } else if (value) {
+                      setFilters(prev => ({...prev, court: [value]}));
                     }
                   }}
-                  value={filters.court[0] || undefined}
+                  value={filters.court.length > 0 ? filters.court[0] : 'clear_selection'}
                 >
                   <SelectTrigger id="court" className="w-full">
                     <SelectValue placeholder="Select court" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Courts</SelectItem>
+                    <SelectItem value="clear_selection">All Courts</SelectItem>
                     {courts.map((court) => (
                       <SelectItem key={court.id} value={court.id}>
                         {court.label}
@@ -218,7 +218,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                     ? jurisdictions.find(j => j.id === value)?.label
                     : courts.find(c => c.id === value)?.label;
                 
-              return label && value !== 'all' ? (
+              return label ? (
                 <Badge 
                   key={`${category}-${value}`} 
                   variant="outline"
