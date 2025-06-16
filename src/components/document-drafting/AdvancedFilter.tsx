@@ -51,6 +51,9 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
   ];
   
   const addFilter = (category: string, value: string) => {
+    // Ensure we never add empty strings
+    if (!value || value.trim() === '') return;
+    
     setFilters(prev => ({
       ...prev,
       [category]: prev[category].includes(value) 
@@ -62,7 +65,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
   const removeFilter = (category: string, value: string) => {
     setFilters(prev => ({
       ...prev,
-      [category]: prev[category].filter(v => v !== value)
+      [category]: prev[category].filter(v => v !== value && v !== '')
     }));
   };
   
@@ -75,12 +78,21 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
   };
   
   const applyFilters = () => {
-    onFilterChange(filters);
+    // Clean filters before applying - remove any empty strings
+    const cleanedFilters = Object.keys(filters).reduce((acc, key) => {
+      acc[key] = filters[key].filter(value => value && value.trim() !== '');
+      return acc;
+    }, {} as Record<string, string[]>);
+    
+    onFilterChange(cleanedFilters);
     setIsOpen(false);
   };
   
   const getActiveFilterCount = () => {
-    return Object.values(filters).reduce((count, filterValues) => count + filterValues.length, 0);
+    return Object.values(filters).reduce((count, filterValues) => {
+      // Only count non-empty values
+      return count + filterValues.filter(v => v && v.trim() !== '').length;
+    }, 0);
   };
   
   return (
@@ -147,7 +159,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                   onValueChange={(value) => {
                     if (value === 'clear_selection') {
                       setFilters(prev => ({...prev, jurisdiction: []}));
-                    } else if (value) {
+                    } else if (value && value.trim() !== '') {
                       setFilters(prev => ({...prev, jurisdiction: [value]}));
                     }
                   }}
@@ -173,7 +185,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                   onValueChange={(value) => {
                     if (value === 'clear_selection') {
                       setFilters(prev => ({...prev, court: []}));
-                    } else if (value) {
+                    } else if (value && value.trim() !== '') {
                       setFilters(prev => ({...prev, court: [value]}));
                     }
                   }}
@@ -210,33 +222,35 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
       {getActiveFilterCount() > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
           {Object.entries(filters).map(([category, values]) => 
-            values.map(value => {
-              const label = 
-                category === 'type' 
-                  ? documentTypes.find(t => t.id === value)?.label
-                  : category === 'jurisdiction'
-                    ? jurisdictions.find(j => j.id === value)?.label
-                    : courts.find(c => c.id === value)?.label;
-                
-              return label ? (
-                <Badge 
-                  key={`${category}-${value}`} 
-                  variant="outline"
-                  className="py-1 px-2 h-6"
-                >
-                  <span className="text-xs font-normal">{label}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-4 w-4 p-0 ml-1"
-                    onClick={() => removeFilter(category, value)}
+            values
+              .filter(value => value && value.trim() !== '') // Filter out empty strings
+              .map(value => {
+                const label = 
+                  category === 'type' 
+                    ? documentTypes.find(t => t.id === value)?.label
+                    : category === 'jurisdiction'
+                      ? jurisdictions.find(j => j.id === value)?.label
+                      : courts.find(c => c.id === value)?.label;
+                  
+                return label ? (
+                  <Badge 
+                    key={`${category}-${value}`} 
+                    variant="outline"
+                    className="py-1 px-2 h-6"
                   >
-                    <XIcon className="h-3 w-3" />
-                    <span className="sr-only">Remove</span>
-                  </Button>
-                </Badge>
-              ) : null;
-            })
+                    <span className="text-xs font-normal">{label}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 ml-1"
+                      onClick={() => removeFilter(category, value)}
+                    >
+                      <XIcon className="h-3 w-3" />
+                      <span className="sr-only">Remove</span>
+                    </Button>
+                  </Badge>
+                ) : null;
+              })
           )}
         </div>
       )}
