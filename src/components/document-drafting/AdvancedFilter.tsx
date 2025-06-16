@@ -14,11 +14,6 @@ interface FilterOption {
   label: string;
 }
 
-interface FilterOption {
-  id: string;
-  label: string;
-}
-
 interface AdvancedFilterProps {
   onFilterChange: (filters: Record<string, string[]>) => void;
 }
@@ -150,11 +145,13 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                 <Label htmlFor="jurisdiction" className="text-xs font-medium mb-1.5 block">Jurisdiction</Label>
                 <Select 
                   onValueChange={(value) => {
-                    if (value) {
+                    if (value && value !== 'all') {
                       setFilters(prev => ({...prev, jurisdiction: [value]}));
+                    } else {
+                      setFilters(prev => ({...prev, jurisdiction: []}));
                     }
                   }}
-                  value={filters.jurisdiction[0] || ""} 
+                  value={filters.jurisdiction[0] || undefined} 
                 >
                   <SelectTrigger id="jurisdiction" className="w-full">
                     <SelectValue placeholder="Select jurisdiction" />
@@ -174,11 +171,13 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ onFilterChange }) => {
                 <Label htmlFor="court" className="text-xs font-medium mb-1.5 block">Court/Authority</Label>
                 <Select
                   onValueChange={(value) => {
-                    if (value) {
+                    if (value && value !== 'all') {
                       setFilters(prev => ({...prev, court: [value]}));
+                    } else {
+                      setFilters(prev => ({...prev, court: []}));
                     }
                   }}
-                  value={filters.court[0] || ""}
+                  value={filters.court[0] || undefined}
                 >
                   <SelectTrigger id="court" className="w-full">
                     <SelectValue placeholder="Select court" />
