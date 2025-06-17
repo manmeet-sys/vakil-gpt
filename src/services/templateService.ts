@@ -324,8 +324,12 @@ export class TemplateService {
         throw fetchError;
       }
 
-      const currentMetadata = template?.metadata || {};
-      const currentUsageCount = currentMetadata.usage_count || 0;
+      // Safely handle metadata as it could be null or various JSON types
+      const currentMetadata = template?.metadata && typeof template.metadata === 'object' && !Array.isArray(template.metadata) 
+        ? template.metadata as Record<string, any>
+        : {};
+      
+      const currentUsageCount = typeof currentMetadata.usage_count === 'number' ? currentMetadata.usage_count : 0;
 
       // Update the usage count
       const { error: updateError } = await supabase
