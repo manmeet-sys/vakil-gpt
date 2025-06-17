@@ -670,6 +670,63 @@ export type Database = {
         }
         Relationships: []
       }
+      templates: {
+        Row: {
+          category: string | null
+          complexity: string | null
+          content: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          jurisdiction: string[] | null
+          metadata: Json | null
+          placeholders: Json | null
+          subcategory: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          complexity?: string | null
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          jurisdiction?: string[] | null
+          metadata?: Json | null
+          placeholders?: Json | null
+          subcategory?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          complexity?: string | null
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          jurisdiction?: string[] | null
+          metadata?: Json | null
+          placeholders?: Json | null
+          subcategory?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_reviews: {
         Row: {
           comment: string

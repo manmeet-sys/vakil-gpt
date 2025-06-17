@@ -1,5 +1,6 @@
 
 import { LegalTemplate, TemplateCategory, TemplateSearchFilters, TemplateSearchResult } from '@/types/template';
+import { supabase } from '@/integrations/supabase/client';
 
 // Enhanced template categories with subcategories
 export const TEMPLATE_CATEGORIES: TemplateCategory[] = [
@@ -120,8 +121,6 @@ export const TEMPLATE_CATEGORIES: TemplateCategory[] = [
 // Template service class for managing templates
 export class TemplateService {
   private static instance: TemplateService;
-  private templates: LegalTemplate[] = [];
-  private isLoaded: boolean = false;
 
   static getInstance(): TemplateService {
     if (!TemplateService.instance) {
@@ -130,160 +129,222 @@ export class TemplateService {
     return TemplateService.instance;
   }
 
-  async loadTemplates(): Promise<void> {
-    if (this.isLoaded) return;
+  private transformDatabaseTemplate(dbTemplate: any): LegalTemplate {
+    return {
+      id: dbTemplate.id,
+      title: dbTemplate.title,
+      category: dbTemplate.category || '',
+      subcategory: dbTemplate.subcategory || '',
+      jurisdiction: dbTemplate.jurisdiction || ['India'],
+      complexity: dbTemplate.complexity as 'basic' | 'intermediate' | 'advanced',
+      tags: dbTemplate.tags || [],
+      description: dbTemplate.description || '',
+      content: dbTemplate.content || '',
+      placeholders: dbTemplate.placeholders || {},
+      metadata: {
+        author: dbTemplate.metadata?.author || 'VakilGPT',
+        lastUpdated: dbTemplate.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+        version: dbTemplate.metadata?.version || '1.0',
+        usage_count: dbTemplate.metadata?.usage_count || 0,
+        difficulty: this.mapComplexityToDifficulty(dbTemplate.complexity),
+        estimatedTime: dbTemplate.metadata?.estimatedTime || '10-15 minutes',
+        requiredFields: Object.keys(dbTemplate.placeholders || {}),
+        relatedTemplates: dbTemplate.metadata?.relatedTemplates || []
+      },
+      isActive: dbTemplate.is_active !== false,
+      isFeatured: dbTemplate.is_featured === true,
+      downloadCount: dbTemplate.metadata?.usage_count || 0
+    };
+  }
 
+  private mapComplexityToDifficulty(complexity: string): 'beginner' | 'intermediate' | 'advanced' {
+    switch (complexity) {
+      case 'advanced': return 'advanced';
+      case 'intermediate': return 'intermediate';
+      default: return 'beginner';
+    }
+  }
+
+  async searchTemplates(filters: TemplateSearchFilters): Promise<TemplateSearchResult> {
     try {
-      // In a real implementation, this would load from your JSON files or API
-      // For now, we'll use sample templates
-      this.templates = await this.loadSampleTemplates();
-      this.isLoaded = true;
+      let query = supabase
+        .from('templates')
+        .select('*')
+        .eq('is_active', true);
+
+      // Apply filters
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+
+      if (filters.subcategory) {
+        query = query.eq('subcategory', filters.subcategory);
+      }
+
+      if (filters.complexity) {
+        query = query.eq('complexity', filters.complexity);
+      }
+
+      if (filters.jurisdiction && filters.jurisdiction.length > 0) {
+        query = query.overlaps('jurisdiction', filters.jurisdiction);
+      }
+
+      if (filters.tags && filters.tags.length > 0) {
+        query = query.overlaps('tags', filters.tags);
+      }
+
+      if (filters.searchTerm) {
+        query = query.or(`title.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching templates:', error);
+        throw error;
+      }
+
+      const templates = (data || []).map(this.transformDatabaseTemplate);
+
+      return {
+        templates,
+        totalCount: templates.length,
+        categories: TEMPLATE_CATEGORIES,
+        facets: {
+          jurisdictions: [...new Set(templates.flatMap(t => t.jurisdiction))],
+          complexities: [...new Set(templates.map(t => t.complexity))],
+          tags: [...new Set(templates.flatMap(t => t.tags))]
+        }
+      };
     } catch (error) {
-      console.error('Failed to load templates:', error);
+      console.error('Failed to search templates:', error);
       throw error;
     }
   }
 
-  private async loadSampleTemplates(): Promise<LegalTemplate[]> {
-    // Sample templates - in production, load from your JSON files
-    return [
-      {
-        id: '1',
-        title: 'Employment Contract - Full Time',
-        category: 'employment',
-        subcategory: 'contracts',
-        jurisdiction: ['India'],
-        complexity: 'basic',
-        tags: ['employment', 'full-time', 'contract'],
-        description: 'Standard full-time employment contract with comprehensive terms and conditions.',
-        content: 'EMPLOYMENT AGREEMENT\n\nThis Employment Agreement is entered into on [START_DATE] between [COMPANY_NAME] and [EMPLOYEE_NAME]...',
-        placeholders: {
-          START_DATE: '',
-          COMPANY_NAME: '',
-          EMPLOYEE_NAME: '',
-          POSITION: '',
-          SALARY: '',
-          DEPARTMENT: ''
-        },
-        metadata: {
-          author: 'VakilGPT',
-          lastUpdated: '2024-01-15',
-          version: '1.0',
-          usage_count: 45,
-          difficulty: 'beginner',
-          estimatedTime: '15-20 minutes'
-        }
-      },
-      {
-        id: '2',
-        title: 'Rental Agreement - Residential',
-        category: 'property',
-        subcategory: 'lease',
-        jurisdiction: ['India'],
-        complexity: 'basic',
-        tags: ['rental', 'residential', 'lease'],
-        description: 'Standard residential rental agreement compliant with Indian tenancy laws.',
-        content: 'RENTAL AGREEMENT\n\nThis Rental Agreement is made on [DATE] between [LANDLORD_NAME] and [TENANT_NAME]...',
-        placeholders: {
-          DATE: '',
-          LANDLORD_NAME: '',
-          TENANT_NAME: '',
-          PROPERTY_ADDRESS: '',
-          RENT_AMOUNT: '',
-          SECURITY_DEPOSIT: ''
-        },
-        metadata: {
-          author: 'VakilGPT',
-          lastUpdated: '2024-01-10',
-          version: '1.2',
-          usage_count: 78,
-          difficulty: 'beginner',
-          estimatedTime: '10-15 minutes'
-        }
-      }
-    ];
-  }
-
-  async searchTemplates(filters: TemplateSearchFilters): Promise<TemplateSearchResult> {
-    await this.loadTemplates();
-
-    let filteredTemplates = [...this.templates];
-
-    // Apply filters
-    if (filters.category) {
-      filteredTemplates = filteredTemplates.filter(t => t.category === filters.category);
-    }
-
-    if (filters.subcategory) {
-      filteredTemplates = filteredTemplates.filter(t => t.subcategory === filters.subcategory);
-    }
-
-    if (filters.complexity) {
-      filteredTemplates = filteredTemplates.filter(t => t.complexity === filters.complexity);
-    }
-
-    if (filters.jurisdiction && filters.jurisdiction.length > 0) {
-      filteredTemplates = filteredTemplates.filter(t => 
-        t.jurisdiction.some(j => filters.jurisdiction!.includes(j))
-      );
-    }
-
-    if (filters.searchTerm) {
-      const searchLower = filters.searchTerm.toLowerCase();
-      filteredTemplates = filteredTemplates.filter(t =>
-        t.title.toLowerCase().includes(searchLower) ||
-        t.description.toLowerCase().includes(searchLower) ||
-        t.tags.some(tag => tag.toLowerCase().includes(searchLower))
-      );
-    }
-
-    // Sort by usage count and relevance
-    filteredTemplates.sort((a, b) => b.metadata.usage_count - a.metadata.usage_count);
-
-    return {
-      templates: filteredTemplates,
-      totalCount: filteredTemplates.length,
-      categories: TEMPLATE_CATEGORIES,
-      facets: {
-        jurisdictions: [...new Set(this.templates.flatMap(t => t.jurisdiction))],
-        complexities: [...new Set(this.templates.map(t => t.complexity))],
-        tags: [...new Set(this.templates.flatMap(t => t.tags))]
-      }
-    };
-  }
-
   async getTemplateById(id: string): Promise<LegalTemplate | null> {
-    await this.loadTemplates();
-    return this.templates.find(t => t.id === id) || null;
+    try {
+      const { data, error } = await supabase
+        .from('templates')
+        .select('*')
+        .eq('id', id)
+        .eq('is_active', true)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null; // Template not found
+        }
+        throw error;
+      }
+
+      return this.transformDatabaseTemplate(data);
+    } catch (error) {
+      console.error('Failed to get template by ID:', error);
+      throw error;
+    }
   }
 
   async getTemplatesByCategory(category: string, subcategory?: string): Promise<LegalTemplate[]> {
-    await this.loadTemplates();
-    return this.templates.filter(t => 
-      t.category === category && (!subcategory || t.subcategory === subcategory)
-    );
+    try {
+      let query = supabase
+        .from('templates')
+        .select('*')
+        .eq('category', category)
+        .eq('is_active', true);
+
+      if (subcategory) {
+        query = query.eq('subcategory', subcategory);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return (data || []).map(this.transformDatabaseTemplate);
+    } catch (error) {
+      console.error('Failed to get templates by category:', error);
+      throw error;
+    }
   }
 
   async getFeaturedTemplates(limit: number = 10): Promise<LegalTemplate[]> {
-    await this.loadTemplates();
-    return this.templates
-      .filter(t => t.isFeatured)
-      .sort((a, b) => b.metadata.usage_count - a.metadata.usage_count)
-      .slice(0, limit);
+    try {
+      const { data, error } = await supabase
+        .from('templates')
+        .select('*')
+        .eq('is_featured', true)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        throw error;
+      }
+
+      return (data || []).map(this.transformDatabaseTemplate);
+    } catch (error) {
+      console.error('Failed to get featured templates:', error);
+      throw error;
+    }
   }
 
   async getPopularTemplates(limit: number = 10): Promise<LegalTemplate[]> {
-    await this.loadTemplates();
-    return this.templates
-      .sort((a, b) => b.metadata.usage_count - a.metadata.usage_count)
-      .slice(0, limit);
+    try {
+      const { data, error } = await supabase
+        .from('templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('metadata->usage_count', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        throw error;
+      }
+
+      return (data || []).map(this.transformDatabaseTemplate);
+    } catch (error) {
+      console.error('Failed to get popular templates:', error);
+      throw error;
+    }
   }
 
   async incrementUsageCount(templateId: string): Promise<void> {
-    const template = await this.getTemplateById(templateId);
-    if (template) {
-      template.metadata.usage_count++;
-      // In production, save to database/storage
+    try {
+      // First get the current template
+      const { data: template, error: fetchError } = await supabase
+        .from('templates')
+        .select('metadata')
+        .eq('id', templateId)
+        .single();
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      const currentMetadata = template?.metadata || {};
+      const currentUsageCount = currentMetadata.usage_count || 0;
+
+      // Update the usage count
+      const { error: updateError } = await supabase
+        .from('templates')
+        .update({
+          metadata: {
+            ...currentMetadata,
+            usage_count: currentUsageCount + 1
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', templateId);
+
+      if (updateError) {
+        throw updateError;
+      }
+    } catch (error) {
+      console.error('Failed to increment usage count:', error);
+      throw error;
     }
   }
 }
