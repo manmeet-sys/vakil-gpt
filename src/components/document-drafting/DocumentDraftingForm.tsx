@@ -1,291 +1,266 @@
-import React, { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
+
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Eye, Share2, Wand2, Search } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { generateAIAnalysis } from '@/utils/aiAnalysis';
-import ShareButton from '../ShareButton';
-import TextPreview from '../TextPreview';
+import { FileText, Save, Download, Copy, Eye, EyeOff, Wand2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DocumentDraftingFormProps {
-  onDocumentGenerated: (document: string) => void;
+  onDocumentGenerated: (content: string) => void;
+  initialContent?: string;
 }
 
-const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ onDocumentGenerated }) => {
-  const [documentType, setDocumentType] = useState<string>('');
-  const [documentTitle, setDocumentTitle] = useState<string>('');
-  const [documentDescription, setDocumentDescription] = useState<string>('');
-  const [generatedDocument, setGeneratedDocument] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [analysisResults, setAnalysisResults] = useState<string>('');
-  const [showPreview, setShowPreview] = useState<boolean>(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
-  const [isTextCopied, setIsTextCopied] = useState<boolean>(false);
-  const documentRef = useRef<HTMLDivElement>(null);
+const DocumentDraftingForm: React.FC<DocumentDraftingFormProps> = ({ 
+  onDocumentGenerated,
+  initialContent = ''
+}) => {
+  const [documentTitle, setDocumentTitle] = useState('');
+  const [documentType, setDocumentType] = useState('');
+  const [documentContent, setDocumentContent] = useState(initialContent);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [activeTab, setActiveTab] = useState('editor');
+
+  // Update content when initialContent changes
+  useEffect(() => {
+    if (initialContent) {
+      setDocumentContent(initialContent);
+      setActiveTab('editor');
+    }
+  }, [initialContent]);
 
   const documentTypes = [
-    "Affidavit",
-    "Legal Notice",
-    "Contract Agreement",
-    "Power of Attorney",
-    "Will and Testament",
-    "Partnership Deed",
-    "Lease Agreement",
-    "Sale Deed",
-    "Memorandum of Understanding",
-    "Complaint",
-    "Petition"
+    { value: 'affidavit', label: 'Affidavit' },
+    { value: 'contract', label: 'Contract Agreement' },
+    { value: 'legal-notice', label: 'Legal Notice' },
+    { value: 'petition', label: 'Petition' },
+    { value: 'mou', label: 'Memorandum of Understanding' },
+    { value: 'will', label: 'Will & Testament' },
+    { value: 'power-of-attorney', label: 'Power of Attorney' },
+    { value: 'rental-agreement', label: 'Rental Agreement' },
+    { value: 'other', label: 'Other Document' }
   ];
 
-  const handleGenerateDocument = async () => {
-    if (!documentType || !documentTitle || !documentDescription.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields before generating the document.",
-        variant: "destructive",
-      });
+  const handleSaveDocument = () => {
+    if (!documentTitle.trim()) {
+      toast.error('Please enter a document title');
+      return;
+    }
+    
+    if (!documentContent.trim()) {
+      toast.error('Please enter document content');
       return;
     }
 
-    setIsGenerating(true);
-
-    try {
-      const prompt = `Generate a ${documentType} titled "${documentTitle}" with the following description: ${documentDescription}. Ensure the document is legally sound, well-structured, and includes all necessary clauses and sections.`;
-      const aiResponse = await generateAIAnalysis(prompt, documentTitle);
-      setGeneratedDocument(aiResponse);
-      onDocumentGenerated(aiResponse);
-      toast({
-        title: "Document Generated",
-        description: "The document has been generated successfully.",
-      });
-    } catch (error) {
-      console.error("Error generating document:", error);
-      toast({
-        title: "Generation Failed",
-        description: "There was an error generating the document. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+    // Save to localStorage for persistence
+    const savedDocs = JSON.parse(localStorage.getItem('savedDocuments') || '[]');
+    const newDoc = {
+      id: Date.now().toString(),
+      title: documentTitle,
+      type: documentType,
+      content: documentContent,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    savedDocs.push(newDoc);
+    localStorage.setItem('savedDocuments', JSON.stringify(savedDocs));
+    
+    onDocumentGenerated(documentContent);
+    toast.success('Document saved successfully');
   };
 
-  const handleAnalyzeDocument = async () => {
-    if (!generatedDocument.trim()) {
-      toast({
-        title: "No Document to Analyze",
-        description: "Please generate a document before analyzing it.",
-        variant: "destructive",
-      });
+  const handleDownload = () => {
+    if (!documentContent.trim()) {
+      toast.error('No content to download');
       return;
     }
 
-    setIsAnalyzing(true);
-
-    try {
-      const analysis = await generateAIAnalysis(generatedDocument, documentTitle);
-      setAnalysisResults(analysis);
-      toast({
-        title: "Analysis Complete",
-        description: "The document has been analyzed successfully.",
-      });
-    } catch (error) {
-      console.error("Error analyzing document:", error);
-      toast({
-        title: "Analysis Failed",
-        description: "There was an error analyzing the document. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const handleDownloadDocument = () => {
-    if (!generatedDocument.trim()) {
-      toast({
-        title: "No Document to Download",
-        description: "Please generate a document before downloading it.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const blob = new Blob([generatedDocument], { type: 'text/plain' });
+    const blob = new Blob([documentContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${documentTitle || 'legal-document'}.txt`;
+    a.download = `${documentTitle || 'document'}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    toast.success('Document downloaded successfully');
   };
 
-  const handleCopyToClipboard = () => {
-    if (!generatedDocument.trim()) {
-      toast({
-        title: "No Document to Copy",
-        description: "Please generate a document before copying it.",
-        variant: "destructive",
-      });
+  const handleCopyToClipboard = async () => {
+    if (!documentContent.trim()) {
+      toast.error('No content to copy');
       return;
     }
 
-    navigator.clipboard.writeText(generatedDocument)
-      .then(() => {
-        setIsTextCopied(true);
-        toast({
-          title: "Text Copied",
-          description: "Document text copied to clipboard",
-        });
-        setTimeout(() => setIsTextCopied(false), 3000);
-      })
-      .catch(err => {
-        console.error("Failed to copy text: ", err);
-        toast({
-          title: "Copy Failed",
-          description: "Failed to copy document text to clipboard",
-          variant: "destructive",
-        });
-      });
-  };
-
-  const handleShare = () => {
-    if (!generatedDocument.trim()) {
-      toast({
-        title: "No Document to Share",
-        description: "Please generate a document before sharing it.",
-        variant: "destructive",
-      });
-      return;
+    try {
+      await navigator.clipboard.writeText(documentContent);
+      toast.success('Document copied to clipboard');
+    } catch (error) {
+      toast.error('Failed to copy to clipboard');
     }
-    setIsShareModalOpen(true);
-  };
-
-  const handleCloseShareModal = () => {
-    setIsShareModalOpen(false);
   };
 
   return (
-    <Card className="shadow-sm dark:shadow-zinc-800/10">
-      <CardHeader>
-        <CardTitle>Draft a Legal Document</CardTitle>
-        <CardDescription>
-          Generate a legal document by providing the type, title, and description.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="document-type">Document Type</Label>
-          <Select onValueChange={setDocumentType}>
-            <SelectTrigger id="document-type">
-              <SelectValue placeholder="Select a document type" />
-            </SelectTrigger>
-            <SelectContent>
-              {documentTypes.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="document-title">Document Title</Label>
-          <Input
-            id="document-title"
-            placeholder="Enter the document title"
-            value={documentTitle}
-            onChange={(e) => setDocumentTitle(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="document-description">Document Description</Label>
-          <Textarea
-            id="document-description"
-            placeholder="Describe the document's purpose, key terms, and any specific details"
-            value={documentDescription}
-            onChange={(e) => setDocumentDescription(e.target.value)}
-            className="min-h-[100px]"
-          />
-        </div>
-        <Button
-          onClick={handleGenerateDocument}
-          disabled={isGenerating}
-        >
-          {isGenerating ? (
-            <>
-              <FileText className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Wand2 className="mr-2 h-4 w-4" />
-              Generate Document
-            </>
-          )}
-        </Button>
-      </CardContent>
-
-      {generatedDocument && (
-        <div className="p-4">
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle>Generated Document</CardTitle>
-              <CardDescription>
-                Review the generated document and perform further actions.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TextPreview text={generatedDocument} />
-            </CardContent>
-            <div className="flex justify-between items-center p-4">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleAnalyzeDocument}
-                  disabled={isAnalyzing}
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Search className="mr-2 h-4 w-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="mr-2 h-4 w-4" />
-                      Analyze Document
-                    </>
-                  )}
-                </Button>
-                <Button variant="outline" onClick={() => setShowPreview(!showPreview)}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {showPreview ? 'Hide Preview' : 'Show Preview'}
-                </Button>
-              </div>
-
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handleDownloadDocument}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download
-                </Button>
-                <Button variant="outline" onClick={handleCopyToClipboard} disabled={isTextCopied}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  {isTextCopied ? 'Copied!' : 'Copy Text'}
-                </Button>
-                <ShareButton content={generatedDocument} />
-              </div>
+    <div className="space-y-6">
+      {/* Document Information */}
+      <Card className="border-slate-200 dark:border-slate-700">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <FileText className="h-5 w-5 text-blue-600" />
+            Document Information
+          </CardTitle>
+          <CardDescription>
+            Enter basic information about your document
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Document Title</Label>
+              <Input
+                id="title"
+                value={documentTitle}
+                onChange={(e) => setDocumentTitle(e.target.value)}
+                placeholder="Enter document title..."
+                className="h-11"
+              />
             </div>
-          </Card>
-        </div>
-      )}
-    </Card>
+            <div className="space-y-2">
+              <Label htmlFor="type">Document Type</Label>
+              <Select value={documentType} onValueChange={setDocumentType}>
+                <SelectTrigger id="type" className="h-11">
+                  <SelectValue placeholder="Select document type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {documentTypes.map(type => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Document Editor */}
+      <Card className="border-slate-200 dark:border-slate-700">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Wand2 className="h-5 w-5 text-purple-600" />
+                Document Editor
+              </CardTitle>
+              <CardDescription>
+                Create and edit your legal document content
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsPreviewMode(!isPreviewMode)}
+                className="flex items-center gap-1"
+              >
+                {isPreviewMode ? (
+                  <>
+                    <EyeOff className="h-4 w-4" />
+                    Edit
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-4 w-4" />
+                    Preview
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="editor">Editor</TabsTrigger>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="editor">
+              <div className="space-y-4">
+                <Textarea
+                  value={documentContent}
+                  onChange={(e) => setDocumentContent(e.target.value)}
+                  placeholder="Enter your document content here..."
+                  className="min-h-[400px] resize-none font-mono text-sm leading-relaxed"
+                />
+                <div className="text-xs text-muted-foreground">
+                  {documentContent.length} characters, {documentContent.split('\n').length} lines
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="preview">
+              <div className="min-h-[400px] p-4 bg-white dark:bg-gray-900 border rounded-lg">
+                {documentContent ? (
+                  <div className="whitespace-pre-wrap font-serif text-sm leading-relaxed">
+                    {documentContent}
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-20">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Your document preview will appear here</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Action Buttons */}
+      <motion.div 
+        className="flex flex-wrap gap-3 justify-end"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Button
+          variant="outline"
+          onClick={handleCopyToClipboard}
+          disabled={!documentContent.trim()}
+          className="flex items-center gap-2"
+        >
+          <Copy className="h-4 w-4" />
+          Copy to Clipboard
+        </Button>
+        <Button
+          variant="outline"
+          onClick={handleDownload}
+          disabled={!documentContent.trim()}
+          className="flex items-center gap-2"
+        >
+          <Download className="h-4 w-4" />
+          Download
+        </Button>
+        <Button
+          onClick={handleSaveDocument}
+          disabled={!documentTitle.trim() || !documentContent.trim()}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+        >
+          <Save className="h-4 w-4" />
+          Save Document
+        </Button>
+      </motion.div>
+    </div>
   );
 };
 

@@ -1,23 +1,20 @@
 
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { FileText, Search, Filter, Plus, Layout, Archive } from 'lucide-react';
+import { FileText, Layout, Plus, Search, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/BackButton';
 import DocumentDraftingForm from '@/components/document-drafting/DocumentDraftingForm';
 import DocumentTemplateSelector from '@/components/document-drafting/DocumentTemplateSelector';
 import SearchDocuments from '@/components/document-drafting/SearchDocuments';
-import OpenAIFlashAnalyzer from '@/components/OpenAIFlashAnalyzer';
+import PromptBasedGenerator from '@/components/document-drafting/PromptBasedGenerator';
+import { motion } from 'framer-motion';
 
 const LegalDocumentDraftingPage = () => {
   const [activeTab, setActiveTab] = useState<string>('templates');
   const [documentText, setDocumentText] = useState<string>('');
-
-  const handleAnalysisComplete = (analysis: string) => {
-    setDocumentText(analysis);
-    setActiveTab('form');
-  };
 
   const handleTemplateSelect = (templateId: string) => {
     console.log('Template selected:', templateId);
@@ -29,127 +26,167 @@ const LegalDocumentDraftingPage = () => {
     // Implement search logic here
   };
 
+  const handleDraftGenerated = (title: string, type: string, content: string) => {
+    setDocumentText(content);
+    setActiveTab('form');
+  };
+
   return (
     <LegalToolLayout
       title="Legal Document Drafting"
-      description="Create, customize, and manage legal documents with our comprehensive template library and AI assistance"
+      description="Create, customize, and manage legal documents with our comprehensive template library and AI-powered generation tools"
       icon={<FileText className="h-6 w-6 text-blue-600" />}
     >
       <BackButton to="/tools" label="Back to Tools" />
 
       <div className="container mx-auto px-4 py-6">
+        {/* Enhanced Header Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl p-6 border border-blue-100 dark:border-blue-800/50">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-full bg-blue-500/10 text-blue-600">
+                <Sparkles className="h-6 w-6" />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Professional Document Creation
+              </h2>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+              Generate professional legal documents using our extensive template library or create custom documents with AI assistance. 
+              All documents are compliant with Indian legal standards and formatting requirements.
+            </p>
+          </div>
+        </motion.div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="templates" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-4 mb-8 h-12">
+            <TabsTrigger value="templates" className="flex items-center gap-2 text-sm">
               <Layout className="h-4 w-4" />
-              Templates
+              Browse Templates
             </TabsTrigger>
-            <TabsTrigger value="form" className="flex items-center gap-2">
+            <TabsTrigger value="ai-generator" className="flex items-center gap-2 text-sm">
+              <Sparkles className="h-4 w-4" />
+              AI Generator
+            </TabsTrigger>
+            <TabsTrigger value="form" className="flex items-center gap-2 text-sm">
               <Plus className="h-4 w-4" />
-              Create New
+              Create Document
             </TabsTrigger>
-            <TabsTrigger value="search" className="flex items-center gap-2">
+            <TabsTrigger value="search" className="flex items-center gap-2 text-sm">
               <Search className="h-4 w-4" />
-              Search Documents
-            </TabsTrigger>
-            <TabsTrigger value="analyzer" className="flex items-center gap-2">
-              <Archive className="h-4 w-4" />
-              AI Analyzer
+              Search Library
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="templates" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold">Document Templates</h2>
-                <p className="text-muted-foreground">
-                  Choose from thousands of professionally crafted legal document templates
-                </p>
-              </div>
-            </div>
-            <DocumentTemplateSelector onSelect={handleTemplateSelect} />
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="border-0 shadow-md">
+                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Layout className="h-5 w-5 text-green-600" />
+                    Document Templates
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Choose from thousands of professionally crafted legal document templates, 
+                    organized by category and practice area
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <DocumentTemplateSelector onSelect={handleTemplateSelect} />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="ai-generator" className="space-y-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <PromptBasedGenerator onDraftGenerated={handleDraftGenerated} />
+            </motion.div>
           </TabsContent>
 
           <TabsContent value="form" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold">Create New Document</h2>
-                <p className="text-muted-foreground">
-                  Draft a new legal document from scratch or customize a template
-                </p>
-              </div>
-            </div>
-            <DocumentDraftingForm onDocumentGenerated={setDocumentText} />
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="border-0 shadow-md">
+                <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Plus className="h-5 w-5 text-purple-600" />
+                    Document Editor
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Create and customize your legal document with our advanced editor
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <DocumentDraftingForm 
+                    onDocumentGenerated={setDocumentText}
+                    initialContent={documentText}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
             
             {documentText && (
-              <div className="mt-6 p-4 border rounded-lg bg-gray-50 dark:bg-zinc-800">
-                <h3 className="font-semibold mb-2">Generated Document Preview</h3>
-                <div className="max-h-64 overflow-y-auto">
-                  <pre className="whitespace-pre-wrap text-sm">{documentText}</pre>
-                </div>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6"
+              >
+                <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-blue-800 dark:text-blue-200">
+                      Document Preview
+                    </CardTitle>
+                    <CardDescription>
+                      Review your generated document before finalizing
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="max-h-64 overflow-y-auto bg-white dark:bg-gray-900 rounded-lg p-4 border">
+                      <pre className="whitespace-pre-wrap text-sm font-mono">{documentText}</pre>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             )}
           </TabsContent>
 
           <TabsContent value="search" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold">Search Documents</h2>
-                <p className="text-muted-foreground">
-                  Find existing documents and templates in your library
-                </p>
-              </div>
-            </div>
-            <SearchDocuments onSearch={handleSearch} />
-          </TabsContent>
-
-          <TabsContent value="analyzer" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold">AI Document Analyzer</h2>
-                <p className="text-muted-foreground">
-                  Upload and analyze documents with AI-powered insights
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <OpenAIFlashAnalyzer onAnalysisComplete={handleAnalysisComplete} />
-              </div>
-              <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <h3 className="font-semibold mb-2">Quick Actions</h3>
-                  <div className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Recent Analyses
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Analysis History
-                    </Button>
-                  </div>
-                </div>
-                
-                {documentText && (
-                  <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                    <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                      Analysis Complete
-                    </h4>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      Your document analysis is ready. Switch to the "Create New" tab to review and edit.
-                    </p>
-                    <Button 
-                      size="sm" 
-                      className="mt-2 w-full"
-                      onClick={() => setActiveTab('form')}
-                    >
-                      Review Analysis
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="border-0 shadow-md">
+                <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Search className="h-5 w-5 text-orange-600" />
+                    Search Document Library
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Find existing documents and templates in your personal library
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <SearchDocuments onSearch={handleSearch} />
+                </CardContent>
+              </Card>
+            </motion.div>
           </TabsContent>
         </Tabs>
       </div>
