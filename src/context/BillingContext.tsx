@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -95,6 +94,18 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // Helper function to send data to n8n webhook
+  const sendToWebhook = async (type: string, data: any) => {
+    try {
+      await supabase.functions.invoke('n8n-webhook', {
+        body: { type, data }
+      });
+    } catch (error) {
+      console.error('Failed to send data to webhook:', error);
+      // Don't throw error to avoid disrupting the main operation
+    }
+  };
 
   const fetchClients = async () => {
     if (!user) return;
@@ -202,7 +213,12 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setClients(prev => [...prev, data[0] as Client]);
+        const newClient = data[0] as Client;
+        setClients(prev => [...prev, newClient]);
+        
+        // Send to webhook
+        await sendToWebhook('client_added', newClient);
+        
         toast.success('Client added successfully');
       }
     } catch (err) {
@@ -228,7 +244,12 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setMatters(prev => [...prev, data[0] as Matter]);
+        const newMatter = data[0] as Matter;
+        setMatters(prev => [...prev, newMatter]);
+        
+        // Send to webhook
+        await sendToWebhook('matter_added', newMatter);
+        
         toast.success('Matter added successfully');
       }
     } catch (err) {
@@ -256,7 +277,6 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
         date: entry.date,
         description: entry.description,
         hourly_rate: entry.hourly_rate,
-        // Remove amount to let it be calculated by the database if it's a generated column
         case_id: entry.case_id,
         invoice_number: entry.invoice_number,
         invoice_status: entry.invoice_status || 'unbilled',
@@ -265,7 +285,6 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       
       console.log("Complete entry to be submitted:", completeEntry);
       
-      // Ensure we're only sending one object, not an array
       const { data, error } = await supabase
         .from('billing_entries')
         .insert(completeEntry)
@@ -279,7 +298,12 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       console.log("Response data:", data);
       
       if (data && data.length > 0) {
-        setBillingEntries(prev => [...prev, data[0] as unknown as BillingEntry]);
+        const newEntry = data[0] as unknown as BillingEntry;
+        setBillingEntries(prev => [...prev, newEntry]);
+        
+        // Send to webhook
+        await sendToWebhook('billing_entry_added', newEntry);
+        
         toast.success('Billing entry added successfully');
       }
     } catch (err) {
@@ -305,7 +329,12 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setInvoices(prev => [...prev, data[0] as Invoice]);
+        const newInvoice = data[0] as Invoice;
+        setInvoices(prev => [...prev, newInvoice]);
+        
+        // Send to webhook
+        await sendToWebhook('invoice_created', newInvoice);
+        
         toast.success('Invoice created successfully');
       }
     } catch (err) {
@@ -329,9 +358,13 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       
       if (error) throw error;
       
+      const updatedEntry = { ...billingEntries.find(e => e.id === id), ...entry };
       setBillingEntries(prev => 
         prev.map(item => item.id === id ? { ...item, ...entry } : item)
       );
+      
+      // Send to webhook
+      await sendToWebhook('billing_entry_updated', { id, ...updatedEntry });
       
       toast.success('Billing entry updated successfully');
     } catch (err) {
@@ -348,6 +381,8 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setLoading(true);
+      const entryToDelete = billingEntries.find(e => e.id === id);
+      
       const { error } = await supabase
         .from('billing_entries')
         .delete()
@@ -356,6 +391,10 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       setBillingEntries(prev => prev.filter(item => item.id !== id));
+      
+      // Send to webhook
+      await sendToWebhook('billing_entry_deleted', { id, deleted_entry: entryToDelete });
+      
       toast.success('Billing entry deleted successfully');
     } catch (err) {
       console.error('Error deleting billing entry:', err);
