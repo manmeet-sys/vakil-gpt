@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
 import { IndianRupee, Plus, Pencil, Trash2, Filter, BarChart, Search, Calendar } from 'lucide-react';
@@ -21,7 +22,6 @@ import { Badge } from '@/components/ui/badge';
 import TimeTrackingStats from '@/components/TimeTrackingStats';
 import InvoiceGenerator from '@/components/InvoiceGenerator';
 import PDFExportButton from '@/components/PDFExportButton';
-import N8nConnectionStatus from '@/components/N8nConnectionStatus';
 
 const timeEntrySchema = z.object({
   client_name: z.string().min(1, { message: 'Client name is required' }),
@@ -173,37 +173,30 @@ const BillingTrackingPage = () => {
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Enhanced Header with Connection Status */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-              <div className="lg:col-span-2">
-                <div className="flex justify-end mb-4">
-                  <div className="border rounded-md flex">
-                    <Button 
-                      variant={timePeriod === 'week' ? 'secondary' : 'ghost'} 
-                      className="rounded-r-none"
-                      onClick={() => setTimePeriod('week')}
-                    >
-                      Week
-                    </Button>
-                    <Button 
-                      variant={timePeriod === 'month' ? 'secondary' : 'ghost'} 
-                      className="rounded-none border-x"
-                      onClick={() => setTimePeriod('month')}
-                    >
-                      Month
-                    </Button>
-                    <Button 
-                      variant={timePeriod === 'year' ? 'secondary' : 'ghost'} 
-                      className="rounded-l-none"
-                      onClick={() => setTimePeriod('year')}
-                    >
-                      Year
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <div className="lg:col-span-1">
-                <N8nConnectionStatus />
+            {/* Enhanced Header */}
+            <div className="flex justify-end mb-4">
+              <div className="border rounded-md flex">
+                <Button 
+                  variant={timePeriod === 'week' ? 'secondary' : 'ghost'} 
+                  className="rounded-r-none"
+                  onClick={() => setTimePeriod('week')}
+                >
+                  Week
+                </Button>
+                <Button 
+                  variant={timePeriod === 'month' ? 'secondary' : 'ghost'} 
+                  className="rounded-none border-x"
+                  onClick={() => setTimePeriod('month')}
+                >
+                  Month
+                </Button>
+                <Button 
+                  variant={timePeriod === 'year' ? 'secondary' : 'ghost'} 
+                  className="rounded-l-none"
+                  onClick={() => setTimePeriod('year')}
+                >
+                  Year
+                </Button>
               </div>
             </div>
             
