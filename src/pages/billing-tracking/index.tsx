@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { IndianRupee, Plus, Pencil, Trash2, Download, Filter, BarChart, Search, CreditCard, Calendar } from 'lucide-react';
+import { IndianRupee, Plus, Pencil, Trash2, Filter, BarChart, Search, Calendar } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { useAuth } from '@/context/AuthContext';
 import { useBilling } from '@/context/BillingContext';
@@ -21,6 +20,8 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import TimeTrackingStats from '@/components/TimeTrackingStats';
 import InvoiceGenerator from '@/components/InvoiceGenerator';
+import PDFExportButton from '@/components/PDFExportButton';
+import N8nConnectionStatus from '@/components/N8nConnectionStatus';
 
 const timeEntrySchema = z.object({
   client_name: z.string().min(1, { message: 'Client name is required' }),
@@ -48,7 +49,7 @@ const BillingTrackingPage = () => {
       hours_spent: 0,
       date: format(new Date(), 'yyyy-MM-dd'),
       description: '',
-      hourly_rate: 3000, // Default rate of ₹3000/hr
+      hourly_rate: 3000,
     },
   });
 
@@ -172,37 +173,44 @@ const BillingTrackingPage = () => {
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Time Period Selector */}
-            <div className="flex justify-end">
-              <div className="border rounded-md flex">
-                <Button 
-                  variant={timePeriod === 'week' ? 'secondary' : 'ghost'} 
-                  className="rounded-r-none"
-                  onClick={() => setTimePeriod('week')}
-                >
-                  Week
-                </Button>
-                <Button 
-                  variant={timePeriod === 'month' ? 'secondary' : 'ghost'} 
-                  className="rounded-none border-x"
-                  onClick={() => setTimePeriod('month')}
-                >
-                  Month
-                </Button>
-                <Button 
-                  variant={timePeriod === 'year' ? 'secondary' : 'ghost'} 
-                  className="rounded-l-none"
-                  onClick={() => setTimePeriod('year')}
-                >
-                  Year
-                </Button>
+            {/* Enhanced Header with Connection Status */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+              <div className="lg:col-span-2">
+                <div className="flex justify-end mb-4">
+                  <div className="border rounded-md flex">
+                    <Button 
+                      variant={timePeriod === 'week' ? 'secondary' : 'ghost'} 
+                      className="rounded-r-none"
+                      onClick={() => setTimePeriod('week')}
+                    >
+                      Week
+                    </Button>
+                    <Button 
+                      variant={timePeriod === 'month' ? 'secondary' : 'ghost'} 
+                      className="rounded-none border-x"
+                      onClick={() => setTimePeriod('month')}
+                    >
+                      Month
+                    </Button>
+                    <Button 
+                      variant={timePeriod === 'year' ? 'secondary' : 'ghost'} 
+                      className="rounded-l-none"
+                      onClick={() => setTimePeriod('year')}
+                    >
+                      Year
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div className="lg:col-span-1">
+                <N8nConnectionStatus />
               </div>
             </div>
             
             {/* Time Tracking Stats */}
             <TimeTrackingStats entries={filteredEntries} period={timePeriod} />
             
-            {/* Controls for time entries */}
+            {/* Enhanced Controls with PDF Export */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -239,71 +247,34 @@ const BillingTrackingPage = () => {
                 </div>
               </div>
               
-              <Dialog open={isNewEntryDialogOpen} onOpenChange={setIsNewEntryDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="ml-auto">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Time Entry
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px]">
-                  <DialogHeader>
-                    <DialogTitle>{editingEntry ? 'Edit Time Entry' : 'Add New Time Entry'}</DialogTitle>
-                    <DialogDescription>
-                      {editingEntry ? 'Modify your billable time record' : 'Record your billable time for a client or matter.'}
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="client_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Client Name*</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter client name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="activity_type"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Activity Type*</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select activity type" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {activityTypes.map((type) => (
-                                  <SelectItem key={type} value={type}>
-                                    {type}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2">
+                <PDFExportButton entries={filteredEntries} />
+                
+                <Dialog open={isNewEntryDialogOpen} onOpenChange={setIsNewEntryDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      New Time Entry
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>{editingEntry ? 'Edit Time Entry' : 'Add New Time Entry'}</DialogTitle>
+                      <DialogDescription>
+                        {editingEntry ? 'Modify your billable time record' : 'Record your billable time for a client or matter.'}
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
                           control={form.control}
-                          name="hours_spent"
+                          name="client_name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Hours Spent*</FormLabel>
+                              <FormLabel>Client Name*</FormLabel>
                               <FormControl>
-                                <Input type="number" step="0.1" placeholder="0.0" {...field} />
+                                <Input placeholder="Enter client name" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -312,69 +283,110 @@ const BillingTrackingPage = () => {
                         
                         <FormField
                           control={form.control}
-                          name="hourly_rate"
+                          name="activity_type"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Hourly Rate (₹)*</FormLabel>
+                              <FormLabel>Activity Type*</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select activity type" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {activityTypes.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                      {type}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="hours_spent"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Hours Spent*</FormLabel>
+                                <FormControl>
+                                  <Input type="number" step="0.1" placeholder="0.0" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="hourly_rate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Hourly Rate (₹)*</FormLabel>
+                                <FormControl>
+                                  <Input type="number" placeholder="3000" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name="date"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Date*</FormLabel>
                               <FormControl>
-                                <Input type="number" placeholder="3000" {...field} />
+                                <Input type="date" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="date"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Date*</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Describe the work performed" 
-                                className="min-h-[100px]" 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <DialogFooter className="mt-6">
-                        <Button 
-                          variant="outline" 
-                          type="button" 
-                          onClick={() => {
-                            setIsNewEntryDialogOpen(false);
-                            setEditingEntry(null);
-                            form.reset();
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button type="submit">{editingEntry ? 'Update Entry' : 'Save Entry'}</Button>
-                      </DialogFooter>
-                    </form>
-                  </Form>
-                </DialogContent>
-              </Dialog>
+                        
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Describe the work performed" 
+                                  className="min-h-[100px]" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <DialogFooter className="mt-6">
+                          <Button 
+                            variant="outline" 
+                            type="button" 
+                            onClick={() => {
+                              setIsNewEntryDialogOpen(false);
+                              setEditingEntry(null);
+                              form.reset();
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit">{editingEntry ? 'Update Entry' : 'Save Entry'}</Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
             
             <Tabs defaultValue="time-entries" className="space-y-4">
@@ -471,10 +483,7 @@ const BillingTrackingPage = () => {
                     <div className="text-sm text-muted-foreground">
                       Showing {filteredEntries.length} entries
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Data
-                    </Button>
+                    <PDFExportButton entries={filteredEntries} />
                   </CardFooter>
                 </Card>
               </TabsContent>
