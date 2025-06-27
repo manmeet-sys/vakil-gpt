@@ -65,21 +65,26 @@ const InvoiceGenerator = () => {
     setGeneratingInvoice(invoice.id);
     
     try {
+      console.log('Starting PDF generation for invoice:', invoice.invoice_number);
+      
       // Generate PDF for the specific invoice
       const pdfBlob = await generateTimeSheetPDF({
         entries: invoice.entries,
         reportType: 'invoice',
         clientName: invoice.client_name,
+        invoiceNumber: invoice.invoice_number,
       });
 
+      console.log('PDF blob generated, starting download...');
+
       // Download the PDF
-      downloadPDF(pdfBlob, `${invoice.invoice_number}-${invoice.client_name.replace(/\s+/g, '_')}`);
+      await downloadPDF(pdfBlob, `${invoice.invoice_number}-${invoice.client_name.replace(/\s+/g, '_')}`);
       
-      toast.success(`Invoice ${invoice.invoice_number} downloaded successfully!`);
+      toast.success(`Invoice ${invoice.invoice_number} is ready for download/print!`);
       
     } catch (error) {
       console.error('Error generating invoice PDF:', error);
-      toast.error('Failed to generate invoice PDF');
+      toast.error('Failed to generate invoice PDF. Please try again.');
     } finally {
       setGeneratingInvoice(null);
     }
