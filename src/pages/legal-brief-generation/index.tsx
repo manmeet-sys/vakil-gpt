@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { fetchIndianLegalUpdates } from '@/utils/aiAnalysis';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 const LegalBriefGenerationPage = () => {
   const [topic, setTopic] = useState('');
@@ -59,17 +60,7 @@ const LegalBriefGenerationPage = () => {
     setIsGenerating(true);
     
     try {
-      const apiKey = localStorage.getItem('openaiApiKey');
-      
-      if (!apiKey) {
-        toast({
-          title: "API Key Required",
-          description: "Please set your OpenAI API key in settings first",
-          variant: "destructive"
-        });
-        setIsGenerating(false);
-        return;
-      }
+      // Use centralized OpenAI integration
       
       // Prepare system prompt for legal brief
       const systemPrompt = `You are VakilGPT, a legal expert specialized in Indian law. Generate a comprehensive legal brief on ${topic} ${jurisdiction ? `in the context of ${jurisdiction}` : `under Indian law`}.
@@ -84,31 +75,12 @@ const LegalBriefGenerationPage = () => {
       
       Additional context for consideration: ${context || 'None provided'}`;
       
-      // Generate with OpenAI
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            { role: 'system', content: 'You are VakilGPT, an expert in Indian law and legal brief writing.' },
-            { role: 'user', content: systemPrompt }
-          ],
-          temperature: 0.2,
-          max_tokens: 4000
-        })
+      // Generate with centralized OpenAI integration
+      const briefText = await getOpenAIResponse(systemPrompt, { 
+        model: 'gpt-4o', 
+        temperature: 0.2,
+        maxTokens: 4000
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const briefText = data.choices[0].message.content;
       
       setGeneratedBrief(briefText);
       setIsGenerating(false);

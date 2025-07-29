@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
+import BackButton from '@/components/BackButton';
 
 const ComplianceAssistancePage = () => {
   const [industry, setIndustry] = useState<string>('');
@@ -27,20 +29,10 @@ const ComplianceAssistancePage = () => {
       return;
     }
 
-    const apiKey = localStorage.getItem('openaiApiKey');
-    if (!apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key Required",
-        description: "Please set your OpenAI API key in settings first",
-      });
-      return;
-    }
-
     setIsGenerating(true);
 
     try {
-      const complianceResults = await generateOpenAIComplianceResults(apiKey);
+      const complianceResults = await generateComplianceResults();
       setResults(complianceResults);
       toast({
         title: "Compliance Guidance Generated",
@@ -58,7 +50,7 @@ const ComplianceAssistancePage = () => {
     }
   };
 
-  const generateOpenAIComplianceResults = async (apiKey: string): Promise<string> => {
+  const generateComplianceResults = async (): Promise<string> => {
     const systemPrompt = `You are VakilGPT's compliance specialist focused on Indian regulatory frameworks. 
     
     Generate a comprehensive compliance guide based on the following information:
@@ -75,30 +67,11 @@ const ComplianceAssistancePage = () => {
     
     Format your response with clear sections and practical guidance.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4',
-        messages: [
-          { role: 'system', content: 'You are VakilGPT, an expert in Indian legal compliance.' },
-          { role: 'user', content: systemPrompt }
-        ],
-        temperature: 0.2,
-        max_tokens: 4000
-      })
+    return await getOpenAIResponse(systemPrompt, { 
+      model: 'gpt-4o', 
+      temperature: 0.2,
+      maxTokens: 4000
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   };
 
   return (
@@ -108,6 +81,7 @@ const ComplianceAssistancePage = () => {
       icon={<ClipboardCheck className="h-6 w-6 text-blue-600" />}
     >
       <div className="max-w-4xl mx-auto">
+        <BackButton to="/tools" label="Back to Tools" />
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Compliance Information</CardTitle>

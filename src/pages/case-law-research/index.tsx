@@ -17,6 +17,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import BackButton from '@/components/BackButton';
+import { getOpenAIResponse } from '@/components/OpenAIIntegration';
 
 // Types for improved case law research
 interface LandmarkCase {
@@ -38,7 +39,7 @@ interface CaseLawSearchOptions {
   includeOverruled: boolean;
   includeRelatedStatutes: boolean;
   includeRecentUpdates: boolean;
-  apiProvider: 'deepseek' | 'gemini';
+  apiProvider: 'openai';
   sortBy: 'relevance' | 'date' | 'authority';
   format: 'detailed' | 'summary' | 'structured';
   subjectMatter: string[];
@@ -63,7 +64,7 @@ const CaseLawResearchPage = () => {
     includeOverruled: false,
     includeRelatedStatutes: true,
     includeRecentUpdates: true,
-    apiProvider: 'gemini',
+    apiProvider: 'openai',
     sortBy: 'relevance',
     format: 'detailed',
     subjectMatter: [],
@@ -281,12 +282,9 @@ const CaseLawResearchPage = () => {
   ], []);
 
   useEffect(() => {
-    const storedApiProvider = localStorage.getItem('preferredApiProvider') as 'deepseek' | 'gemini' || 'gemini';
-    setSearchOptions(prev => ({...prev, apiProvider: storedApiProvider}));
-    
     logPageView({
       tool: 'case-law-research',
-      provider: storedApiProvider
+      provider: 'openai'
     });
   }, [logPageView]);
 
@@ -307,27 +305,21 @@ const CaseLawResearchPage = () => {
         court: searchOptions.court,
         jurisdiction: searchOptions.jurisdiction,
         timeframe: searchOptions.timeframe,
-        provider: searchOptions.apiProvider,
+        provider: 'openai',
         relevance: searchOptions.relevance,
         sortBy: searchOptions.sortBy,
         format: searchOptions.format
       });
 
-      const apiKey = localStorage.getItem(`${searchOptions.apiProvider}ApiKey`) || '';
-      let caseResults = '';
-      
-      if (searchOptions.apiProvider === 'gemini') {
-        caseResults = await generateGeminiCaseLawResults(query, apiKey, searchOptions);
-      } else if (searchOptions.apiProvider === 'deepseek') {
-        caseResults = await generateDeepSeekCaseLawResults(query, apiKey, searchOptions);
-      }
+      // Use centralized OpenAI integration instead of custom providers
+      const caseResults = await generateCaseLawResults(query, searchOptions);
 
       setResults(caseResults);
       
       logAction('search_complete', {
         query_length: query.length,
         result_length: caseResults.length,
-        provider: searchOptions.apiProvider
+        provider: 'openai'
       });
       
       toast({
@@ -339,7 +331,7 @@ const CaseLawResearchPage = () => {
       
       logError('search_failed', {
         query,
-        provider: searchOptions.apiProvider,
+        provider: 'openai',
         error: error instanceof Error ? error.message : "Unknown error"
       });
       
@@ -427,9 +419,8 @@ ${results}
     logAction('suggested_query_selected', { query });
   };
 
-  const generateGeminiCaseLawResults = async (
+  const generateCaseLawResults = async (
     query: string, 
-    apiKey: string, 
     options: CaseLawSearchOptions
   ): Promise<string> => {
     const timeframeText = options.timeframe !== 'all' 
@@ -437,177 +428,60 @@ ${results}
       : '';
       
     const courtFocus = options.court !== 'all' 
-      ? `focusing primarily on ${courts.find(c => c.value === options.court)?.label} cases` 
-      : 'across all relevant courts';
+      ? `7. Prioritize cases from the ${courts.find(c => c.value === options.court)?.label}` 
+      : '';
       
     const jurisdictionFocus = options.jurisdiction !== 'all' 
-      ? `with particular emphasis on precedents from ${jurisdictions.find(j => j.value === options.jurisdiction)?.label}` 
-      : 'from all relevant jurisdictions';
-      
-    const subjectMatterText = options.subjectMatter.length > 0
-      ? `7. Focus on the following subject matters: ${options.subjectMatter.join(', ')}`
+      ? `8. Focus on jurisprudence from the ${jurisdictions.find(j => j.value === options.jurisdiction)?.label}` 
       : '';
       
-    const overruledText = !options.includeOverruled
-      ? "8. Exclude overruled or superseded precedents"
-      : "8. Include historically significant overruled precedents with clear indication of their current status";
+    const subjectFocus = options.subjectMatter.length > 0 
+      ? `9. Focus on ${options.subjectMatter.map(sm => subjectMatters.find(s => s.value === sm)?.label).join(', ')} related matters` 
+      : '';
       
-    const formatInstructions = options.format === 'detailed' 
-      ? "Provide comprehensive analysis with detailed reasoning from each case"
-      : options.format === 'summary' 
-        ? "Provide concise summaries focusing on key holdings and principles"
-        : "Structure the response with clear headings, bullet points, and tables where appropriate";
-        
-    const statutesText = options.includeRelatedStatutes
-      ? "9. Include references to relevant Indian statutes including new laws like Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS), and Bharatiya Sakshya Adhiniyam (BSA) if applicable"
-      : "";
-      
-    const recentUpdatesText = options.includeRecentUpdates
-      ? "10. Highlight any recent updates, amendments or pending review petitions affecting these precedents"
-      : "";
-      
-    const sortingInstruction = options.sortBy === 'relevance'
-      ? "Format your response with proper Indian legal citations and organize by relevance"
-      : options.sortBy === 'date'
-        ? "Format your response with proper Indian legal citations and organize chronologically (newest first)"
-        : "Format your response with proper Indian legal citations and organize by authority (Supreme Court first, then High Courts)";
+    const systemPrompt = `You are an expert Indian legal researcher specialized in case law analysis. Your response must strictly follow the format specified below.
 
-    const systemPrompt = `You are VakilGPT's case law research assistant specialized in Indian law. 
-    
-    For the provided query, find and summarize relevant case law precedents from Indian courts, including:
-    1. Key cases relevant to the query ${courtFocus}
-    2. Judgments ${jurisdictionFocus} if applicable
-    3. The legal principles established in these cases
-    4. The precise ratio decidendi and obiter dicta where relevant
-    5. How these precedents apply in the Indian legal context
-    ${timeframeText}
-    ${subjectMatterText}
-    ${overruledText}
-    ${statutesText}
-    ${recentUpdatesText}
-    
-    ${formatInstructions}. ${sortingInstruction}.
-    
-    Maintain a relevance threshold of ${options.relevance}% - only include cases that are directly applicable to the query.`;
+**QUERY ANALYSIS:**
+"${query}"
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: systemPrompt }] },
-          { role: 'model', parts: [{ text: 'I will research and provide relevant Indian case law and precedents following Indian legal citation standards.' }] },
-          { role: 'user', parts: [{ text: query }] }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 4000,
-          topK: 40,
-          topP: 0.95
-        }
-      })
+**RESEARCH PARAMETERS:**
+- Court(s): ${options.court === 'all' ? 'All Indian Courts' : courts.find(c => c.value === options.court)?.label}
+- Jurisdiction: ${options.jurisdiction === 'all' ? 'Pan-India' : jurisdictions.find(j => j.value === options.jurisdiction)?.label}
+- Time Frame: ${timeframes.find(t => t.value === options.timeframe)?.label}
+- Relevance Threshold: ${options.relevance}%
+- Format: ${options.format}
+${options.subjectMatter.length > 0 ? `- Subject Focus: ${options.subjectMatter.map(sm => subjectMatters.find(s => s.value === sm)?.label).join(', ')}` : ''}
+
+**INSTRUCTIONS:**
+1. Provide accurate Indian case law research results
+2. Include proper citation formats (e.g., (2023) 15 SCC 234, AIR 2023 SC 1234)
+3. Focus on Supreme Court and High Court precedents
+4. Include both ratio decidendi and obiter dicta where relevant
+5. Mention any recent developments or overruling
+${timeframeText}
+${courtFocus}
+${jurisdictionFocus}
+${subjectFocus}
+10. ${options.includeOverruled ? 'Include overruled cases with clear status indication' : 'Exclude overruled or superseded precedents'}
+11. ${options.includeRelatedStatutes ? 'Include relevant statutory provisions and amendments' : 'Focus primarily on case law'}
+12. ${options.includeRecentUpdates ? 'Highlight recent legal developments and amendments' : 'Focus on established precedents'}
+
+**RESPONSE FORMAT:**
+Provide a comprehensive analysis in ${options.format} format, sorted by ${options.sortBy}. Include:
+- Case names with proper citations
+- Key legal principles established
+- Factual background (brief)
+- Court's reasoning and judgment
+- Current legal status
+- Practical implications
+
+Ensure all case citations follow standard Indian legal citation formats.`;
+
+    return await getOpenAIResponse(systemPrompt, { 
+      model: 'gpt-4o', 
+      temperature: 0.2,
+      maxTokens: 4000
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response format from Gemini API');
-    }
-  };
-
-  const generateDeepSeekCaseLawResults = async (
-    query: string, 
-    apiKey: string, 
-    options: CaseLawSearchOptions
-  ): Promise<string> => {
-    const timeframeText = options.timeframe !== 'all' 
-      ? `6. Focus on cases from the ${timeframes.find(t => t.value === options.timeframe)?.label}` 
-      : '';
-      
-    const courtFocus = options.court !== 'all' 
-      ? `focusing primarily on ${courts.find(c => c.value === options.court)?.label} cases` 
-      : 'across all relevant courts';
-      
-    const jurisdictionFocus = options.jurisdiction !== 'all' 
-      ? `with particular emphasis on precedents from ${jurisdictions.find(j => j.value === options.jurisdiction)?.label}` 
-      : 'from all relevant jurisdictions';
-      
-    const subjectMatterText = options.subjectMatter.length > 0
-      ? `7. Focus on the following subject matters: ${options.subjectMatter.join(', ')}`
-      : '';
-      
-    const overruledText = !options.includeOverruled
-      ? "8. Exclude overruled or superseded precedents"
-      : "8. Include historically significant overruled precedents with clear indication of their current status";
-      
-    const formatInstructions = options.format === 'detailed' 
-      ? "Provide comprehensive analysis with detailed reasoning from each case"
-      : options.format === 'summary' 
-        ? "Provide concise summaries focusing on key holdings and principles"
-        : "Structure the response with clear headings, bullet points, and tables where appropriate";
-        
-    const statutesText = options.includeRelatedStatutes
-      ? "9. Include references to relevant Indian statutes including new laws like Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS), and Bharatiya Sakshya Adhiniyam (BSA) if applicable"
-      : "";
-      
-    const recentUpdatesText = options.includeRecentUpdates
-      ? "10. Highlight any recent updates, amendments or pending review petitions affecting these precedents"
-      : "";
-      
-    const sortingInstruction = options.sortBy === 'relevance'
-      ? "Format your response with proper Indian legal citations and organize by relevance"
-      : options.sortBy === 'date'
-        ? "Format your response with proper Indian legal citations and organize chronologically (newest first)"
-        : "Format your response with proper Indian legal citations and organize by authority (Supreme Court first, then High Courts)";
-
-    const systemPrompt = `You are VakilGPT's case law research assistant specialized in Indian law. 
-    
-    For the provided query, find and summarize relevant case law precedents from Indian courts, including:
-    1. Key cases relevant to the query ${courtFocus}
-    2. Judgments ${jurisdictionFocus} if applicable
-    3. The legal principles established in these cases
-    4. The precise ratio decidendi and obiter dicta where relevant
-    5. How these precedents apply in the Indian legal context
-    ${timeframeText}
-    ${subjectMatterText}
-    ${overruledText}
-    ${statutesText}
-    ${recentUpdatesText}
-    
-    ${formatInstructions}. ${sortingInstruction}.
-    
-    Maintain a relevance threshold of ${options.relevance}% - only include cases that are directly applicable to the query.`;
-    
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: query }
-        ],
-        temperature: 0.2,
-        max_tokens: 4000
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   };
 
   return (
@@ -721,19 +595,10 @@ ${results}
                     </Button>
                     
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="apiProvider" className="text-sm font-medium">API Provider</Label>
-                      <Select 
-                        value={searchOptions.apiProvider} 
-                        onValueChange={(value) => handleSettingChange('apiProvider', value as 'deepseek' | 'gemini')}
-                      >
-                        <SelectTrigger id="apiProvider" className="w-[120px]">
-                          <SelectValue placeholder="Select Provider" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="gemini">Gemini</SelectItem>
-                          <SelectItem value="deepseek">DeepSeek</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-sm font-medium">Powered by OpenAI</Label>
+                      <Badge variant="secondary" className="text-xs">
+                        GPT-4.1
+                      </Badge>
                     </div>
                   </div>
                   
