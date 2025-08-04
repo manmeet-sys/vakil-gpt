@@ -1,179 +1,146 @@
 
 import React, { useState } from 'react';
 import LegalToolLayout from '@/components/LegalToolLayout';
-import { ClipboardCheck, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { getOpenAIResponse } from '@/components/OpenAIIntegration';
-import BackButton from '@/components/BackButton';
+import { Shield, FileCheck, Calculator, Briefcase, TrendingUp, Building } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Import compliance tool components
+import GdprComplianceComponent from '@/components/compliance/GdprComplianceComponent';
+import AmlComplianceComponent from '@/components/compliance/AmlComplianceComponent';
+import TaxComplianceComponent from '@/components/compliance/TaxComplianceComponent';
+import StartupToolkitComponent from '@/components/compliance/StartupToolkitComponent';
+import DueDiligenceComponent from '@/components/compliance/DueDiligenceComponent';
+import IpProtectionComponent from '@/components/compliance/IpProtectionComponent';
 
 const ComplianceAssistancePage = () => {
-  const [industry, setIndustry] = useState<string>('');
-  const [companySize, setCompanySize] = useState<string>('');
-  const [complianceDescription, setComplianceDescription] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [results, setResults] = useState<string>('');
-  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('gdpr');
 
-  const handleGenerateCompliance = async () => {
-    if (!industry || !companySize || !complianceDescription.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please fill in all fields to generate compliance recommendations",
-      });
-      return;
+  const complianceTools = [
+    {
+      id: 'gdpr',
+      title: 'GDPR & DPDP Compliance',
+      description: 'Data protection compliance for Indian and European regulations',
+      icon: <Shield className="w-5 h-5" />,
+      component: GdprComplianceComponent,
+      badge: 'Critical'
+    },
+    {
+      id: 'aml',
+      title: 'AML & KYC Compliance',
+      description: 'Anti-money laundering and Know Your Customer compliance checks',
+      icon: <FileCheck className="w-5 h-5" />,
+      component: AmlComplianceComponent,
+      badge: 'High Risk'
+    },
+    {
+      id: 'tax',
+      title: 'Tax Compliance',
+      description: 'Indian tax law compliance including GST, Income Tax, and TDS',
+      icon: <Calculator className="w-5 h-5" />,
+      component: TaxComplianceComponent,
+      badge: 'Regulatory'
+    },
+    {
+      id: 'startup',
+      title: 'Startup Toolkit',
+      description: 'Legal compliance for startups and new businesses in India',
+      icon: <Briefcase className="w-5 h-5" />,
+      component: StartupToolkitComponent,
+      badge: 'Business'
+    },
+    {
+      id: 'due-diligence',
+      title: 'M&A Due Diligence',
+      description: 'Due diligence analysis for mergers and acquisitions',
+      icon: <TrendingUp className="w-5 h-5" />,
+      component: DueDiligenceComponent,
+      badge: 'Corporate'
+    },
+    {
+      id: 'ip-protection',
+      title: 'IP Protection',
+      description: 'Intellectual property protection and analysis',
+      icon: <Building className="w-5 h-5" />,
+      component: IpProtectionComponent,
+      badge: 'Assets'
     }
+  ];
 
-    setIsGenerating(true);
+  const activeTool = complianceTools.find(tool => tool.id === activeTab);
+  const ActiveComponent = activeTool?.component;
 
-    try {
-      const complianceResults = await generateComplianceResults();
-      setResults(complianceResults);
-      toast({
-        title: "Compliance Guidance Generated",
-        description: "Your compliance recommendations are ready",
-      });
-    } catch (error) {
-      console.error('Error generating compliance guidance:', error);
-      toast({
-        variant: "destructive",
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate compliance guidance",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const generateComplianceResults = async (): Promise<string> => {
-    const systemPrompt = `You are VakilGPT's compliance specialist focused on Indian regulatory frameworks. 
-    
-    Generate a comprehensive compliance guide based on the following information:
-    - Industry: ${industry}
-    - Company Size: ${companySize}
-    - Compliance Context: ${complianceDescription}
-    
-    Include:
-    1. Key Indian regulations and laws applicable to this scenario
-    2. Compliance requirements and obligations
-    3. Recommended implementation steps
-    4. Common compliance challenges and solutions
-    5. Resources for staying updated on regulatory changes
-    
-    Format your response with clear sections and practical guidance.`;
-
-    return await getOpenAIResponse(systemPrompt, { 
-      model: 'gpt-4o', 
-      temperature: 0.2,
-      maxTokens: 4000
-    });
-  };
 
   return (
-    <LegalToolLayout 
-      title="Compliance Assistance" 
-      description="Get tailored compliance guidance for your business needs using OpenAI"
-      icon={<ClipboardCheck className="h-6 w-6 text-blue-600" />}
+    <LegalToolLayout
+      title="Compliance Assistance Hub"
+      description="Comprehensive AI-powered compliance tools for Indian regulations including GDPR, AML, Tax, and more."
+      icon={<Shield className="w-6 h-6 text-blue-600" />}
     >
-      <div className="max-w-4xl mx-auto">
-        <BackButton to="/tools" label="Back to Tools" />
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Compliance Information</CardTitle>
-            <CardDescription>
-              Provide details about your business to receive AI-powered compliance guidance.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="industry">Industry</Label>
-                  <Select value={industry} onValueChange={setIndustry}>
-                    <SelectTrigger id="industry">
-                      <SelectValue placeholder="Select an industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="finance">Finance & Banking</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="technology">Technology & IT</SelectItem>
-                      <SelectItem value="ecommerce">E-commerce & Retail</SelectItem>
-                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="realestate">Real Estate & Construction</SelectItem>
-                      <SelectItem value="hospitality">Hospitality & Tourism</SelectItem>
-                      <SelectItem value="media">Media & Entertainment</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="company-size">Company Size</Label>
-                  <Select value={companySize} onValueChange={setCompanySize}>
-                    <SelectTrigger id="company-size">
-                      <SelectValue placeholder="Select company size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="startup">Startup (1-10 employees)</SelectItem>
-                      <SelectItem value="small">Small Business (11-50 employees)</SelectItem>
-                      <SelectItem value="medium">Medium Business (51-250 employees)</SelectItem>
-                      <SelectItem value="large">Large Business (251-1000 employees)</SelectItem>
-                      <SelectItem value="enterprise">Enterprise (1000+ employees)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="compliance-desc">Compliance Needs</Label>
-                <Textarea
-                  id="compliance-desc"
-                  value={complianceDescription}
-                  onChange={(e) => setComplianceDescription(e.target.value)}
-                  placeholder="Describe your compliance needs or questions. For example: 'We're launching a fintech app that processes payments and stores user data. What regulations do we need to comply with?'"
-                  className="min-h-[100px]"
-                />
-              </div>
-              
-              <Button 
-                onClick={handleGenerateCompliance} 
-                disabled={isGenerating || !industry || !companySize || !complianceDescription.trim()}
-                className="w-full"
+      <div className="space-y-6">
+        {/* Tool Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          {complianceTools.map((tool) => (
+            <motion.div
+              key={tool.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card 
+                className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                  activeTab === tool.id 
+                    ? 'ring-2 ring-primary border-primary/50 bg-primary/5' 
+                    : 'hover:border-primary/30'
+                }`}
+                onClick={() => setActiveTab(tool.id)}
               >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Guidance...
-                  </>
-                ) : (
-                  'Generate AI Compliance Guidance'
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className={`p-2 rounded-lg ${
+                        activeTab === tool.id 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {tool.icon}
+                      </div>
+                      <div>
+                        <CardTitle className="text-sm font-medium">{tool.title}</CardTitle>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            tool.badge === 'Critical' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                            tool.badge === 'High Risk' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' :
+                            tool.badge === 'Regulatory' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                            tool.badge === 'Business' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                            tool.badge === 'Corporate' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
+                          }`}>
+                            {tool.badge}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">{tool.description}</p>
+                </CardHeader>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
 
-        {results && (
-          <Card>
-            <CardHeader>
-              <CardTitle>AI Compliance Guidance</CardTitle>
-              <CardDescription>
-                Tailored compliance recommendations powered by OpenAI.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="prose dark:prose-invert max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: results.replace(/\n/g, '<br />') }} />
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Active Tool Content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {ActiveComponent && <ActiveComponent />}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </LegalToolLayout>
   );
