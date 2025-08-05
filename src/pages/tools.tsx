@@ -22,13 +22,18 @@ import {
   Gavel,
   FileSearch,
   AlertTriangle,
-  Handshake
+  Handshake,
+  Sparkles,
+  TrendingUp,
+  Brain,
+  Zap
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
 const ToolsPage = () => {
@@ -330,63 +335,116 @@ const ToolsPage = () => {
       </Helmet>
       
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Legal Tools Suite
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl">
-            AI-powered legal tools designed for Indian legal professionals
-          </p>
+        {/* Enhanced Header with Stats */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
+              <Brain className="h-4 w-4" />
+              <span className="text-sm font-medium">AI-Powered Legal Suite</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
+              Legal Tools <span className="text-primary">Arsenal</span>
+            </h1>
+            <p className="text-muted-foreground text-xl max-w-3xl mx-auto">
+              Advanced AI-powered legal tools designed for Indian legal professionals
+            </p>
+          </div>
+          
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Card className="text-center p-4">
+              <div className="text-2xl font-bold text-primary">{allTools.length}+</div>
+              <div className="text-sm text-muted-foreground">Legal Tools</div>
+            </Card>
+            <Card className="text-center p-4">
+              <div className="text-2xl font-bold text-primary">15+</div>
+              <div className="text-sm text-muted-foreground">AI-Powered</div>
+            </Card>
+            <Card className="text-center p-4">
+              <div className="text-2xl font-bold text-primary">24/7</div>
+              <div className="text-sm text-muted-foreground">Available</div>
+            </Card>
+            <Card className="text-center p-4">
+              <div className="text-2xl font-bold text-primary">100%</div>
+              <div className="text-sm text-muted-foreground">Indian Law</div>
+            </Card>
+          </div>
         </div>
 
-        {/* Search and Filters */}
-        <div className="bg-card border rounded-xl p-6 mb-8 shadow-sm">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {/* Enhanced Search and Filters */}
+        <div className="bg-gradient-to-r from-card via-card/50 to-card border rounded-2xl p-8 mb-8 shadow-lg backdrop-blur-sm">
+          <div className="flex flex-col gap-6">
+            {/* Search Section */}
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold mb-2">Find Your Perfect Legal Tool</h3>
+              <p className="text-muted-foreground text-sm">Search through our comprehensive collection of AI-powered legal tools</p>
+            </div>
+            
+            <div className="relative max-w-2xl mx-auto w-full">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                placeholder="Search legal tools..."
+                placeholder="e.g., case law research, contract analysis, compliance..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-12 pr-4 h-12 text-base rounded-xl border-border/50 focus:border-primary/50 shadow-sm"
               />
-            </div>
-
-            {/* Category Filter */}
-            <div className="flex flex-wrap gap-2">
-              {toolCategories.map((category) => (
+              {searchQuery && (
                 <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  variant="ghost"
                   size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                  className="rounded-full"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
                 >
-                  {category.name}
+                  ×
                 </Button>
-              ))}
+              )}
             </div>
 
-            {/* View Mode */}
-            <div className="flex gap-1 border rounded-lg p-1">
-              <Button
-                variant={viewMode === 'grid' ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="h-8 w-8 p-0"
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-8 w-8 p-0"
-              >
-                <List className="h-4 w-4" />
-              </Button>
+            {/* Category Filters */}
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+              <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                {toolCategories.map((category) => (
+                  <Button
+                    key={category.id}
+                    variant={selectedCategory === category.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={cn(
+                      "rounded-full transition-all duration-200",
+                      selectedCategory === category.id 
+                        ? "shadow-md scale-105" 
+                        : "hover:scale-105"
+                    )}
+                  >
+                    {category.name}
+                  </Button>
+                ))}
+              </div>
+
+              {/* View Mode & Filter Info */}
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-muted-foreground">
+                  {filteredTools.length} of {allTools.length} tools
+                </div>
+                <div className="flex gap-1 border rounded-lg p-1 bg-background/50">
+                  <Button
+                    variant={viewMode === 'grid' ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="h-8 w-8 p-0"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -414,53 +472,89 @@ const ToolsPage = () => {
                 transition={{ duration: 0.2 }}
                 className="group"
               >
-                <Card className="h-full hover:shadow-lg transition-all duration-200 cursor-pointer border-border/50 hover:border-border">
-                  <CardHeader className="pb-3">
+                <Card className={cn(
+                  "h-full group cursor-pointer border-border/50 overflow-hidden",
+                  "hover:shadow-xl hover:shadow-primary/5 transition-all duration-300",
+                  "hover:border-primary/30 hover:scale-[1.02]",
+                  "bg-gradient-to-br from-card via-card to-card/50"
+                )}>
+                  <CardHeader className="pb-3 relative">
+                    {/* AI Badge for AI-powered tools */}
+                    {tool.badge === 'OpenAI' && (
+                      <div className="absolute top-2 right-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                        <Sparkles className="h-3 w-3" />
+                        AI
+                      </div>
+                    )}
+                    
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                          {tool.icon}
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className={cn(
+                          "w-12 h-12 rounded-xl flex items-center justify-center",
+                          "bg-gradient-to-br from-primary/10 to-primary/5",
+                          "group-hover:from-primary/20 group-hover:to-primary/10",
+                          "transition-all duration-300 group-hover:scale-110"
+                        )}>
+                          <div className="text-primary group-hover:scale-110 transition-transform">
+                            {tool.icon}
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <CardTitle className="text-base font-semibold truncate">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <CardTitle className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
                               {tool.title}
                             </CardTitle>
-                            {tool.badge && (
-                              <Badge variant="outline" className={cn("text-xs h-5", getBadgeVariant(tool.badge))}>
-                                {tool.badge}
-                              </Badge>
-                            )}
                           </div>
+                          {tool.badge && tool.badge !== 'OpenAI' && (
+                            <Badge variant="outline" className={cn("text-xs h-5", getBadgeVariant(tool.badge))}>
+                              {tool.badge}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-yellow-100 hover:text-yellow-600"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleFavorite(tool.id);
                         }}
                       >
                         <Star className={cn(
-                          "h-4 w-4",
+                          "h-4 w-4 transition-all duration-200",
                           favorites.includes(tool.id) 
-                            ? "fill-yellow-400 text-yellow-400" 
-                            : "text-muted-foreground"
+                            ? "fill-yellow-400 text-yellow-400 scale-110" 
+                            : "text-muted-foreground hover:text-yellow-500"
                         )} />
                       </Button>
                     </div>
                   </CardHeader>
                   
                   <CardContent className="pt-0">
-                    <CardDescription className="mb-4 text-sm leading-relaxed">
+                    <CardDescription className="mb-6 text-sm leading-relaxed line-clamp-3">
                       {tool.description}
                     </CardDescription>
                     
+                    {/* Progress bar showing tool capability */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>AI Capability</span>
+                        <span>{tool.badge === 'OpenAI' ? '95%' : '70%'}</span>
+                      </div>
+                      <Progress 
+                        value={tool.badge === 'OpenAI' ? 95 : 70} 
+                        className="h-1.5"
+                      />
+                    </div>
+                    
                     <Button
                       variant="ghost"
-                      className="w-full justify-between text-primary hover:text-primary hover:bg-primary/5 p-0 h-auto"
+                      className={cn(
+                        "w-full justify-between text-primary hover:text-primary-foreground",
+                        "hover:bg-primary p-3 h-auto rounded-lg",
+                        "group-hover:shadow-md transition-all duration-300"
+                      )}
                       onClick={() => handleToolClick(tool.path, tool.title)}
                     >
                       <span className="font-medium">Explore Tool</span>
