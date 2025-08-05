@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ChatInterface from '@/components/ChatInterface';
 import FeatureCard from '@/components/FeatureCard';
-import ExploreToolsSection from '@/components/ExploreToolsSection';
+
 import ReviewSection from '@/components/ReviewSection';
 import { Gavel, Scale, FileText, Shield, BookOpen, CheckCircle, ArrowRight, Search, Settings, User, Users, Sparkle, Compass, Sparkles, RotateCw, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -256,9 +256,40 @@ const Index = () => {
             </div>
           </div>
           
-          {/* MOVED: "Explore Legal & Financial Tools" section here, below chat box */}
+          {/* Tools Preview Section */}
           <div className="mt-16">
-            <ExploreToolsSection />
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-foreground mb-4">
+                Explore Legal Tools
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                AI-powered solutions tailored for Indian legal professionals
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { title: "Advocate Tools", desc: "Case management & billing", icon: CheckCircle },
+                { title: "AI Assistant", desc: "24/7 legal Q&A", icon: Sparkles },
+                { title: "Legal Research", desc: "Case law & statutes", icon: Compass },
+                { title: "Compliance", desc: "DPDP & AML tools", icon: Shield }
+              ].map((item, index) => (
+                <Card key={index} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="text-center">
+                    <item.icon className="h-8 w-8 mx-auto mb-2 text-primary" />
+                    <CardTitle className="text-lg">{item.title}</CardTitle>
+                    <CardDescription>{item.desc}</CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <Link to="/tools">
+                <Button size="lg">
+                  View All Tools
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
           
           <div className="mt-12 text-center fade-up-element">
