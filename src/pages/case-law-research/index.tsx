@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/AppLayout";
 import BackButton from "@/components/BackButton";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CaseResult {
   title: string;
@@ -122,27 +123,21 @@ const CaseLawResearchPage = () => {
         } : undefined
       };
 
-      const response = await fetch('/functions/v1/case-law-research', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
+      const { data, error } = await supabase.functions.invoke('case-law-research', {
+        body: requestBody,
       });
 
-      if (!response.ok) {
-        throw new Error('Search failed');
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
-      
-      if (data.cases && data.cases.length > 0) {
-        setResults(data.cases);
-        setSearchInsights(data.searchInsights);
-        
+      const res = data as { cases?: CaseResult[]; searchInsights?: SearchInsights };
+      if (res?.cases && res.cases.length > 0) {
+        setResults(res.cases);
+        setSearchInsights(res.searchInsights || null);
         toast({
           title: "Search Complete",
-          description: `Found ${data.cases.length} relevant cases with AI analysis.`,
+          description: `Found ${res.cases.length} relevant cases with AI analysis.`,
         });
       } else {
         // Fallback to mock data for demo

@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/AppLayout";
 import BackButton from "@/components/BackButton";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StatuteUpdate {
   statute: string;
@@ -81,25 +82,18 @@ const StatuteTrackerPage = () => {
   const loadRecentUpdates = async () => {
     setIsLoadingUpdates(true);
     try {
-      const response = await fetch('/functions/v1/statute-tracker', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('statute-tracker', {
+        body: {
           action: 'get_updates',
           dateRange: {
             from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             to: new Date().toISOString().split('T')[0]
           }
-        }),
+        }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.updates) {
-          setRecentUpdates(data.updates);
-        }
+      if (!error && data && (data as any).updates) {
+        setRecentUpdates((data as any).updates as StatuteUpdate[]);
       } else {
         // Fallback mock data
         setRecentUpdates([
@@ -164,28 +158,21 @@ const StatuteTrackerPage = () => {
         await new Promise(resolve => setTimeout(resolve, 600));
       }
 
-      const response = await fetch('/functions/v1/statute-tracker', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('statute-tracker', {
+        body: {
           action: 'search',
-          query: searchQuery
-        }),
+          query: searchQuery,
+        }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.statutes) {
-          setSearchResults(data.statutes);
-          toast({
-            title: "Search Complete",
-            description: `Found ${data.statutes.length} relevant statutes.`,
-          });
-        }
+      if (!error && data && (data as any).statutes) {
+        const res = data as { statutes: StatuteSearchResult[] };
+        setSearchResults(res.statutes);
+        toast({
+          title: "Search Complete",
+          description: `Found ${res.statutes.length} relevant statutes.`,
+        });
       } else {
-        // Fallback mock data
         const mockResults: StatuteSearchResult[] = [
           {
             name: "Digital Personal Data Protection Act, 2023",
