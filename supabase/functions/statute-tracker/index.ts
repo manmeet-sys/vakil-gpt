@@ -148,6 +148,7 @@ Return analysis in JSON format:
       },
       body: JSON.stringify({
         model: 'gpt-4.1-2025-04-14',
+        response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -162,11 +163,35 @@ Return analysis in JSON format:
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.choices?.[0]?.message?.content ?? '';
 
     try {
-      const parsedResponse = JSON.parse(aiResponse);
-      return new Response(JSON.stringify(parsedResponse), {
+      const parsed = JSON.parse(aiResponse);
+
+      if (Array.isArray(parsed.statutes)) {
+        parsed.statutes = parsed.statutes.map((s: any) => {
+          const q = encodeURIComponent(`${s.name || ''} ${s.shortName || ''}`);
+          return {
+            ...s,
+            links: {
+              indiaCode: `https://www.indiacode.nic.in/search?text=${q}`,
+              eGazette: `https://egazette.nic.in/Search.aspx?SearchBy=${q}`,
+              google: `https://www.google.com/search?q=${q}`
+            }
+          };
+        });
+      }
+
+      if (Array.isArray(parsed.updates)) {
+        parsed.updates = parsed.updates.map((u: any) => ({
+          ...u,
+          links: {
+            sourceSearch: `https://www.google.com/search?q=${encodeURIComponent(u.title || u.statute || '')}`
+          }
+        }));
+      }
+
+      return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } catch (parseError) {

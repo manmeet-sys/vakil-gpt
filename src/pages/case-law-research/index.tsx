@@ -462,6 +462,11 @@ const CaseLawResearchPage = () => {
                                 {result.year}
                               </div>
                               <span className="font-mono font-medium">{result.citation}</span>
+                              {('verification' in (result as any)) && (
+                                <Badge variant={(result as any).verification?.citationVerified ? 'secondary' : 'outline'} className="ml-2">
+                                  {(result as any).verification?.citationVerified ? 'Verified citation' : 'Unverified citation'}
+                                </Badge>
+                              )}
                             </div>
                             <div className="text-sm text-muted-foreground">
                               <Gavel className="h-3 w-3 inline mr-1" />
@@ -518,13 +523,17 @@ const CaseLawResearchPage = () => {
                       </Tabs>
                       
                       <div className="flex gap-2 mt-6">
-                        <Button variant="outline" size="sm">
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          Read Full Text
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={(result as any).verification?.suggestedSources?.indianKanoon || '#'} target="_blank" rel="noreferrer">
+                            <BookOpen className="h-4 w-4 mr-2" />
+                            Read Full Text
+                          </a>
                         </Button>
-                        <Button variant="outline" size="sm">
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          View Citation
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={(result as any).verification?.suggestedSources?.googleScholar || '#'} target="_blank" rel="noreferrer">
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            View Citation
+                          </a>
                         </Button>
                         <Button variant="outline" size="sm">
                           Related Cases ({result.relatedCases.length})

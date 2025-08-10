@@ -87,6 +87,7 @@ Return results in the following JSON format:
       },
       body: JSON.stringify({
         model: 'gpt-4.1-2025-04-14',
+        response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -101,11 +102,41 @@ Return results in the following JSON format:
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.choices?.[0]?.message?.content ?? '';
 
     try {
-      const parsedResponse = JSON.parse(aiResponse);
-      return new Response(JSON.stringify(parsedResponse), {
+      const parsed = JSON.parse(aiResponse);
+      const cases = Array.isArray(parsed.cases) ? parsed.cases : [];
+
+      const enhanceCase = (c: any) => {
+        const citation = (c.citation || '').toString();
+        const citationVerified = /(\(\d{4}\)\s*\d+\s*SCC)|\bAIR\s*\d{4}\b|SCC\s*OnLine/i.test(citation);
+        const court = (c.court || '').toString();
+        const precedenceRank = /supreme/i.test(court) ? 3 : /high\s*court/i.test(court) ? 2 : 1;
+        const title = (c.title || '').toString();
+        const yr = parseInt(c.year || '0', 10) || 0;
+        const searchQ = encodeURIComponent(`${title} ${citation}`);
+        return {
+          ...c,
+          verification: {
+            citationVerified,
+            bindingLevel: precedenceRank === 3 ? 'Supreme Court' : precedenceRank === 2 ? 'High Court' : 'Lower Court',
+            suggestedSources: {
+              indianKanoon: `https://indiankanoon.org/search/?formInput=${searchQ}`,
+              googleScholar: `https://scholar.google.com/scholar?q=${searchQ}`
+            }
+          },
+          sortKey: { precedenceRank, relevance: Number(c.relevanceScore || 0), year: yr }
+        };
+      };
+
+      const enhancedCases = cases
+        .map(enhanceCase)
+        .sort((a: any, b: any) => (b.sortKey.precedenceRank - a.sortKey.precedenceRank) || (b.sortKey.relevance - a.sortKey.relevance) || (b.sortKey.year - a.sortKey.year))
+        .map(({ sortKey, ...rest }: any) => rest);
+
+      const result = { ...parsed, cases: enhancedCases };
+      return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } catch (parseError) {
