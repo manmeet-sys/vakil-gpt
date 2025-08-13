@@ -1,321 +1,381 @@
-import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import AppLayout from '@/components/AppLayout';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Check, X, ArrowRight, Clock, Zap, Gift, CalendarClock } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import { toast } from 'sonner';
+import React, { useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import AppLayout from "@/components/AppLayout";
 
-const PricingPage = () => {
-  const [annual, setAnnual] = useState(false);
-  const { isAuthenticated } = useAuth();
-  
-  const [countdown, setCountdown] = useState({
-    days: 30,
-    hours: 23,
-    minutes: 59,
-    seconds: 59
+/**
+ * VakilGPT /pricing page
+ * - Mobile-first, responsive
+ * - Hybrid credits model
+ * - Credit usage calculator suggests best plan
+ * - Clear mapping of feature → credits
+ * - Razorpay CTA placeholders
+ */
+
+const CREDITS_COST = {
+  chat: 10,
+  docAnalysis: 200,
+  caseLaw: 150,
+  drafting: 300,
+  research: 300,
+  bulkExport: 500,
+};
+
+const PLANS = [
+  {
+    id: "free",
+    name: "Free",
+    priceINR: 0,
+    tagline: "Try core tools each month",
+    credits: 200,
+    badge: "Free forever",
+    cta: "Get Started",
+    highlight: false,
+    features: [
+      "200 credits/month",
+      "AI chat access",
+      "1 document analysis",
+      "Basic templates",
+    ],
+    limits: ["Fair use; no bulk exports"],
+  },
+  {
+    id: "intro",
+    name: "Intro Pack",
+    priceINR: 50,
+    tagline: "Best starter for new users",
+    credits: 5000,
+    badge: "New user offer",
+    cta: "Buy Intro Pack",
+    highlight: true,
+    features: [
+      "5,000 credits/month",
+      "Full access to tools",
+      "Priority over Free",
+      "Eligible for referral bonuses",
+    ],
+    limits: ["Abuse safeguards apply"],
+  },
+  {
+    id: "basic",
+    name: "Basic",
+    priceINR: 299,
+    tagline: "For regular individual use",
+    credits: 15000,
+    badge: "Good value",
+    cta: "Choose Basic",
+    highlight: false,
+    features: [
+      "15,000 credits/month",
+      "Priority speed",
+      "Standard support",
+      "Access to all tools",
+    ],
+    limits: ["Bulk exports allowed within credits"],
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    priceINR: 1499,
+    tagline: "For heavy professional use",
+    credits: 75000,
+    badge: "Most popular",
+    cta: "Choose Pro",
+    highlight: true,
+    features: [
+      "75,000 credits/month",
+      "Highest priority speed",
+      "Advanced research flow",
+      "Email + chat support",
+    ],
+    limits: ["Team handoff coming soon"],
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    priceINR: null,
+    tagline: "Teams, firms & corporates",
+    credits: null,
+    badge: "Custom",
+    cta: "Request Custom Quote",
+    highlight: false,
+    features: [
+      "Custom credits & pricing",
+      "Team accounts & roles",
+      "SSO, usage analytics",
+      "Priority onboarding",
+    ],
+    limits: ["SLA, DPA on request"],
+  },
+] as const;
+
+function Check() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-5 w-5"
+    >
+      <path
+        fillRule="evenodd"
+        d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.28a.75.75 0 0 0-1.06-1.06l-4.72 4.72-1.88-1.88a.75.75 0 1 0-1.06 1.06l2.41 2.41c.293.293.767.293 1.06 0l5.25-5.25Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function Crown() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-4 w-4"
+    >
+      <path d="M2 7.5 6.5 12l3-4 3 4L17.5 8 22 12.5V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7.5Z" />
+    </svg>
+  );
+}
+
+const Pill = ({ children }: { children: React.ReactNode }) => (
+  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
+    <Crown /> {children}
+  </span>
+);
+
+function PricingContent() {
+  const [inputs, setInputs] = useState({
+    chats: 50,
+    docs: 2,
+    cases: 2,
+    drafts: 1,
+    research: 1,
+    exports: 0,
   });
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else if (prev.days > 0) {
-          return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        }
-        return prev;
-      });
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, []);
+  const monthlyCreditsNeed = useMemo(() => {
+    const {
+      chats,
+      docs,
+      cases,
+      drafts,
+      research: res,
+      exports,
+    } = inputs;
+    return (
+      chats * CREDITS_COST.chat +
+      docs * CREDITS_COST.docAnalysis +
+      cases * CREDITS_COST.caseLaw +
+      drafts * CREDITS_COST.drafting +
+      res * CREDITS_COST.research +
+      exports * CREDITS_COST.bulkExport
+    );
+  }, [inputs]);
 
-  const handleSignUp = () => {
-    if (!isAuthenticated) {
-      toast.info("Create your free account to continue", {
-        description: "Sign up to access all features during our beta period.",
-        action: {
-          label: "Sign Up",
-          onClick: () => window.location.href = "/signup"
-        }
-      });
-    } else {
-      toast.success("You're already signed up for our free beta!", {
-        description: "Enjoy all premium features at no cost during our beta period."
-      });
+  const bestPlan = useMemo(() => {
+    const eligible = PLANS.filter((p) => p.credits && p.priceINR !== null);
+    let choice = eligible[0];
+    eligible.forEach((p) => {
+      if (p.credits! >= monthlyCreditsNeed && p.priceINR! <= (choice.priceINR || 0)) {
+        choice = p as any;
+      }
+    });
+    // if none covers need, recommend Pro
+    if (choice && choice.credits! < monthlyCreditsNeed) {
+      const pro = PLANS.find((p) => p.id === "pro")!;
+      return pro;
     }
-  };
-  
-  const plans = [
-    {
-      name: "Basic",
-      description: "Essential legal AI tools for individuals",
-      price: annual ? "₹2,999" : "₹299",
-      period: annual ? "/year" : "/month",
-      currentBadge: "Introductory Offer",
-      color: "bg-gray-100 dark:bg-gray-800",
-      features: [
-        "Basic legal chat assistance",
-        "Document analysis (5/month)",
-        "Access to standard templates",
-        "Email support",
-        "Limited legal research"
-      ],
-      notIncluded: [
-        "Priority responses",
-        "Advanced features",
-        "API access"
-      ],
-      cta: "Get Started"
-    },
-    {
-      name: "Professional",
-      description: "Advanced features for legal professionals",
-      price: annual ? "₹14,999" : "₹1,499",
-      period: annual ? "/year" : "/month",
-      discount: annual ? "Save ₹3,588" : null,
-      currentBadge: "Most Popular",
-      color: "bg-gradient-to-b from-legal-accent/10 to-legal-accent/5",
-      popular: true,
-      features: [
-        "Everything in Basic",
-        "Unlimited document analysis",
-        "Advanced legal research",
-        "Case law citations",
-        "Custom document templates",
-        "Priority support",
-        "Litigation prediction tools"
-      ],
-      notIncluded: [
-        "Dedicated account manager",
-        "Custom AI model training"
-      ],
-      cta: "Choose Professional"
-    },
-    {
-      name: "Enterprise",
-      description: "Customized solutions for law firms & corporates",
-      price: "Contact for Pricing",
-      period: "",
-      currentBadge: "Tailored Solutions",
-      color: "bg-gradient-to-b from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/10",
-      features: [
-        "Everything in Professional",
-        "Dedicated account manager",
-        "Custom AI model training",
-        "API access",
-        "Team collaboration tools",
-        "Advanced analytics",
-        "SLA guarantees",
-        "Custom integrations"
-      ],
-      cta: "Request Custom Quote"
-    }
-  ];
+    return choice;
+  }, [monthlyCreditsNeed]);
 
   return (
-    <AppLayout>
-      <Helmet>
-        <title>Pricing | VakilGPT</title>
-        <meta name="description" content="VakilGPT pricing plans - Free during beta, premium features for legal professionals" />
-      </Helmet>
-      
-      <div className="container mx-auto py-12 px-4">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3 text-gray-900 dark:text-white">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
-            Free during our beta period, premium features coming soon
-          </p>
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 shadow-lg text-white mb-8 relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-full h-full bg-white/10 z-0"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Gift className="h-5 w-5" />
-                <h3 className="font-bold text-lg">Free Beta Access Period</h3>
-              </div>
-              
-              <p className="text-white/90 mb-4">All premium features available at no cost during our beta testing phase</p>
-              
-              <div className="grid grid-cols-4 gap-2 max-w-md mx-auto">
-                <div className="bg-white/20 rounded-lg p-2 text-center">
-                  <span className="font-bold text-2xl">{countdown.days}</span>
-                  <span className="block text-xs">Days</span>
-                </div>
-                <div className="bg-white/20 rounded-lg p-2 text-center">
-                  <span className="font-bold text-2xl">{countdown.hours}</span>
-                  <span className="block text-xs">Hours</span>
-                </div>
-                <div className="bg-white/20 rounded-lg p-2 text-center">
-                  <span className="font-bold text-2xl">{countdown.minutes}</span>
-                  <span className="block text-xs">Minutes</span>
-                </div>
-                <div className="bg-white/20 rounded-lg p-2 text-center">
-                  <span className="font-bold text-2xl">{countdown.seconds}</span>
-                  <span className="block text-xs">Seconds</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-          
-          <div className="flex items-center justify-center mb-8">
-            <span className={`mr-3 ${annual ? 'text-gray-500' : 'font-semibold text-gray-900 dark:text-white'}`}>
-              Monthly
-            </span>
-            <button
-              onClick={() => setAnnual(!annual)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
-                annual ? 'bg-legal-accent' : 'bg-gray-200 dark:bg-gray-700'
-              }`}
-            >
-              <span
-                className={`${
-                  annual ? 'translate-x-6' : 'translate-x-1'
-                } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-              />
-            </button>
-            <span className={`ml-3 flex items-center ${annual ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-500'}`}>
-              Yearly <Badge variant="outline" className="ml-2 bg-green-100 text-green-800 border-green-200 text-xs">Save 20%</Badge>
-            </span>
-          </div>
+    <main className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
+      {/* Header */}
+      <section className="mb-8 text-center">
+        <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
+          VakilGPT <span className="text-[10px]">BETA</span>
         </div>
-        
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan, index) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              key={plan.name}
-              className={`rounded-xl overflow-hidden border ${
-                plan.popular 
-                  ? 'border-legal-accent shadow-lg shadow-legal-accent/10' 
-                  : 'border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              {plan.popular && (
-                <div className="bg-legal-accent text-white text-center py-1.5 text-sm font-medium">
-                  Most Popular
-                </div>
-              )}
-              
-              <div className={`p-6 ${plan.color}`}>
-                <div className="mb-4">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">{plan.name}</h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{plan.description}</p>
-                </div>
-                
-                <div className="mb-6">
-                  <div className="flex items-end gap-1">
-                    <span className="text-3xl font-bold text-gray-900 dark:text-white">{plan.price}</span>
-                    <span className="text-gray-500 dark:text-gray-400 pb-1">{plan.period}</span>
-                  </div>
-                  {plan.discount && (
-                    <span className="text-green-600 dark:text-green-400 text-sm font-medium">{plan.discount}</span>
-                  )}
-                  
-                  <div className="mt-2">
-                    <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800/50 flex items-center gap-1 w-fit">
-                      <Gift className="h-3 w-3" />
-                      {plan.currentBadge}
-                    </Badge>
-                  </div>
-                </div>
-                
-                <Button 
-                  className={`w-full ${
-                    plan.popular
-                      ? 'bg-legal-accent hover:bg-legal-accent/90 text-white'
-                      : ''
-                  }`}
-                  variant={plan.popular ? 'default' : 'outline'}
-                  onClick={plan.name === 'Enterprise' ? () => window.location.href = 'mailto:Manmeetsingh20378@gmail.com' : handleSignUp}
-                >
-                  {plan.cta}
-                </Button>
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          Simple, Transparent Pricing
+        </h1>
+        <p className="mx-auto mt-2 max-w-2xl text-muted-foreground">
+          Hybrid credit model: pay only for what you use. Start free, upgrade when you need more power.
+        </p>
+      </section>
+
+      {/* Credit Costs legend */}
+      <section className="mb-10 grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-3">
+        <h3 className="col-span-full text-sm font-semibold text-card-foreground">
+          Credit Costs (per action)
+        </h3>
+        {Object.entries(CREDITS_COST).map(([k, v]) => (
+          <div key={k} className="flex items-center justify-between rounded-xl bg-muted px-3 py-2 text-sm">
+            <span className="capitalize text-muted-foreground">{k.replace(/[A-Z]/g, (m) => ` ${m.toLowerCase()}`)}</span>
+            <span className="font-medium text-foreground">{v} credits</span>
+          </div>
+        ))}
+      </section>
+
+      {/* Calculator */}
+      <section className="mb-12 rounded-2xl border border-border bg-card p-4">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-base font-semibold text-card-foreground">Estimate your monthly usage</h3>
+          <Pill>Suggested: {bestPlan?.name}</Pill>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Adjust the sliders to see which plan fits you. Credits needed: {" "}
+          <span className="font-semibold text-foreground">{monthlyCreditsNeed.toLocaleString()}</span>
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {([
+            ["chats", "AI chat messages", 0, 1000],
+            ["docs", "Document analysis (files)", 0, 50],
+            ["cases", "Case law searches", 0, 50],
+            ["drafts", "Contract drafts", 0, 50],
+            ["research", "Advanced research runs", 0, 50],
+            ["exports", "Bulk exports", 0, 20],
+          ] as const).map(([key, label, min, max]) => (
+            <label key={key} className="block rounded-xl bg-muted p-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">{label}</span>
+                <span className="font-medium text-foreground">{inputs[key as keyof typeof inputs]}</span>
               </div>
-              
-              <div className="p-6 bg-white dark:bg-gray-800">
-                <div className="space-y-4">
-                  {plan.features.map((feature, i) => (
-                    <div key={i} className="flex">
-                      <Check className="h-5 w-5 text-green-500 shrink-0 mr-3" />
-                      <span className="text-gray-700 dark:text-gray-300 text-sm">{feature}</span>
-                    </div>
-                  ))}
-                  
-                  {plan.notIncluded && plan.notIncluded.map((feature, i) => (
-                    <div key={i} className="flex text-gray-400">
-                      <X className="h-5 w-5 shrink-0 mr-3" />
-                      <span className="text-sm">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
+              <input
+                type="range"
+                min={min}
+                max={max}
+                value={inputs[key as keyof typeof inputs]}
+                className="mt-2 w-full accent-primary"
+                onChange={(e) =>
+                  setInputs((prev) => ({ ...prev, [key]: Number(e.target.value) }))
+                }
+              />
+            </label>
           ))}
         </div>
-        
-        <div className="mt-16 max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Frequently Asked Questions</h2>
-          
-          <div className="grid md:grid-cols-2 gap-6 mt-8 text-left">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">When will the beta period end?</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                We're currently in beta and all features are free. When we transition to paid plans, we'll notify all users at least 30 days in advance.
-              </p>
+      </section>
+
+      {/* Plans */}
+      <section>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {PLANS.map((p) => (
+            <div
+              key={p.id}
+              className={`relative flex flex-col rounded-3xl border border-border p-5 ${
+                p.highlight ? "ring-2 ring-primary" : ""
+              } bg-card`}
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-card-foreground">{p.name}</h3>
+                <Pill>{p.badge}</Pill>
+              </div>
+              <p className="text-sm text-muted-foreground">{p.tagline}</p>
+
+              <div className="mt-4">
+                {p.priceINR === null ? (
+                  <p className="text-2xl font-bold text-card-foreground">Contact Sales</p>
+                ) : (
+                  <p className="text-3xl font-bold text-card-foreground">₹{p.priceINR.toLocaleString()}<span className="text-base font-medium text-muted-foreground"> /month</span></p>
+                )}
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {p.credits ? (
+                    <>
+                      Includes <span className="font-medium text-foreground">{p.credits.toLocaleString()}</span> credits / month
+                    </>
+                  ) : (
+                    <>Custom credits negotiated</>
+                  )}
+                </p>
+              </div>
+
+              <button
+                className={`mt-4 inline-flex w-full items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+                  p.highlight
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+                // Replace with real handlers / Razorpay open checkout
+                onClick={() => alert(`${p.cta} → Razorpay checkout (to wire)`)}
+              >
+                {p.cta}
+              </button>
+
+              <ul className="mt-5 space-y-2 text-sm">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-muted-foreground">
+                    <Check /> <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {p.limits?.length ? (
+                <div className="mt-4 rounded-xl bg-muted p-3 text-xs text-muted-foreground">
+                  {p.limits.map((l) => (
+                    <div key={l}>• {l}</div>
+                  ))}
+                </div>
+              ) : null}
             </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Will my data be transferred after beta?</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Yes, all your data and documents will remain available when we transition from beta to our official launch.
-              </p>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mt-12 grid gap-4 rounded-2xl border border-border bg-card p-4 sm:grid-cols-2">
+        <h3 className="col-span-full text-lg font-semibold text-card-foreground">Frequently Asked Questions</h3>
+        <details className="rounded-xl bg-muted p-4">
+          <summary className="cursor-pointer text-sm font-medium text-foreground">What do credits mean in VakilGPT?</summary>
+          <p className="mt-2 text-sm text-muted-foreground">Credits represent usage. Each feature consumes credits (see the legend above). Your monthly plan refills credits automatically.</p>
+        </details>
+        <details className="rounded-xl bg-muted p-4">
+          <summary className="cursor-pointer text-sm font-medium text-foreground">What happens if I run out of credits?</summary>
+          <p className="mt-2 text-sm text-muted-foreground">You can buy a top-up (Razorpay) or upgrade your plan. Unused top-up credits roll over for 30 days.</p>
+        </details>
+        <details className="rounded-xl bg-muted p-4">
+          <summary className="cursor-pointer text-sm font-medium text-foreground">Is the ₹50 Intro Pack recurring?</summary>
+          <p className="mt-2 text-sm text-muted-foreground">No. It's a one-time monthly offer for new users to experience the platform with 5,000 credits.</p>
+        </details>
+        <details className="rounded-xl bg-muted p-4">
+          <summary className="cursor-pointer text-sm font-medium text-foreground">Do you offer refunds?</summary>
+          <p className="mt-2 text-sm text-muted-foreground">Due to metered usage, refunds aren't offered, but contact support for billing issues—we're happy to help.</p>
+        </details>
+      </section>
+
+      {/* Mobile sticky CTA */}
+      <div className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-3xl p-3 sm:hidden">
+        <div className="rounded-2xl border border-border bg-card p-3 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs text-muted-foreground">Suggested plan</div>
+              <div className="text-sm font-semibold text-card-foreground">{bestPlan?.name}</div>
             </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Can I cancel anytime?</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Yes, when paid plans are introduced, you'll be able to cancel your subscription at any time with no questions asked.
-              </p>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Do you offer discounts?</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                We'll offer special discounts for students, non-profits, and educational institutions. Contact us for details.
-              </p>
-            </div>
-          </div>
-          
-          <div className="mt-10">
-            <Link to="/terms-of-service" className="text-legal-accent hover:underline inline-flex items-center">
-              View our Terms of Service <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
+            <button
+              className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90"
+              onClick={() => alert("Proceed to Razorpay checkout (to wire)")}
+            >
+              Continue
+            </button>
           </div>
         </div>
       </div>
+    </main>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <AppLayout>
+      <Helmet>
+        <title>Pricing - VakilGPT | Simple, Transparent AI Legal Assistant Plans</title>
+        <meta 
+          name="description" 
+          content="Choose from flexible VakilGPT pricing plans. Start free with 200 credits, upgrade to Pro for 75K credits. Pay only for what you use with our credit-based system." 
+        />
+        <meta name="keywords" content="VakilGPT pricing, legal AI plans, Indian law AI pricing, legal assistant cost" />
+        <link rel="canonical" href="https://vakilgpt.com/pricing" />
+      </Helmet>
+      <PricingContent />
     </AppLayout>
   );
-};
-
-export default PricingPage;
+}
