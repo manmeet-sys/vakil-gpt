@@ -675,6 +675,30 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          created_at: string | null
+          id: number
+          monthly_credits: number
+          plan_name: string
+          price_in_inr: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          monthly_credits: number
+          plan_name: string
+          price_in_inr: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          monthly_credits?: number
+          plan_name?: string
+          price_in_inr?: number
+        }
+        Relationships: []
+      }
       templates: {
         Row: {
           category: string | null
@@ -732,6 +756,33 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          action_type: string | null
+          balance_after: number
+          created_at: string | null
+          credits_used: number
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action_type?: string | null
+          balance_after: number
+          created_at?: string | null
+          credits_used: number
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string | null
+          balance_after?: number
+          created_at?: string | null
+          credits_used?: number
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_reviews: {
         Row: {
           comment: string
@@ -765,12 +816,40 @@ export type Database = {
         }
         Relationships: []
       }
+      wallets: {
+        Row: {
+          current_credits: number
+          id: string
+          last_updated: string | null
+          user_id: string | null
+        }
+        Insert: {
+          current_credits?: number
+          id?: string
+          last_updated?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          current_credits?: number
+          id?: string
+          last_updated?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_credits: {
+        Args: { p_amount: number; p_source: string; p_user_id: string }
+        Returns: undefined
+      }
+      deduct_credits: {
+        Args: { p_action_type: string; p_cost: number; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
