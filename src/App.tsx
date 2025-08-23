@@ -65,6 +65,10 @@ const FraudDetectorPage = lazy(() => import("./pages/fraud-detector"));
 const UserProfilePage = lazy(() => import("./pages/user-profile"));
 const ProfileEditPage = lazy(() => import("./pages/profile-edit"));
 const CourtFilingPage = lazy(() => import("./pages/court-filing"));
+
+// Wallet pages
+const TransactionHistory = lazy(() => import("./pages/wallet/transactions"));
+const TopUpPage = lazy(() => import("./pages/wallet/topup"));
 const DeadlineManagementPage = lazy(() => import("./pages/deadline-management"));
 const CaseManagementPage = lazy(() => import("./pages/case-management"));
 const LegalDocumentDraftingPage = lazy(() => import("./pages/legal-document-drafting"));
@@ -326,6 +330,19 @@ const App = () => (
                       <Route path="/profile-edit" element={
                         <ProtectedRoute>
                           <ProfileEditPage />
+                        </ProtectedRoute>
+                      } />
+                      
+                      {/* Wallet Routes */}
+                      <Route path="/wallet/transactions" element={
+                        <ProtectedRoute>
+                          <TransactionHistory />
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="/wallet/topup" element={
+                        <ProtectedRoute>
+                          <TopUpPage />
                         </ProtectedRoute>
                       } />
                       
