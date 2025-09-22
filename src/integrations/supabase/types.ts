@@ -150,6 +150,74 @@ export type Database = {
           },
         ]
       }
+      chat_conversations: {
+        Row: {
+          context_summary: string | null
+          created_at: string
+          id: string
+          title: string | null
+          topic_keywords: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_summary?: string | null
+          created_at?: string
+          id?: string
+          title?: string | null
+          topic_keywords?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_summary?: string | null
+          created_at?: string
+          id?: string
+          title?: string | null
+          topic_keywords?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          legal_context: Json | null
+          role: string
+          tokens_used: number | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          legal_context?: Json | null
+          role: string
+          tokens_used?: number | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          legal_context?: Json | null
+          role?: string
+          tokens_used?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_documents: {
         Row: {
           case_id: string | null
