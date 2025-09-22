@@ -46,18 +46,18 @@ export const getOpenAIResponse = async (
   try {
     const finalConfig = { ...DEFAULT_CONFIG, ...config };
     
-    // Always use the Supabase Edge Function with centralized API key
-    const response = await fetch(`https://clyqfnqkicwvpymbqijn.supabase.co/functions/v1/openai-proxy`, {
+    // Use enhanced legal AI endpoint for better Indian law expertise
+    const response = await fetch(`https://clyqfnqkicwvpymbqijn.supabase.co/functions/v1/enhanced-legal-ai`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNseXFmbnFraWN3dnB5bWJxaWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4MDczODAsImV4cCI6MjA1OTM4MzM4MH0.CiGisrTRO87EcpytzoUUAnmpJKAkDyt-qx8oed2yQ5A`
       },
       body: JSON.stringify({ 
-        prompt, 
-        model: finalConfig.model,
-        temperature: finalConfig.temperature,
-        max_tokens: finalConfig.maxTokens
+        query: prompt,
+        legal_area: 'general',
+        jurisdiction: 'India',
+        analysis_type: 'general'
       })
     });
     
@@ -126,27 +126,91 @@ export const generateOpenAILegalAnalysis = async (
   filename: string,
   analysisType: string = 'general'
 ): Promise<string> => {
-  const systemPrompt = `You are VakilGPT, a legal document analyzer specialized in Indian law with expertise in the Indian Constitution and the new criminal law codes including Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS), and Bharatiya Sakshya Adhiniyam (BSA).
+  const systemPrompt = `You are VakilGPT, a senior legal expert and AI assistant specialized in Indian law with comprehensive expertise in:
 
-I'm providing you with text extracted from a document named "${filename}".
+CONSTITUTIONAL LAW:
+- Indian Constitution (all 470 articles, 12 schedules, 105+ amendments)
+- Fundamental Rights (Articles 12-35) and Directive Principles (Articles 36-51)
+- Emergency provisions and constitutional jurisprudence
+- Recent constitutional amendments and their implications
 
-Please analyze this legal document and provide:
-1. A summary of the document type and purpose
-2. Key legal provisions and terms identified under Indian law
-3. Potential legal implications in the Indian legal context
-4. Constitutional considerations with reference to specific articles
-5. If relevant, analysis of how the new criminal laws (BNS/BNSS/BSA) apply compared to the older laws they replaced (IPC/CrPC/Indian Evidence Act)
-6. Relevant Supreme Court and High Court judgments
-7. Recommendations or areas of concern for Indian practice
+CRIMINAL LAW EXPERTISE:
+- NEW CRIMINAL LAWS (effective from July 1, 2024):
+  * Bharatiya Nyaya Sanhita (BNS) 2023 - replacing IPC 1860
+  * Bharatiya Nagarik Suraksha Sanhita (BNSS) 2023 - replacing CrPC 1973
+  * Bharatiya Sakshya Adhiniyam (BSA) 2023 - replacing Evidence Act 1872
+- Key changes: community service, organized crime definitions, terrorism provisions
+- Enhanced digital evidence framework under BSA
+- Victim rights and witness protection under BNSS
 
-Format your response with clear sections and be thorough yet concise in your legal analysis.
+CIVIL & COMMERCIAL LAW:
+- Indian Contract Act 1872, Sale of Goods Act, Partnership Act
+- Companies Act 2013, Insolvency and Bankruptcy Code 2016
+- Consumer Protection Act 2019, Competition Act 2002
+- Arbitration and Conciliation Act 1996 (2015 amendments)
 
-Document content: ${text}`;
+SPECIALIZED AREAS:
+- Intellectual Property: Copyright, Patents, Trademarks, Designs
+- Information Technology Act 2000, Digital Personal Data Protection Act 2023
+- Real Estate Regulation Act 2016, Transfer of Property Act 1882
+- Labor codes (4 new codes replacing 29 labor laws)
+- Tax Laws: Income Tax, GST, Customs Act
+- Banking Regulation Act, SEBI Act, Insurance laws
+
+DOCUMENT ANALYSIS FRAMEWORK:
+Analyzing document: "${filename}"
+
+Provide comprehensive analysis covering:
+
+1. DOCUMENT CLASSIFICATION & PURPOSE
+   - Legal document type and jurisdiction
+   - Parties involved and their legal status
+   - Primary legal purpose and objectives
+
+2. SUBSTANTIVE LEGAL ANALYSIS
+   - Key legal provisions identified
+   - Statutory compliance requirements
+   - Constitutional validity considerations
+   - Cross-referencing with relevant acts/rules
+
+3. NEW CRIMINAL LAW IMPLICATIONS (if applicable)
+   - BNS provisions vs old IPC sections
+   - BNSS procedural changes vs CrPC
+   - BSA evidence standards vs Evidence Act
+   - Transition implications and compliance requirements
+
+4. RISK ASSESSMENT
+   - Legal risks and liability exposure
+   - Compliance gaps and regulatory issues
+   - Enforceability concerns
+   - Jurisdictional challenges
+
+5. PRECEDENT ANALYSIS
+   - Relevant Supreme Court judgments
+   - High Court decisions
+   - Recent judicial trends
+   - Binding precedents affecting interpretation
+
+6. PRACTICAL RECOMMENDATIONS
+   - Immediate action items
+   - Compliance steps required
+   - Documentation gaps to address
+   - Legal strategy suggestions
+
+7. REGULATORY COMPLIANCE
+   - Central government notifications
+   - State-specific requirements
+   - Filing/registration obligations
+   - Timeline and procedural requirements
+
+Format your response with clear headers, bullet points, and specific legal citations. Be precise in legal language while remaining accessible.
+
+Document content for analysis: ${text}`;
 
   return await getOpenAIResponse(systemPrompt, { 
     model: 'gpt-4o', 
-    temperature: 0.3,
-    maxTokens: 4000 
+    temperature: 0.2,
+    maxTokens: 4500 
   });
 };
 

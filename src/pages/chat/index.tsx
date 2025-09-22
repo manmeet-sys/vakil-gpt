@@ -5,8 +5,8 @@ import OptimizedAppLayout from '@/components/OptimizedAppLayout'; // Use the opt
 import BackButton from '@/components/BackButton';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Lazy load ChatInterface component
-const ChatInterface = lazy(() => import('@/components/ChatInterface'));
+// Lazy load enhanced ChatInterface component
+const ChatInterface = lazy(() => import('@/components/EnhancedChatInterface'));
 
 // Chat loading skeleton
 const ChatLoadingSkeleton = () => (
@@ -55,8 +55,8 @@ const ChatPage = () => {
             <h2 className="font-medium text-gray-700 dark:text-gray-200">VakilGPT Chat Interface</h2>
           </div>
           
-          {/* Chat interface container with Suspense */}
-          <div className="h-[calc(100vh-350px)] min-h-[500px]">
+          {/* Enhanced Chat interface container with Suspense */}
+          <div className="h-[calc(100vh-250px)] min-h-[600px] p-4">
             <Suspense fallback={<ChatLoadingSkeleton />}>
               <ChatInterface />
             </Suspense>
