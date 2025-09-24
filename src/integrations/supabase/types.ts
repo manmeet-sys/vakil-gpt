@@ -218,6 +218,110 @@ export type Database = {
           },
         ]
       }
+      chunks: {
+        Row: {
+          content: string
+          court_level: string | null
+          date: string | null
+          doc_id: string | null
+          embedding: string | null
+          holding_direction: string | null
+          id: string
+          inserted_at: string | null
+          is_primary: boolean | null
+          posture: string | null
+          provisions: string[] | null
+          seq: number | null
+          token_count: number | null
+          tsv: unknown | null
+        }
+        Insert: {
+          content: string
+          court_level?: string | null
+          date?: string | null
+          doc_id?: string | null
+          embedding?: string | null
+          holding_direction?: string | null
+          id?: string
+          inserted_at?: string | null
+          is_primary?: boolean | null
+          posture?: string | null
+          provisions?: string[] | null
+          seq?: number | null
+          token_count?: number | null
+          tsv?: unknown | null
+        }
+        Update: {
+          content?: string
+          court_level?: string | null
+          date?: string | null
+          doc_id?: string | null
+          embedding?: string | null
+          holding_direction?: string | null
+          id?: string
+          inserted_at?: string | null
+          is_primary?: boolean | null
+          posture?: string | null
+          provisions?: string[] | null
+          seq?: number | null
+          token_count?: number | null
+          tsv?: unknown | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chunks_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      citations: {
+        Row: {
+          answer_id: string | null
+          chat_id: string | null
+          chunk_id: string | null
+          created_at: string | null
+          doc_id: string | null
+          id: string
+          score: number | null
+        }
+        Insert: {
+          answer_id?: string | null
+          chat_id?: string | null
+          chunk_id?: string | null
+          created_at?: string | null
+          doc_id?: string | null
+          id?: string
+          score?: number | null
+        }
+        Update: {
+          answer_id?: string | null
+          chat_id?: string | null
+          chunk_id?: string | null
+          created_at?: string | null
+          doc_id?: string | null
+          id?: string
+          score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "citations_chunk_id_fkey"
+            columns: ["chunk_id"]
+            isOneToOne: false
+            referencedRelation: "chunks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "citations_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_documents: {
         Row: {
           case_id: string | null
@@ -455,6 +559,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      documents: {
+        Row: {
+          court_level: string | null
+          date: string | null
+          id: string
+          inserted_at: string | null
+          is_primary: boolean | null
+          jurisdiction: string | null
+          posture: string | null
+          provisions: string[] | null
+          source_url: string | null
+          title: string
+        }
+        Insert: {
+          court_level?: string | null
+          date?: string | null
+          id?: string
+          inserted_at?: string | null
+          is_primary?: boolean | null
+          jurisdiction?: string | null
+          posture?: string | null
+          provisions?: string[] | null
+          source_url?: string | null
+          title: string
+        }
+        Update: {
+          court_level?: string | null
+          date?: string | null
+          id?: string
+          inserted_at?: string | null
+          is_primary?: boolean | null
+          jurisdiction?: string | null
+          posture?: string | null
+          provisions?: string[] | null
+          source_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      evals: {
+        Row: {
+          created_at: string | null
+          id: string
+          input: Json | null
+          name: string | null
+          notes: string | null
+          output: Json | null
+          score: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          input?: Json | null
+          name?: string | null
+          notes?: string | null
+          output?: Json | null
+          score?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          input?: Json | null
+          name?: string | null
+          notes?: string | null
+          output?: Json | null
+          score?: number | null
+        }
+        Relationships: []
       }
       invoices: {
         Row: {
@@ -914,9 +1087,101 @@ export type Database = {
         Args: { p_amount: number; p_source: string; p_user_id: string }
         Returns: undefined
       }
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
       deduct_credits: {
         Args: { p_action_type: string; p_cost: number; p_user_id: string }
         Returns: undefined
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
       }
     }
     Enums: {
