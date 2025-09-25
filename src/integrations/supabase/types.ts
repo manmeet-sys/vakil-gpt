@@ -1147,6 +1147,43 @@ export type Database = {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: string
       }
+      search_chunks_ts: {
+        Args: { match_limit?: number; q: string }
+        Returns: {
+          content: string
+          court_level: string | null
+          date: string | null
+          doc_id: string | null
+          embedding: string | null
+          holding_direction: string | null
+          id: string
+          inserted_at: string | null
+          is_primary: boolean | null
+          posture: string | null
+          provisions: string[] | null
+          seq: number | null
+          token_count: number | null
+          tsv: unknown | null
+        }[]
+      }
+      search_chunks_vec: {
+        Args: { match_count?: number; query_vec: string }
+        Returns: {
+          content: string
+          court_level: string
+          date: string
+          doc_id: string
+          embedding: string
+          holding_direction: string
+          id: string
+          is_primary: boolean
+          posture: string
+          provisions: string[]
+          seq: number
+          similarity: number
+          token_count: number
+        }[]
+      }
       sparsevec_out: {
         Args: { "": unknown }
         Returns: unknown
