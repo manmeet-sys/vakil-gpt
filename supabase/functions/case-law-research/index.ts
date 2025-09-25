@@ -154,12 +154,13 @@ Return results in the following JSON format:
     }
   } catch (error) {
     console.error('Error in case-law-research function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: errorMessage,
       cases: [],
       searchInsights: {
         totalCasesFound: 0,
-        error: error.message
+        error: errorMessage
       }
     }), {
       status: 500,

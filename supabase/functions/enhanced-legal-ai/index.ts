@@ -216,8 +216,9 @@ Provide comprehensive legal guidance following the structured approach outlined 
 
   } catch (error) {
     console.error('Error in enhanced-legal-ai function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: errorMessage,
       timestamp: new Date().toISOString()
     }), {
       status: 500,

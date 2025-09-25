@@ -204,8 +204,9 @@ Return analysis in JSON format:
     }
   } catch (error) {
     console.error('Error in statute-tracker function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({ 
-      error: error.message
+      error: errorMessage
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
