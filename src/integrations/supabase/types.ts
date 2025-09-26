@@ -1147,6 +1147,10 @@ export type Database = {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: string
       }
+      refresh_chunk_tsv: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       search_chunks_ts: {
         Args: { match_limit?: number; q: string }
         Returns: {
