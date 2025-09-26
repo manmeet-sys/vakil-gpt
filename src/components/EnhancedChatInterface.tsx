@@ -1,30 +1,53 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Trash, MessageSquare, Plus, Clock, ChevronDown } from 'lucide-react';
+import { Send, Loader2, Trash, MessageSquare, Plus, Clock, ChevronDown, Bot, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import LegalChatMessage from './LegalChatMessage';
+import { FactChecklist } from './FactChecklist';
+import { LegalAnswerDisplay } from './LegalAnswerDisplay';
+import { ForumMismatchAlert } from './ForumMismatchAlert';
+import { CitationModal } from './CitationModal';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
 import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
-import { getOpenAIResponse } from './OpenAIIntegration';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useConversationMemory } from '@/hooks/useConversationMemory';
 import { useAuth } from '@/context/AuthContext';
 import { useCreditGate } from '@/hooks/useCreditGateSimple';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EnhancedChatInterfaceProps {
   className?: string;
+}
+
+interface LegalAuthority {
+  court?: string;
+  year?: number;
+  title: string;
+  pinpoint?: string;
+  holding: string;
+  why_relevant?: string;
+  primary: boolean;
+}
+
+interface NormalizedQuery {
+  partySeeking: string;
+  relief: string;
+  forum: string;
+  casePosture: string;
+  facts?: any;
 }
 
 const EnhancedChatInterface: React.FC<EnhancedChatInterfaceProps> = ({ className }) => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { executeWithCredits } = useCreditGate();
+  const { toast } = useToast();
   
   const {
     conversations,
@@ -43,6 +66,15 @@ const EnhancedChatInterface: React.FC<EnhancedChatInterfaceProps> = ({ className
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showConversations, setShowConversations] = useState(false);
+  
+  // Legal RAG states
+  const [showFactChecklist, setShowFactChecklist] = useState(false);
+  const [missingFacts, setMissingFacts] = useState<string[]>([]);
+  const [normalizedQuery, setNormalizedQuery] = useState<NormalizedQuery | null>(null);
+  const [forumMismatchError, setForumMismatchError] = useState<any>(null);
+  const [selectedCitation, setSelectedCitation] = useState<LegalAuthority | null>(null);
+  const [showCitationModal, setShowCitationModal] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,50 +85,84 @@ const EnhancedChatInterface: React.FC<EnhancedChatInterfaceProps> = ({ className
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Enhanced Indian law system prompt
-  const getEnhancedLegalPrompt = (userQuery: string, context: string) => {
-    return `You are VakilGPT, an expert AI legal assistant specialized in Indian law with comprehensive knowledge of:
+  const handleCitationClick = (authority: LegalAuthority) => {
+    setSelectedCitation(authority);
+    setShowCitationModal(true);
+  };
 
-CORE LEGAL FRAMEWORK:
-- Indian Constitution (all articles, schedules, amendments)
-- New Criminal Laws: Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS), Bharatiya Sakshya Adhiniyam (BSA)
-- Civil Laws: Indian Contract Act, Property Law, Family Law, Consumer Protection
-- Commercial Laws: Companies Act, SEBI regulations, Banking laws, Insolvency Code
-- Tax Laws: Income Tax, GST, Customs, State taxes
-- Intellectual Property: Copyright, Patents, Trademarks, Designs
-- Labor & Employment laws
-- Environmental and regulatory compliance
+  const processLegalQuery = async (query: string, proceedWithAssumptions = false) => {
+    try {
+      // Step 1: Normalize the query
+      const { data: normalizeData, error: normalizeError } = await supabase.functions.invoke('legal-normalize', {
+        body: { query }
+      });
 
-EXPERTISE AREAS:
-- Constitutional interpretation and fundamental rights
-- Contract drafting and analysis under Indian law
-- Criminal procedure and evidence under new codes
-- Corporate governance and compliance
-- Litigation strategy and case law analysis
-- Property transactions and documentation
-- Family law matters including marriage, divorce, succession
-- Tax planning and compliance
-- Startup legal requirements
-- Cross-border legal implications
+      if (normalizeError) throw normalizeError;
 
-RESPONSE GUIDELINES:
-1. Always cite specific legal provisions (sections, articles, rules)
-2. Reference recent Supreme Court and High Court judgments when relevant
-3. Compare old vs new criminal laws when applicable (IPC/CrPC vs BNS/BNSS)
-4. Provide practical, actionable legal advice
-5. Mention jurisdiction-specific variations when relevant
-6. Include procedural steps and timelines
-7. Highlight risks and compliance requirements
-8. Suggest documentation needed
-9. Be professional yet accessible in language
-10. Use both English and Hindi legal terms appropriately
+      const { norm, must_have } = normalizeData;
+      setNormalizedQuery(norm);
 
-PREVIOUS CONVERSATION CONTEXT:
-${context}
+      // Step 2: Check for missing critical facts
+      if (must_have && must_have.length > 0 && !proceedWithAssumptions) {
+        setMissingFacts(must_have);
+        setShowFactChecklist(true);
+        return;
+      }
 
-USER QUERY: ${userQuery}
+      // Step 3: Get retrieval context
+      const { data: retrievalData, error: retrievalError } = await supabase.functions.invoke('legal-retrieval', {
+        body: { 
+          userQuery: query, 
+          norm, 
+          targetForum: norm.forum 
+        }
+      });
 
-Provide a comprehensive, accurate response following Indian legal precedents and current statutory provisions.`;
+      if (retrievalError) throw retrievalError;
+
+      // Step 4: Get legal answer
+      const { data: answerData, error: answerError } = await supabase.functions.invoke('legal-answer', {
+        body: { 
+          userQuery: query, 
+          norm, 
+          targetForum: norm.forum,
+          context: retrievalData.results || []
+        }
+      });
+
+      // Handle forum mismatch
+      if (answerError && answerError.message?.includes('Forum mismatch')) {
+        setForumMismatchError(answerError);
+        return;
+      }
+
+      if (answerError) throw answerError;
+
+      // Add structured legal response
+      const responseMessage = {
+        role: 'assistant' as const,
+        content: JSON.stringify({
+          type: 'legal_analysis',
+          data: answerData.answer
+        })
+      };
+
+      await addMessage(responseMessage);
+
+      // Clear states
+      setShowFactChecklist(false);
+      setMissingFacts([]);
+      setForumMismatchError(null);
+
+    } catch (error) {
+      console.error('Legal query processing error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process legal query';
+      
+      await addMessage({
+        role: 'assistant',
+        content: `I apologize, but I encountered an error while processing your legal query: ${errorMessage}. Please try rephrasing your question or contact support if the issue persists.`
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -140,34 +206,8 @@ Provide a comprehensive, accurate response following Indian legal precedents and
 
     try {
       await executeWithCredits('doc_analysis', async () => {
-        const context = getConversationContext();
-        const enhancedPrompt = getEnhancedLegalPrompt(userInput, context);
-        
-        const response = await getOpenAIResponse(enhancedPrompt, {
-          model: 'gpt-4o',
-          temperature: 0.3,
-          maxTokens: 3000
-        });
-
-        const assistantMessage = await addMessage({
-          role: 'assistant',
-          content: response,
-          tokens_used: Math.ceil(response.length / 4),
-          legal_context: {
-            query_type: detectQueryType(userInput),
-            confidence: 'high',
-            jurisdiction: 'India'
-          }
-        });
-
-        if (assistantMessage && currentConversation) {
-          // Update conversation context after a few messages
-          const allMessages = [...messages, userMessage, assistantMessage];
-          if (allMessages.length % 6 === 0) { // Every 6 messages
-            const { keywords, summary } = analyzeConversation(allMessages);
-            await updateConversationContext(currentConversation.id, summary, keywords);
-          }
-        }
+        // Process as legal query using RAG system
+        await processLegalQuery(userInput);
       });
     } catch (error) {
       console.error('Error getting AI response:', error);
@@ -181,15 +221,22 @@ Provide a comprehensive, accurate response following Indian legal precedents and
     }
   };
 
-  const detectQueryType = (query: string): string => {
-    const queryLower = query.toLowerCase();
-    if (queryLower.includes('contract') || queryLower.includes('agreement')) return 'contract';
-    if (queryLower.includes('criminal') || queryLower.includes('bns') || queryLower.includes('ipc')) return 'criminal';
-    if (queryLower.includes('property') || queryLower.includes('real estate')) return 'property';
-    if (queryLower.includes('family') || queryLower.includes('marriage') || queryLower.includes('divorce')) return 'family';
-    if (queryLower.includes('company') || queryLower.includes('corporate')) return 'corporate';
-    if (queryLower.includes('tax') || queryLower.includes('gst')) return 'tax';
-    return 'general';
+  const handleProceedWithAssumptions = async () => {
+    if (normalizedQuery && input) {
+      setShowFactChecklist(false);
+      await processLegalQuery(input, true);
+    }
+  };
+
+  const handleSwitchForum = async (newForum: string) => {
+    if (normalizedQuery && input) {
+      const updatedNorm = { ...normalizedQuery, forum: newForum };
+      setNormalizedQuery(updatedNorm);
+      setForumMismatchError(null);
+      
+      // Retry with new forum
+      await processLegalQuery(input);
+    }
   };
 
   const handleAnalysisComplete = (analysis: string) => {
@@ -202,10 +249,22 @@ Provide a comprehensive, accurate response following Indian legal precedents and
 
   const clearChat = () => {
     clearConversation();
+    setShowFactChecklist(false);
+    setMissingFacts([]);
+    setForumMismatchError(null);
+    setNormalizedQuery(null);
     toast({
       title: "Conversation Ended",
       description: "Start a new conversation to continue",
     });
+  };
+
+  const handleNewConversation = async () => {
+    await startNewConversation();
+    setShowFactChecklist(false);
+    setMissingFacts([]);
+    setForumMismatchError(null);
+    setNormalizedQuery(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -225,6 +284,41 @@ Provide a comprehensive, accurate response following Indian legal precedents and
     return `Chat ${formatDate(conv.created_at)}`;
   };
 
+  const renderMessage = (message: any, index: number) => {
+    if (message.role === 'assistant' && message.content.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(message.content);
+        if (parsed.type === 'legal_analysis') {
+          return (
+            <div key={message.id || index} className="mb-4">
+              <div className="flex items-start gap-3 mb-2">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+                <div className="text-sm text-gray-600 mt-1">Legal Analysis</div>
+              </div>
+              <LegalAnswerDisplay 
+                answer={parsed.data} 
+                onCitationClick={handleCitationClick}
+              />
+            </div>
+          );
+        }
+      } catch (e) {
+        // Fall back to regular message display
+      }
+    }
+
+    return (
+      <LegalChatMessage
+        key={message.id || index}
+        message={message.content}
+        isUser={message.role === 'user'}
+        isLoading={false}
+      />
+    );
+  };
+
   return (
     <div className={`flex gap-4 h-full ${className}`}>
       {/* Conversation Sidebar - Desktop */}
@@ -239,7 +333,7 @@ Provide a comprehensive, accurate response following Indian legal precedents and
               <Button 
                 size="sm" 
                 variant="outline"
-                onClick={startNewConversation}
+                onClick={handleNewConversation}
                 className="h-7 px-2"
               >
                 <Plus className="h-3 w-3" />
@@ -300,7 +394,7 @@ Provide a comprehensive, accurate response following Indian legal precedents and
                   <Button 
                     size="sm" 
                     variant="outline"
-                    onClick={startNewConversation}
+                    onClick={handleNewConversation}
                     className="w-full mb-2"
                   >
                     <Plus className="h-3 w-3 mr-1" />
@@ -381,13 +475,28 @@ Provide a comprehensive, accurate response following Indian legal precedents and
         {/* Chat Messages */}
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
-            {messages.map((message) => (
-              <LegalChatMessage
-                key={message.id}
-                message={message.content}
-                isUser={message.role === 'user'}
+            {/* Fact Checklist Banner */}
+            {showFactChecklist && (
+              <FactChecklist
+                missingFacts={missingFacts}
+                onProceedWithAssumptions={handleProceedWithAssumptions}
+                onCancel={() => setShowFactChecklist(false)}
               />
-            ))}
+            )}
+
+            {/* Forum Mismatch Alert */}
+            {forumMismatchError && (
+              <ForumMismatchAlert
+                error={forumMismatchError}
+                onSwitchForum={handleSwitchForum}
+                onDismiss={() => setForumMismatchError(null)}
+              />
+            )}
+
+            {/* Messages */}
+            {messages.map((message, index) => renderMessage(message, index))}
+            
+            {/* Loading indicator */}
             {isLoading && (
               <LegalChatMessage
                 message=""
@@ -395,6 +504,7 @@ Provide a comprehensive, accurate response following Indian legal precedents and
                 isLoading={true}
               />
             )}
+            
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
@@ -404,7 +514,7 @@ Provide a comprehensive, accurate response following Indian legal precedents and
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about Indian law, analyze documents, or get legal guidance..."
+            placeholder="Ask about Indian law, maintenance, divorce, or get legal guidance..."
             disabled={isLoading}
             className="flex-1"
           />
@@ -422,6 +532,16 @@ Provide a comprehensive, accurate response following Indian legal precedents and
           </Button>
         </form>
       </div>
+
+      {/* Citation Modal */}
+      <CitationModal
+        isOpen={showCitationModal}
+        onClose={() => {
+          setShowCitationModal(false);
+          setSelectedCitation(null);
+        }}
+        authority={selectedCitation}
+      />
     </div>
   );
 };
