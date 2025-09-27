@@ -997,6 +997,50 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_usage: {
+        Row: {
+          created_at: string
+          credits_charged: number
+          id: string
+          input_tokens: number | null
+          latency_ms: number | null
+          meta: Json | null
+          output_tokens: number | null
+          tool_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_charged?: number
+          id?: string
+          input_tokens?: number | null
+          latency_ms?: number | null
+          meta?: Json | null
+          output_tokens?: number | null
+          tool_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_charged?: number
+          id?: string
+          input_tokens?: number | null
+          latency_ms?: number | null
+          meta?: Json | null
+          output_tokens?: number | null
+          tool_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           action_type: string | null
@@ -1021,6 +1065,36 @@ export type Database = {
           credits_used?: number
           id?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string
+          free_chat_quota: number
+          free_chat_used: number
+          onboarding_bonus_given: boolean
+          tool_credits: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          free_chat_quota?: number
+          free_chat_used?: number
+          onboarding_bonus_given?: boolean
+          tool_credits?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          free_chat_quota?: number
+          free_chat_used?: number
+          onboarding_bonus_given?: boolean
+          tool_credits?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1057,6 +1131,47 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_tx: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          meta: Json | null
+          purpose: string
+          tool_name: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          meta?: Json | null
+          purpose: string
+          tool_name?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          meta?: Json | null
+          purpose?: string
+          tool_name?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_tx_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       wallets: {
         Row: {
           current_credits: number
@@ -1090,6 +1205,38 @@ export type Database = {
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
+      }
+      consume_free_chat: {
+        Args: { p_user: string }
+        Returns: {
+          ok: boolean
+          remaining: number
+        }[]
+      }
+      credit_wallet: {
+        Args: {
+          p_amount: number
+          p_meta?: Json
+          p_purpose?: string
+          p_user: string
+        }
+        Returns: {
+          new_balance: number
+        }[]
+      }
+      debit_tool_credits: {
+        Args: {
+          p_amount: number
+          p_idempotency_key?: string
+          p_meta?: Json
+          p_tool_name: string
+          p_user: string
+        }
+        Returns: {
+          new_balance: number
+          ok: boolean
+          tx_id: string
+        }[]
       }
       deduct_credits: {
         Args: { p_action_type: string; p_cost: number; p_user_id: string }
