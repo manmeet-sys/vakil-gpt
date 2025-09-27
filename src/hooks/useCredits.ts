@@ -1,34 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
-interface UserBalance {
+interface Balance {
   tool_credits: number;
   free_chat_quota: number;
   free_chat_used: number;
 }
 
-interface DebitResult {
-  balance: number;
-  tx_id: string;
-}
-
-interface FreeChatResult {
-  ok: boolean;
-  remaining: number;
-  credits?: number;
-}
-
-export const useCredits = () => {
+export function useCredits() {
   const { user } = useAuth();
-  const [balance, setBalance] = useState<UserBalance | null>(null);
   const [loading, setLoading] = useState(true);
+  const [balance, setBalance] = useState<number>(0);
+  const [free, setFree] = useState<{used: number; quota: number}>({used: 0, quota: 0});
 
-  // Fetch user balance
-  const fetchBalance = async () => {
-    if (!user?.id) return;
+  const refresh = useCallback(async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
 
+    setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('credits-balance', {
         headers: {
@@ -37,56 +30,19 @@ export const useCredits = () => {
       });
 
       if (error) throw error;
-      setBalance(data);
+      
+      setBalance(data.tool_credits ?? 0);
+      setFree({ used: data.free_chat_used ?? 0, quota: data.free_chat_quota ?? 0 });
     } catch (error) {
       console.error('Error fetching balance:', error);
-      toast.error('Failed to fetch balance');
     }
-  };
+    setLoading(false);
+  }, [user?.id]);
 
-  // Debit credits for tool usage
-  const debitCredits = async (
-    amount: number,
-    toolName: string,
-    meta: any = {},
-    idempotencyKey?: string
-  ): Promise<DebitResult | null> => {
-    if (!user?.id) {
-      toast.error('Please log in to use this feature');
-      return null;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('credits-debit', {
-        body: { amount, toolName, meta, idempotencyKey },
-        headers: {
-          authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-        }
-      });
-
-      if (error) {
-        if (error.message?.includes('INSUFFICIENT_FUNDS')) {
-          toast.error(`Insufficient credits. You need ${amount} credits.`);
-        } else {
-          toast.error('Failed to debit credits');
-        }
-        return null;
-      }
-
-      await fetchBalance(); // Refresh balance
-      return data;
-    } catch (error) {
-      console.error('Error debiting credits:', error);
-      toast.error('Failed to debit credits');
-      return null;
-    }
-  };
-
-  // Consume free chat quota
-  const consumeFreeChat = async (): Promise<FreeChatResult | null> => {
+  const gateFreeChat = useCallback(async () => {
     if (!user?.id) {
       toast.error('Please log in to chat');
-      return null;
+      return { allowed: false, remaining: 0 };
     }
 
     try {
@@ -99,43 +55,55 @@ export const useCredits = () => {
 
       if (error) throw error;
 
-      await fetchBalance(); // Refresh balance
-      return data;
+      if (data.ok) {
+        setFree((f) => ({ ...f, used: f.used + 1 }));
+        return { allowed: true, remaining: data.remaining };
+      }
+      return { allowed: false, remaining: 0, credits: data.credits };
     } catch (error) {
       console.error('Error consuming free chat:', error);
       toast.error('Failed to consume free chat');
-      return null;
-    }
-  };
-
-  // Check if user has enough credits
-  const hasEnoughCredits = (amount: number): boolean => {
-    return (balance?.tool_credits || 0) >= amount;
-  };
-
-  // Check if user has free chats remaining
-  const hasFreeChatRemaining = (): boolean => {
-    if (!balance) return false;
-    return balance.free_chat_used < balance.free_chat_quota;
-  };
-
-  useEffect(() => {
-    if (user?.id) {
-      setLoading(true);
-      fetchBalance().finally(() => setLoading(false));
-    } else {
-      setBalance(null);
-      setLoading(false);
+      return { allowed: false, remaining: 0 };
     }
   }, [user?.id]);
 
-  return {
-    balance,
-    loading,
-    debitCredits,
-    consumeFreeChat,
-    hasEnoughCredits,
-    hasFreeChatRemaining,
-    refreshBalance: fetchBalance
-  };
-};
+  const debitTool = useCallback(async (
+    amount: number, 
+    toolName: string, 
+    meta: any = {}, 
+    idempotencyKey?: string
+  ) => {
+    if (!user?.id) {
+      toast.error('Please log in to use this feature');
+      return { ok: false, error: 'NOT_AUTHENTICATED' };
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('credits-debit', {
+        body: { amount, toolName, meta, idempotencyKey },
+        headers: {
+          authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        }
+      });
+
+      if (error) {
+        if (error.message?.includes('INSUFFICIENT_FUNDS')) {
+          return { ok: false, error: 'INSUFFICIENT_FUNDS' };
+        }
+        return { ok: false, error: 'DEBIT_FAILED' };
+      }
+
+      setBalance(data.balance);
+      return { ok: true, tx_id: data.tx_id, balance: data.balance };
+    } catch (error) {
+      console.error('Error debiting credits:', error);
+      return { ok: false, error: 'DEBIT_FAILED' };
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { loading, balance, free, refresh, gateFreeChat, debitTool };
+}
