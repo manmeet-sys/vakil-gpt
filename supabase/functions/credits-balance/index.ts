@@ -44,25 +44,56 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get user balance
-    const { data, error } = await supaAdmin
-      .from('user_profiles')
-      .select('tool_credits, free_chat_quota, free_chat_used')
+    // Get user balance from wallets table
+    const { data: walletData, error: walletError } = await supaAdmin
+      .from('wallets')
+      .select('current_credits')
       .eq('user_id', userId)
       .single();
 
-    if (error) {
-      console.error('Database error:', error);
+    if (walletError && walletError.code !== 'PGRST116') {
+      console.error('Wallet error:', walletError);
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch balance' }),
+        JSON.stringify({ error: 'Failed to fetch wallet' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // Create wallet if it doesn't exist
+    if (!walletData) {
+      const { data: newWallet, error: createError } = await supaAdmin
+        .from('wallets')
+        .insert({ user_id: userId, current_credits: 200 })
+        .select('current_credits')
+        .single();
+      
+      if (createError) {
+        console.error('Create wallet error:', createError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to create wallet' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          tool_credits: newWallet.current_credits,
+          free_chat_quota: 10,
+          free_chat_used: 0
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({
+        tool_credits: walletData.current_credits,
+        free_chat_quota: 10,
+        free_chat_used: 0
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
 
   } catch (error) {
     console.error('Unexpected error:', error);

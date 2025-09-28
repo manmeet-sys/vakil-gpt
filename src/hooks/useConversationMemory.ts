@@ -192,11 +192,8 @@ export const useConversationMemory = () => {
   const startNewConversation = useCallback(async () => {
     const newConv = await createConversation();
     if (newConv) {
-      setMessages([{
-        id: 'welcome',
-        role: 'assistant',
-        content: "नमस्ते! Welcome to VakilGPT. I'm your AI legal assistant specializing in Indian law. I can help with legal questions, analyze documents, and provide information on constitutional matters. How can I assist you today?"
-      }]);
+      // Only add welcome message if there are no existing messages
+      setMessages([]);
     }
     return newConv;
   }, [createConversation]);

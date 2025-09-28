@@ -25,35 +25,37 @@ serve(async (req) => {
     }
 
     const schema = {
-      name: "normalize_legal_query",
-      strict: true,
-      parameters: {
-        type: "object",
-        properties: {
-          partySeeking: { 
-            type: "string", 
-            enum: ["husband", "wife", "child", "parent", "other"] 
-          },
-          relief: { 
-            type: "string", 
-            enum: ["maintenance", "alimony", "interim maintenance", "permanent alimony", "execution", "other"] 
-          },
-          forum: { 
-            type: "string", 
-            enum: ["CrPC_125", "HMA_24", "HMA_25", "SMA_36", "SMA_37", "Other", "Unknown"] 
-          },
-          casePosture: { type: "string" },
-          facts: {
-            type: "object",
-            properties: {
-              disability: { type: "string" },
-              disability_percent: { type: "number" },
-              permanent: { type: "boolean" },
-              income_details: { type: "string" }
+      type: "function",
+      function: {
+        name: "normalize_legal_query",
+        parameters: {
+          type: "object",
+          properties: {
+            partySeeking: { 
+              type: "string", 
+              enum: ["husband", "wife", "child", "parent", "other"] 
+            },
+            relief: { 
+              type: "string", 
+              enum: ["maintenance", "alimony", "interim maintenance", "permanent alimony", "execution", "other"] 
+            },
+            forum: { 
+              type: "string", 
+              enum: ["CrPC_125", "HMA_24", "HMA_25", "SMA_36", "SMA_37", "Other", "Unknown"] 
+            },
+            casePosture: { type: "string" },
+            facts: {
+              type: "object",
+              properties: {
+                disability: { type: "string" },
+                disability_percent: { type: "number" },
+                permanent: { type: "boolean" },
+                income_details: { type: "string" }
+              }
             }
-          }
-        },
-        required: ["partySeeking", "relief", "forum", "casePosture"]
+          },
+          required: ["partySeeking", "relief", "forum", "casePosture"]
+        }
       }
     };
 
@@ -74,8 +76,8 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages,
-        functions: [schema],
-        function_call: { name: "normalize_legal_query" },
+        tools: [schema],
+        tool_choice: { type: "function", function: { name: "normalize_legal_query" } },
         temperature: 0
       }),
     });
@@ -83,14 +85,14 @@ serve(async (req) => {
     const data = await response.json();
     console.log('OpenAI Response:', JSON.stringify(data, null, 2));
 
-    if (!data.choices?.[0]?.message?.function_call?.arguments) {
+    if (!data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments) {
       return new Response(JSON.stringify({ error: 'Failed to normalize query' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const args = JSON.parse(data.choices[0].message.function_call.arguments);
+    const args = JSON.parse(data.choices[0].message.tool_calls[0].function.arguments);
     
     // Apply routing rules - correct the forum for husband seeking maintenance
     if (args.partySeeking === "husband" && 

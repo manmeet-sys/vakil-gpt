@@ -376,7 +376,7 @@ const EnhancedChatInterface: React.FC<EnhancedChatInterfaceProps> = ({ className
       )}
 
       {/* Main Chat Interface */}
-      <div className="flex-1 flex flex-col border rounded-xl bg-card shadow-sm">
+      <div className="flex-1 flex flex-col border rounded-xl bg-card shadow-sm min-h-[600px]">
         {/* Chat Header */}
         <div className="flex justify-between items-center p-3 border-b">
           {/* Mobile Conversation Toggle */}
@@ -475,6 +475,20 @@ const EnhancedChatInterface: React.FC<EnhancedChatInterfaceProps> = ({ className
         {/* Chat Messages */}
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
+            {/* Welcome message when no messages */}
+            {messages.length === 0 && !isLoading && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Bot className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">नमस्ते! Welcome to VakilGPT</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  I'm your AI legal assistant specializing in Indian law. I can help with legal questions, 
+                  analyze documents, and provide information on constitutional matters. How can I assist you today?
+                </p>
+              </div>
+            )}
+
             {/* Fact Checklist Banner */}
             {showFactChecklist && (
               <FactChecklist
