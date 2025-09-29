@@ -1,6 +1,7 @@
 
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { NavigationProvider } from '@/context/NavigationContext';
@@ -26,6 +27,7 @@ const customRender = (
 
 // Re-export everything from testing-library
 export * from '@testing-library/react';
+export { screen, fireEvent } from '@testing-library/react';
 
 // Override render method
 export { customRender as render };

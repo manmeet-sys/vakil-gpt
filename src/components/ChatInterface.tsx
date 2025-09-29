@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import LegalChatMessage from './LegalChatMessage';
 import LegalAnalysisGenerator from './LegalAnalysisGenerator';
@@ -11,6 +10,8 @@ import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
 import { getOpenAIResponse } from './OpenAIIntegration';
 import { useIsMobile } from '@/hooks/use-mobile';
+import UpgradeModal from '@/components/UpgradeModal';
+import { useCredits } from '@/hooks/useCredits';
 
 interface Message {
   id: string;
@@ -34,6 +35,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const { gateFreeChat, free } = useCredits();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   useEffect(() => {
     scrollToBottom();
@@ -46,6 +49,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim()) return;
+
+    // Free chat gating on landing chat
+    try {
+      const can = await gateFreeChat();
+      if (!can.allowed) {
+        setUpgradeOpen(true);
+        return;
+      }
+    } catch (err) {
+      console.warn('gateFreeChat failed, showing upgrade modal as fallback', err);
+      setUpgradeOpen(true);
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -110,7 +126,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   };
 
   return (
-    <div className={`flex flex-col border rounded-xl bg-white dark:bg-zinc-800 shadow-sm h-full ${className}`}>
+    <div className={`flex flex-col border rounded-xl bg-card shadow-sm h-full ${className}`}>
       {/* Chat Header */}
       <div className="flex justify-between items-center p-2 sm:p-3 border-b">
         <div className="flex items-center gap-1">
@@ -145,7 +161,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       </div>
       
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900/80">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background to-muted/50">
         {messages.map((message) => (
           <LegalChatMessage
             key={message.id}
@@ -164,19 +180,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       </div>
       
       {/* Input Area */}
-      <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2 bg-white dark:bg-zinc-800/90 backdrop-blur-sm">
+      <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2 bg-card/90 backdrop-blur-sm">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about Indian law or legal procedures..."
           disabled={isLoading}
-          className="flex-1 w-full border-gray-300 dark:border-zinc-700 focus:ring-blue-accent dark:focus:ring-blue-accent/70"
+          className="flex-1 w-full"
         />
         <Button 
           type="submit" 
           disabled={isLoading || !input.trim()}
           size="icon"
-          className="rounded-full bg-blue-accent hover:bg-blue-accent/90"
+          className="rounded-full"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -185,6 +201,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           )}
         </Button>
       </form>
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        freeChatUsed={free.used}
+        freeChatQuota={free.quota}
+      />
     </div>
   );
 };
