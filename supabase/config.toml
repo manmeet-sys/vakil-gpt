@@ -28,13 +28,13 @@ enabled = true
 
 [functions]
 [functions.openai-proxy]
-verify_jwt = false
+verify_jwt = true
 
 [functions.gemini-proxy]
 verify_jwt = true
 
 [functions.case-law-research]
-verify_jwt = false
+verify_jwt = true
 
 [functions.statute-tracker]
-verify_jwt = false
+verify_jwt = true

@@ -233,7 +233,7 @@ export type Database = {
           provisions: string[] | null
           seq: number | null
           token_count: number | null
-          tsv: unknown | null
+          tsv: unknown
         }
         Insert: {
           content: string
@@ -249,7 +249,7 @@ export type Database = {
           provisions?: string[] | null
           seq?: number | null
           token_count?: number | null
-          tsv?: unknown | null
+          tsv?: unknown
         }
         Update: {
           content?: string
@@ -265,7 +265,7 @@ export type Database = {
           provisions?: string[] | null
           seq?: number | null
           token_count?: number | null
-          tsv?: unknown | null
+          tsv?: unknown
         }
         Relationships: [
           {
@@ -1202,10 +1202,6 @@ export type Database = {
         Args: { p_amount: number; p_source: string; p_user_id: string }
         Returns: undefined
       }
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
-      }
       consume_free_chat: {
         Args: { p_user: string }
         Returns: {
@@ -1242,62 +1238,7 @@ export type Database = {
         Args: { p_action_type: string; p_cost: number; p_user_id: string }
         Returns: undefined
       }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: string
-      }
-      refresh_chunk_tsv: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      refresh_chunk_tsv: { Args: never; Returns: undefined }
       search_chunks_ts: {
         Args: { match_limit?: number; q: string }
         Returns: {
@@ -1314,8 +1255,14 @@ export type Database = {
           provisions: string[] | null
           seq: number | null
           token_count: number | null
-          tsv: unknown | null
+          tsv: unknown
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "chunks"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       search_chunks_vec: {
         Args: { match_count?: number; query_vec: string }
@@ -1334,42 +1281,6 @@ export type Database = {
           similarity: number
           token_count: number
         }[]
-      }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
       }
     }
     Enums: {
