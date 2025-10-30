@@ -10,8 +10,6 @@ import KnowledgeBaseButton from './KnowledgeBaseButton';
 import PdfAnalyzer from './PdfAnalyzer';
 import { getOpenAIResponse } from './OpenAIIntegration';
 import { useIsMobile } from '@/hooks/use-mobile';
-import UpgradeModal from '@/components/UpgradeModal';
-import { useCredits } from '@/hooks/useCredits';
 
 interface Message {
   id: string;
@@ -35,8 +33,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
-  const { gateFreeChat, free } = useCredits();
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   useEffect(() => {
     scrollToBottom();
@@ -49,19 +45,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim()) return;
-
-    // Free chat gating on landing chat
-    try {
-      const can = await gateFreeChat();
-      if (!can.allowed) {
-        setUpgradeOpen(true);
-        return;
-      }
-    } catch (err) {
-      console.warn('gateFreeChat failed, showing upgrade modal as fallback', err);
-      setUpgradeOpen(true);
-      return;
-    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -201,13 +184,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
           )}
         </Button>
       </form>
-
-      <UpgradeModal
-        open={upgradeOpen}
-        onClose={() => setUpgradeOpen(false)}
-        freeChatUsed={free.used}
-        freeChatQuota={free.quota}
-      />
     </div>
   );
 };

@@ -65,7 +65,7 @@ export const encryptData = async (data: string, key: CryptoKey): Promise<string>
   combined.set(iv);
   combined.set(new Uint8Array(encryptedData), iv.length);
   
-  return bufferToBase64(combined);
+  return bufferToBase64(combined.buffer);
 };
 
 /**

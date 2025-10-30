@@ -18,9 +18,6 @@ import PdfAnalyzer from './PdfAnalyzer';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useConversationMemory } from '@/hooks/useConversationMemory';
 import { useAuth } from '@/context/AuthContext';
-import { useCredits } from '@/hooks/useCredits';
-import { withToolCredits, TOOL_COSTS } from '@/lib/withToolCredits';
-import UpgradeModal from '@/components/UpgradeModal';
 import { supabase } from '@/integrations/supabase/client';
 
 interface EnhancedChatInterfaceProps {
@@ -48,7 +45,6 @@ interface NormalizedQuery {
 const EnhancedChatInterface: React.FC<EnhancedChatInterfaceProps> = ({ className }) => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const { gateFreeChat, free } = useCredits();
   const { toast } = useToast();
   
   const {

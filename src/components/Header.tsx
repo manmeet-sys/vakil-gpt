@@ -8,8 +8,6 @@ import { motion } from 'framer-motion';
 import DesktopNavigation from './navigation/DesktopNavigation';
 import MobileNavigation from './navigation/MobileNavigation';
 import AuthButtons from './navigation/AuthButtons';
-import WalletBalance from './wallet/WalletBalance';
-import { useNavigation } from '@/context/NavigationContext';
 
 // This is a compatibility wrapper that redirects to our new navigation structure
 const Header: React.FC = () => {
@@ -47,10 +45,7 @@ const Header: React.FC = () => {
             <span>{location.pathname === '/login' ? 'Sign Up' : 'Log In'}</span>
           </Link>
         ) : (
-          <>
-            <WalletBalance />
-            <AuthButtons />
-          </>
+          <AuthButtons />
         )}
         <ThemeToggle />
         

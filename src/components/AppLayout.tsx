@@ -8,8 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import DesktopNavigation from './navigation/DesktopNavigation';
 import AuthButtons from './navigation/AuthButtons';
-import WalletBadge from './WalletBadge';
-import { useCredits } from '@/hooks/useCredits';
 import { design } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,7 +28,6 @@ const MobileMenuFallback = () => (
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { user } = useAuth();
-  const { loading, balance, free } = useCredits();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/reset-password';
   
   return (
@@ -59,10 +56,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
         
         <div className="flex items-center gap-3">
-          {user && !loading && (
-            <WalletBadge balance={balance} free={free} />
-          )}
-          
           {isAuthPage ? (
             <Link 
               to={location.pathname === '/login' ? '/signup' : '/login'} 

@@ -1,108 +1,97 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Download, Wand2, Eye, History } from "lucide-react";
+import { FileText, Download, Wand2, Loader2, Sparkles, Scale, FileCheck } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import AppLayout from "@/components/AppLayout";
 
 interface DocumentTemplate {
   id: string;
   name: string;
   category: string;
   description: string;
-  fields: string[];
-}
-
-interface DocumentVersion {
-  id: string;
-  version: number;
-  timestamp: string;
-  changes: string;
+  example: string;
 }
 
 const LegalDocumentDraftingPage = () => {
   const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [documentTitle, setDocumentTitle] = useState("");
-  const [documentContent, setDocumentContent] = useState("");
-  const [formFields, setFormFields] = useState<{[key: string]: string}>({});
+  const [briefDescription, setBriefDescription] = useState("");
+  const [jurisdiction, setJurisdiction] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedDocument, setGeneratedDocument] = useState("");
-  const [versions] = useState<DocumentVersion[]>([
-    { id: "1", version: 1, timestamp: "2024-01-15 10:30", changes: "Initial draft created" },
-    { id: "2", version: 2, timestamp: "2024-01-15 11:45", changes: "Updated liability clauses" },
-    { id: "3", version: 3, timestamp: "2024-01-15 14:20", changes: "Added termination provisions" }
-  ]);
-
   const { toast } = useToast();
 
   const documentTemplates: DocumentTemplate[] = [
-    {
-      id: "legal-notice",
-      name: "Legal Notice",
-      category: "Notices",
-      description: "Standard legal notice template for various purposes",
-      fields: ["recipient", "subject", "grounds", "demands"]
-    },
-    {
-      id: "power-of-attorney",
-      name: "Power of Attorney",
-      category: "Authorization",
-      description: "General power of attorney document",
-      fields: ["principal", "agent", "powers", "duration"]
-    },
-    {
-      id: "affidavit",
-      name: "Affidavit",
-      category: "Sworn Statements",
-      description: "General affidavit template",
-      fields: ["deponent", "facts", "purpose", "verification"]
-    },
-    {
-      id: "cease-desist",
-      name: "Cease and Desist Letter",
-      category: "Notices",
-      description: "Template for cease and desist communications",
-      fields: ["recipient", "violation", "demands", "consequences"]
-    },
-    {
-      id: "demand-letter",
-      name: "Demand Letter",
-      category: "Correspondence",
-      description: "Template for formal demand letters",
-      fields: ["debtor", "amount", "basis", "deadline"]
-    }
+    // Notices & Correspondence
+    { id: "legal-notice", name: "Legal Notice", category: "Notices", description: "Formal legal notice under various laws", example: "Legal notice for recovery of dues, breach of contract, defamation" },
+    { id: "demand-letter", name: "Demand Letter", category: "Notices", description: "Formal demand for payment or action", example: "Payment demand, property possession demand" },
+    { id: "cease-desist", name: "Cease and Desist", category: "Notices", description: "Notice to stop unlawful activity", example: "Trademark infringement, copyright violation" },
+    { id: "eviction-notice", name: "Eviction Notice", category: "Notices", description: "Notice to vacate premises", example: "Tenant eviction, illegal occupation" },
+    
+    // Affidavits & Declarations
+    { id: "affidavit", name: "General Affidavit", category: "Affidavits", description: "Sworn statement of facts", example: "Name change, address proof, income affidavit" },
+    { id: "self-declaration", name: "Self Declaration", category: "Affidavits", description: "Personal declaration under oath", example: "Self-employment, residence, character" },
+    { id: "undertaking", name: "Undertaking", category: "Affidavits", description: "Written promise or commitment", example: "Court undertaking, business undertaking" },
+    
+    // Authorization Documents
+    { id: "power-of-attorney", name: "Power of Attorney", category: "Authorization", description: "Authority to act on behalf", example: "General POA, Special POA, property matters" },
+    { id: "authorization-letter", name: "Authorization Letter", category: "Authorization", description: "Permission to act or collect", example: "Document collection, representation" },
+    { id: "consent-letter", name: "Consent Letter", category: "Authorization", description: "Written consent for an action", example: "Travel consent, medical consent" },
+    
+    // Property Documents
+    { id: "sale-deed", name: "Sale Deed", category: "Property", description: "Property sale agreement", example: "Land sale, flat sale, vehicle sale" },
+    { id: "gift-deed", name: "Gift Deed", category: "Property", description: "Transfer of property as gift", example: "Property gift to family member" },
+    { id: "will-testament", name: "Will/Testament", category: "Property", description: "Testamentary disposition of property", example: "Property distribution after death" },
+    { id: "partition-deed", name: "Partition Deed", category: "Property", description: "Division of joint property", example: "Family property partition" },
+    
+    // Court Documents
+    { id: "petition", name: "Petition", category: "Court Documents", description: "Formal request to court", example: "Writ petition, civil petition" },
+    { id: "complaint", name: "Complaint/FIR", category: "Court Documents", description: "Criminal or civil complaint", example: "Police complaint, consumer complaint" },
+    { id: "reply-notice", name: "Reply to Legal Notice", category: "Court Documents", description: "Response to legal notice", example: "Rebuttal to allegations" },
+    { id: "bail-application", name: "Bail Application", category: "Court Documents", description: "Application for bail", example: "Anticipatory bail, regular bail" },
+    
+    // Business Documents
+    { id: "board-resolution", name: "Board Resolution", category: "Business", description: "Company board decision", example: "Director appointment, loan approval" },
+    { id: "shareholders-resolution", name: "Shareholders Resolution", category: "Business", description: "Shareholder meeting decision", example: "Capital increase, director removal" },
+    { id: "trademark-application", name: "Trademark Application", category: "Business", description: "Trademark registration documents", example: "Brand name, logo registration" },
+    
+    // Family Law Documents
+    { id: "divorce-petition", name: "Divorce Petition", category: "Family Law", description: "Petition for dissolution of marriage", example: "Mutual consent, contested divorce" },
+    { id: "maintenance-petition", name: "Maintenance Petition", category: "Family Law", description: "Claim for maintenance", example: "Wife maintenance, child support" },
+    { id: "adoption-deed", name: "Adoption Deed", category: "Family Law", description: "Legal adoption document", example: "Child adoption agreement" },
+    
+    // Employment Documents
+    { id: "appointment-letter", name: "Appointment Letter", category: "Employment", description: "Job offer and terms", example: "Employment offer with terms" },
+    { id: "resignation-letter", name: "Resignation Letter", category: "Employment", description: "Employment termination by employee", example: "Professional resignation" },
+    { id: "termination-letter", name: "Termination Letter", category: "Employment", description: "Employment termination by employer", example: "Employee dismissal notice" },
+    
+    // Financial Documents
+    { id: "promissory-note", name: "Promissory Note", category: "Financial", description: "Promise to pay money", example: "Loan acknowledgment" },
+    { id: "guarantee-deed", name: "Guarantee Deed", category: "Financial", description: "Guarantee for payment/performance", example: "Loan guarantee, contract guarantee" },
+    { id: "indemnity-bond", name: "Indemnity Bond", category: "Financial", description: "Protection against loss", example: "Security indemnity" },
   ];
 
-  const handleTemplateSelect = (templateId: string) => {
-    const template = documentTemplates.find(t => t.id === templateId);
-    if (template) {
-      setSelectedTemplate(templateId);
-      setDocumentTitle(template.name);
-      // Reset form fields
-      const newFields: {[key: string]: string} = {};
-      template.fields.forEach(field => {
-        newFields[field] = "";
-      });
-      setFormFields(newFields);
-    }
-  };
+  const jurisdictions = [
+    { value: "delhi", label: "Delhi High Court" },
+    { value: "mumbai", label: "Bombay High Court" },
+    { value: "bangalore", label: "Karnataka High Court" },
+    { value: "chennai", label: "Madras High Court" },
+    { value: "kolkata", label: "Calcutta High Court" },
+    { value: "supreme", label: "Supreme Court of India" },
+  ];
 
-  const handleFieldChange = (fieldName: string, value: string) => {
-    setFormFields(prev => ({
-      ...prev,
-      [fieldName]: value
-    }));
-  };
+  const categories = Array.from(new Set(documentTemplates.map(t => t.category)));
 
   const handleGenerate = async () => {
-    if (!selectedTemplate || !documentTitle) {
+    if (!selectedTemplate || !briefDescription) {
       toast({
         title: "Missing Information",
-        description: "Please select a template and fill in the required fields.",
+        description: "Please select a document type and provide details.",
         variant: "destructive",
       });
       return;
@@ -110,86 +99,40 @@ const LegalDocumentDraftingPage = () => {
 
     setIsGenerating(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2500));
-      
       const template = documentTemplates.find(t => t.id === selectedTemplate);
-      let mockDocument = "";
-
-      switch (selectedTemplate) {
-        case "legal-notice":
-          mockDocument = `
-LEGAL NOTICE
-
-To: ${formFields.recipient || "[Recipient Name]"}
-
-Subject: ${formFields.subject || "[Subject of Notice]"}
-
-Dear Sir/Madam,
-
-This notice is served upon you under the provisions of law regarding ${formFields.subject || "[matter]"}.
-
-TAKE NOTICE that ${formFields.grounds || "[legal grounds and facts]"}.
-
-YOU ARE HEREBY CALLED UPON to ${formFields.demands || "[specific demands]"} within 15 days of receipt of this notice, failing which appropriate legal proceedings will be initiated against you.
-
-TAKE FURTHER NOTICE that this notice is being served upon you to give you an opportunity to resolve the matter amicably and avoid unnecessary litigation.
-
-Date: ${new Date().toLocaleDateString()}
-
-[Your Name]
-[Your Designation]
-[Address]
-          `;
-          break;
-        
-        case "power-of-attorney":
-          mockDocument = `
-POWER OF ATTORNEY
-
-I, ${formFields.principal || "[Principal Name]"}, son/daughter of [Father's Name], aged [Age] years, resident of [Address], do hereby nominate, constitute and appoint ${formFields.agent || "[Agent Name]"}, son/daughter of [Father's Name], aged [Age] years, resident of [Address], as my true and lawful attorney.
-
-POWERS GRANTED:
-${formFields.powers || "[Specific powers being granted]"}
-
-DURATION:
-This Power of Attorney shall remain in force for ${formFields.duration || "[duration]"} unless revoked earlier.
-
-IN WITNESS WHEREOF, I have executed this Power of Attorney on ${new Date().toLocaleDateString()}.
-
-Principal: ____________________
-${formFields.principal || "[Principal Name]"}
-
-Witnesses:
-1. ____________________
-2. ____________________
-          `;
-          break;
-        
-        default:
-          mockDocument = `
-${documentTitle.toUpperCase()}
-
-Date: ${new Date().toLocaleDateString()}
-
-[Generated document content based on template: ${template?.name}]
-
-${Object.entries(formFields).map(([key, value]) => 
-  `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value || `[${key}]`}`
-).join('\n')}
-
-[Standard clauses and legal provisions would be included here based on the selected template]
-
-Signature: ____________________
-Date: ____________________
-          `;
-      }
+      const jurisdictionName = jurisdictions.find(j => j.value === jurisdiction)?.label || "General Indian Law";
       
-      setGeneratedDocument(mockDocument);
+      const prompt = `Draft a comprehensive ${template?.name} under ${jurisdictionName} jurisdiction with the following details: ${briefDescription}. 
+
+Ensure the document:
+- Follows proper legal format and structure
+- Includes all necessary legal provisions and clauses
+- Complies with relevant Indian laws and regulations
+- Contains proper legal terminology and citations
+- Is ready for immediate use with only party details to be filled
+- Includes verification/attestation clauses where required
+- References applicable acts and sections
+
+Make it detailed, professional, and legally sound.`;
+
+      const { data, error } = await supabase.functions.invoke('enhanced-legal-ai', {
+        body: {
+          query: prompt,
+          legalArea: template?.category || "General",
+          jurisdiction: jurisdictionName,
+          analysisType: "document_drafting"
+        }
+      });
+
+      if (error) throw error;
+
+      setGeneratedDocument(data.answer);
       toast({
         title: "Document Generated",
-        description: "Legal document has been successfully generated.",
+        description: "AI has successfully drafted your legal document.",
       });
     } catch (error) {
+      console.error('Generation error:', error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate document. Please try again.",
@@ -202,9 +145,10 @@ Date: ____________________
 
   const handleDownload = () => {
     const element = document.createElement("a");
+    const template = documentTemplates.find(t => t.id === selectedTemplate);
     const file = new Blob([generatedDocument], { type: "text/plain" });
     element.href = URL.createObjectURL(file);
-    element.download = `${documentTitle.replace(/\s+/g, "_")}_${Date.now()}.txt`;
+    element.download = `${template?.name.replace(/\s+/g, "_")}_${Date.now()}.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -216,212 +160,184 @@ Date: ____________________
   };
 
   const selectedTemplateObj = documentTemplates.find(t => t.id === selectedTemplate);
+  const filteredTemplates = (category: string) => 
+    documentTemplates.filter(t => t.category === category);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Legal Document Drafting</h1>
-        <p className="text-muted-foreground">
-          Create professional legal documents using AI-powered templates. Choose from various document types and customize as needed.
-        </p>
-      </div>
+    <AppLayout>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            AI Legal Document Drafting
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Generate any Indian legal document with AI. 30+ templates covering all major legal areas - just describe what you need.
+          </p>
+        </div>
 
-      <Tabs defaultValue="draft" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="draft">Draft Document</TabsTrigger>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
-          <TabsTrigger value="versions">Version History</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="draft" className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <Card>
+            <Card className="border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Wand2 className="h-5 w-5" />
-                  Document Templates
+                  <FileCheck className="h-5 w-5 text-primary" />
+                  Select Document Type
                 </CardTitle>
                 <CardDescription>
-                  Choose from available legal document templates
+                  Choose from 30+ legal document templates
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select document template" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {documentTemplates.map(template => (
-                      <SelectItem key={template.id} value={template.id}>
-                        <div className="flex flex-col">
-                          <span>{template.name}</span>
-                          <span className="text-xs text-muted-foreground">{template.category}</span>
-                        </div>
-                      </SelectItem>
+              <CardContent className="space-y-4">
+                <Tabs defaultValue={categories[0]} className="w-full">
+                  <TabsList className="grid grid-cols-3 h-auto">
+                    {categories.slice(0, 3).map(cat => (
+                      <TabsTrigger key={cat} value={cat} className="text-xs">
+                        {cat}
+                      </TabsTrigger>
                     ))}
-                  </SelectContent>
-                </Select>
-                
+                  </TabsList>
+                  {categories.map(category => (
+                    <TabsContent key={category} value={category} className="mt-4">
+                      <div className="grid gap-2 max-h-[300px] overflow-y-auto pr-2">
+                        {filteredTemplates(category).map(template => (
+                          <button
+                            key={template.id}
+                            onClick={() => setSelectedTemplate(template.id)}
+                            className={`text-left p-3 rounded-lg border transition-all ${
+                              selectedTemplate === template.id
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/50"
+                            }`}
+                          >
+                            <div className="font-medium text-sm">{template.name}</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {template.description}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+
                 {selectedTemplateObj && (
-                  <div className="mt-4 p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+                    <div className="flex items-center gap-2">
                       <Badge variant="secondary">{selectedTemplateObj.category}</Badge>
+                      <span className="font-medium text-sm">{selectedTemplateObj.name}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedTemplateObj.description}
+                    <p className="text-xs text-muted-foreground">
+                      Example: {selectedTemplateObj.example}
                     </p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {selectedTemplateObj && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Document Details</CardTitle>
-                  <CardDescription>
-                    Fill in the required information for your document
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Document Title</label>
-                    <Input
-                      value={documentTitle}
-                      onChange={(e) => setDocumentTitle(e.target.value)}
-                      placeholder="Enter document title"
-                    />
-                  </div>
+            <Card className="border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wand2 className="h-5 w-5 text-primary" />
+                  Document Details
+                </CardTitle>
+                <CardDescription>
+                  Provide brief details - AI handles everything else
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Jurisdiction (Optional)</label>
+                  <Select value={jurisdiction} onValueChange={setJurisdiction}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select jurisdiction" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {jurisdictions.map(j => (
+                        <SelectItem key={j.value} value={j.value}>
+                          {j.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  {selectedTemplateObj.fields.map(field => (
-                    <div key={field}>
-                      <label className="text-sm font-medium mb-2 block capitalize">
-                        {field.replace(/([A-Z])/g, ' $1').trim()}
-                      </label>
-                      <Textarea
-                        value={formFields[field] || ""}
-                        onChange={(e) => handleFieldChange(field, e.target.value)}
-                        placeholder={`Enter ${field}`}
-                        className="min-h-[80px]"
-                      />
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Brief Description *</label>
+                  <Textarea
+                    placeholder="Example: Legal notice to tenant for non-payment of rent for 3 months (₹30,000/month). Property at Mumbai. Demanding payment within 15 days."
+                    value={briefDescription}
+                    onChange={(e) => setBriefDescription(e.target.value)}
+                    className="min-h-[160px] resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Just provide key facts - AI will create a complete, legally formatted document with all necessary clauses.
+                  </p>
+                </div>
 
-                  <Button 
-                    onClick={handleGenerate} 
-                    disabled={isGenerating}
-                    className="w-full"
-                  >
-                    {isGenerating ? (
-                      <>Generating Document...</>
-                    ) : (
-                      <>
-                        <FileText className="h-4 w-4 mr-2" />
-                        Generate Document
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+                <Button 
+                  onClick={handleGenerate} 
+                  disabled={isGenerating || !selectedTemplate}
+                  className="w-full h-12 text-base"
+                  size="lg"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Drafting Document...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      Generate Complete Document
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
-          <Card>
+          <Card className="border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+                <Scale className="h-5 w-5 text-primary" />
                 Generated Document
               </CardTitle>
               <CardDescription>
-                Review your generated legal document
+                AI-drafted legal document ready to use
               </CardDescription>
             </CardHeader>
             <CardContent>
               {generatedDocument ? (
                 <div className="space-y-4">
-                  <div className="bg-muted p-4 rounded-lg max-h-[600px] overflow-y-auto">
-                    <pre className="whitespace-pre-wrap text-sm font-mono">
+                  <div className="bg-card border rounded-lg p-6 max-h-[600px] overflow-y-auto">
+                    <pre className="whitespace-pre-wrap text-sm leading-relaxed font-mono">
                       {generatedDocument}
                     </pre>
                   </div>
-                  <Button onClick={handleDownload} className="w-full">
+                  <Button onClick={handleDownload} className="w-full" size="lg">
                     <Download className="h-4 w-4 mr-2" />
                     Download Document
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-[600px] text-muted-foreground">
-                  <div className="text-center">
-                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Generated document will appear here</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="preview">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="h-5 w-5" />
-                Document Preview
-              </CardTitle>
-              <CardDescription>
-                Preview your document before finalizing
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {generatedDocument ? (
-                <div className="bg-white border rounded-lg p-8 shadow-sm">
-                  <pre className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {generatedDocument}
-                  </pre>
-                </div>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Eye className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No document to preview. Generate a document first.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="versions">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5" />
-                Version History
-              </CardTitle>
-              <CardDescription>
-                Track changes and manage document versions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {versions.map(version => (
-                  <div key={version.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="text-center space-y-4">
+                    <FileText className="h-16 w-16 mx-auto opacity-20" />
                     <div>
-                      <div className="font-medium">Version {version.version}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {version.timestamp} - {version.changes}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">View</Button>
-                      <Button variant="outline" size="sm">Restore</Button>
+                      <p className="font-medium">No document generated yet</p>
+                      <p className="text-sm mt-2">Select a template and provide details</p>
+                      <p className="text-xs text-muted-foreground mt-4 max-w-md mx-auto">
+                        AI will draft a complete, legally sound document with proper formatting, clauses, and citations
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+        </div>
+      </div>
+    </AppLayout>
   );
 };
 
